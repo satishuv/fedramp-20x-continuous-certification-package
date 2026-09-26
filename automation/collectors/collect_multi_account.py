@@ -15,6 +15,15 @@ Read-only by construction:
 This module builds sessions and fans out; it does not decide statuses and never
 writes the record store. Facts are telemetry.
 
+Scope identity (AUD-F27). Every fact is tagged with its raw `account` (private
+store only) and with a `run_id` for this collection. When a scope key is
+available (SDR_EVIDENCE_SCOPE_KEY, or `scope_key=`) each fact also carries the
+OPAQUE `scope` id evidence_wiring derives from the account, and `scope_map()`
+returns the private scope -> account map an assessor needs. The export
+boundary (evidence_wiring.fact_to_evidence) refuses an account-tagged fact that
+has no scope, so two accounts' observations can never collide on one evidence
+pointer and the raw account never reaches the package.
+
 Usage (library):
     from collect_multi_account import collect_across_accounts
     facts = collect_across_accounts(
@@ -22,24 +31,30 @@ Usage (library):
         role_name="FedRampReadOnly",
         regions=["us-east-1", "us-west-2"],
         base_session=boto3.Session(),
+        scope_key=os.environ["SDR_EVIDENCE_SCOPE_KEY"],
     )
 
 Usage (CLI):
     python collect_multi_account.py --accounts 111122223333,444455556666 \
-        --role-name FedRampReadOnly --regions us-east-1,us-west-2
+        --role-name FedRampReadOnly --regions us-east-1,us-west-2 \
+        --out automation/facts/multi-account.json     # git-excluded private store
 """
 import argparse
 import concurrent.futures as cf
+import json
 import os
 import sys
 from datetime import datetime, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import collectors as _collectors  # noqa: E402
+import evidence_wiring as _ew  # noqa: E402
 
 # Default worker cap: enough to fan out a large estate without hammering the
 # host or tripping API rate limits. Tunable per call.
 DEFAULT_MAX_WORKERS = 16
+
+SCOPE_KEY_ENV = "SDR_EVIDENCE_SCOPE_KEY"
 
 
 def _now():
@@ -117,18 +132,32 @@ def _collect_one_scope(base_session, account, role_name, region, collectors):
     return facts
 
 
+def scope_map(accounts, scope_key):
+    """The PRIVATE opaque-scope -> account map for this deployment. Written
+    beside the facts in the git-excluded store so an assessor can reconstruct
+    account-level coverage; it must never enter the package."""
+    return {_ew.scope_id(a, scope_key): a for a in accounts}
+
+
 def collect_across_accounts(accounts, role_name, regions, base_session=None,
-                            collectors=None, max_workers=DEFAULT_MAX_WORKERS):
+                            collectors=None, max_workers=DEFAULT_MAX_WORKERS,
+                            run_id=None, scope_key=None):
     """Fan every collector across every (account, region) scope in parallel.
 
     Returns a flat list of account+region-tagged facts. Deterministic in
     membership (every scope contributes either facts or one ERROR fact), so a
     caller can always compute coverage as scopes_ok / scopes_total.
+
+    Every fact is stamped with `run_id` (generated when not supplied) and, when
+    `scope_key` is given, with the opaque `scope` derived from its account.
     """
     if base_session is None:
         import boto3
         base_session = boto3.Session()
     collectors = collectors or _collectors.COLLECTORS
+    run_id = run_id or _ew.new_run_id()
+    scopes_by_account = scope_map(accounts, scope_key) if scope_key else {}
+    account_to_scope = {a: s for s, a in scopes_by_account.items()}
 
     scopes = [(a, r) for a in accounts for r in regions]
     results = []
@@ -138,7 +167,12 @@ def collect_across_accounts(accounts, role_name, regions, base_session=None,
             for (a, r) in scopes
         }
         for fut in cf.as_completed(futs):
-            results.extend(fut.result())
+            for f in fut.result():
+                f["run_id"] = run_id
+                s = account_to_scope.get(f.get("account"))
+                if s:
+                    f["scope"] = s
+                results.append(f)
     return results
 
 
@@ -156,6 +190,23 @@ def summarize(facts):
     }
 
 
+def write_private_store(path, facts, run_id, scopes):
+    """Persist a run to the git-excluded private facts store: the raw facts
+    (with accounts), the run id, and the PRIVATE scope -> account map. This
+    file identifies real accounts and must never be committed or packaged."""
+    payload = {
+        "run_id": run_id,
+        "collected_at": _now(),
+        "scope_map": scopes,
+        "facts": facts,
+    }
+    d = os.path.dirname(os.path.abspath(path))
+    os.makedirs(d, exist_ok=True)
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(payload, f, indent=1)
+    return path
+
+
 def main():
     ap = argparse.ArgumentParser(
         description="Read-only multi-account, multi-region evidence collection.")
@@ -168,6 +219,12 @@ def main():
     ap.add_argument("--profile", default=None,
                     help="base profile used to assume the per-account roles")
     ap.add_argument("--max-workers", type=int, default=DEFAULT_MAX_WORKERS)
+    ap.add_argument("--out", default=None,
+                    help="write facts + run id + PRIVATE scope map to this "
+                         "git-excluded path (e.g. automation/facts/multi-account.json)")
+    ap.add_argument("--scope-key-env", default=SCOPE_KEY_ENV,
+                    help=f"environment variable holding the deployment-private "
+                         f"scope key (default {SCOPE_KEY_ENV})")
     args = ap.parse_args()
 
     try:
@@ -179,12 +236,24 @@ def main():
     accounts = [a.strip() for a in args.accounts.split(",") if a.strip()]
     regions = [r.strip() for r in args.regions.split(",") if r.strip()]
     base = boto3.Session(profile_name=args.profile)
+    scope_key = os.environ.get(args.scope_key_env) or None
+    if not scope_key:
+        print(f"NOTE: {args.scope_key_env} is not set. Facts carry the raw account "
+              "and NO opaque scope; evidence_wiring.fact_to_evidence will refuse "
+              "to export them until a scope key is supplied (AUD-F27).")
 
+    run_id = _ew.new_run_id()
     facts = collect_across_accounts(accounts, args.role_name, regions,
-                                    base_session=base, max_workers=args.max_workers)
+                                    base_session=base, max_workers=args.max_workers,
+                                    run_id=run_id, scope_key=scope_key)
     s = summarize(facts)
-    print(f"accounts={s['accounts']} scopes={s['scopes']} "
+    print(f"run={run_id} accounts={s['accounts']} scopes={s['scopes']} "
           f"failed_assume={s['scopes_failed_to_assume']} facts={s['total_facts']}")
+    if args.out:
+        scopes = scope_map(accounts, scope_key) if scope_key else {}
+        write_private_store(args.out, facts, run_id, scopes)
+        print(f"Private facts store written: {args.out} (contains real account ids "
+              "and the scope map; git-excluded, never packaged).")
     return 0
 
 

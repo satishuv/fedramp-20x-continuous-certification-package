@@ -208,14 +208,17 @@ def _fill_records(root):
             ext["operating_cycle"] = "Continuous / daily persistent validation."
             ext["measures_verification"] = f"Measures demonstrate {ident}."
             ext["automation_verification"] = "Automation is accurate and sufficient."
-        # Evidence with a resolvable inline source so integrity can recompute.
-        fact = {"ident": ident, "status": "pass"}
-        import hashlib as _h, json as _j
-        digest = "sha256:" + _h.sha256(_j.dumps(fact, sort_keys=True,
-                                                separators=(",", ":")).encode()).hexdigest()
-        ev = {"evidenceType": "Report", "evidenceLocation": f"https://contoso.gov/ev/{ident}",
-              "xEvidenceContentHash": digest, "source_fact": fact,
-              "lastUpdated": "2026-09-01T00:00:00Z"}
+        # Evidence in the PRODUCTION shape (evidence_wiring.fact_to_evidence):
+        # digest over the bound canonical payload, resolvable inline source, so
+        # the integrity gate can recompute AND the entry is what the real
+        # collector -> evidence path emits (AUD-F26). A hand-built legacy
+        # `source_fact` digest can no longer reach `verified`.
+        sys.path.insert(0, os.path.join(BASE, "automation", "collectors"))
+        from evidence_wiring import fact_to_evidence as _f2e
+        fact = {"service": "config", "check": ident.lower(), "status": "pass",
+                "region": "us-east-1", "detail": f"{ident} evaluated compliant",
+                "collected_at": "2026-09-01T00:00:00+00:00"}
+        ev = _f2e(fact, "https://contoso.gov/ev")
         if is_ksi:
             rec["evidence"] = [ev]
             # FRC-CSX-VVK Class C: >= 2 DISTINCT AUTOMATED methods. Structured

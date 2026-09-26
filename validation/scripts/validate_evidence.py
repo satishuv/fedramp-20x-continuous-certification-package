@@ -11,16 +11,29 @@ BOTH (the earlier version missed FRR evidence):
 For each evidence entry:
   1. If it carries a stored hash, the hash MUST be well-formed 'sha256:<64 hex>'
      (malformed => HARD failure).
-  2. If a source is RESOLVABLE - an inline `source_fact`, or a `source_fact_path`
-     / local `artifact_uri` pointing at a readable file - recompute the digest
-     with the same canonicalization the pipeline used (evidence_wiring.evidence_hash)
-     and compare it to the stored hash. A mismatch is a HARD failure (the content
-     changed after the digest was recorded).
+  2. If a source is RESOLVABLE - a collector-produced entry carrying
+     `xSourceFact`, or a `source_fact_path` / local `artifact_uri` pointing at a
+     readable file - recompute the digest with the same canonicalization the
+     pipeline used (evidence_wiring.evidence_hash) and compare it to the stored
+     hash. A mismatch is a HARD failure (the content changed after the digest
+     was recorded).
   3. If no source can be resolved, report "integrity unverifiable" as a
      readiness FINDING. It is never reported as passed integrity verification.
 
+WHAT THE DIGEST ATTESTS (AUD-F26). For a collector-produced entry the digest is
+over the BOUND CANONICAL PAYLOAD (evidence_wiring.canonical_payload: evidenceType,
+evidenceDescription, evidenceLocation, evidenceText, lastUpdated, xSourceFact),
+so the recompute here is over the entry's own displayed fields. Editing the
+description beside a "verified" digest now fails HARD. The pre-F26 legacy shape
+(`source_fact` inline, digest over the raw fact only) is still hash-checked but
+can only ever reach a FINDING ("unbound digest"), never `verified`, and is HARD
+under a signing-required signer: a digest that does not cover the displayed
+assertion is not a verified assertion. File-backed artifacts (`stored_sha256`
+over the artifact bytes) attest the artifact itself, which is the evidence.
+
 Readiness FINDINGS (never automatic compliance failures, per the trust
-boundary): no stored hash yet, placeholder location, unresolvable source.
+boundary): no stored hash yet, placeholder location, unresolvable source,
+legacy unbound digest.
 
     python validation/scripts/validate_evidence.py
 
@@ -38,8 +51,10 @@ RECORDS = os.path.join(BASE, "sdr", "records", "records-store.json")
 sys.path.insert(0, os.path.join(BASE, "automation", "collectors"))
 try:
     from evidence_wiring import evidence_hash as _evidence_hash
+    from evidence_wiring import canonical_payload as _canonical_payload
 except Exception:
     _evidence_hash = None
+    _canonical_payload = None
 
 try:
     from sign_evidence import verify_signature_offline as _sig_verify
@@ -120,11 +135,15 @@ def iter_evidence(records):
 
 def _resolve_source(e):
     """Return (source_obj, kind) if a source is resolvable, else (None, reason).
-    kind is 'inline' or 'file'. Reads only LOCAL files inside the repo."""
-    if "source_fact" in e:
-        return e["source_fact"], "inline"
+    kind is 'inline' (bound payload, AUD-F26), 'legacy-inline' (pre-F26
+    `source_fact` shape: digest over the raw fact only, NOT over the displayed
+    assertion) or 'file'. Reads only LOCAL files inside the repo."""
     if "xSourceFact" in e:
-        return e["xSourceFact"], "inline"
+        if _canonical_payload is None:
+            return None, "bound-payload projection unavailable"
+        return _canonical_payload(e), "inline"
+    if "source_fact" in e:
+        return e["source_fact"], "legacy-inline"
     path = e.get("source_fact_path")
     uri = e.get("artifact_uri") or e.get("evidenceLocation")
     candidate = None
@@ -155,6 +174,17 @@ def classify_entry(e, hash_fn=None, trusted_signer=None):
         return ("hard", f"malformed content hash {h!r} (expected 'sha256:<64 hex>')")
     if isinstance(loc, str) and loc.startswith("sdr://placeholder/"):
         return ("finding", "placeholder location (not yet real)")
+    if hash_fn is None:
+        # Fail CLOSED: the validator claims real cryptographic verification, so
+        # losing the canonical hash implementation means it CANNOT verify
+        # integrity - a hard failure, not a soft "unverifiable" finding.
+        # Inability to perform an integrity check is not successful validation.
+        # Checked BEFORE source resolution so a missing implementation can never
+        # degrade to an "unresolvable source" finding.
+        return ("hard", "INTEGRITY UNVERIFIABLE - the canonical evidence hash "
+                        "implementation (evidence_wiring.evidence_hash) could not "
+                        "be imported; refusing to pass evidence integrity without "
+                        "the ability to recompute the digest")
     # Finding F01: determine signing-required FIRST. If a trusted signer is
     # pinned in signing-required mode, an entry whose source cannot be resolved
     # (or whose signature is absent) must NOT degrade to a soft "unverifiable"
@@ -186,19 +216,27 @@ def classify_entry(e, hash_fn=None, trusted_signer=None):
                             "content (finding F01, fail-closed).")
         return ("finding", f"integrity unverifiable ({kind}) - stored hash is "
                            "well-formed but no source to recompute")
-    if hash_fn is None:
-        # Fail CLOSED: the validator claims real cryptographic verification, so
-        # losing the canonical hash implementation means it CANNOT verify
-        # integrity - a hard failure, not a soft "unverifiable" finding.
-        # Inability to perform an integrity check is not successful validation.
-        return ("hard", "INTEGRITY UNVERIFIABLE - the canonical evidence hash "
-                        "implementation (evidence_wiring.evidence_hash) could not "
-                        "be imported; refusing to pass evidence integrity without "
-                        "the ability to recompute the digest")
     if hash_fn(source) != h:
         return ("hard", f"INTEGRITY FAILED - stored {str(h)[:20]} != recomputed "
                         f"{hash_fn(source)[:20]} (content changed after the digest "
                         "was recorded)")
+    if kind == "legacy-inline":
+        # AUD-F26: the digest matches the raw fact, but it does not cover the
+        # displayed assertion (evidenceDescription / evidenceText / location /
+        # lastUpdated), so a reader could be shown a statement the digest never
+        # attested. This shape can never be `verified`. Under a signing-required
+        # signer it is HARD: a signature over an unbound digest does not make
+        # the displayed assertion non-repudiable.
+        if signer_required or sig_present:
+            return ("hard", "UNBOUND DIGEST UNDER SIGNING - the entry uses the "
+                            "legacy `source_fact` shape whose digest covers the raw "
+                            "fact only, not the displayed assertion; a signature "
+                            "over it does not attest what the reader sees "
+                            "(AUD-F26). Re-derive the entry with "
+                            "evidence_wiring.fact_to_evidence.")
+        return ("finding", "legacy unbound digest (source_fact shape) - the hash "
+                           "covers the raw fact only, not the displayed assertion; "
+                           "re-derive with evidence_wiring.fact_to_evidence (AUD-F26)")
     # Non-repudiation verification (AU-09(02/03/04), AU-10). Signing is opt-in
     # per deployment, so an ABSENT signature leaves the entry verified-by-hash.
     # A PRESENT signature is CRYPTOGRAPHICALLY VERIFIED against an INDEPENDENTLY

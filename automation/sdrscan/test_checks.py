@@ -82,6 +82,33 @@ def test_scanner_and_validator_patterns_match():
           and "possible AWS account ID" in _hits(real_id))
 
 
+def test_f28_bundle_gate_catches_ip_arn_and_internal_host():
+    # AUD-F28: the generated-artifact gate is the independent backstop behind
+    # the evidence export scrub. It must see an IP, an ARN and an internal
+    # hostname - and must NOT fire on the legitimate content the package
+    # carries (public doc URLs, semantic versions, dates, percentages).
+    sys.path.insert(0, os.path.join(BASE, "validation", "scripts"))
+    import validate_sdr
+
+    def labels(text):
+        return {lbl for p, lbl in validate_sdr.SENSITIVE_PATTERNS if p.search(text)}
+
+    check("IPv4 in a generated artifact is flagged",
+          "IPv4 address" in labels("reachable at 10.23.45.67 over TLS"))
+    check("IPv6 in a generated artifact is flagged",
+          "IPv6 address" in labels("listener 2001:0db8:85a3:0000:0000:8a2e:0370:7334"))
+    check("resource ARN in a generated artifact is flagged",
+          "AWS resource ARN" in labels("policy arn:aws-us-gov:iam::aws:policy/ReadOnlyAccess"))
+    check("internal hostname in a generated artifact is flagged",
+          "internal hostname" in labels("host prod-db-01.internal.corp")
+          and "internal hostname" in labels("ip-10-0-0-1.ec2.internal"))
+    benign = ("See https://www.fedramp.gov/2026/ and schema version 0.4.0 released "
+              "2026-09-22; 99.5% of controls; contact via the trust center at "
+              "https://trust.example.gov/fedramp; KSI-IAM-MFA evaluated compliant.")
+    check("public URLs, versions, dates and percentages are NOT flagged",
+          labels(benign) == set())
+
+
 def test_ksi_pending_honors_varies_by_class():
     # Finding 11: a KSI whose statement lives under varies_by_class (Class B/C)
     # is NOT pending, even though it has no top-level `statement`. The old
@@ -170,6 +197,7 @@ def test_genuine_extra_identifier_still_flagged():
 def main():
     for t in (test_uuid_tail_not_flagged, test_real_account_id_still_flagged,
               test_scanner_and_validator_patterns_match,
+              test_f28_bundle_gate_catches_ip_arn_and_internal_host,
               test_ksi_pending_honors_varies_by_class,
               test_ksi_pending_when_truly_statement_less,
               test_the_old_hardcoded_five_are_not_pending_in_dataset,

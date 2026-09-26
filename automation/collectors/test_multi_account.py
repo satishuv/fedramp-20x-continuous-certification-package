@@ -134,6 +134,93 @@ def test_admin_role_name_refused():
     print("PASS: test_admin_role_name_refused")
 
 
+# --- AUD-F27: the real collect -> export path across accounts ----------------
+
+_KEY = b"test-deployment-scope-key"
+
+
+def _opposite_findings_collectors():
+    """One collector whose verdict depends on the account: PASS in the first,
+    FAIL in the second, same service/check/region."""
+    def s3_tls(session, region):
+        status = "PASS" if session.account.endswith("1") else "FAIL"
+        return [{"service": "s3", "check": "tls", "status": status,
+                 "detail": "observed one resource", "region": region,
+                 "collected_at": mac._now()}]
+    return [("s3", s3_tls)]
+
+
+def _run_keyed(accounts, regions, scope_key, collectors, run_id=None):
+    orig = mac.assume_role_session
+    mac.assume_role_session = _fake_assume
+    try:
+        return mac.collect_across_accounts(
+            accounts=accounts, role_name="FedRampReadOnly", regions=regions,
+            base_session=_StubSTS(), collectors=collectors, max_workers=4,
+            run_id=run_id, scope_key=scope_key)
+    finally:
+        mac.assume_role_session = orig
+
+
+def test_f27_two_accounts_opposite_findings_survive_end_to_end():
+    import evidence_wiring as ew
+    accounts = ["111122223331", "444455556662"]
+    facts = _run_keyed(accounts, ["us-east-1"], _KEY, _opposite_findings_collectors(),
+                       run_id="run-e2e")
+    assert len(facts) == 2
+    for f in facts:
+        assert f["run_id"] == "run-e2e"
+        assert f["scope"] == ew.scope_id(f["account"], _KEY)
+    # The documented library output fed through the attachment helper: BOTH
+    # scopes' observations survive, with distinct pointers and digests, and the
+    # raw account never enters the entries.
+    rec = {}
+    added = ew.attach_evidence(rec, facts, "https://evidence.example.gov/store")
+    assert added == 2, added
+    statuses = sorted(e["xSourceFact"]["status"] for e in rec["evidence"])
+    assert statuses == ["FAIL", "PASS"], statuses
+    assert len({e["evidenceLocation"] for e in rec["evidence"]}) == 2
+    import json
+    blob = json.dumps(rec)
+    for a in accounts:
+        assert a not in blob
+    print("PASS: test_f27_two_accounts_opposite_findings_survive_end_to_end")
+
+
+def test_f27_unkeyed_run_is_refused_at_export_not_dropped():
+    import evidence_wiring as ew
+    facts = _run_keyed(["111122223331", "444455556662"], ["us-east-1"], None,
+                       _opposite_findings_collectors())
+    assert all("scope" not in f and f.get("run_id") for f in facts)
+    try:
+        ew.attach_evidence({}, facts, "https://evidence.example.gov/store")
+        assert False, "account-tagged facts without a scope must be refused"
+    except ew.EvidenceExportError:
+        pass
+    print("PASS: test_f27_unkeyed_run_is_refused_at_export_not_dropped")
+
+
+def test_f27_private_store_carries_the_scope_map():
+    import json
+    import tempfile
+    import evidence_wiring as ew
+    accounts = ["111122223331", "444455556662"]
+    facts = _run_keyed(accounts, ["us-east-1"], _KEY, _opposite_findings_collectors(),
+                       run_id="run-store")
+    scopes = mac.scope_map(accounts, _KEY)
+    assert set(scopes.values()) == set(accounts)
+    assert all(k == ew.scope_id(v, _KEY) for k, v in scopes.items())
+    with tempfile.TemporaryDirectory() as d:
+        p = mac.write_private_store(os.path.join(d, "facts", "run.json"),
+                                    facts, "run-store", scopes)
+        with open(p, encoding="utf-8") as f:
+            stored = json.load(f)
+    assert stored["run_id"] == "run-store"
+    assert stored["scope_map"] == scopes
+    assert len(stored["facts"]) == 2 and all(f["account"] in accounts for f in stored["facts"])
+    print("PASS: test_f27_private_store_carries_the_scope_map")
+
+
 def _run_all():
     tests = [v for k, v in sorted(globals().items())
              if k.startswith("test_") and callable(v)]

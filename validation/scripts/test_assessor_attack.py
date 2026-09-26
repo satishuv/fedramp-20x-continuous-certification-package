@@ -44,7 +44,7 @@ sys.path.insert(0, os.path.join(BASE, "automation", "collectors"))
 # offering-fill logic; import and reuse them rather than re-implement.
 import test_submission_readiness as rt  # noqa: E402
 import validate_evidence as ve  # noqa: E402
-from evidence_wiring import evidence_hash  # noqa: E402
+from evidence_wiring import evidence_hash, fact_to_evidence  # noqa: E402
 
 PASS = FAIL = 0
 
@@ -67,9 +67,11 @@ def check(name, cond):
 def attack_b_signature_downgrade():
     """NARRATION != ENFORCEMENT: a signed-evidence deployment must not be
     silently downgradeable to hash-only by deleting the signature."""
-    fact = {"service": "iam", "check": "mfa", "status": "pass"}
-    entry = {"source_fact": fact, "xEvidenceContentHash": evidence_hash(fact),
-             "evidenceLocation": "s3://bucket/key"}
+    # The PRODUCTION entry shape (AUD-F26: digest over the bound payload). The
+    # legacy hand-built `source_fact` shape can no longer reach `verified`.
+    fact = {"service": "iam", "check": "mfa", "status": "pass", "region": "us-east-1",
+            "detail": "root MFA enabled", "collected_at": "2026-09-26T00:00:00+00:00"}
+    entry = fact_to_evidence(fact, "s3://bucket")
     # A deployment that pins a trusted signer in required mode.
     from cryptography.hazmat.primitives.asymmetric import ec
     from cryptography.hazmat.primitives import serialization

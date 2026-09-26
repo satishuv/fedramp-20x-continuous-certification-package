@@ -8,6 +8,44 @@ One project-specific convention: the pinned FedRAMP dataset version is recorded 
 
 Pinned dataset: `2026.09.13.02` (unchanged)
 
+Evidence-path hardening (external end-to-end audit of `2f72a15`, 2026-09-26;
+three findings, all reproduced with the public helpers before fixing;
+`AUD-F26`..`AUD-F28` in the defect ledger, each with a killed mutation):
+
+- **The evidence digest now binds the whole displayed assertion (AUD-F26,
+  High).** `xEvidenceContentHash` (and therefore the KMS signature over it) is
+  computed over `evidence_wiring.canonical_payload(entry)` - evidenceType,
+  evidenceDescription, evidenceLocation, evidenceText, lastUpdated and the
+  sanitized xSourceFact - instead of the sanitized fact alone. Rewriting
+  `evidenceDescription` beside a "verified" digest previously stayed
+  `verified`; it is now a HARD `INTEGRITY FAILED`. The legacy inline
+  `source_fact` shape (digest over the raw fact only) can only reach a
+  readiness finding, never `verified`, and is HARD under a signing-required
+  signer. The fail-closed "hash implementation missing" check runs before
+  source resolution. BREAKING for hand-built evidence entries: produce them
+  with `fact_to_evidence` (the readiness sample and attack tests now do).
+- **Account scopes never collide and the account never leaks (AUD-F27,
+  High).** An account-tagged fact carries an opaque `scope` (HMAC-SHA256 under
+  the deployment-private `SDR_EVIDENCE_SCOPE_KEY`, or a caller-supplied
+  slug-safe alias that may not be the account itself) in the signed payload and
+  the evidence object key, plus the collector `run_id`. Two accounts' opposite
+  findings for the same service/check/region were previously collapsed onto
+  one pointer and the second (a FAIL) silently dropped by `attach_evidence`;
+  both now survive with distinct pointers and digests, de-duplicated on
+  (location, scope, observation). A fact tagged with an account but no way to
+  derive a scope is REFUSED (`EvidenceExportError`), never dropped or exported.
+  `collect_multi_account.py` stamps `run_id`/`scope` on every fact, exposes
+  `scope_map()`, and `--out` writes facts plus the PRIVATE scope -> account map
+  to the git-excluded facts store (an assessor's key to account-level coverage).
+- **Free-form detail cannot carry identifiers into the package (AUD-F28,
+  Medium).** `detail` and `status` are scrubbed (ARN, access key, key
+  material, email, URL, IPv6, IPv4, account id, hostname, long opaque token)
+  and length-bounded before entering an entry; object-key segments (service,
+  check, region, scope, run_id) must be slug-safe. First-party collector detail
+  strings are unchanged by the scrub (a regression proves it). The
+  generated-bundle sensitive gate additionally flags IPv4/IPv6 addresses, ARNs
+  and internal hostnames as an independent backstop.
+
 Upstream schema adoption (no dataset change; no rule statement, force,
 timeframe or KSI applicability changed):
 

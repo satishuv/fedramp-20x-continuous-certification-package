@@ -353,6 +353,45 @@
       "mutation": "MUT-F25: build_sbom ignores the committed lock (lock = None); expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F26",
+      "severity": "High",
+      "requirement": "Evidence integrity: a verified digest must attest the assertion the reader sees (AU-9, AU-10; KSI-MLA / SDR evidence non-repudiation)",
+      "component": "automation/collectors/evidence_wiring.py (fact_to_evidence, canonical_payload, BOUND_FIELDS); validation/scripts/validate_evidence.py (_resolve_source, classify_entry); automation/collectors/evidence_lifecycle.py (verify_integrity); automation/collectors/sign_evidence.py (docs)",
+      "description": "The content hash (and therefore the KMS signature over it) covered only the sanitized xSourceFact. evidenceDescription, evidenceText, evidenceLocation and lastUpdated were outside the digest, so an entry whose description had been rewritten from a resource-specific observation to 'All customer resources fully compliant' still classified `verified`. Reproduced with the public helpers at 2f72a15 (external end-to-end audit 2026-09-26, F1).",
+      "root_cause": "The digest was designed as a source-fact traceability aid and the displayed fields were added around it later; nothing bound the interpretation to the attestation.",
+      "fix_commit": "this PR -- the digest is computed LAST over evidence_wiring.canonical_payload(entry) (evidenceType, evidenceDescription, evidenceLocation, evidenceText, lastUpdated, xSourceFact); the verifier recomputes over the same projection of the entry itself, so a change to any displayed field is a HARD INTEGRITY FAILED; the legacy inline `source_fact` shape (digest over the raw fact only) can only reach a FINDING, and is HARD under a signing-required signer or with a signature present; the fail-closed missing-hash-implementation check now runs before source resolution; evidence_lifecycle.verify_integrity checks both the fact projection and the bound digest",
+      "regression_test": "validation/scripts/test_evidence_integrity.py (test_f26_each_displayed_field_tamper_is_hard: each of evidenceDescription/evidenceText/evidenceLocation/lastUpdated/evidenceType tampered independently -> hard; test_f26_legacy_unbound_shape_cannot_be_verified; test_f26_signature_binds_displayed_fields); the suite's fixtures now use the production fact_to_evidence shape",
+      "mutation": "MUT-F26: digest computed over xSourceFact only (canonical_payload(evidence) -> evidence['xSourceFact']); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F27",
+      "severity": "High",
+      "requirement": "Evidence completeness across a multi-account boundary: every account/region/check observation must have a distinct, verifiable identity and the raw account must never enter the package (CDS-CSO sensitivity; KSI-PIY inventory completeness)",
+      "component": "automation/collectors/evidence_wiring.py (scope_id, new_run_id, _pointer, _sanitize_fact_for_evidence, fact_to_evidence, observation_identity, attach_evidence); automation/collectors/collect_multi_account.py (run_id/scope stamping, scope_map, write_private_store, --out)",
+      "description": "Multi-account collection tagged facts with `account`, but evidence conversion dropped it from xSourceFact and built the pointer from service/check/region only; attach_evidence de-duplicated by that pointer. Two facts for different accounts with the same service/check/region, one PASS and one FAIL, produced ONE entry (the PASS) and the FAIL was silently discarded; with replace=True both remained but shared one pointer. Reproduced at 2f72a15 (external audit F2). An assessor could not reconstruct account-level coverage from the sanitized evidence.",
+      "root_cause": "The sanitizer correctly refused to export the account id (sensitive) but offered no non-sensitive substitute, so scope identity was lost rather than protected; the multi-account CLI only printed a summary and never exercised the export path.",
+      "fix_commit": "this PR -- an account-tagged fact carries an OPAQUE scope id (HMAC-SHA256 under a deployment-private key SDR_EVIDENCE_SCOPE_KEY, or a caller-supplied slug-safe alias that may not be the account itself) in the signed payload AND the evidence object key, plus the collector run id; a fact tagged with an account that has no way to derive a scope is REFUSED (EvidenceExportError), never silently dropped or exported; attach_evidence de-duplicates on (location, scope, observation) so two scopes' opposite findings and two runs of one scope all survive; collect_multi_account stamps run_id/scope on every fact, exposes scope_map() and writes facts + the PRIVATE scope->account map to the git-excluded store via --out",
+      "regression_test": "automation/collectors/test_evidence_wiring.py (test_f27_two_accounts_opposite_findings_both_kept, test_f27_account_never_enters_the_entry, test_f27_scope_is_keyed_and_deterministic, test_f27_account_tagged_fact_without_scope_is_refused_not_dropped, test_f27_run_id_scopes_the_pointer_and_dedup_identity, test_f27_no_account_no_scope_stays_backward_compatible); automation/collectors/test_multi_account.py (test_f27_two_accounts_opposite_findings_survive_end_to_end through the real collect_across_accounts -> attach_evidence path; unkeyed run refused at export; private store carries the scope map)",
+      "mutation": "MUT-F27: scope dropped from the evidence pointer (_pointer ignores scope); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F28",
+      "severity": "Medium",
+      "requirement": "Non-sensitive public package: no environment-identifying detail (hostnames, IPs, ARNs, identifiers) in customer-facing evidence (CDS-CSO-*; FedRAMP sensitivity guidance)",
+      "component": "automation/collectors/evidence_wiring.py (scrub_text, scrub_hits, _require_slug, _sanitize_fact_for_evidence, fact_to_evidence); validation/scripts/validate_sdr.py (SENSITIVE_PATTERNS)",
+      "description": "Free-form collector `detail` was copied verbatim into evidenceDescription and (first 120 chars) into xSourceFact.summary, while the generated-artifact sensitive-pattern gate detected only a 12-digit account id, an AKIA access key and a private-key header. A synthetic detail carrying an internal hostname and 10.23.45.67 reached both fields and the gate did not fire. First-party collectors emit bounded counts, but third-party adapters and callers can pass arbitrary text. Reproduced at 2f72a15 (external audit F3).",
+      "root_cause": "The projection allow-listed FIELDS but not the CONTENT of the free-text field it kept; the output gate was tuned to credentials, not environment identifiers.",
+      "fix_commit": "this PR -- every free-text field (detail, status) is scrubbed (ARN, access key, key material, email, URL, IPv6, IPv4, account id, hostname/FQDN, long opaque token) and length-bounded before it enters an entry; every identifier that becomes an object-key segment (service, check, region, scope, run_id) must be slug-safe or the fact is refused; the bundle gate additionally flags IPv4, IPv6, ARNs and internal hostnames as an independent backstop; first-party detail strings are unchanged by the scrub (regression proves it)",
+      "regression_test": "automation/collectors/test_evidence_wiring.py (test_f28_hostname_and_ip_in_detail_are_scrubbed, test_f28_arn_account_key_email_url_token_are_scrubbed, test_f28_first_party_details_are_untouched, test_f28_detail_and_status_are_bounded, test_f28_key_segments_must_be_slug_safe, test_f28_csv_adapter_check_from_raw_is_slug_checked); automation/sdrscan/test_checks.py (test_f28_bundle_gate_catches_ip_arn_and_internal_host)",
+      "mutation": "MUT-F28: summary copied verbatim without scrubbing (scrub_text(detail, SUMMARY_MAX) -> detail[:SUMMARY_MAX]); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

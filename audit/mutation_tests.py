@@ -222,6 +222,21 @@ MUTATIONS = [
      "    lock = _parse_lock(LOCK)",
      "    lock = None  # MUTATION ignore the committed lock",
      "validation/scripts/test_lock_closure.py"),
+    ("MUT-F26",
+     "automation/collectors/evidence_wiring.py",
+     '    evidence["xEvidenceContentHash"] = evidence_hash(canonical_payload(evidence))',
+     '    evidence["xEvidenceContentHash"] = evidence_hash(evidence["xSourceFact"])  # MUTATION unbound digest',
+     "validation/scripts/test_evidence_integrity.py"),
+    ("MUT-F27",
+     "automation/collectors/evidence_wiring.py",
+     "    parts = [service, check]\n    if scope:\n        parts.append(scope)",
+     "    parts = [service, check]\n    if False:  # MUTATION scope dropped from the pointer\n        parts.append(scope)",
+     "automation/collectors/test_evidence_wiring.py"),
+    ("MUT-F28",
+     "automation/collectors/evidence_wiring.py",
+     '        out["summary"] = scrub_text(detail, SUMMARY_MAX)',
+     '        out["summary"] = detail[:SUMMARY_MAX]  # MUTATION verbatim detail',
+     "automation/collectors/test_evidence_wiring.py"),
 ]
 
 

@@ -113,17 +113,35 @@ def _derive_id(evidence):
 
 
 def verify_integrity(evidence, source_fact):
-    """Recompute the hash of the source fact and compare to the stored hash on
-    the evidence object. Returns (ok, detail). A mismatch is an integrity
-    failure: the artifact changed after the digest was recorded. The stored hash
-    is computed over the SANITIZED fact (the same projection persisted as
-    xSourceFact), so recompute over the same sanitized projection here."""
+    """Recompute the digest and compare to the stored hash on the evidence
+    object. Returns (ok, detail). Two things must hold (AUD-F26):
+
+      1. the entry's persisted xSourceFact equals the sanitized projection of
+         the raw source fact (the entry reflects the fact that was collected);
+      2. the stored hash equals evidence_hash(canonical_payload(evidence)) - the
+         digest over EVERY displayed field plus xSourceFact - so no assertion
+         shown to a reader has changed since the digest was recorded.
+
+    The raw fact may carry `account` while the entry carries only the derived
+    opaque `scope`; the comparison tolerates a scope the raw fact does not
+    know, never a scope disagreement."""
     stored = evidence.get("xEvidenceContentHash")
     if not stored:
         return False, "no stored content hash"
-    recomputed = ew.evidence_hash(ew._sanitize_fact_for_evidence(source_fact))
+    projected = ew._sanitize_fact_for_evidence(source_fact)
+    persisted = dict(evidence.get("xSourceFact") or {})
+    if "scope" not in projected:
+        persisted.pop("scope", None)
+    if "run_id" not in projected:
+        persisted.pop("run_id", None)
+    if projected != persisted:
+        return False, ("integrity-failed: the entry's xSourceFact does not match "
+                       "the sanitized source fact")
+    recomputed = ew.evidence_hash(ew.canonical_payload(evidence))
     if recomputed != stored:
-        return False, f"integrity-failed: stored {stored[:20]} != recomputed {recomputed[:20]}"
+        return False, (f"integrity-failed: stored {stored[:20]} != recomputed "
+                       f"{recomputed[:20]} (a bound field changed after the "
+                       "digest was recorded)")
     return True, "integrity ok"
 
 
