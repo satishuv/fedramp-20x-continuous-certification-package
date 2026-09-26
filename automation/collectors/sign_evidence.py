@@ -23,12 +23,16 @@ more. Signing is a SEPARATE step from collection, run by a separate principal,
 exactly so the collector's blast radius cannot reach the signing key.
 
 What the signature covers: the canonical `sha256:<hex>` string produced by
-`evidence_wiring.evidence_hash` over the sanitized source fact. The message the
-KMS key signs is the ASCII bytes of that hash string with MessageType='RAW',
-signing algorithm ECDSA_SHA_256 (asymmetric ECC_NIST_P256 key). Storing the
-signature over the hash (not the raw fact) keeps the signed message small and
-lets verification recompute the hash from `xSourceFact` first, then verify the
-signature over it - so a change to either the fact OR the signature fails.
+`evidence_wiring.evidence_hash` over the BOUND CANONICAL PAYLOAD of the entry
+(evidence_wiring.canonical_payload: evidenceType, evidenceDescription,
+evidenceLocation, evidenceText, lastUpdated and the sanitized xSourceFact), so
+the signature attests every field a reader uses to interpret the observation,
+not just the raw fact (AUD-F26). The message the KMS key signs is the ASCII
+bytes of that hash string with MessageType='RAW', signing algorithm
+ECDSA_SHA_256 (asymmetric ECC_NIST_P256 key). Storing the signature over the
+hash (not the payload) keeps the signed message small and lets verification
+recompute the hash from the entry first, then verify the signature over it - so
+a change to ANY bound field OR to the signature fails.
 
 Offline by construction: pass any object exposing `.sign(...)` / `.verify(...)`
 (a boto3 KMS client or a fake). No network in tests.

@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.join(BASE, "validation", "scripts"))
 sys.path.insert(0, os.path.join(BASE, "automation", "collectors"))
 
 import validate_evidence as ve
-from evidence_wiring import evidence_hash
+from evidence_wiring import evidence_hash, fact_to_evidence, canonical_payload
 
 PASS = FAIL = 0
 
@@ -28,6 +28,17 @@ def check(name, cond):
         PASS += 1; print(f"  PASS {name}")
     else:
         FAIL += 1; print(f"  FAIL {name}")
+
+
+_FACT = {"service": "iam", "check": "mfa", "status": "pass", "region": "us-east-1",
+         "detail": "root account MFA enabled", "collected_at": "2026-09-26T12:00:00+00:00"}
+
+
+def _bound_entry(fact=None, location_base="https://evidence.example.gov/store"):
+    """A PRODUCTION-shaped entry: what evidence_wiring.fact_to_evidence emits,
+    digest over the bound canonical payload (AUD-F26). Tests exercise this
+    shape, not a hand-built legacy one."""
+    return fact_to_evidence(dict(fact or _FACT), location_base)
 
 
 def _count_hard(records):
@@ -97,9 +108,7 @@ def test_absent_signature_stays_verified():
     # Signing is opt-in per deployment; an entry with a correct hash and NO
     # signature is still verified-by-hash, not a failure - WHEN no signer is
     # pinned (or the pinned signer is not in required mode).
-    fact = {"service": "iam", "check": "mfa", "status": "pass"}
-    e = {"source_fact": fact, "xEvidenceContentHash": evidence_hash(fact),
-         "evidenceLocation": "s3://bucket/key"}
+    e = _bound_entry()
     outcome, _ = ve.classify_entry(e, hash_fn=evidence_hash)
     check("correct hash, no signature, no pinned signer -> verified", outcome == "verified")
 
@@ -109,9 +118,7 @@ def test_absent_signature_under_required_signer_is_hard():
     # mode, an entry with NO signature is a downgrade to hash-only and must be
     # HARD - an actor who can edit the record cannot strip the signature to
     # weaken verification.
-    fact = {"service": "iam", "check": "mfa", "status": "pass"}
-    e = {"source_fact": fact, "xEvidenceContentHash": evidence_hash(fact),
-         "evidenceLocation": "s3://bucket/key"}
+    e = _bound_entry()
     _, pem = _make_keypair()
     required_signer = {"public_key": pem, "key_arn": _TEST_ARN,
                        "public_key_fingerprint": None, "required": True}
@@ -123,14 +130,91 @@ def test_absent_signature_under_required_signer_is_hard():
 def test_absent_signature_under_optional_signer_is_verified():
     # A pinned signer with signing_required=false explicitly accepts hash-only,
     # so an unsigned entry is still verified.
-    fact = {"service": "iam", "check": "mfa", "status": "pass"}
-    e = {"source_fact": fact, "xEvidenceContentHash": evidence_hash(fact),
-         "evidenceLocation": "s3://bucket/key"}
+    e = _bound_entry()
     _, pem = _make_keypair()
     optional_signer = {"public_key": pem, "key_arn": _TEST_ARN,
                        "public_key_fingerprint": None, "required": False}
     outcome, _ = ve.classify_entry(e, hash_fn=evidence_hash, trusted_signer=optional_signer)
     check("no signature under an OPTIONAL pinned signer -> verified", outcome == "verified")
+
+
+# --- AUD-F26: the digest binds the WHOLE interpreted assertion ---------------
+# Before: the digest covered only xSourceFact, so evidenceDescription could be
+# rewritten from a resource-specific observation to "All customer resources
+# fully compliant" and the entry still classified `verified`.
+
+_F26_TAMPERS = {
+    "evidenceDescription": "All customer resources fully compliant",
+    "evidenceText": "iam:mfa status=pass region=us-east-1 (everything passes)",
+    "evidenceLocation": "https://evidence.example.gov/store/iam/mfa/other-object.json",
+    "lastUpdated": "2019-01-01",
+    "evidenceType": "Screenshot",
+}
+
+
+def test_f26_untampered_bound_entry_verifies():
+    e = _bound_entry()
+    check("bound entry's stored hash == evidence_hash(canonical_payload(entry))",
+          e["xEvidenceContentHash"] == evidence_hash(canonical_payload(e)))
+    outcome, _ = ve.classify_entry(e, hash_fn=evidence_hash)
+    check("untampered bound entry -> verified", outcome == "verified")
+
+
+def test_f26_each_displayed_field_tamper_is_hard():
+    for field, bad in _F26_TAMPERS.items():
+        e = _bound_entry()
+        assert e.get(field) != bad
+        e[field] = bad
+        outcome, msg = ve.classify_entry(e, hash_fn=evidence_hash)
+        check(f"tampering {field} beside a stored digest -> hard (INTEGRITY FAILED)",
+              outcome == "hard" and "INTEGRITY FAILED" in msg)
+    # And the sanitized fact itself, as before.
+    e = _bound_entry()
+    e["xSourceFact"]["status"] = "fail"
+    outcome, msg = ve.classify_entry(e, hash_fn=evidence_hash)
+    check("tampering xSourceFact.status -> hard", outcome == "hard" and "INTEGRITY" in msg)
+
+
+def test_f26_legacy_unbound_shape_cannot_be_verified():
+    # The pre-F26 shape (inline `source_fact`, digest over the raw fact only)
+    # is still hash-checked but can only ever be a FINDING: the digest does not
+    # cover what the reader sees. Under a signing-required signer, or with a
+    # signature present, it is HARD.
+    fact = {"service": "iam", "check": "mfa", "status": "pass"}
+    legacy = {"source_fact": fact, "xEvidenceContentHash": evidence_hash(fact),
+              "evidenceLocation": "s3://bucket/key",
+              "evidenceDescription": "All customer resources fully compliant"}
+    outcome, msg = ve.classify_entry(legacy, hash_fn=evidence_hash)
+    check("legacy source_fact shape with a matching digest -> finding, never verified",
+          outcome == "finding" and "unbound" in msg)
+    _, pem = _make_keypair()
+    required = {"public_key": pem, "key_arn": _TEST_ARN,
+                "public_key_fingerprint": None, "required": True}
+    outcome, msg = ve.classify_entry(legacy, hash_fn=evidence_hash, trusted_signer=required)
+    check("legacy unbound shape under a REQUIRED signer -> hard",
+          outcome == "hard" and "UNBOUND" in msg)
+    wrong = dict(legacy, xEvidenceContentHash="sha256:" + "0" * 64)
+    outcome, _ = ve.classify_entry(wrong, hash_fn=evidence_hash)
+    check("legacy shape with a WRONG digest is still hard (mismatch caught first)",
+          outcome == "hard")
+
+
+def test_f26_signature_binds_displayed_fields():
+    # A real signature over the bound hash: editing the description after
+    # signing must fail, because the signed hash no longer matches the entry.
+    priv, pem = _make_keypair()
+    e = _bound_entry()
+    h = e["xEvidenceContentHash"]
+    e["xEvidenceSignature"] = {"algorithm": "ECDSA_SHA_256", "keyId": _TEST_ARN,
+                               "signedHash": h, "signature": _sign(priv, h)}
+    signer = {"public_key": pem, "key_arn": _TEST_ARN, "public_key_fingerprint": None,
+              "required": True}
+    outcome, _ = ve.classify_entry(e, hash_fn=evidence_hash, trusted_signer=signer)
+    check("signed bound entry -> verified", outcome == "verified")
+    e["evidenceDescription"] = "All customer resources fully compliant"
+    outcome, msg = ve.classify_entry(e, hash_fn=evidence_hash, trusted_signer=signer)
+    check("description edited after signing -> hard (signature no longer attests it)",
+          outcome == "hard")
 
 
 # --- Real ECDSA signing/verification (findings 7/8) ---
@@ -164,12 +248,11 @@ def _sign(priv, content_hash):
 
 
 def _signed_entry(priv, keyid=_TEST_ARN):
-    fact = {"service": "iam", "check": "mfa", "status": "pass"}
-    h = evidence_hash(fact)
-    return {"source_fact": fact, "xEvidenceContentHash": h,
-            "evidenceLocation": "s3://bucket/key",
-            "xEvidenceSignature": {"algorithm": "ECDSA_SHA_256", "keyId": keyid,
-                                   "signedHash": h, "signature": _sign(priv, h)}}, h
+    e = _bound_entry()
+    h = e["xEvidenceContentHash"]
+    e["xEvidenceSignature"] = {"algorithm": "ECDSA_SHA_256", "keyId": keyid,
+                               "signedHash": h, "signature": _sign(priv, h)}
+    return e, h
 
 
 def test_real_signature_verifies_against_pinned_key():
@@ -213,12 +296,10 @@ def test_signature_by_wrong_key_does_not_verify():
 
 def test_fake_blob_signature_does_not_verify():
     priv, pem = _make_keypair()
-    fact = {"service": "iam", "check": "mfa", "status": "pass"}
-    h = evidence_hash(fact)
-    e = {"source_fact": fact, "xEvidenceContentHash": h,
-         "evidenceLocation": "s3://bucket/key",
-         "xEvidenceSignature": {"algorithm": "ECDSA_SHA_256", "keyId": _TEST_ARN,
-                                "signedHash": h, "signature": "QUJD"}}  # the old fake
+    e = _bound_entry()
+    h = e["xEvidenceContentHash"]
+    e["xEvidenceSignature"] = {"algorithm": "ECDSA_SHA_256", "keyId": _TEST_ARN,
+                               "signedHash": h, "signature": "QUJD"}  # the old fake
     signer = {"public_key": pem, "key_arn": _TEST_ARN, "public_key_fingerprint": None}
     outcome, msg = ve.classify_entry(e, hash_fn=evidence_hash, trusted_signer=signer)
     check("the old 'QUJD' fake blob no longer passes as verified -> hard",
@@ -241,27 +322,21 @@ def test_fingerprint_pin_mismatch_is_hard():
 
 
 def test_stale_signature_binding_is_hard():
-    # The fact changed after signing: signedHash no longer matches the current
+    # The entry changed after signing: signedHash no longer matches the current
     # content hash. HARD before any crypto.
     priv, pem = _make_keypair()
-    fact = {"service": "iam", "check": "mfa", "status": "pass"}
-    h = evidence_hash(fact)
+    e = _bound_entry()
     old_hash = "sha256:" + "b" * 64
-    e = {"source_fact": fact, "xEvidenceContentHash": h,
-         "evidenceLocation": "s3://bucket/key",
-         "xEvidenceSignature": {"algorithm": "ECDSA_SHA_256", "keyId": _TEST_ARN,
-                                "signedHash": old_hash, "signature": _sign(priv, old_hash)}}
+    e["xEvidenceSignature"] = {"algorithm": "ECDSA_SHA_256", "keyId": _TEST_ARN,
+                               "signedHash": old_hash, "signature": _sign(priv, old_hash)}
     signer = {"public_key": pem, "key_arn": _TEST_ARN, "public_key_fingerprint": None}
     outcome, msg = ve.classify_entry(e, hash_fn=evidence_hash, trusted_signer=signer)
     check("stale signature binding -> hard", outcome == "hard" and "STALE" in msg)
 
 
 def test_malformed_signature_block_is_hard():
-    fact = {"service": "iam", "check": "mfa", "status": "pass"}
-    h = evidence_hash(fact)
-    e = {"source_fact": fact, "xEvidenceContentHash": h,
-         "evidenceLocation": "s3://bucket/key",
-         "xEvidenceSignature": {"algorithm": "ECDSA_SHA_256"}}  # no sig/keyId/signedHash
+    e = _bound_entry()
+    e["xEvidenceSignature"] = {"algorithm": "ECDSA_SHA_256"}  # no sig/keyId/signedHash
     outcome, _ = ve.classify_entry(e, hash_fn=evidence_hash)
     check("signature block missing fields -> hard", outcome == "hard")
 
@@ -311,6 +386,10 @@ def main():
               test_absent_signature_stays_verified,
               test_absent_signature_under_required_signer_is_hard,
               test_absent_signature_under_optional_signer_is_verified,
+              test_f26_untampered_bound_entry_verifies,
+              test_f26_each_displayed_field_tamper_is_hard,
+              test_f26_legacy_unbound_shape_cannot_be_verified,
+              test_f26_signature_binds_displayed_fields,
               test_real_signature_verifies_against_pinned_key,
               test_signature_present_but_no_pinned_signer_is_hard,
               test_signature_by_untrusted_keyid_is_hard,

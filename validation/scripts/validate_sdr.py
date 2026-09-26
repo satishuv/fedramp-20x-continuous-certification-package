@@ -66,6 +66,15 @@ SENSITIVE_PATTERNS = [
     (re.compile(r"(?<![0-9A-Fa-f-])\d{12}(?![0-9A-Fa-f-])"), "possible AWS account ID"),
     (re.compile(r"AKIA[0-9A-Z]{16}"), "AWS access key ID"),
     (re.compile(r"-----BEGIN (RSA |EC )?PRIVATE KEY-----"), "private key"),
+    # AUD-F28: an internal hostname or IP in the customer-facing package
+    # identifies a real environment as surely as an account id does. The
+    # evidence export boundary scrubs these before they can enter an entry;
+    # this gate is the independent backstop over the whole generated bundle.
+    (re.compile(r"\barn:aws[a-z-]*:"), "AWS resource ARN"),
+    (re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b"), "IPv4 address"),
+    (re.compile(r"\b(?:[0-9a-fA-F]{1,4}:){4,7}[0-9a-fA-F]{1,4}\b"), "IPv6 address"),
+    (re.compile(r"\b[a-z0-9][a-z0-9-]*\.(?:internal|local|corp|lan|intranet|"
+                r"ec2\.internal|compute\.internal)\b", re.I), "internal hostname"),
 ]
 
 

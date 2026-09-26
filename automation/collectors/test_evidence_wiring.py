@@ -171,6 +171,169 @@ def test_real_collector_fact_shape_preserves_timestamp():
     assert ev["xSourceFact"].get("collected_at") == real_fact["collected_at"]
 
 
+# --- AUD-F27: account scopes never collide and the account never leaks --------
+
+_KEY = b"test-deployment-scope-key"
+_BASE = "https://evidence.example.gov/store"
+
+
+def _two_accounts():
+    fact = {"service": "s3", "check": "tls", "status": "PASS", "region": "us-east-1",
+            "detail": "observed one resource", "collected_at": "2026-09-26T12:00:00+00:00"}
+    return [dict(fact, account="111122223333", status="PASS"),
+            dict(fact, account="444455556666", status="FAIL")]
+
+
+def test_f27_two_accounts_opposite_findings_both_kept():
+    rec = {}
+    added = ew.attach_evidence(rec, _two_accounts(), _BASE, scope_key=_KEY)
+    assert added == 2, added
+    statuses = sorted(e["xSourceFact"]["status"] for e in rec["evidence"])
+    assert statuses == ["FAIL", "PASS"], statuses
+    locs = {e["evidenceLocation"] for e in rec["evidence"]}
+    assert len(locs) == 2, "two scopes must never share an evidence pointer"
+    hashes = {e["xEvidenceContentHash"] for e in rec["evidence"]}
+    assert len(hashes) == 2
+    # replace=True keeps both as well, still with distinct pointers.
+    rec2 = {}
+    assert ew.attach_evidence(rec2, _two_accounts(), _BASE, replace=True, scope_key=_KEY) == 2
+    assert len({e["evidenceLocation"] for e in rec2["evidence"]}) == 2
+
+
+def test_f27_account_never_enters_the_entry():
+    import json as _j
+    for ev in ew.facts_to_evidence(_two_accounts(), _BASE, scope_key=_KEY):
+        blob = _j.dumps(ev)
+        assert "111122223333" not in blob and "444455556666" not in blob, blob
+        assert "account" not in ev["xSourceFact"]
+        assert ev["xSourceFact"]["scope"].startswith("scope-")
+        assert ev["xSourceFact"]["scope"] in ev["evidenceLocation"]
+
+
+def test_f27_scope_is_keyed_and_deterministic():
+    a = ew.scope_id("111122223333", _KEY)
+    assert a == ew.scope_id("111122223333", _KEY)  # stable across runs
+    assert a != ew.scope_id("444455556666", _KEY)  # distinct per account
+    assert a != ew.scope_id("111122223333", b"another-key")  # keyed, not a plain hash
+    assert "111122223333" not in a
+    try:
+        ew.scope_id("111122223333", None)
+        assert False, "no key must be refused"
+    except ew.EvidenceExportError:
+        pass
+
+
+def test_f27_account_tagged_fact_without_scope_is_refused_not_dropped():
+    fact = dict(_two_accounts()[0])
+    try:
+        ew.fact_to_evidence(fact, _BASE)  # no scope, no key
+        assert False, "must refuse, never silently export or drop"
+    except ew.EvidenceExportError as e:
+        assert "scope" in str(e)
+    # A caller-supplied opaque alias is accepted...
+    ev = ew.fact_to_evidence(dict(fact, scope="prod-east"), _BASE)
+    assert ev["xSourceFact"]["scope"] == "prod-east"
+    assert "/prod-east/" in ev["evidenceLocation"]
+    # ...but the account itself is not an acceptable "alias".
+    try:
+        ew.fact_to_evidence(dict(fact, scope="111122223333"), _BASE)
+        assert False
+    except ew.EvidenceExportError:
+        pass
+    # An ERROR fact is still simply not evidence (checked before scope).
+    assert ew.fact_to_evidence(dict(fact, status="ERROR:AccessDenied"), _BASE) is None
+
+
+def test_f27_run_id_scopes_the_pointer_and_dedup_identity():
+    fact = _two_accounts()[0]
+    r1 = ew.fact_to_evidence(dict(fact, run_id="run-a"), _BASE, scope_key=_KEY)
+    r2 = ew.fact_to_evidence(dict(fact, run_id="run-b"), _BASE, scope_key=_KEY)
+    assert r1["evidenceLocation"] != r2["evidenceLocation"]
+    assert r1["evidenceLocation"].endswith("/run-a.json")
+    # Two runs of one scope are two observations (both kept); the identical
+    # observation attached twice is kept once.
+    rec = {}
+    assert ew.attach_evidence(rec, [dict(fact, run_id="run-a")], _BASE, scope_key=_KEY) == 1
+    assert ew.attach_evidence(rec, [dict(fact, run_id="run-a")], _BASE, scope_key=_KEY) == 0
+    assert ew.attach_evidence(rec, [dict(fact, run_id="run-b")], _BASE, scope_key=_KEY) == 1
+    assert len(rec["evidence"]) == 2
+
+
+def test_f27_no_account_no_scope_stays_backward_compatible():
+    ev = ew.fact_to_evidence(_fact(), location_base=_BASE)
+    assert "scope" not in ev["xSourceFact"] and "scope=" not in ev["evidenceText"]
+    assert ev["evidenceLocation"] == f"{_BASE}/s3/public_access_block/us-east-1.json"
+
+
+# --- AUD-F28: free-form detail cannot carry identifiers into the package ------
+
+def test_f28_hostname_and_ip_in_detail_are_scrubbed():
+    import json as _j
+    ev = ew.fact_to_evidence(_fact(
+        detail="host prod-db-01.internal.corp reachable at 10.23.45.67"))
+    blob = _j.dumps(ev)
+    assert "prod-db-01" not in blob and "10.23.45.67" not in blob, blob
+    assert "[redacted:host]" in ev["evidenceDescription"]
+    assert "[redacted:ip]" in ev["evidenceDescription"]
+    assert "[redacted:" in ev["xSourceFact"]["summary"]
+
+
+def test_f28_arn_account_key_email_url_token_are_scrubbed():
+    bad = ("arn:aws:iam::111122223333:role/Admin AKIAIOSFODNN7EXAMPLE "
+           "ops@corp.example.com https://internal.example.com/x "
+           "fe80::1 2001:db8::ff00:42:8329 111122223333 "
+           "AbCdEfGhIjKlMnOpQrStUvWxYz0123456789abcd")
+    out = ew.scrub_text(bad)
+    for token in ("111122223333", "AKIAIOSFODNN7EXAMPLE", "ops@", "example.com",
+                  "fe80::1", "2001:db8", "AbCdEfGhIjKlMnOpQrStUvWxYz"):
+        assert token not in out, (token, out)
+    assert set(ew.scrub_hits(bad)) >= {"arn", "access-key", "email", "url", "ip",
+                                       "account", "token"}
+
+
+def test_f28_first_party_details_are_untouched():
+    # What the real collectors emit: counts and plain phrases. None of it may
+    # be redacted, or the scrub would be hiding evidence rather than identifiers.
+    for detail in ("12 of 12 bucket(s) have default encryption configured (12 total, 0 unmeasured)",
+                   "Falcon sensor on 40 of 42 hosts", "3 trail(s), 1 multi-region",
+                   "Enumeration incomplete (page cap); 7 of 9 evaluated", "57.14%",
+                   "0 critical / 2 high", "e.g. rotation enabled at 12:00:00"):
+        assert ew.scrub_text(detail) == detail, detail
+        assert ew.scrub_hits(detail) == [], detail
+
+
+def test_f28_detail_and_status_are_bounded():
+    long = "x " * 400
+    ev = ew.fact_to_evidence(_fact(detail=long, status="OBSERVED " * 30))
+    assert len(ev["xSourceFact"]["summary"]) <= ew.SUMMARY_MAX
+    # "<service>:<check> = <status>. <detail>" with each free-text part bounded.
+    assert len(ev["evidenceDescription"]) <= ew.DETAIL_MAX + ew.STATUS_MAX + 64
+    assert len(ev["xSourceFact"]["status"]) <= ew.STATUS_MAX
+
+
+def test_f28_key_segments_must_be_slug_safe():
+    for bad in ({"check": "../../etc/passwd"}, {"service": "s3 bucket"},
+                {"region": "us-east-1/../x"}, {"run_id": "a/b"}):
+        f = _fact()
+        f.update(bad)
+        try:
+            ew.fact_to_evidence(f, _BASE)
+            assert False, f"unsafe identifier accepted: {bad}"
+        except ew.EvidenceExportError:
+            pass
+
+
+def test_f28_csv_adapter_check_from_raw_is_slug_checked():
+    ad = ew.get_adapter("csv-count")
+    try:
+        ad.to_evidence({"check": "../escape", "observed": 1, "total": 1})
+        assert False
+    except ew.EvidenceExportError:
+        pass
+    ok = ad.to_evidence({"check": "patch-coverage", "observed": 9, "total": 10})
+    assert ok and ok[0]["xSourceFact"]["status"] == "90.0%"
+
+
 def _run_direct():
     fns = [g for n, g in sorted(globals().items()) if n.startswith("test_") and callable(g)]
     for fn in fns:
