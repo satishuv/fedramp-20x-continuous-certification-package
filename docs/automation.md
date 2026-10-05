@@ -46,6 +46,22 @@ Today the collectors write dated facts to `automation/facts/` and the appender w
 
 Both scheduled loops persist the history and fail closed (AUD-F29 to AUD-F32). The AWS CodeBuild collector and the GitHub Actions `living-sdr-loop.yml` restore the durable `metric-history.json` from the evidence bucket before appending and publish it back with compare-and-swap afterwards; the Actions loop refuses to run until the `SDR_METRIC_HISTORY_BUCKET` repository variable names that bucket, because on an ephemeral runner a history with nowhere to go is discarded every night. A collection that observes nothing (`collect_facts.py` exit 4) or an append that adds no datapoint (`append_metrics.py` exit 4) fails the run instead of recording an empty day; `meta.last_run` advances only on a run that appended, and `meta.last_attempt` records every run. Failures alarm: the AWS template notifies the SNS topic on a failed, faulted, timed-out or stopped collector or drift-check build, and the Actions loop files a GitHub issue. `package-preflight` additionally reports, as an advisory, every KSI whose newest datapoint is older than 7 days (`MOT_STALE_ADVISORY_DAYS`, project policy), well inside the 45-day continuity bound.
 
+### The history is the collector's record (AUD-F37)
+
+Every observation the appender writes is hash-chained to its predecessor (or to the KSI's pruning anchor once old observations age out) and carries the collector's `run_id` plus the SHA-256 of the facts store it was derived from. `history_integrity.verify_history()` recomputes every hash and link; `history_integrity.history_digest()` folds every chain head into one value. Editing, inserting or deleting a past observation breaks the chain; rechaining it is trivial, which is why the digest is meant to be signed by the separate signer principal: `publish_history.py publish --sign-key-arn <kms-key>` writes `meta.history_signature`, and `package-preflight` verifies it offline against the independently pinned `expected_evidence_signer`.
+
+Two evidence-store profiles, declared in the offering profile as `evidence_store_profile`:
+
+| | `development` (template default) | `production-assurance` |
+|---|---|---|
+| Tampered chain (edited, inserted, deleted observation; bad anchor; series point with no observation) | Blocker at Class C/D | Blocker at Class C/D |
+| Observations without chain fields or run provenance | Advisory | Blocker |
+| History digest unsigned | Advisory | Blocker |
+| Signature present but not verifying under the pinned signer | Blocker | Blocker |
+| Unknown profile value | Blocker | Blocker |
+
+The FRC-CSX-VVK binding gate counts a declared automated method as working only when its per-method series carries a datapoint inside the method's cadence window (daily 7 days, weekly 14, monthly 45, quarterly 90; project policy, FedRAMP names no cadence). A series that exists but stopped, or was written with old dates, is not a working method. A real Class C offering should declare `production-assurance` before submission; the fictional Class C sample stays on `development` because it cannot hold a signer's key, and its attack mode shows that the same package under `production-assurance` is blocked until the digest is signed.
+
 What 20x specifies (verified against the pinned CR26 dataset `2026.09.13.02`):
 
 - KSI metric history (`SDR-CSX-KMT` with `FRC-CSX-MOT`): Class B keeps a 30-day summary and an up-to-one-year summary per indicator; Class C keeps those plus all daily metric data up to the past year; Class D must significantly supersede the lower classes, with specifics set during the 20x Phase 4 Pilot. The governing window is **up to one year**, which is why the appender retains about a year.

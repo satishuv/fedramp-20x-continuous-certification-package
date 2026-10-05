@@ -183,28 +183,43 @@ def generate_store():
 
 def generate_history(store):
     """A >=6-month daily-ish metric history per KSI, in the REAL production
-    shape append_metrics writes: {"ksis": {kid: {"series": [...], "metrics": {...}}}}.
+    shape append_metrics writes: {"ksis": {kid: {"series": [...], "metrics": {...},
+    "observations": [...]}}, "meta": {...}}.
 
     The per-method "metrics" map is keyed by the SAME method_ids the KSI declares
     in its records-store tests ({kid}-config-rule, {kid}-api-collector), so each
     declared automated VVK method is BOUND to observed telemetry. This satisfies
     the Class C/D method-to-telemetry binding gate: a declared automated method
-    that produced no keyed telemetry is a false-ready path and must block."""
+    that produced no keyed telemetry is a false-ready path and must block.
+
+    AUD-F37: every series point has an observation behind it, and the
+    observations are hash-chained with (fictional, labelled) run provenance, so
+    the sample passes the chain-integrity gate the way a collector-produced
+    history does. The digest is NOT signed: the sample declares the development
+    profile, where an unsigned digest is an advisory; production-assurance would
+    block it, which is the point."""
+    sys.path.insert(0, os.path.join(BASE, "automation", "metrics"))
+    import history_integrity as hi
     ksis = list(store.get("ksi", {}).keys())
-    hist = {"ksis": {}}
+    hist = {"ksis": {}, "meta": {}}
     for kid in ksis:
         series = []
+        observations = []
         per_method = {f"{kid}-config-rule": [], f"{kid}-api-collector": []}
         # 200 days back to today, weekly datapoints (well over the 183-day min).
         d = TODAY - dt.timedelta(days=200)
         while d <= TODAY:
             iso = d.isoformat()
             series.append({"date": iso, "status": "pass"})
+            observations.append({"observed_at": f"{iso}T06:00:00+00:00", "date": iso,
+                                 "passing": 2, "total": 2})
             for mkey in per_method:
                 per_method[mkey].append({"date": iso, "passing": 1, "total": 1})
             d += dt.timedelta(days=7)
         metrics = {mkey: {"series": s} for mkey, s in per_method.items()}
-        hist["ksis"][kid] = {"series": series, "metrics": metrics}
+        hist["ksis"][kid] = {"series": series, "metrics": metrics, "observations": observations}
+    # Fictional provenance, labelled as such in the run id itself.
+    hi.rechain(hist, {"run_id": "run-SAMPLE-fictional", "facts_sha256": "sha256:" + "f1c7" * 16})
     return hist
 
 
@@ -649,6 +664,88 @@ def attack():
         pr["cpo_responsible_official"] = JUST
     probe("justified 'N/A' CPO responsible_official still blocks (CPO-CSO-MTD)",
           _just_mtd_official)
+
+    # ---- AUD-F37: the metric history is the collector's record, not a file
+    # someone completed. Each tamper below is exactly what the delivery review
+    # said was possible: fill the history in after the fact, or satisfy "two
+    # working automated methods" by asserting a series. ----
+    sys.path.insert(0, os.path.join(BASE, "automation", "metrics"))
+    import history_integrity as _hint
+
+    def _first_kid(hi_):
+        return sorted(hi_["ksis"].keys())[0]
+
+    def _backfill_observation(st, pr, hi_):
+        # Insert a plausible, self-consistently hashed observation for a day
+        # that was never collected, in the middle of the chain.
+        kid = _first_kid(hi_)
+        obs = hi_["ksis"][kid]["observations"]
+        fake_date = (dt.date.fromisoformat(obs[3]["date"]) + dt.timedelta(days=1)).isoformat()
+        fake = _hint.chain_observation({"observed_at": f"{fake_date}T06:00:00+00:00", "date": fake_date,
+                                        "passing": 2, "total": 2}, obs[3]["hash"],
+                                       {"run_id": "run-SAMPLE-fictional", "facts_sha256": "sha256:" + "f1c7" * 16})
+        obs.insert(4, fake)
+    probe("backfilled observation inserted mid-chain blocks (chain-break)", _backfill_observation)
+
+    def _edit_observation(st, pr, hi_):
+        kid = _first_kid(hi_)
+        hi_["ksis"][kid]["observations"][5]["passing"] = 0  # rewrite history, keep the old hash
+    probe("edited past observation blocks (bad-hash)", _edit_observation)
+
+    def _delete_observation(st, pr, hi_):
+        kid = _first_kid(hi_)
+        del hi_["ksis"][kid]["observations"][7]  # a bad day vanishes; its series point stays
+    probe("deleted observation blocks (chain-break and unbacked series point)", _delete_observation)
+
+    def _stale_method(st, pr, hi_):
+        # One declared method's series stopped 60 days ago: still "exists",
+        # no longer working. Class C needs TWO working methods.
+        kid = _first_kid(hi_)
+        m = hi_["ksis"][kid]["metrics"][f"{kid}-api-collector"]
+        cutoff = (TODAY - dt.timedelta(days=60)).isoformat()
+        m["series"] = [p for p in m["series"] if p["date"] < cutoff]
+    probe("declared method whose series went stale 60 days ago blocks (vvk binding freshness)",
+          _stale_method)
+
+    def _production_unsigned(st, pr, hi_):
+        pr["evidence_store_profile"] = "production-assurance"
+    probe("production-assurance profile with an UNSIGNED history digest blocks", _production_unsigned)
+
+    def _rechained_tamper_with_forged_signature(st, pr, hi_):
+        # The sophisticated attacker: edit, rechain (chain verifies again) and
+        # attach a signature block that does not verify under the pinned signer.
+        kid = _first_kid(hi_)
+        hi_["ksis"][kid]["observations"][5]["passing"] = 0
+        _hint.rechain(hi_, {"run_id": "run-SAMPLE-fictional", "facts_sha256": "sha256:" + "f1c7" * 16})
+        hi_["meta"]["history_signature"] = {"algorithm": "ECDSA_SHA_256", "keyId": "arn:aws:kms:x:0:key/forged",
+                                            "signedHash": hi_["meta"]["history_digest"],
+                                            "signature": "AAAA"}
+    probe("rechained tamper carrying a signature that does not verify blocks", _rechained_tamper_with_forged_signature)
+
+    def _unknown_profile(st, pr, hi_):
+        pr["evidence_store_profile"] = "prod"
+    probe("unknown evidence_store_profile value blocks (no silent default)", _unknown_profile)
+
+    # NEGATIVE: production-assurance IS satisfiable. Sign the digest with a
+    # throwaway EC key (standing in for the separate signer's KMS key), pin its
+    # public key the way a verifier would, and the package is READY.
+    def _production_signed(st, pr, hi_):
+        import base64
+        from cryptography.hazmat.primitives import hashes, serialization
+        from cryptography.hazmat.primitives.asymmetric import ec
+        key = ec.generate_private_key(ec.SECP256R1())
+        pub_pem = key.public_key().public_bytes(
+            serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo).decode("ascii")
+        digest = _hint.record_heads(hi_)
+        sig = key.sign(digest.encode("utf-8"), ec.ECDSA(hashes.SHA256()))
+        key_arn = "arn:aws:kms:us-east-1:000000000000:key/SAMPLE-fictional-signer"
+        hi_["meta"]["history_signature"] = {"algorithm": "ECDSA_SHA_256", "keyId": key_arn,
+                                            "signedHash": digest,
+                                            "signature": base64.b64encode(sig).decode("ascii")}
+        pr["evidence_store_profile"] = "production-assurance"
+        pr["expected_evidence_signer"] = {"key_arn": key_arn, "public_key_pem": pub_pem}
+    _probe_ready("production-assurance with a VALID signed digest and pinned signer stays READY",
+                 _production_signed)
 
     print(f"\n{passed}/{passed + failed} assessor-attack probes passed "
           "(each tamper must be BLOCKED; baseline + justified-narrative combo must be READY)")
