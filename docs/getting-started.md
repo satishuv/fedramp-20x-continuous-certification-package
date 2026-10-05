@@ -171,7 +171,7 @@ python sdr.py application-preflight
 |---|---|
 | `ModuleNotFoundError: No module named 'jsonschema'` | Install the three prerequisites above. Note that `python-docx` imports as `docx`, which trips people up |
 | The validator reports content fidelity mismatches | You hand-edited a generated file. Regenerate with `python sdr.py build`. The files you edit are the record store and the offering profile, never a generated deliverable |
-| Word files differ between builds | Expected. The `.docx` container embeds file-entry timestamps, so bytes differ while content is identical. JSON, text, and CSV outputs are byte-stable, which is why the gate excludes `.docx` from its diff |
+| Word files differ between builds | Not expected since 1.5.0. The `.docx` is byte-reproducible (fixed zip entry timestamps, dataset-derived core properties) and the gate diffs and fingerprints it like every other output. A differing `.docx` means a changed input, a hand edit, or sample residue |
 | Continuous integration fails on a stale check catalog | You changed `automation/sdrscan/checks.py` without regenerating the catalog. Run `python automation/sdrscan/sdrscan.py --write-catalog` |
 | The drift check opened an issue | FedRAMP changed a pinned source. That is the system working. See [validation](validation.md#upstream-drift) |
 | `Class D SDR generation is not supported` | Correct behavior. Class D is FedRAMP pending, so there is nothing to generate. Read `profiles/class-d-future/readiness-register.json` instead |

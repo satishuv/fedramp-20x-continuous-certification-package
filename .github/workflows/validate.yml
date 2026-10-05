@@ -1,8 +1,8 @@
 # CI gate, GitHub Actions edition. Same three checks as the AWS CodeBuild
 # buildspec (automation/pipeline/buildspec-validate.yml):
 #   1. Regenerate every deliverable from the record store and pinned dataset.
-#   2. Refuse hand-edited generated files (regenerate-then-diff; docx excluded
-#      because its zip container embeds timestamps).
+#   2. Refuse hand-edited generated files (regenerate-then-diff, Word documents
+#      included: byte-reproducible since AUD-F35).
 #   3. validate_sdr.py must pass with 0 hard failures.
 # Plus two independent anti-circular-verification gates (audit-gate job):
 #   4. Mutation runner: every closed defect, re-introduced, must turn its
@@ -39,23 +39,19 @@ jobs:
         run: pip install --quiet --require-hashes -r requirements.lock
       - name: Regenerate all deliverables
         run: |
-          # Full build regenerates the ACTIVE class (per the offering profile).
-          python sdr.py build
-          # Also regenerate the inactive class SDR outputs so committed A/B/C
-          # never drift from the pinned dataset (the SDR_BUILD_CLASS override
-          # regenerates one class's SDR JSON/text without editing the profile).
-          # Order the ACTIVE class last so the release manifest and records-store
-          # backfill reflect it.
-          ACTIVE=$(python -c "import json;print((json.load(open('profiles/common/offering-profile.json')).get('certification_class') or 'b').lower())")
-          for c in a b c; do
-            if [ "$c" != "$ACTIVE" ]; then
-              SDR_BUILD_CLASS=$c python validation/scripts/build_sdr.py > /dev/null
-            fi
-          done
+          # ONE build definition. `sdr.py build` regenerates the inactive
+          # classes first (build_inactive_classes.py: SDR JSON, text AND Word
+          # document per class) and the ACTIVE class last, so the release
+          # manifest and records-store backfill reflect the active class and the
+          # committed A/B/C artifacts, Word documents included, never drift
+          # (AUD-F35/F36). The former per-class loop here is now inside the build.
           python sdr.py build
       - name: Refuse hand-edited generated files
         run: |
-          git diff --exit-code -- . ':(exclude)*.docx' || {
+          # No exclusions. The Word documents are byte-reproducible since
+          # AUD-F35, so a .docx that differs from its committed copy is a real
+          # drift (or sample residue, AUD-F36), exactly like a JSON file.
+          git diff --exit-code -- . || {
             echo "FAIL. Generated outputs differ from committed files."
             echo "Never edit generated files by hand; edit sdr/records/records-store.json and regenerate."
             exit 1
@@ -64,17 +60,17 @@ jobs:
         run: |
           set -e
           find sdr package traceability artifacts validation/reports \
-            -type f \( -name '*.json' -o -name '*.txt' -o -name '*.md' -o -name '*.csv' \) \
-            ! -name '*.docx' -print0 | sort -z | xargs -0 sha256sum > /tmp/repro-first.txt
+            -type f \( -name '*.json' -o -name '*.txt' -o -name '*.md' -o -name '*.csv' -o -name '*.docx' \) \
+            -print0 | sort -z | xargs -0 sha256sum > /tmp/repro-first.txt
           python sdr.py build > /dev/null
           find sdr package traceability artifacts validation/reports \
-            -type f \( -name '*.json' -o -name '*.txt' -o -name '*.md' -o -name '*.csv' \) \
-            ! -name '*.docx' -print0 | sort -z | xargs -0 sha256sum > /tmp/repro-second.txt
+            -type f \( -name '*.json' -o -name '*.txt' -o -name '*.md' -o -name '*.csv' -o -name '*.docx' \) \
+            -print0 | sort -z | xargs -0 sha256sum > /tmp/repro-second.txt
           diff /tmp/repro-first.txt /tmp/repro-second.txt || {
             echo "FAIL. Deterministic artifacts changed across two identical builds."
             exit 1
           }
-          echo "Reproducibility gate: byte-identical across two builds."
+          echo "Reproducibility gate: byte-identical across two builds (Word documents included)."
       - name: Validate (full gate + A/B/C class matrix + offline test suite, CI parity via sdr.py)
         run: python sdr.py validate
       - name: Refuse a stale check catalog

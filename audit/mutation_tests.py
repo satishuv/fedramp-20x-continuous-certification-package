@@ -268,6 +268,17 @@ MUTATIONS = [
      '        ("pip-audit",\n         [sys.executable, "-m", "pip_audit", "-r", "requirements.lock",',
      '        ("pip-audit-disabled",  # MUTATION vulnerability audit dropped from the gate\n         [sys.executable, "-c", "pass", "requirements.lock",',
      "automation/collectors/test_collection_fail_closed.py"),
+    # Word-document integrity and sample residue (review items 1 and 5).
+    ("MUT-F35",
+     "validation/scripts/build_docx.py",
+     "            info = zipfile.ZipInfo(name, date_time=ZIP_FIXED_DATETIME)",
+     "            info = zipfile.ZipInfo(name, date_time=_dt.datetime.now().timetuple()[:6])  # MUTATION wall clock",
+     "validation/scripts/test_docx_integrity.py"),
+    ("MUT-F36",
+     "validation/scripts/build_inactive_classes.py",
+     'PER_CLASS_STEPS = ("build_sdr.py", "build_docx.py")',
+     'PER_CLASS_STEPS = ("build_sdr.py",)  # MUTATION inactive Word documents never rebuilt',
+     "validation/scripts/test_docx_integrity.py"),
 ]
 
 

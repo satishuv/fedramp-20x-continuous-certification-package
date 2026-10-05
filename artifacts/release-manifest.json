@@ -66,6 +66,7 @@
   "package/ocr/ocr-example.json": "sha256:2f2881b13c6ba3bb3cf25ccc9d26245b06a739a3b6b9eedabe5d1bfbb2c7d149",
   "package/ocr/ocr-example.md": "sha256:13a8ed41e38a49875195732e81193ac5a15a8082226b8f1433ac3a9f26376431",
   "package/scg/secure-configuration-guide.md": "sha256:e33594964ad23ab3abef5798814c37c39fdadd3157258c5c23b76f70eab156d6",
+  "sdr/human-readable/sdr-class-b-authoring.docx": "sha256:75bfe9842b208f1f22bcbca2d7a45c7090cd9fd4161327254aef047130511bbc",
   "sdr/human-readable/sdr-class-b.txt": "sha256:084e30bdc2763eb29f03dd51136ea84f4702bc3abe07c1752f2db2d03a66b42c",
   "sdr/json/sdr-class-b-extensions.json": "sha256:2157beebcf4b8efb5b31e7ca81bf33a1c6e479e94c1fbba882c31256adb5d5ca",
   "sdr/json/sdr-class-b.json": "sha256:764211f10bada6ddef300899f1aae70991748c3c4222eb8386fec6a105885b9c",
@@ -73,7 +74,7 @@
   "traceability/assurance-graph.json": "sha256:4648136f968c5068ae4b87a95d5bc4c78c7e5da4488839f2f3276c03fc3bd806",
   "traceability/rev5-to-20x-crosswalk.csv": "sha256:54abb349fbf14d1d8ec15da7fe2de5615f132f14309dc3957a81563e5575db43"
  },
- "artifact_count": 21,
+ "artifact_count": 22,
  "release_tag": "v1.5.0-cr26-2026.09.13.02",
  "source_provenance": {
   "requirements_sha256": "sha256:657e8270cb76f7fb07e95078bd68c17a1b0d4664a605e0f55d1b50c1368dd42f",

@@ -11,10 +11,23 @@
 #
 # Pipeline position: after build_notes.py and build_profiles.py.
 # Output: sdr/human-readable/sdr-class-<x>-authoring.docx
+#
+# Byte-reproducible (AUD-F35). python-docx stamps every zip entry with the save
+# time, so two builds of unchanged inputs used to differ and the .docx had to be
+# excluded from the regenerate-and-diff, the reproducibility gate and the
+# release manifest: the one document an assessor reads was outside every
+# integrity check. normalize_docx() rewrites the container with a fixed entry
+# timestamp, fixed attributes and a fixed compression level, and the core
+# properties carry a timestamp derived from the pinned dataset version instead
+# of the wall clock, so the Word document is now fingerprinted and diffed like
+# every other deliverable.
 
+import datetime as _dt
 import json
 import os
+import re
 import sys
+import zipfile
 
 try:
     from docx import Document
@@ -28,6 +41,43 @@ except ImportError:
     )
 
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Zip entry timestamp for every member: the DOS epoch, the conventional value
+# for reproducible archives. Nothing about the document depends on it.
+ZIP_FIXED_DATETIME = (1980, 1, 1, 0, 0, 0)
+ZIP_COMPRESSLEVEL = 6
+
+
+def normalize_docx(path):
+    """Rewrite the .docx container in place so identical content yields
+    identical bytes: member order preserved, fixed per-entry timestamp,
+    attributes and creator system, fixed deflate level. Returns the path."""
+    with zipfile.ZipFile(path) as zin:
+        members = [(info.filename, zin.read(info.filename)) for info in zin.infolist()]
+    tmp = path + ".tmp"
+    with zipfile.ZipFile(tmp, "w", compression=zipfile.ZIP_DEFLATED,
+                         compresslevel=ZIP_COMPRESSLEVEL) as zout:
+        for name, data in members:
+            info = zipfile.ZipInfo(name, date_time=ZIP_FIXED_DATETIME)
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.create_system = 3          # fixed, not the host OS
+            info.external_attr = 0o644 << 16
+            zout.writestr(info, data, compresslevel=ZIP_COMPRESSLEVEL)
+    os.replace(tmp, path)
+    return path
+
+
+def document_timestamp(dataset_version):
+    """A deterministic core-properties timestamp: the pinned dataset's release
+    date (YYYY.MM.DD prefix of the version string), midnight UTC; a fixed
+    fallback if the version does not carry a date."""
+    m = re.match(r"^(\d{4})\.(\d{2})\.(\d{2})", str(dataset_version or ""))
+    if m:
+        try:
+            return _dt.datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+        except ValueError:
+            pass
+    return _dt.datetime(2026, 1, 1)
 
 FILL = "[[ FILL: replace with the provider's real implementation facts ]]"
 
@@ -204,10 +254,20 @@ def main():
     cp = doc.core_properties
     cp.author = "SDR framework generator"
     cp.title = f"Security Decision Record authoring document, Class {cls.upper()}"
+    # AUD-F35: no wall-clock value anywhere in the document. The timestamp is
+    # the pinned dataset's release date, so an unchanged input set produces an
+    # unchanged document, byte for byte.
+    stamp = document_timestamp(class_profile["meta"].get("dataset_version"))
+    cp.created = stamp
+    cp.modified = stamp
+    cp.last_printed = stamp
+    cp.last_modified_by = "SDR framework generator"
+    cp.revision = 1
 
     out = os.path.join(BASE, "sdr", "human-readable", f"sdr-class-{cls}-authoring.docx")
     doc.save(out)
-    print("saved:", out)
+    normalize_docx(out)
+    print("saved:", out, "(byte-reproducible container)")
     print("rules:", len(rules), "| ksis:", len(ksis))
     return 0
 

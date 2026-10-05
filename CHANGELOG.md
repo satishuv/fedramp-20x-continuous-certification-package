@@ -8,6 +8,28 @@ One project-specific convention: the pinned FedRAMP dataset version is recorded 
 
 Pinned dataset: `2026.09.13.02` (unchanged)
 
+Word-document integrity and sample residue (SAS delivery review of `cb23eb7`,
+items 1 and 5; `AUD-F35`, `AUD-F36`, each with a killed mutation):
+
+- **The Word document is byte-reproducible and inside every integrity check
+  (AUD-F35, High).** `build_docx.py` rewrites the saved container with fixed
+  zip entry timestamps, attributes and deflate level, and stamps the core
+  properties with the pinned dataset's date instead of the wall clock. The
+  `.docx` is now fingerprinted in the release manifest (so the bundle
+  assembler ships the exact checked bytes), hashed by both reproducibility
+  gates and diffed without exclusion in CI, the AWS buildspec and the Actions
+  loop. It had been excluded from all of them, while the README said the
+  human-readable outputs could not silently drift. BREAKING for anyone who
+  hand-edited a committed `.docx`: the regenerate-and-diff gate now fails on it.
+- **One build definition regenerates every class, Word documents included
+  (AUD-F36, High).** New `build_inactive_classes.py` step of `sdr.py build`
+  rebuilds each inactive class's SDR JSON, text and `.docx` before the active
+  class; the CI per-class loop is removed. Both sample builders back up and
+  restore the validation reports they overwrite. Running the Class C sample as
+  documented had left the fictional offering in the committed Class C `.docx`
+  409 times; an end-to-end regression now runs the sample and asserts every
+  committed deliverable is byte-identical afterwards.
+
 Fail-closed collection loop and dependency audit (SAS delivery review of
 `cb23eb7`, 2026-10-05, items 2, 3, 4 and the "third-party components unknown"
 gap; every item reproduced before fixing; `AUD-F29`..`AUD-F34` in the defect

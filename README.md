@@ -92,7 +92,7 @@ The consistent boundary across every row: the framework collects evidence and au
 
 - One command builds everything. `python sdr.py all` regenerates the full package for the active class, runs the validation gate, and prints a readiness summary, offline, with no cloud account.
 - Single source of truth. You edit two files (`offering-profile.json`, `records-store.json`); 158 rule statements and 46 KSI entries re-derive from the pinned dataset, so a fact is never hand-copied across JSON, text, docx, CPO, and crosswalk.
-- Deterministic and reproducible. CI regenerates every deliverable and fails if a committed file differs, plus a double-build byte-identical check, so the machine-readable and human-readable outputs cannot silently drift.
+- Deterministic and reproducible. CI regenerates every deliverable and fails if a committed file differs, plus a double-build byte-identical check, so the machine-readable and human-readable outputs, the Word document included, cannot silently drift.
 - Full-chain traceability. A 204-node assurance graph joins every rule and KSI to its evidence, so "which evidence backs this KSI" is a lookup, not a reconstruction; a Rev5-to-20x crosswalk relates each indicator to NIST SP 800-53 Rev. 5 controls.
 - Fail-closed validation. A 14-check validator gates the build on one exit code; a readiness scanner (`sdrscan`) emits one severity-ranked finding per rule and per indicator to tell you what to fix next.
 - Class-aware. Classes A, B, and C are supported end to end; Class D ships as a readiness register pending its FedRAMP pilot.

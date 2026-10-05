@@ -232,6 +232,7 @@ BUILD_STEPS = [
     ("build_notes.py", "per-rule notes and family name expansions"),
     ("build_profiles.py", "per-class profiles, Class C overlay, Class D register"),
     ("build_collector_registry.py", "indicator to read-only AWS check map"),
+    ("build_inactive_classes.py", "inactive-class SDR outputs (JSON, text, Word) so committed A/B/C never drift"),
     ("build_sdr.py", "schema JSON, extensions companion, plain text record"),
     ("build_cpo.py", "Certification Package Overview (CPO-CSO-OVR)"),
     ("build_ocr.py", "example Ongoing Certification Report (CCM-OCR-AVL)"),
@@ -295,6 +296,7 @@ TEST_SUITE = [
     "automation/config-rules/deploy/test_cdk_synth.py",
     "automation/collectors/test_collector_iam_matches.py",
     "automation/collectors/test_collection_fail_closed.py",
+    "validation/scripts/test_docx_integrity.py",
     "automation/collectors/test_service_registry.py",
     "automation/collectors/test_thirdparty_upsert.py",
     "automation/pipeline/test_release_gate.py",
@@ -993,12 +995,13 @@ def cmd_reproducibility():
     """Verify the build is reproducible: hash the deterministic artifacts,
     rebuild, and confirm they are byte-identical. Mirrors the CI reproducibility
     gate so `release` verifies reproducibility rather than merely asserting it.
-    Returns 0 if reproducible, 1 otherwise. Excludes *.docx (its zip container
-    embeds timestamps)."""
+    Returns 0 if reproducible, 1 otherwise. Includes *.docx: the Word document
+    is byte-reproducible since AUD-F35 (fixed zip entry timestamps, dataset-
+    derived core properties), so it is held to the same standard."""
     import hashlib
 
     watch_dirs = ["sdr", "package", "traceability", "artifacts", "validation/reports"]
-    exts = (".json", ".txt", ".md", ".csv")
+    exts = (".json", ".txt", ".md", ".csv", ".docx")
 
     def fingerprint():
         digests = {}
@@ -1006,7 +1009,7 @@ def cmd_reproducibility():
             root = os.path.join(BASE, d)
             for dirpath, _dirs, files in os.walk(root):
                 for fn in files:
-                    if fn.endswith(exts) and not fn.endswith(".docx"):
+                    if fn.endswith(exts):
                         p = os.path.join(dirpath, fn)
                         h = hashlib.sha256()
                         with open(p, "rb") as f:

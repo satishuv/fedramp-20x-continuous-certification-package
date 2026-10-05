@@ -52,7 +52,7 @@ phases:
           echo "EVIDENCE_BUCKET unset; skipping metric-history restore (no Class C release path)."
         fi
       - python sdr.py build
-      - git diff --exit-code -- . ':(exclude)*.docx' || { echo "FAIL. Generated outputs differ from committed files. Never edit generated files by hand; edit sdr/records/records-store.json and regenerate."; exit 1; }
+      - git diff --exit-code -- . || { echo "FAIL. Generated outputs differ from committed files. Never edit generated files by hand; edit sdr/records/records-store.json and regenerate."; exit 1; }
       # Validation parity. A DRAFT build runs the gate without the offline test
       # suite (fast feedback; the test suite is exercised in GitHub Actions on
       # every push). A RELEASE build (RELEASE_MODE=true) runs the SAME full gate
@@ -105,8 +105,9 @@ phases:
       # fingerprints (the ACTIVE certification class only, plus shared package
       # artifacts, manifest, and attestation). This is active-class-only and
       # manifest-consistent by construction - it does not ship the inactive
-      # Class A/C SDRs the repo keeps current for traceability, nor the authoring
-      # .docx working files, nor the experimental OSCAL export.
+      # Class A/C SDRs the repo keeps current for traceability, nor the experimental
+      # OSCAL export. The active-class authoring .docx IS included (fingerprinted
+      # since AUD-F35).
       - python validation/scripts/assemble_release_bundle.py
 
 artifacts:
