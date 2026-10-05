@@ -25,6 +25,46 @@ BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 REGISTRY = os.path.join(BASE, "automation", "collectors", "registry.json")
 FACTS_DIR = os.path.join(BASE, "automation", "facts")
 
+# AUD-F29: a collection run that produced NO evaluated outcome is a FAILED run,
+# not an empty success. Exit code 4 is distinct from the publisher's 3 (CAS
+# conflict, retried by the AWS buildspec) so the scheduled loops fail loudly
+# instead of recording an empty day as a valid day of evidence.
+EXIT_NO_EVALUATED = 4
+
+# Config compliance types that are an EVALUATED outcome (the rule exists and
+# AWS Config returned a result for it). RULE_NOT_DEPLOYED, ERROR:* and UNKNOWN
+# carry no evaluation.
+EVALUATED_CONFIG = {"COMPLIANT", "NON_COMPLIANT", "INSUFFICIENT_DATA"}
+
+
+def collection_outcome(facts, posture_facts):
+    """Tally one run's facts into {evaluated, unevaluated, errors}.
+
+    evaluated: Config facts with a compliance result, plus posture facts whose
+    status is not an ERROR* / UNKNOWN. unevaluated: everything else (rule not
+    deployed, collector errors, unknown). errors: the subset of unevaluated that
+    is an explicit ERROR. A run with evaluated == 0 observed NOTHING about the
+    boundary (wrong region, expired credentials, every service denied) and must
+    be reported as a failed collection (EXIT_NO_EVALUATED), never as success.
+    """
+    evaluated = unevaluated = errors = 0
+    for fact in facts or []:
+        ct = str(fact.get("compliance_type") or "")
+        if ct in EVALUATED_CONFIG:
+            evaluated += 1
+        else:
+            unevaluated += 1
+            if ct.startswith("ERROR"):
+                errors += 1
+    for pf in posture_facts or []:
+        st = str(pf.get("status") or "")
+        if st.startswith("ERROR") or st in ("UNKNOWN", ""):
+            unevaluated += 1
+            errors += 1 if st.startswith("ERROR") else 0
+        else:
+            evaluated += 1
+    return {"evaluated": evaluated, "unevaluated": unevaluated, "errors": errors}
+
 
 def main():
     ap = argparse.ArgumentParser()
@@ -114,6 +154,8 @@ def main():
 
     os.makedirs(FACTS_DIR, exist_ok=True)
     out = os.path.join(FACTS_DIR, f"facts-{region}.json")
+    outcome = collection_outcome(facts, posture_facts)
+    outcome["status"] = "OK" if outcome["evaluated"] else "FAILED_NO_EVALUATED_OUTCOME"
     with open(out, "w", encoding="utf-8", newline="\n") as f:
         json.dump({
             "meta": {
@@ -121,16 +163,32 @@ def main():
                 "region": region,
                 "identity_arn": arn,
                 "registry_dataset_version": registry["meta"]["dataset_version"],
+                # AUD-F29: the run's own verdict travels with its facts, so a
+                # downstream reader can tell an empty failed run from a quiet
+                # healthy one without re-deriving it.
+                "collection_outcome": outcome,
                 "note": ("Facts are read-only telemetry, not statuses. "
                          "Never commit this file; it may identify a real account."),
             },
             "facts": facts,
             "posture_facts": posture_facts,
         }, f, indent=1)
-    deployed = sum(1 for x in facts if x["compliance_type"] in ("COMPLIANT", "NON_COMPLIANT", "INSUFFICIENT_DATA"))
+    deployed = sum(1 for x in facts if x["compliance_type"] in EVALUATED_CONFIG)
     print(f"wrote {out}: {len(facts)} config rules checked ({deployed} deployed), "
           f"{len(posture_facts)} posture facts across "
-          f"{len({p['service'] for p in posture_facts})} services")
+          f"{len({p['service'] for p in posture_facts})} services; "
+          f"evaluated outcomes: {outcome['evaluated']}, unevaluated: "
+          f"{outcome['unevaluated']} (errors: {outcome['errors']})")
+    if outcome["evaluated"] == 0:
+        # AUD-F29: nothing about the boundary was actually observed. Every
+        # check errored, was denied, or found no deployed rule. Reporting
+        # success here would let the appender stamp an empty day and the
+        # scheduled loops stay green for weeks on no evidence at all.
+        print("FAIL. Collection produced NO evaluated outcome (every check errored, "
+              "was denied or found nothing deployed). This is a failed collection, "
+              "not an empty success: check credentials, region and the collector "
+              "role's read-only grants. Facts were written for diagnosis only.")
+        return EXIT_NO_EVALUATED
     return 0
 
 

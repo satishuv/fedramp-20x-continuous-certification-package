@@ -68,7 +68,7 @@ phases:
           echo "RELEASE_MODE: running the audit + security sections of the ONE release gate."
           # Same step list GitHub Actions and `sdr.py release` execute (AUD-F12):
           # oracle, mutation-runner self-test, mutation runner, tree-clean, Bandit.
-          pip install --quiet bandit==1.8.6
+          pip install --quiet bandit==1.8.6 pip-audit==2.10.1
           python audit/release_gate.py audit security
         else
           python sdr.py validate --no-tests

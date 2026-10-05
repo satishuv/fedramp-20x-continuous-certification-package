@@ -14,7 +14,10 @@ phases:
       - pip install --quiet --require-hashes -r requirements.lock
   build:
     commands:
-      # 1. Collect today's read-only facts.
+      # 1. Collect today's read-only facts. Exit 4 (AUD-F29) means NOTHING was
+      #    evaluated (every check errored or was denied): the build FAILS here,
+      #    the failure notification fires (AUD-F32), and no empty day is
+      #    recorded. Facts are still written for diagnosis.
       - python automation/collectors/collect_facts.py
       - |
         LATEST=$(ls -t automation/facts/*.json | head -1)
@@ -25,7 +28,9 @@ phases:
       #    FAIL-CLOSED: a genuine "object does not exist" (first run) is allowed,
       #    but ANY other restore error (AccessDenied, KMS, throttling, outage)
       #    ABORTS before step 3/4 rebuild and publish the durable history.
-      # 3. Append today's datapoint per KSI to the (restored) history.
+      # 3. Append today's datapoint per KSI to the (restored) history. Exit 4
+      #    (AUD-F30) means no KSI received a datapoint; the build FAILS rather
+      #    than publishing a history whose last_run looks freshly maintained.
       # 4. PUBLISH with compare-and-swap (AUD-F20): the run's observations are
       #    archived append-only, then the history is uploaded with
       #    If-Match: <restored ETag>. If another run published in between (412),

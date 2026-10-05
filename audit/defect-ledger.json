@@ -392,6 +392,84 @@
       "mutation": "MUT-F28: summary copied verbatim without scrubbing (scrub_text(detail, SUMMARY_MAX) -> detail[:SUMMARY_MAX]); expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F29",
+      "severity": "High",
+      "requirement": "Persistent validation must actually observe the boundary (FRC-CSX-MOT, SDR-CSX-KMT); a failed collection may not be recorded as a day of evidence",
+      "component": "automation/collectors/collect_facts.py (collection_outcome, EXIT_NO_EVALUATED, main)",
+      "description": "collect_facts.py returned 0 whatever the facts contained. With expired credentials, a wrong region or every API denied, every Config fact was ERROR:*/RULE_NOT_DEPLOYED and every posture fact ERROR, yet the run printed a summary and exited 0, so the scheduled loops treated an empty day as a healthy one. Reproduced at cb23eb7 (delivery review item 4).",
+      "root_cause": "The collector tolerated per-service failure (one service must not sink the run) but never asked whether ANY check had produced an evaluated outcome; total failure looked identical to total success at the exit code.",
+      "fix_commit": "this PR -- collection_outcome() tallies evaluated vs unevaluated vs errored facts; the tally travels in the facts store meta (collection_outcome, with a status verdict) and a run with zero evaluated outcomes prints FAIL and exits EXIT_NO_EVALUATED (4), distinct from the publisher's CAS code 3 so both scheduled loops fail loudly on it",
+      "regression_test": "automation/collectors/test_collection_fail_closed.py (test_f29_all_errored_run_is_a_failed_collection, test_f29_one_evaluated_outcome_is_not_a_failed_collection, test_f29_main_returns_exit_4_when_nothing_evaluated, test_f29_f30_actions_loop_does_not_mask_the_new_exit_codes)",
+      "mutation": "MUT-F29: the zero-evaluated branch disabled (if outcome[evaluated] == 0 -> if False); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F30",
+      "severity": "High",
+      "requirement": "Metric history must not misrepresent when it was last extended (SDR-CSX-KMT daily data at Class C)",
+      "component": "automation/metrics/append_metrics.py (_update_meta, EXIT_NO_DATAPOINTS, main)",
+      "description": "append_run stamped meta.last_run = today on every run, including a run that appended zero datapoints, and main() returned 0. A reviewer or operator reading last_run saw a history maintained yesterday while no KSI had received a datapoint for weeks. Reproduced at cb23eb7 (delivery review item 4).",
+      "root_cause": "meta was rebuilt unconditionally after the per-KSI loop; the appended count was printed but never gated the metadata or the exit code.",
+      "fix_commit": "this PR -- _update_meta records every run under meta.last_attempt (date, observed_at, appended, outcome) and advances last_run/last_observed_at ONLY when appended > 0; main() persists the attempt record and exits EXIT_NO_DATAPOINTS (4) on an empty run",
+      "regression_test": "automation/metrics/test_append_metrics.py (test_f30_empty_run_does_not_advance_last_run, test_f30_main_exits_nonzero_when_nothing_appended)",
+      "mutation": "MUT-F30: last_run advanced on an empty run (if appended: -> if True:); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F31",
+      "severity": "Critical",
+      "requirement": "Metric history must accumulate across runs (SDR-CSX-KMT 30-day/1-year summaries, daily data at C; FRC-CSX-MOT 6/18-month window)",
+      "component": ".github/workflows/living-sdr-loop.yml",
+      "description": "The GitHub Actions living loop appended to automation/metrics/metric-history.json, which is git-excluded, on an ephemeral runner, with no restore before and no publish after. Every nightly run therefore started from an empty history, built a one-day history, and discarded it when the runner was destroyed. A provider could run it for six months and have nothing. The AWS CodeBuild path already restored/published via publish_history.py; the Actions path never called it. Reproduced at cb23eb7 (delivery review item 2).",
+      "root_cause": "The workflow header deferred persistence to the provider ('decide where the metric history persists') but implemented no persistence and no refusal when none was configured.",
+      "fix_commit": "this PR -- the loop requires the SDR_METRIC_HISTORY_BUCKET repository variable and FAILS before collecting when it is unset; it restores the durable history before append and publishes with compare-and-swap after (the same bounded retry loop as buildspec-collect.yml), tagging the run id",
+      "regression_test": "automation/collectors/test_collection_fail_closed.py (test_f31_actions_loop_restores_and_publishes_history, test_f31_actions_loop_refuses_to_run_without_a_bucket)",
+      "mutation": "MUT-F31: the restore step removed from the Actions loop; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F32",
+      "severity": "High",
+      "requirement": "A broken persistent-validation mechanism must be visible when it breaks, not at submission (FRC-CSX-MOT persistence; operational monitoring of the evidence chain)",
+      "component": "automation/pipeline/sdr-pipeline.yaml (ScheduledBuildFailureNotification); .github/workflows/living-sdr-loop.yml (issue on failure)",
+      "description": "The AWS template's only notification rule watched CodePipeline execution state; the daily collector and drift check are CodeBuild projects started directly by EventBridge schedules and never pass through the pipeline, so a failed collection notified nobody. The Actions loop had no failure step at all. Combined with F29/F30/F31 a collection could fail for weeks while every surface stayed green. Reproduced at cb23eb7 (delivery review item 3).",
+      "root_cause": "Alarming was attached to the publication pipeline, not to the collection jobs that the persistence requirement actually depends on.",
+      "fix_commit": "this PR -- an EventBridge rule on CodeBuild Build State Change (FAILED, FAULT, TIMED_OUT, STOPPED) for the collector and drift-check projects publishes to the existing SNS topic; the Actions loop files (or comments on) a GitHub issue on any failure",
+      "regression_test": "automation/collectors/test_collection_fail_closed.py (test_f32_aws_template_notifies_on_failed_scheduled_builds, test_f32_actions_loop_files_an_issue_on_failure)",
+      "mutation": "MUT-F32: the collector project dropped from the failure rule's project list; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F33",
+      "severity": "Medium",
+      "requirement": "Continuity tolerance is a bound, not an alarm; a stalled collection must be reported before it becomes an FRC-CSX-MOT blocker",
+      "component": "sdr.py (MOT_STALE_ADVISORY_DAYS, mot_stale_days, package-preflight advisory)",
+      "description": "The 45-day continuity tolerance (project policy, AUD-F21) was the ONLY signal: a daily collector could be broken for 44 days and preflight said nothing, then on day 46 the package was blocked. Reproduced at cb23eb7 (delivery review item 3).",
+      "root_cause": "One threshold served two purposes (what counts as persistence, and when to tell someone the collection stopped).",
+      "fix_commit": "this PR -- preflight reports, as an ADVISORY distinct from the hard bound, every in-scope KSI whose newest datapoint is older than MOT_STALE_ADVISORY_DAYS (7, project policy; FedRAMP mandates no cadence), naming the staleness and pointing at the collector run and its failure notification",
+      "regression_test": "validation/scripts/test_mot_continuity.py (F33 checks: fresh series not stale; threshold inside the bound; 20-day stall is not a blocker but is reported stale; advisory goes to warnings, never blockers)",
+      "mutation": "MUT-F33: mot_stale_days always returns None; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F34",
+      "severity": "High",
+      "requirement": "Supply chain: the dependency closure the gates install must be free of published vulnerabilities (KSI-SCR-*, release governance)",
+      "component": "audit/release_gate.py (security section: pip-audit; SECURITY_TOOL_PINS); .github/workflows/validate.yml; automation/pipeline/buildspec-validate.yml; requirements.txt; requirements-ci.txt; requirements.lock; artifacts/sbom.cdx.json",
+      "description": "The hash-locked closure (AUD-F25) proved the installed bytes were the pinned bytes, but nothing checked the pinned versions against published advisories. The first audit of requirements.lock found 14 known vulnerabilities across two pins: cryptography 46.0.3 (13 advisories, fixes up to 50.0.0) and aws-cdk-lib 2.251.0 (1 advisory, fixed in 2.253.0). The delivery review had to report third-party vulnerability status as unknown. Reproduced at cb23eb7.",
+      "root_cause": "The security section of the release gate was static analysis only (Bandit); dependency vulnerability scanning was listed as a gap in finding 15 and never added.",
+      "fix_commit": "this PR -- pip-audit (pinned 2.10.1) audits requirements.lock with --require-hashes --strict as a HARD step of the single release-gate security section, so CI, the AWS release build and sdr.py release run it identically; cryptography bumped to 50.0.2 and aws-cdk-lib to 2.253.0, the lock re-resolved with the Makefile recipe and the SBOM regenerated; the audit now reports no known vulnerabilities",
+      "regression_test": "automation/collectors/test_collection_fail_closed.py (test_f34_pip_audit_is_a_hard_security_step_on_every_path)",
+      "mutation": "MUT-F34: the pip-audit step replaced by a no-op in the security section; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

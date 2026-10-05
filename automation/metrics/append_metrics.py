@@ -623,9 +623,29 @@ def append_run(history, registry, config_by_rule, posture_by_service, today,
                 [p for p in m["series"] if p["date"] >= cutoff30])
             m["up_to_one_year"] = summarize(
                 [p for p in m["series"] if p["date"] >= year_start])
-    history["meta"] = {
-        "last_run": date_str,
-        "last_observed_at": observed_at,
+    _update_meta(history, appended, date_str, observed_at, registry, min_coverage)
+    return appended
+
+
+def _update_meta(history, appended, date_str, observed_at, registry, min_coverage):
+    """Record this run in history['meta'] (AUD-F30).
+
+    `last_run` / `last_observed_at` mean "the last run that appended at least
+    one datapoint" and advance ONLY when appended > 0. `last_attempt` records
+    every run, including an empty one, with its outcome. The old code stamped
+    last_run on every run, so a collection that observed nothing (all checks
+    errored) still made the history look freshly maintained.
+    """
+    prev = history.get("meta") or {}
+    meta = {
+        "last_run": prev.get("last_run"),
+        "last_observed_at": prev.get("last_observed_at"),
+        "last_attempt": {
+            "date": date_str,
+            "observed_at": observed_at,
+            "appended": appended,
+            "outcome": "OK" if appended else "NO_DATAPOINTS",
+        },
         "retain_days": RETAIN_DAYS,
         "min_evaluated_coverage": min_coverage,
         "dataset_version": registry.get("meta", {}).get("dataset_version"),
@@ -633,9 +653,19 @@ def append_run(history, registry, config_by_rule, posture_by_service, today,
                  "passing vs total observed automated checks that day, a metric, "
                  "not a compliance verdict. A day with several runs keeps every "
                  "run under `observations` and rolls up to the WORST run. "
+                 "last_run is the last run that appended a datapoint; "
+                 "last_attempt records every run including empty ones. "
                  "Git-excluded: derives from a real account."),
     }
-    return appended
+    if appended:
+        meta["last_run"] = date_str
+        meta["last_observed_at"] = observed_at
+    history["meta"] = meta
+
+
+# AUD-F30: exit code when the run appended nothing. Distinct from the
+# publisher's 3 (CAS conflict, retried) so the scheduled loops fail loudly.
+EXIT_NO_DATAPOINTS = 4
 
 
 def load_history_safe(path):
@@ -715,6 +745,16 @@ def main():
     os.makedirs(os.path.dirname(HISTORY), exist_ok=True)
     with open(HISTORY, "w", encoding="utf-8", newline="\n") as f:
         json.dump(history, f, indent=1)
+    if appended == 0:
+        # AUD-F30: the attempt is recorded (meta.last_attempt) but the run is a
+        # FAILURE: no KSI received a datapoint, so this day adds nothing to the
+        # SDR-CSX-KMT history or the FRC-CSX-MOT clock. Returning 0 here let
+        # the scheduled loops report success on an empty day.
+        print(f"FAIL. Appended {today.isoformat()} datapoint for 0 KSI(s): no fact "
+              "produced an evaluated, fresh outcome (collection failed, stale facts, "
+              "or no routed check observed). last_run was NOT advanced. History: "
+              f"{os.path.relpath(HISTORY, BASE)}.")
+        return EXIT_NO_DATAPOINTS
     print(f"Appended {today.isoformat()} datapoint for {appended} KSI(s). "
           f"History: {os.path.relpath(HISTORY, BASE)} "
           f"({len(history.get('ksis', {}))} KSIs tracked).")

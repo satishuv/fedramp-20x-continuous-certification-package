@@ -723,6 +723,28 @@ Resources:
         - Id: sns
           Arn: !Ref NotificationTopic
 
+  # AUD-F32: the daily collector and drift check are CodeBuild projects started
+  # directly by the schedule rules above, so a failed collection never produces
+  # a CodePipeline state change and the rule above never fires for it. Without
+  # this rule the collector can fail for weeks (expired role, denied API,
+  # wrong region) while the FRC-CSX-MOT history silently stops accumulating.
+  ScheduledBuildFailureNotification:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Email when the daily collector or drift check build fails.
+      EventPattern:
+        source: ["aws.codebuild"]
+        detail-type: ["CodeBuild Build State Change"]
+        detail:
+          build-status: ["FAILED", "FAULT", "TIMED_OUT", "STOPPED"]
+          project-name:
+            - !Ref DriftCheckProject
+            - !If [CollectorOn, !Ref CollectorProject, !Ref "AWS::NoValue"]
+      State: ENABLED
+      Targets:
+        - Id: sns
+          Arn: !Ref NotificationTopic
+
   NotificationTopicPolicy:
     Type: AWS::SNS::TopicPolicy
     Properties:

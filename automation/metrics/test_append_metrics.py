@@ -606,6 +606,65 @@ def test_f19_observations_are_pruned_with_retention():
     assert [o["date"] for o in obs] == ["2026-09-25"], obs
 
 
+def test_f30_empty_run_does_not_advance_last_run():
+    """AUD-F30: a run that appends NO datapoint (every fact errored or was
+    stale) must not stamp meta.last_run, or the history looks freshly
+    maintained after a failed collection. The attempt is still recorded."""
+    h = {}
+    d1 = date(2026, 9, 24)
+    n = am.append_run(h, _reg_one(), {}, _kms(1, 1, "2026-09-24T06:00:00+00:00"), d1,
+                      observed_at="2026-09-24T06:00:00+00:00")
+    assert n == 1
+    assert h["meta"]["last_run"] == "2026-09-24"
+    assert h["meta"]["last_attempt"]["outcome"] == "OK"
+    # Next day: the collector produced only ERROR facts -> nothing scores.
+    d2 = date(2026, 9, 25)
+    errored = {"kms": [{"service": "kms", "check": "key_rotation", "status": "ERROR:AccessDenied",
+                        "collected_at": "2026-09-25T06:00:00+00:00"}]}
+    n2 = am.append_run(h, _reg_one(), {}, errored, d2, observed_at="2026-09-25T06:00:00+00:00")
+    assert n2 == 0
+    assert h["meta"]["last_run"] == "2026-09-24", h["meta"]
+    assert h["meta"]["last_observed_at"] == "2026-09-24T06:00:00+00:00"
+    assert h["meta"]["last_attempt"] == {
+        "date": "2026-09-25", "observed_at": "2026-09-25T06:00:00+00:00",
+        "appended": 0, "outcome": "NO_DATAPOINTS"}, h["meta"]["last_attempt"]
+    # The series itself is untouched by the empty run.
+    assert [p["date"] for p in h["ksis"]["KSI-X"]["series"]] == ["2026-09-24"]
+
+
+def test_f30_main_exits_nonzero_when_nothing_appended():
+    """AUD-F30: the CLI must FAIL (exit 4) on an empty run so the scheduled
+    loops fail loudly instead of reporting a healthy day."""
+    import json
+    import tempfile
+    tmp = tempfile.mkdtemp(prefix="am-f30-")
+    facts_dir = os.path.join(tmp, "facts")
+    os.makedirs(facts_dir)
+    # A facts store whose every posture fact errored.
+    with open(os.path.join(facts_dir, "facts-us-east-1.json"), "w", encoding="utf-8") as f:
+        json.dump({"meta": {"collected_at": "2026-09-25T06:00:00+00:00"},
+                   "facts": [],
+                   "posture_facts": [{"service": "kms", "check": "key_rotation",
+                                      "status": "ERROR:AccessDenied", "region": "us-east-1",
+                                      "collected_at": "2026-09-25T06:00:00+00:00"}]}, f)
+    registry_path = os.path.join(tmp, "registry.json")
+    with open(registry_path, "w", encoding="utf-8") as f:
+        json.dump(_reg_one(), f)
+    history_path = os.path.join(tmp, "metric-history.json")
+    saved = (am.REGISTRY, am.FACTS_DIR, am.HISTORY, sys.argv)
+    try:
+        am.REGISTRY, am.FACTS_DIR, am.HISTORY = registry_path, facts_dir, history_path
+        sys.argv = ["append_metrics.py", "--today", "2026-09-25"]
+        rc = am.main()
+        assert rc == am.EXIT_NO_DATAPOINTS == 4, rc
+        with open(history_path, encoding="utf-8") as f:
+            h = json.load(f)
+        assert h["meta"]["last_run"] is None
+        assert h["meta"]["last_attempt"]["appended"] == 0
+    finally:
+        am.REGISTRY, am.FACTS_DIR, am.HISTORY, sys.argv = saved
+
+
 def _run_all():
     tests = [v for k, v in sorted(globals().items())
              if k.startswith("test_") and callable(v)]

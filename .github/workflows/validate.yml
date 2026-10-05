@@ -139,7 +139,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install bandit
-        run: pip install --quiet bandit==1.8.6
+        run: pip install --quiet bandit==1.8.6 pip-audit==2.10.1
       - name: Security section of the release gate (Bandit, HARD GATE)
         # Argument list lives in audit/release_gate.py (one definition for
         # CI, the AWS release build, and sdr.py release). The report is

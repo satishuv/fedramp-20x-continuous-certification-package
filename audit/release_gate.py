@@ -63,8 +63,21 @@ SECTIONS = {
           "--skip", "B101",
           "--severity-level", "medium", "--confidence-level", "medium",
           "--format", "txt", "--output", BANDIT_REPORT]),
+        # AUD-F34: known-vulnerability audit of the EXACT hash-locked closure
+        # the gates install (requirements.lock, every transitive pin). A hit is
+        # a hard failure: bump the pin, re-lock (make lock) and re-run. Without
+        # this the lock proved integrity (the bytes are what we pinned) but
+        # nothing proved the pinned bytes were free of published advisories;
+        # the first run of this step found 14 advisories across two pins.
+        ("pip-audit",
+         [sys.executable, "-m", "pip_audit", "-r", "requirements.lock",
+          "--require-hashes", "--strict", "--progress-spinner", "off"]),
     ],
 }
+
+# Tools the security section needs beyond the runtime closure, pinned so every
+# path installs the same auditor (CI workflow, AWS buildspec, local release).
+SECURITY_TOOL_PINS = {"bandit": "1.8.6", "pip-audit": "2.10.1"}
 
 SECTION_ORDER = ["audit", "security"]
 
