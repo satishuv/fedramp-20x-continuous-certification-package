@@ -156,10 +156,16 @@ def main():
     out = os.path.join(FACTS_DIR, f"facts-{region}.json")
     outcome = collection_outcome(facts, posture_facts)
     outcome["status"] = "OK" if outcome["evaluated"] else "FAILED_NO_EVALUATED_OUTCOME"
+    # AUD-F37: one id per collection run, derived from when/where/who collected
+    # (no account id in the clear: the identity is hashed). The appender stamps
+    # it, with the facts store digest, on every observation this run produces.
+    import hashlib
+    run_id = "run-" + hashlib.sha256(f"{now}|{region}|{arn}".encode("utf-8")).hexdigest()[:16]
     with open(out, "w", encoding="utf-8", newline="\n") as f:
         json.dump({
             "meta": {
                 "collected_at": now,
+                "run_id": run_id,
                 "region": region,
                 "identity_arn": arn,
                 "registry_dataset_version": registry["meta"]["dataset_version"],

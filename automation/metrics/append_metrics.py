@@ -56,6 +56,7 @@ RETAIN_DAYS = 400  # a little over a year, so "up to the past year" is covered
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from method_ids import (  # noqa: E402
     config_method_id, posture_method_id, parse_service_key, assert_check_scoped)
+import history_integrity as hi  # noqa: E402  (AUD-F37: chained, attested observations)
 
 
 def load(path, default=None):
@@ -142,6 +143,32 @@ NO_RESOURCE = {"NO_KEYS", "NO_REPOS", "NO_STACKS"}
 # FedRAMP number; an offering may tighten it via the OFFERING profile's
 # `telemetry_min_coverage` (0 < x <= 1) which the collection pipeline passes in.
 MIN_EVALUATED_COVERAGE = 0.95
+
+
+def run_provenance(facts_dir=None):
+    """AUD-F37: the provenance stamped on every observation this run appends.
+
+    facts_sha256: digest over the raw bytes of every facts-*.json consumed (the
+    exact inputs the datapoints were derived from); run_id: the collector's run
+    id from the store meta (one store: its id; several: ids joined), falling
+    back to the collected_at timestamp for stores from before the collector
+    stamped run ids. Returns None when no facts store exists.
+    """
+    facts_dir = facts_dir or FACTS_DIR
+    if not os.path.isdir(facts_dir):
+        return None
+    paths = sorted(os.path.join(facts_dir, fn) for fn in os.listdir(facts_dir)
+                   if fn.startswith("facts-") and fn.endswith(".json"))
+    if not paths:
+        return None
+    run_ids = []
+    for p in paths:
+        meta = (load(p, {}) or {}).get("meta") or {}
+        rid = meta.get("run_id") or meta.get("collected_at")
+        if rid:
+            run_ids.append(str(rid))
+    return {"run_id": "+".join(sorted(set(run_ids))) or None,
+            "facts_sha256": hi.facts_store_digest(paths)}
 
 
 def _coverage(pf):
@@ -537,14 +564,30 @@ def _roll_into_series(series, point, today):
     return prune(rest, today)
 
 
-def prune_observations(observations, today):
+def prune_observations(observations, today, anchor_sink=None, kid=None):
+    """Drop observations older than the retention window.
+
+    AUD-F37: pruning must not break the hash chain. When observations are
+    dropped, the newest dropped observation's hash becomes the KSI's pruning
+    anchor (recorded by the caller in meta.chain_anchor[kid] via anchor_sink),
+    so the first retained observation still verifies against something. The
+    old code dropped silently and a verifier would have seen a broken chain
+    start after the first prune.
+    """
     cutoff = (today - timedelta(days=RETAIN_DAYS)).isoformat()
-    return [o for o in observations if (o.get("observed_at") or "")[:10] >= cutoff]
+    kept, dropped = [], []
+    for o in observations:
+        (kept if (o.get("observed_at") or "")[:10] >= cutoff else dropped).append(o)
+    if dropped and anchor_sink is not None and kid is not None:
+        newest = dropped[-1]
+        if newest.get("hash"):
+            anchor_sink[kid] = newest["hash"]
+    return kept
 
 
 def append_run(history, registry, config_by_rule, posture_by_service, today,
                cls="b", require_fresh=False, observed_at=None,
-               min_coverage=MIN_EVALUATED_COVERAGE):
+               min_coverage=MIN_EVALUATED_COVERAGE, provenance=None):
     """Append today's datapoint per KSI to the history and recompute summaries.
     One ROLLUP per KSI per calendar day. A second run the same day does NOT
     replace the first (AUD-F19): every run is appended as an immutable,
@@ -562,12 +605,19 @@ def append_run(history, registry, config_by_rule, posture_by_service, today,
     explicitly-dated synthetic series are unaffected; the collection pipeline
     (main) always enforces freshness.
 
+    AUD-F37: every observation is hash-chained to its predecessor (or the KSI's
+    pruning anchor) and stamped with the run's provenance (`run_id`,
+    `facts_sha256` from the facts store it was derived from, passed in as
+    `provenance`). main() always passes provenance; a library caller that passes
+    none produces chained-but-UNATTESTED observations, which preflight reports.
+
     observed_at: ISO timestamp for this run's observations (default: now, UTC).
     Injectable so tests are deterministic."""
     date_str = today.isoformat()
     if observed_at is None:
         observed_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     ksis = history.setdefault("ksis", {})
+    anchors = history.setdefault("meta", {}).setdefault("chain_anchor", {})
     appended = 0
     for kid, ksi_entry in registry.get("ksis", {}).items():
         dp = datapoint_for_ksi(ksi_entry, config_by_rule, posture_by_service, min_coverage)
@@ -580,9 +630,14 @@ def append_run(history, registry, config_by_rule, posture_by_service, today,
         entry = ksis.setdefault(kid, {"series": []})
         # Immutable run-level record first: this is what the rollup is derived
         # from and what a reviewer replays when the rollup is questioned.
+        # AUD-F37: linked to the KSI's chain head (or pruning anchor) and
+        # stamped with the run provenance; hash computed last.
         obs = entry.setdefault("observations", [])
-        obs.append({"observed_at": observed_at, "date": date_str, **dp})
-        entry["observations"] = prune_observations(obs, today)
+        linked = hi.chain_observation(
+            {"observed_at": observed_at, "date": date_str, **dp},
+            hi.chain_head(entry, anchors.get(kid)), provenance)
+        obs.append(linked)
+        entry["observations"] = prune_observations(obs, today, anchor_sink=anchors, kid=kid)
         entry["series"] = _roll_into_series(entry["series"], {"date": date_str, **dp}, today)
         appended += 1
         # Recompute the SDR-CSX-KMT summaries. Storage keeps RETAIN_DAYS (~400)
@@ -649,18 +704,24 @@ def _update_meta(history, appended, date_str, observed_at, registry, min_coverag
         "retain_days": RETAIN_DAYS,
         "min_evaluated_coverage": min_coverage,
         "dataset_version": registry.get("meta", {}).get("dataset_version"),
+        # AUD-F37: pruning anchors survive every run (they are what the first
+        # retained observation of each KSI links to).
+        "chain_anchor": prev.get("chain_anchor") or {},
         "note": ("Per-KSI daily metric history for SDR-CSX-KMT. A datapoint is "
                  "passing vs total observed automated checks that day, a metric, "
                  "not a compliance verdict. A day with several runs keeps every "
                  "run under `observations` and rolls up to the WORST run. "
                  "last_run is the last run that appended a datapoint; "
                  "last_attempt records every run including empty ones. "
+                 "Observations are hash-chained and carry run provenance; "
+                 "history_digest is the signable head of the whole log. "
                  "Git-excluded: derives from a real account."),
     }
     if appended:
         meta["last_run"] = date_str
         meta["last_observed_at"] = observed_at
     history["meta"] = meta
+    hi.record_heads(history)
 
 
 # AUD-F30: exit code when the run appended nothing. Distinct from the
@@ -740,7 +801,8 @@ def main():
     if MIN_EVALUATED_COVERAGE < declared <= 1.0:
         min_cov = declared
     appended = append_run(history, registry, config_by_rule, posture_by_service,
-                          today, cls, require_fresh=True, min_coverage=min_cov)
+                          today, cls, require_fresh=True, min_coverage=min_cov,
+                          provenance=run_provenance())
 
     os.makedirs(os.path.dirname(HISTORY), exist_ok=True)
     with open(HISTORY, "w", encoding="utf-8", newline="\n") as f:
