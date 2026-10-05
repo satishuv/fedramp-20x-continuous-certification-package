@@ -4,9 +4,25 @@ Notable changes to this project. Format follows [Keep a Changelog](https://keepa
 
 One project-specific convention: the pinned FedRAMP dataset version is recorded alongside every release, because the same code against a different dataset produces a different record.
 
-## Unreleased
+## 1.5.0, 2026-10-05
 
 Pinned dataset: `2026.09.13.02` (unchanged)
+
+Release governance, telemetry truth and the evidence truth model. A
+twenty-finding review of the `1.4.0` release concluded that the FedRAMP
+interpretation (the A/B/C rule profiles reconcile exactly against the raw CR26
+dataset; the 46-KSI catalog and the five optional-at-B indicators are right) was
+no longer the weak point, and that the evidence truth model and release
+governance were. This release closes all sixteen findings of that review, the
+three findings of the 2026-09-26 end-to-end audit of `2f72a15` (`AUD-F26` to
+`AUD-F28`), the six items of the 2026-10-05 SAS delivery review of `cb23eb7`
+(`AUD-F29` to `AUD-F37`), and adopts the September 2026 in-place updates to five
+official FedRAMP schemas. It supersedes `1.4.0`, which was published by hand
+from a red audit-gate with an unsigned tag; this version is published only
+through the tag-driven release workflow (`release.yml`), which refuses an
+unsigned tag and re-runs the whole gate on the tagged commit. No dataset change;
+no change to any rule statement, force, timeframe or KSI applicability. Entries
+are newest first.
 
 Attested metric history (SAS delivery review of `cb23eb7`, item 6, and the
 production-assurance profile of the 16-item verdict's finding 16; `AUD-F37`,
@@ -167,18 +183,10 @@ Fixed:
   only when the check step actually recorded drift, so a download failure fails
   the run without filing a false "sources changed" issue.
 
-## 1.5.0, 2026-09-25
-
-Pinned dataset: `2026.09.13.02` (unchanged)
-
-Release governance and telemetry truth. A twenty-finding review of the
-`1.4.0` release concluded that the FedRAMP interpretation (the A/B/C rule
-profiles reconcile exactly against the raw CR26 dataset; the 46-KSI catalog and
-the five optional-at-B indicators are right) was no longer the weak point, and
-that the evidence truth model and release governance were. This release fixes
-the governance and telemetry findings (review items 1 through 10, 13 and 14) and
-supersedes `1.4.0`. No dataset change; no change to any rule statement, force,
-timeframe or KSI applicability.
+Release governance and telemetry truth (the first half of this release, merged
+2026-09-24 to 2026-09-25 as PRs #178 to #187 against the twenty-finding
+review's items 1 through 15; the review's item 16, the production-assurance
+profile, is the attested-history entry above):
 
 Release governance:
 
