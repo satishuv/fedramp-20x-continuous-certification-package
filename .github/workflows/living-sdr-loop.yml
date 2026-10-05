@@ -1,21 +1,31 @@
 # Scheduled living-SDR loop. Daily, this:
 #   1. Assumes a READ-ONLY role in the provider's account via GitHub OIDC.
-#   2. Runs the collectors (read-only) to gather dated facts.
-#   3. Appends one metric datapoint per KSI (SDR-CSX-KMT accumulation).
-#   4. Regenerates deliverables and opens a PR ONLY if committed outputs changed.
+#   2. RESTORES the durable metric history from the provider's evidence bucket
+#      (the runner is ephemeral; without this step every night starts from an
+#      empty history and six months of runs leave nothing, AUD-F31).
+#   3. Runs the collectors (read-only) to gather dated facts. A run that
+#      observes nothing exits non-zero (AUD-F29) and fails this workflow.
+#   4. Appends one metric datapoint per KSI (SDR-CSX-KMT accumulation). A run
+#      that appends nothing exits non-zero (AUD-F30) and fails this workflow.
+#   5. PUBLISHES the history back with compare-and-swap (AUD-F20) so two
+#      overlapping runs cannot overwrite each other.
+#   6. Regenerates deliverables and opens a PR ONLY if committed outputs changed.
+#   7. On ANY failure, opens (or refreshes) a GitHub issue so a broken
+#      collection is visible the day it breaks, not at submission (AUD-F32).
 #
 # What this deliberately does NOT do: it never sets a status, never writes the
 # assessment field, and never commits the facts store or metric history (both
 # are git-excluded because they derive from a real account). The metric history
-# lives in the account or a private store in a real deployment; in this public
-# template the loop runs, proves it works, and opens a PR only for regenerated
-# public deliverables.
+# lives in the provider's evidence bucket; this workflow is one of its writers.
 #
 # This workflow is a TEMPLATE. It is disabled by default (no schedule until a
 # provider sets AWS_OIDC_ROLE_ARN and removes the guard). A provider must:
-#   - create a read-only IAM role trusting this repo via OIDC,
-#   - set the AWS_OIDC_ROLE_ARN and AWS_REGION repository variables,
-#   - decide where the metric history persists (see docs/automation.md).
+#   - create a read-only IAM role trusting this repo via OIDC, with s3:GetObject /
+#     s3:PutObject on the metric-history prefix of the evidence bucket,
+#   - set the AWS_OIDC_ROLE_ARN, AWS_REGION and SDR_METRIC_HISTORY_BUCKET
+#     repository variables. The loop REFUSES to run without the bucket: a run
+#     with nowhere to persist would silently discard the history it builds.
+
 name: living-sdr-loop
 
 on:
@@ -24,9 +34,10 @@ on:
     - cron: "23 5 * * *"
 
 permissions:
-  id-token: write     # for OIDC role assumption
-  contents: write     # to open the regeneration PR branch
+  id-token: write      # for OIDC role assumption
+  contents: write      # to open the regeneration PR branch
   pull-requests: write
+  issues: write        # to file the failure issue (AUD-F32)
 
 jobs:
   refresh:
@@ -34,6 +45,8 @@ jobs:
     # Guard: does nothing until the provider configures the OIDC role. Keeps the
     # public template from failing daily on a fork that has no account wired.
     if: vars.AWS_OIDC_ROLE_ARN != ''
+    env:
+      SDR_METRIC_HISTORY_BUCKET: ${{ vars.SDR_METRIC_HISTORY_BUCKET }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
@@ -41,21 +54,65 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: pip install --quiet --require-hashes -r requirements.lock
+
+      - name: Refuse to run without a persistence target (AUD-F31)
+        # The runner is ephemeral and the history is git-excluded. Without a
+        # bucket to restore from and publish to, every run would rebuild a
+        # one-day history and throw it away, while looking healthy.
+        run: |
+          if [ -z "$SDR_METRIC_HISTORY_BUCKET" ]; then
+            echo "FAIL. SDR_METRIC_HISTORY_BUCKET is not set. The metric history"
+            echo "cannot persist across runs on an ephemeral runner, so this run"
+            echo "would silently discard the SDR-CSX-KMT history it builds."
+            echo "Set the repository variable to the provider's evidence bucket."
+            exit 1
+          fi
+
       - name: Assume read-only role via OIDC
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4.0.2
         with:
           role-to-assume: ${{ vars.AWS_OIDC_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
-      - name: Collect facts (read-only)
+
+      - name: Collect facts (read-only; exits 4 when nothing was evaluated)
         run: python automation/collectors/collect_facts.py --region "${{ vars.AWS_REGION }}"
-      - name: Append metric datapoint (SDR-CSX-KMT)
-        run: python automation/metrics/append_metrics.py
+
+      - name: Restore, append, publish the metric history (compare-and-swap)
+        # Same loop as automation/pipeline/buildspec-collect.yml: restore the
+        # durable history (first run: confirmed-missing is allowed, any other
+        # error aborts), append today's datapoints (exit 4 when none), publish
+        # with If-Match on the restored ETag; a 412 (exit 3) means another run
+        # landed first, so re-restore and fold our datapoints in, bounded.
+        run: |
+          set -e
+          attempt=0
+          while :; do
+            attempt=$((attempt + 1))
+            python automation/metrics/publish_history.py restore --bucket "$SDR_METRIC_HISTORY_BUCKET"
+            python automation/metrics/append_metrics.py
+            rc=0
+            python automation/metrics/publish_history.py publish \
+              --bucket "$SDR_METRIC_HISTORY_BUCKET" --run-id "gha-${{ github.run_id }}" || rc=$?
+            if [ "$rc" -eq 0 ]; then
+              break
+            elif [ "$rc" -eq 3 ] && [ "$attempt" -lt 4 ]; then
+              echo "Publish conflict (another run landed first); retry $attempt of 3 after re-restore."
+              sleep $((attempt * 5))
+            else
+              echo "FAIL. Metric history publish did not succeed (rc=$rc, attempt $attempt)."
+              exit 1
+            fi
+          done
+
       - name: Pre-fill draft fields from facts (writes a git-excluded sidecar)
         run: python automation/prefill/prefill_from_facts.py --write || true
+
       - name: Regenerate the COMPLETE package (one build definition)
         run: python sdr.py build
+
       - name: Validate before proposing anything
         run: python sdr.py validate --no-tests
+
       - name: Open a PR only if committed outputs changed
         env:
           GH_TOKEN: ${{ github.token }}
@@ -76,3 +133,22 @@ jobs:
           gh pr create --title "Scheduled SDR refresh $(date -u +%Y-%m-%d)" \
             --body "Automated read-only refresh. Regenerated deliverables from the pinned dataset and latest collected facts. No status was changed and no assessment was written. Review the diff before merging; collected facts are telemetry, not compliance conclusions." \
             || echo "PR may already exist for today."
+
+      - name: Open an issue on failure (AUD-F32)
+        # Silence is the failure mode this closes: a collection that fails for
+        # weeks leaves a gap in the FRC-CSX-MOT history that nothing reports
+        # until submission. One open issue per failure streak; a repeat failure
+        # comments on the existing issue instead of filing a duplicate.
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          TITLE="living-sdr-loop failed: KSI metric collection did not complete"
+          BODY="The scheduled collection run failed on $(date -u +%Y-%m-%d). Until it succeeds again, no datapoint is added to the SDR-CSX-KMT history and the FRC-CSX-MOT persistent-validation clock has a gap that grows daily. Run: $RUN_URL"
+          EXISTING=$(gh issue list --state open --search "$TITLE in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --body "$BODY"
+          else
+            gh issue create --title "$TITLE" --body "$BODY"
+          fi

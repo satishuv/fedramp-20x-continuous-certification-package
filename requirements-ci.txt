@@ -6,5 +6,5 @@
 boto3==1.40.70
 # For the generated-CDK synthesis test (automation/config-rules/deploy/test_cdk_synth.py).
 # The synth runs via aws-cdk-lib directly (App().synth()); the Node cdk CLI is not required.
-aws-cdk-lib==2.251.0
+aws-cdk-lib==2.253.0
 constructs==10.5.1

@@ -8,6 +8,44 @@ One project-specific convention: the pinned FedRAMP dataset version is recorded 
 
 Pinned dataset: `2026.09.13.02` (unchanged)
 
+Fail-closed collection loop and dependency audit (SAS delivery review of
+`cb23eb7`, 2026-10-05, items 2, 3, 4 and the "third-party components unknown"
+gap; every item reproduced before fixing; `AUD-F29`..`AUD-F34` in the defect
+ledger, each with a killed mutation). Together the four small items let a
+provider run the loop as documented for six months, see green everywhere, and
+arrive at submission with evidence that is missing, discontinuous or empty:
+
+- **A collection that observed nothing is a failed run (AUD-F29, High).**
+  `collect_facts.py` tallies evaluated vs unevaluated vs errored facts into the
+  facts store meta (`collection_outcome`) and exits 4 when NO check produced an
+  evaluated outcome (every API denied, wrong region, expired role). It used to
+  exit 0 with every fact in `ERROR`.
+- **An empty append does not look like maintenance (AUD-F30, High).**
+  `append_metrics.py` records every run under `meta.last_attempt` but advances
+  `meta.last_run` only when at least one datapoint was appended, and exits 4
+  on an empty run. It used to stamp `last_run = today` and exit 0.
+- **The GitHub Actions loop persists the history (AUD-F31, Critical).**
+  `living-sdr-loop.yml` now REFUSES to run without the
+  `SDR_METRIC_HISTORY_BUCKET` repository variable, restores the durable
+  history before appending and publishes it back with compare-and-swap
+  (the AWS buildspec's loop). It used to append to a git-excluded file on an
+  ephemeral runner and discard it every night.
+- **Failed collections raise an alarm (AUD-F32, High).** The AWS template gains
+  an EventBridge rule on failed, faulted, timed-out or stopped builds of the
+  collector and drift-check projects (the pipeline-state rule never saw them);
+  the Actions loop files, or comments on, a GitHub issue on any failure.
+- **Staleness is reported before it blocks (AUD-F33, Medium).**
+  `package-preflight` adds an ADVISORY for every in-scope KSI whose newest
+  datapoint is older than 7 days (`MOT_STALE_ADVISORY_DAYS`, project policy),
+  distinct from the 45-day continuity bound that was the only signal.
+- **The locked dependency closure is audited for known vulnerabilities
+  (AUD-F34, High).** `pip-audit` (2.10.1, `--require-hashes --strict` on
+  `requirements.lock`) is a HARD step of the single release-gate security
+  section, so CI, the AWS release build and `sdr.py release` run it
+  identically. Its first run found 14 advisories across two pins:
+  `cryptography` 46.0.3 -> 50.0.2 and `aws-cdk-lib` 2.251.0 -> 2.253.0, lock
+  re-resolved with the Makefile recipe, SBOM regenerated, audit now clean.
+
 Evidence-path hardening (external end-to-end audit of `2f72a15`, 2026-09-26;
 three findings, all reproduced with the public helpers before fixing;
 `AUD-F26`..`AUD-F28` in the defect ledger, each with a killed mutation):

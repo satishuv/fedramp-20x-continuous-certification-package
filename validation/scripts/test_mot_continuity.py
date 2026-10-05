@@ -144,6 +144,32 @@ def main():
     check("F21: preflight messages call the tolerance a project policy",
           "a project policy, not a FedRAMP figure" in src_text)
 
+    # AUD-F33: a stalled collection is reported as an ADVISORY well inside the
+    # 45-day hard bound, instead of staying silent until it becomes a blocker.
+    fresh = [today - dt.timedelta(days=i) for i in range(0, 60)]
+    check("F33: a series observed today is not stale",
+          sdr.mot_stale_days(fresh, today) is None)
+    threshold = sdr.MOT_STALE_ADVISORY_DAYS
+    check("F33: the advisory threshold sits well inside the continuity bound",
+          0 < threshold < sdr.MOT_MAX_GAP_DAYS_DEFAULT)
+    at_threshold = [today - dt.timedelta(days=threshold)]
+    check("F33: exactly at the threshold is not yet stale",
+          sdr.mot_stale_days(at_threshold, today) is None)
+    stalled = [today - dt.timedelta(days=d) for d in range(20, 200)]  # stopped 20 days ago
+    g_st, _l, _m, _t = sdr.mot_continuity(sorted(stalled), today, max_gap_days=45,
+                                          window_start=cutoff)
+    check("F33: a 20-day stall is NOT yet a continuity blocker at the 45-day bound",
+          g_st is False)
+    check("F33: ...but IS reported stale by the advisory helper (20 days)",
+          sdr.mot_stale_days(stalled, today) == 20)
+    check("F33: an empty series is not reported stale (handled as missing elsewhere)",
+          sdr.mot_stale_days([], today) is None)
+    stale_start = src_text.find("if stale:")
+    stale_block = src_text[stale_start:src_text.find("if missing:", stale_start)]
+    check("F33: preflight reports staleness through warnings (advisory), never blockers",
+          "mot_stale_days(dates, today)" in src_text
+          and "warnings.append(" in stale_block and "blockers.append(" not in stale_block)
+
     print(f"\n{'PASS' if _fail == 0 else 'FAIL'}: mot_continuity ({_fail} failures)")
     return 1 if _fail else 0
 

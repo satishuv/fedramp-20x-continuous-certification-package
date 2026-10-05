@@ -294,6 +294,7 @@ TEST_SUITE = [
     "automation/config-rules/deploy/test_generate_templates.py",
     "automation/config-rules/deploy/test_cdk_synth.py",
     "automation/collectors/test_collector_iam_matches.py",
+    "automation/collectors/test_collection_fail_closed.py",
     "automation/collectors/test_service_registry.py",
     "automation/collectors/test_thirdparty_upsert.py",
     "automation/pipeline/test_release_gate.py",
@@ -440,6 +441,26 @@ def load_json(path):
 # or more inside a six-month window is not persistence under any reading.
 MOT_MAX_GAP_DAYS_DEFAULT = 45
 MOT_MAX_GAP_DAYS_CEILING = 90
+
+# AUD-F33: an EARLY WARNING, distinct from the hard continuity bound above. The
+# bound tolerates up to mot_max_gap_days of silence before it blocks, which is
+# right for a monthly cadence but means a daily collector can be broken for six
+# weeks before anyone is told. Preflight therefore reports (as an advisory, not
+# a blocker) every in-scope KSI whose newest datapoint is older than this many
+# days, so a stalled collection is visible the week it stalls. Project policy,
+# not a FedRAMP figure; FedRAMP mandates no cadence.
+MOT_STALE_ADVISORY_DAYS = 7
+
+
+def mot_stale_days(dates, today, threshold=MOT_STALE_ADVISORY_DAYS):
+    """Days since the NEWEST observation when that exceeds the advisory
+    threshold, else None. Independent of the hard continuity bound: this is the
+    early warning that a collection has stopped, reported as an advisory long
+    before the gap can become an FRC-CSX-MOT blocker (AUD-F33)."""
+    if not dates:
+        return None
+    gap = (today - max(dates)).days
+    return gap if gap > threshold else None
 
 
 def mot_max_gap_days(offering):
@@ -1632,6 +1653,7 @@ def cmd_preflight(args):
             missing = sorted(mot_ksis - set(per))
             short = []
             gappy = []
+            stale = []  # AUD-F33: newest datapoint older than the advisory threshold
             for kid in mot_ksis & set(per):
                 dates = []
                 _entry = per.get(kid)
@@ -1668,6 +1690,23 @@ def cmd_preflight(args):
                     win, today, max_gap_days=mot_gap_days, window_start=mot_cutoff)
                 if gappy_flag:
                     gappy.append((kid, largest, median, trailing_gap))
+                # AUD-F33: early warning well inside the hard bound. A KSI whose
+                # newest datapoint is older than MOT_STALE_ADVISORY_DAYS has a
+                # collection that stopped; say so now rather than when the gap
+                # crosses the 45-day bound and becomes a blocker.
+                newest_gap = mot_stale_days(dates, today)
+                if newest_gap is not None:
+                    stale.append((kid, newest_gap))
+            if stale:
+                stale.sort(key=lambda t: -t[1])
+                ex = stale[0]
+                warnings.append(
+                    f"Class {cls.upper()}: {len(stale)} in-scope KSI(s) have no metric "
+                    f"datapoint in the last {MOT_STALE_ADVISORY_DAYS} days (e.g. {ex[0]}: "
+                    f"newest observation {ex[1]}d old). The collection appears to have "
+                    f"stopped; it becomes an FRC-CSX-MOT continuity blocker once a gap "
+                    f"exceeds {mot_gap_days}d. Check the scheduled collector run and its "
+                    "failure notification (advisory; staleness threshold is project policy)")
             if missing:
                 blockers.append(f"Class {cls.upper()}: {len(missing)} in-scope KSI(s) are "
                                 f"entirely absent from the metric history (FRC-CSX-MOT covers "
