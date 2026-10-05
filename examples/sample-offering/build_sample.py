@@ -120,8 +120,7 @@ def run_gate_with_sample(emit_dir=None):
     If emit_dir is given, the generated sample package (SDR JSON, human-readable,
     CPO, OCR, SCG, event artifacts) is copied there BEFORE the real inputs are
     restored, so a reviewer can read a populated example without running the
-    build. Only committed-safe text artifacts are copied (no docx, whose zip
-    timestamps are non-deterministic)."""
+    build. Only committed-safe text artifacts are copied."""
     tmp = tempfile.mkdtemp(prefix="sdr-sample-")
     store_bak = os.path.join(tmp, "store.bak")
     profile_bak = os.path.join(tmp, "profile.bak")
@@ -129,6 +128,16 @@ def run_gate_with_sample(emit_dir=None):
     profile_exists = os.path.exists(REAL_PROFILE)
     if profile_exists:
         shutil.copy2(REAL_PROFILE, profile_bak)
+    # AUD-F36: `sdr.py all` below also rewrites the committed validation reports
+    # with sample state; back them up so the tree is left exactly as found.
+    report_baks = {}
+    for rel in ("validation/reports/validation-report.json",
+                "validation/reports/ksi-test-results.json"):
+        real = os.path.join(BASE, rel.replace("/", os.sep))
+        if os.path.exists(real):
+            b = os.path.join(tmp, os.path.basename(real) + ".bak")
+            shutil.copy2(real, b)
+            report_baks[real] = b
     try:
         shutil.copy2(SAMPLE_STORE, REAL_STORE)
         shutil.copy2(SAMPLE_PROFILE, REAL_PROFILE)
@@ -142,17 +151,20 @@ def run_gate_with_sample(emit_dir=None):
         shutil.copy2(store_bak, REAL_STORE)
         if profile_exists:
             shutil.copy2(profile_bak, REAL_PROFILE)
+        for real, b in report_baks.items():
+            shutil.copy2(b, real)
         shutil.rmtree(tmp, ignore_errors=True)
         # Running the gate above wrote the SAMPLE content into the real
         # generated output paths (sdr/json, package/, ...). Restoring the input
         # files is not enough: regenerate from the restored real inputs so the
         # committed generated outputs are never left holding sample content.
+        # `sdr.py build` regenerates every class (JSON, text and Word document).
         subprocess.run([sys.executable, os.path.join(BASE, "sdr.py"), "build"],
                        cwd=BASE, capture_output=True, text=True)
 
 
-# Generated artifacts copied into the emit dir. Text/JSON only (deterministic);
-# .docx is excluded because its zip container embeds timestamps.
+# Generated artifacts copied into the emit dir. Text/JSON only; the Word
+# document stays with the real tree (it is fingerprinted there since AUD-F35).
 _EMIT_ARTIFACTS = [
     "sdr/json/sdr-class-b.json",
     "sdr/human-readable/sdr-class-b.txt",

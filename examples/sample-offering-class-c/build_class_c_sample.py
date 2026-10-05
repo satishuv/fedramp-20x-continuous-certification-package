@@ -35,6 +35,48 @@ BASE = os.path.dirname(os.path.dirname(HERE))
 REAL_STORE = os.path.join(BASE, "sdr", "records", "records-store.json")
 REAL_PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 REAL_HISTORY = os.path.join(BASE, "automation", "metrics", "metric-history.json")
+# AUD-F36: the sample's build and preflight also overwrite the committed
+# validation reports with Class C sample state; they are backed up and restored
+# byte-for-byte like the inputs, instead of being left for the next commit.
+REAL_REPORTS = (
+    os.path.join(BASE, "validation", "reports", "validation-report.json"),
+    os.path.join(BASE, "validation", "reports", "ksi-test-results.json"),
+)
+BACKED_UP = (REAL_STORE, REAL_PROFILE, REAL_HISTORY) + REAL_REPORTS
+
+
+def _backup(tmp):
+    """Copy every file the sample run may overwrite into tmp. Returns {real: bak}."""
+    baks = {}
+    for real in BACKED_UP:
+        if os.path.exists(real):
+            b = os.path.join(tmp, os.path.basename(real) + ".bak")
+            shutil.copy2(real, b)
+            baks[real] = b
+    return baks
+
+
+def _restore_tree(baks, history_existed, tmp):
+    """Leave the working tree exactly as found (AUD-F36).
+
+    Restores every backed-up file (inputs AND validation reports), removes the
+    sample metric history if none existed before, restores the review register
+    (the signoff is sample-only), then regenerates EVERY deliverable from the
+    restored real inputs with the single build definition. `sdr.py build` now
+    regenerates the inactive classes too (JSON, text AND Word document, see
+    build_inactive_classes.py), so sample content cannot linger in a committed
+    Class A/C artifact: the Class C .docx used to keep the fictional offering
+    (409 occurrences) because only the active class's document was rebuilt.
+    """
+    for real, b in baks.items():
+        shutil.copy2(b, real)
+    if not history_existed and os.path.exists(REAL_HISTORY):
+        os.remove(REAL_HISTORY)
+    subprocess.run(["git", "-C", BASE, "checkout", "--",
+                    "sdr/reviews/review-register.json"], capture_output=True, text=True)
+    shutil.rmtree(tmp, ignore_errors=True)
+    subprocess.run([sys.executable, os.path.join(BASE, "sdr.py"), "build"],
+                   cwd=BASE, capture_output=True, text=True)
 MANIFEST = os.path.join(BASE, "artifacts", "release-manifest.json")
 
 TODAY = dt.date.today()
@@ -295,12 +337,7 @@ def _preflight_rc(store, profile, history, post_sign=None):
     is given, it is called after the (correct) signoff is written and before
     preflight runs, so a probe can tamper with the manifest-bound signoff."""
     tmp = tempfile.mkdtemp(prefix="sdr-attack-")
-    baks = {}
-    for real in (REAL_STORE, REAL_PROFILE, REAL_HISTORY):
-        if os.path.exists(real):
-            b = os.path.join(tmp, os.path.basename(real) + ".bak")
-            shutil.copy2(real, b)
-            baks[real] = b
+    baks = _backup(tmp)
     history_existed = os.path.exists(REAL_HISTORY)
     try:
         json.dump(store, open(REAL_STORE, "w", encoding="utf-8", newline="\n"), indent=1)
@@ -315,22 +352,7 @@ def _preflight_rc(store, profile, history, post_sign=None):
                             cwd=BASE, capture_output=True, text=True)
         return pf.returncode, (pf.stdout or "") + (pf.stderr or "")
     finally:
-        for real, b in baks.items():
-            shutil.copy2(b, real)
-        if not history_existed and os.path.exists(REAL_HISTORY):
-            os.remove(REAL_HISTORY)
-        subprocess.run(["git", "-C", BASE, "checkout", "--",
-                        "sdr/reviews/review-register.json"], capture_output=True, text=True)
-        shutil.rmtree(tmp, ignore_errors=True)
-        # Regenerate ALL class outputs from the restored real inputs, so sample
-        # content never lingers in a committed inactive-class SDR (build alone
-        # only regenerates the active class).
-        for c in ("a", "c"):
-            env = dict(os.environ, SDR_BUILD_CLASS=c)
-            subprocess.run([sys.executable, os.path.join(BASE, "validation", "scripts", "build_sdr.py")],
-                           cwd=BASE, capture_output=True, text=True, env=env)
-        subprocess.run([sys.executable, os.path.join(BASE, "sdr.py"), "build"],
-                       cwd=BASE, capture_output=True, text=True)
+        _restore_tree(baks, history_existed, tmp)
 
 
 def attack():
@@ -635,12 +657,7 @@ def attack():
 
 def run(argv):
     tmp = tempfile.mkdtemp(prefix="sdr-classc-")
-    baks = {}
-    for real in (REAL_STORE, REAL_PROFILE, REAL_HISTORY):
-        if os.path.exists(real):
-            b = os.path.join(tmp, os.path.basename(real) + ".bak")
-            shutil.copy2(real, b)
-            baks[real] = b
+    baks = _backup(tmp)
     # Build ALL sample content in memory BEFORE any write, so a partial write
     # cannot corrupt a file a later generator reads.
     store = generate_store()
@@ -666,26 +683,7 @@ def run(argv):
               f"({'READY' if pf.returncode == 0 else 'BLOCKED'})")
         return pf.returncode
     finally:
-        for real, b in baks.items():
-            shutil.copy2(b, real)
-        # metric-history.json is git-excluded telemetry; if it did not exist
-        # before, remove the sample one so the tree is left as found.
-        if not history_existed and os.path.exists(REAL_HISTORY):
-            os.remove(REAL_HISTORY)
-        # Restore the review register too (signoff is sample-only).
-        subprocess.run(["git", "-C", BASE, "checkout", "--",
-                        "sdr/reviews/review-register.json"],
-                       capture_output=True, text=True)
-        shutil.rmtree(tmp, ignore_errors=True)
-        # Regenerate ALL class outputs from the restored real inputs, so sample
-        # content never lingers in a committed inactive-class SDR (build alone
-        # only regenerates the active class).
-        for c in ("a", "c"):
-            env = dict(os.environ, SDR_BUILD_CLASS=c)
-            subprocess.run([sys.executable, os.path.join(BASE, "validation", "scripts", "build_sdr.py")],
-                           cwd=BASE, capture_output=True, text=True, env=env)
-        subprocess.run([sys.executable, os.path.join(BASE, "sdr.py"), "build"],
-                       cwd=BASE, capture_output=True, text=True)
+        _restore_tree(baks, history_existed, tmp)
 
 
 def _record_signoff():
