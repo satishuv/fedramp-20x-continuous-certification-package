@@ -51,7 +51,7 @@
   "sdr/records/records-store.json": "sha256:2264f89f08831b81994036bcbb4a7514141b3c8f5c7f9e00423ad0a492213da4"
  },
  "artifacts": {
-  "artifacts/sbom.cdx.json": "sha256:864e52b5ab0f55c2faba4d506c680ee4e28f22050cdb905bd9090d90c7013c77",
+  "artifacts/sbom.cdx.json": "sha256:d9c871f6134c58165d1bab268f3b741b1e1acb1ed11484a7093459e0d342034b",
   "package/certification-package-manifest.json": "sha256:9cae6d6ee3216e60c35fcdc427b1e485d5033c1eeb79f234b83e55ea6b6e1a0d",
   "package/cpo/cpo.json": "sha256:f0f62eef2b8916e300a0b4b6a409c9ecdf5dcd86a00cc559ae33146db7cb9c00",
   "package/cpo/cpo.md": "sha256:4979306e40bfd3604cbb7acfe2e2d998acf79276bde857d3b14145a9c8c53fee",
@@ -76,8 +76,8 @@
  "artifact_count": 21,
  "release_tag": "v1.5.0-cr26-2026.09.13.02",
  "source_provenance": {
-  "requirements_sha256": "sha256:09697680781f9a289a859b306cae50fda7340a1d7913b38cb5e4eaa22e211c05",
-  "requirements_ci_sha256": "sha256:a80ac357fcc06ac7c7122134d03e3d1c10dd1ac8fbbb11f2c32808e41330d0e2",
+  "requirements_sha256": "sha256:657e8270cb76f7fb07e95078bd68c17a1b0d4664a605e0f55d1b50c1368dd42f",
+  "requirements_ci_sha256": "sha256:dc19795e881cd4de90e07c3c3ec5bd86fd4329261acf3bc6786c07ec43237491",
   "source_commit": null,
   "source_tree": null,
   "provenance_note": "Exact git commit/tree are recorded in artifacts/release-attestation.json at release time, not here, so this manifest stays byte-stable and a human signoff bound to its hash is never invalidated by adding provenance."
