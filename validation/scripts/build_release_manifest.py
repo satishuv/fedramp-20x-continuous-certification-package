@@ -10,8 +10,10 @@ versions.
 
 Deterministic on purpose: no run timestamps, so two builds of unchanged inputs
 produce a byte-identical manifest (the reproducibility gate depends on this).
-The manifest excludes .docx (its zip container embeds timestamps) and excludes
-itself.
+The manifest fingerprints the active-class Word document too (byte-reproducible
+since AUD-F35; it was excluded while its zip container embedded save times, which
+left the one document an assessor reads outside every integrity check) and
+excludes only itself.
 
     python validation/scripts/build_release_manifest.py
 
@@ -59,13 +61,18 @@ def _source_provenance():
                             "by adding provenance."),
     }
 
-# Generated artifacts fingerprinted, per class. Text/JSON only (deterministic).
+# Generated artifacts fingerprinted, per class. Every entry is byte-deterministic
+# (the .docx since AUD-F35).
 ARTIFACT_GLOBS = [
     "sdr/json/sdr-class-{c}.json",
     "sdr/json/sdr-class-{c}-extensions.json",
     # The OSCAL export (sdr-class-{c}.oscal.json) is experimental/reference-only
     # and excluded from the customer bundle, so it is NOT fingerprinted here.
     "sdr/human-readable/sdr-class-{c}.txt",
+    # The authoring Word document is what a consultant and an assessor read;
+    # fingerprinting it means the bundle assembler ships the exact bytes the
+    # gate checked, and a hand-edited copy no longer matches the manifest.
+    "sdr/human-readable/sdr-class-{c}-authoring.docx",
     "package/cpo/cpo.json",
     "package/cpo/cpo.md",
     "package/ocr/ocr-example.json",

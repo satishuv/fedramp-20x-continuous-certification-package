@@ -470,6 +470,32 @@
       "mutation": "MUT-F34: the pip-audit step replaced by a no-op in the security section; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F35",
+      "severity": "High",
+      "requirement": "Every delivered package artifact is integrity-checked and reproducible (FRC-CSO-PKG; CDS-CSO-CBF human-readable parity; release manifest fingerprint)",
+      "component": "validation/scripts/build_docx.py (normalize_docx, document_timestamp); validation/scripts/build_release_manifest.py (ARTIFACT_GLOBS); sdr.py (cmd_reproducibility); .github/workflows/validate.yml; automation/pipeline/buildspec-validate.yml; .github/workflows/living-sdr-loop.yml; validation/scripts/assemble_release_bundle.py",
+      "description": "python-docx stamps the save time into every zip entry, so two builds of unchanged inputs produced different .docx bytes. The repository therefore excluded *.docx from the CI regenerate-and-diff, both reproducibility gates, the release manifest and (by construction) the release bundle, while the README said the human-readable outputs 'cannot silently drift'. The Word document an assessor reads could be hand-edited, or carry sample residue (AUD-F36), and nothing noticed. Reproduced at cb23eb7 (delivery review item 1).",
+      "root_cause": "A container-level nondeterminism was handled by exclusion instead of by normalization, and the exclusion was never revisited once the manifest became the bundle's source of truth.",
+      "fix_commit": "this PR -- normalize_docx() rewrites the saved container with a fixed per-entry timestamp (DOS epoch), fixed attributes and creator system and a fixed deflate level; core properties carry a timestamp derived from the pinned dataset version, never the wall clock. The .docx is now fingerprinted in the release manifest (so the bundle assembler ships the exact checked bytes), hashed by both reproducibility gates, and diffed without exclusion in CI, the AWS buildspec and the Actions loop",
+      "regression_test": "validation/scripts/test_docx_integrity.py (test_f35_normalize_makes_identical_content_identical_bytes, test_f35_document_timestamp_is_dataset_derived_not_wall_clock, test_f35_committed_docx_are_normalized, test_f35_docx_is_inside_every_integrity_check, test_f35_manifest_fingerprints_the_committed_docx_bytes)",
+      "mutation": "MUT-F35: the normalizer stamps entries with the wall clock again; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F36",
+      "severity": "High",
+      "requirement": "No fictional or sample content may reach a delivered artifact (public-template hygiene; CDS-CSO-* customer-facing accuracy)",
+      "component": "validation/scripts/build_inactive_classes.py (new build step); sdr.py (BUILD_STEPS); examples/sample-offering-class-c/build_class_c_sample.py (_backup, _restore_tree); examples/sample-offering/build_sample.py",
+      "description": "Running `python examples/sample-offering-class-c/build_class_c_sample.py` as documented left 'Beacon Federal Cloud' 409 times and 500 [SAMPLE markers in the committed sdr/human-readable/sdr-class-c-authoring.docx, plus validation-report.json and ksi-test-results.json in Class C sample state. The restore block rebuilt the inactive classes' JSON and text but not their Word documents (only the active class's document was ever built), and CI could not see the residue because of AUD-F35. Reproduced at cb23eb7 (delivery review item 5).",
+      "root_cause": "Per-class regeneration lived in three places (CI loop, buildspec, sample builders) with three different scopes, none of which included build_docx.py for inactive classes; the reports overwritten by the sample's validate/preflight were never backed up.",
+      "fix_commit": "this PR -- build_inactive_classes.py runs as a step of `sdr.py build` (before the active class) regenerating every inactive class's SDR JSON, text AND Word document, so CI, the AWS buildspec, the Actions loop and both sample builders share one build definition (the CI per-class loop is removed); both sample builders back up and restore the two validation reports byte-for-byte; the Class C builder's two finally blocks share one _restore_tree. The end-to-end regression runs the sample and asserts every committed deliverable is byte-identical afterwards",
+      "regression_test": "validation/scripts/test_docx_integrity.py (test_f36_build_regenerates_inactive_classes_before_the_active_one, test_f36_sample_builders_restore_the_reports_and_rebuild_everything, test_f36_running_the_class_c_sample_leaves_the_tree_byte_identical)",
+      "mutation": "MUT-F36: the inactive-class step drops build_docx.py (JSON/text only, as before); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

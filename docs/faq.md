@@ -64,7 +64,7 @@ So a provider's security team can read the entire pipeline in an afternoon and s
 
 ## Word files differ between builds. Bug?
 
-No. The `.docx` container embeds file-entry timestamps in its zip directory, so bytes differ while content is identical. JSON, text, and CSV outputs are byte-stable, verified by double-run hash comparison.
+Yes, since 1.5.0 that is a defect: the `.docx` is byte-reproducible (the build rewrites its zip container with fixed entry timestamps and stamps the core properties with the pinned dataset's date, never the wall clock), so it is diffed, double-build hashed and fingerprinted in the release manifest like every JSON, text and CSV output. A `.docx` that differs from its committed copy after `python sdr.py build` means a changed input, a hand edit, or sample residue; the CI regenerate-and-diff gate fails on it.
 
 ## Why is there a `.claude/` directory?
 

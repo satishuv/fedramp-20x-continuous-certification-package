@@ -10,9 +10,10 @@ traceability, and could drift from what the manifest attests. Copying precisely
 the fingerprinted set makes the bundle active-class-only AND manifest-consistent
 by construction.
 
-Not included, deliberately: the authoring .docx files (working artifacts, not
-release deliverables, and not byte-reproducible), the OSCAL export
-(experimental/reference-only), and any inactive-class SDR.
+Included since AUD-F35: the active-class authoring .docx, now byte-reproducible
+and fingerprinted, so the Word document a consultant hands over is the exact
+bytes the gate checked. Not included, deliberately: the OSCAL export
+(experimental/reference-only) and any inactive-class SDR.
 
     python validation/scripts/assemble_release_bundle.py
 
