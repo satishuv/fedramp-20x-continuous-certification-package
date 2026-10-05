@@ -114,8 +114,8 @@ MUTATIONS = [
      "validation/scripts/test_mot_continuity.py"),
     ("MUT-F05",
      "automation/metrics/append_metrics.py",
-     "                          today, cls, require_fresh=True, min_coverage=min_cov)",
-     "                          today, cls, require_fresh=False, min_coverage=min_cov)  # MUTATION",
+     "                          today, cls, require_fresh=True, min_coverage=min_cov,",
+     "                          today, cls, require_fresh=False, min_coverage=min_cov,  # MUTATION",
      "automation/metrics/test_append_metrics.py"),
     ("MUT-F07",
      "automation/metrics/append_metrics.py",
@@ -279,6 +279,12 @@ MUTATIONS = [
      'PER_CLASS_STEPS = ("build_sdr.py", "build_docx.py")',
      'PER_CLASS_STEPS = ("build_sdr.py",)  # MUTATION inactive Word documents never rebuilt',
      "validation/scripts/test_docx_integrity.py"),
+    # Attested metric history (review item 6).
+    ("MUT-F37",
+     "automation/metrics/history_integrity.py",
+     '    body = {k: v for k, v in obs.items() if k != "hash"}',
+     '    body = {k: v for k, v in obs.items() if k not in ("hash", "prev_hash", "passing", "total")}  # MUTATION hash no longer covers content or linkage',
+     "automation/metrics/test_history_integrity.py"),
 ]
 
 

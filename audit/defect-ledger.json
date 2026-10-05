@@ -496,6 +496,19 @@
       "mutation": "MUT-F36: the inactive-class step drops build_docx.py (JSON/text only, as before); expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F37",
+      "severity": "Critical",
+      "requirement": "Persistent-validation evidence must be the collector's record, not a completed file (FRC-CSX-MOT persistent validation; SDR-CSX-KMT daily data; FRC-CSX-VVK working automated methods)",
+      "component": "automation/metrics/history_integrity.py (new); automation/metrics/append_metrics.py (chain_observation, run_provenance, anchor-preserving prune, record_heads); automation/collectors/collect_facts.py (run_id); automation/metrics/publish_history.py (--sign-key-arn, meta.history_signature); sdr.py (package-preflight integrity, profile and signature gates; VVK binding freshness); profiles/common/offering-profile.json (evidence_store_profile)",
+      "description": "metric-history.json was plain JSON: nothing distinguished a datapoint the collector produced on the day from one typed in afterwards, and the FRC-CSX-VVK binding gate counted a declared method as working because its per-method series key existed. A provider could satisfy 'six months of persistent validation' and 'two working automated methods per KSI' by editing a file. Reproduced at cb23eb7 (delivery review item 6; also the production-assurance gap of the 16-item verdict's finding 16).",
+      "root_cause": "The history had no integrity primitive of its own: evidence entries were content-hashed and optionally signed (AUD-F26), but the metric log that feeds MOT, KMT and VVK was not, and binding tested existence rather than recency.",
+      "fix_commit": "this PR -- (1) every observation is hash-chained to its predecessor (or the KSI's pruning anchor) and stamped with run provenance (collector run_id, digest of the consumed facts store); (2) history_digest() over every chain head is the one value a separate signer attests (publish_history.py --sign-key-arn writes meta.history_signature; preflight verifies it offline against the independently pinned expected_evidence_signer, a present-but-unverifiable signature is HARD); (3) package-preflight at Class C/D: a broken chain (edited, inserted, deleted observation, bad anchor, unbacked series point) is a BLOCKER under every profile; unchained/unattested observations and an unsigned digest are ADVISORY under evidence_store_profile 'development' and BLOCKERS under 'production-assurance'; an unknown profile value blocks; (4) the VVK binding gate counts a declared method as working only when its per-method series carries a datapoint inside its cadence window (daily 7d, weekly 14d, monthly 45d, quarterly 90d; project policy). Anyone can rechain a tampered log; only the signer principal can re-sign it",
+      "regression_test": "automation/metrics/test_history_integrity.py (honest growth verifies and is attested; edit, backfill, delete detected; rechain hides the edit but moves the digest; unattested and pre-F37 shapes reported; pruning keeps the chain verifiable via the anchor; offline signature fails after tamper); examples/sample-offering-class-c/build_class_c_sample.py --attack (backfill, edit, delete, stale method, production unsigned, rechained tamper with forged signature, unknown profile all BLOCK; production-assurance with a valid signed digest stays READY); validation/scripts/test_assessor_attack.py archetypes unchanged",
+      "mutation": "MUT-F37: the observation hash no longer covers content or linkage; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

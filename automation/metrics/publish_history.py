@@ -40,6 +40,13 @@ from datetime import datetime, timezone
 
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 HISTORY = os.path.join(BASE, "automation", "metrics", "metric-history.json")
+
+# AUD-F37: the digest the signer attests, and the KMS signing primitive the
+# evidence path already uses.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(BASE, "automation", "collectors"))
+import history_integrity as hi  # noqa: E402
+import sign_evidence as se  # noqa: E402
 ETAG_SIDECAR = HISTORY + ".etag"
 HISTORY_KEY = "metrics/metric-history.json"
 OBSERVATIONS_PREFIX = "metrics/observations"
@@ -114,8 +121,15 @@ def _run_observations(history, run_id, observed_at):
 
 
 def publish(s3, bucket, history_path=HISTORY, etag_path=ETAG_SIDECAR, run_id=None,
-            log=print):
-    """Conditionally upload the history and archive this run's observations."""
+            log=print, kms=None, sign_key_arn=None):
+    """Conditionally upload the history and archive this run's observations.
+
+    AUD-F37: when sign_key_arn (and a KMS client) is given, the history digest
+    (history_integrity.history_digest over every KSI's chain head) is signed
+    with that key and stored under meta.history_signature BEFORE upload, so the
+    durable object carries the separate signer's attestation of the chain head.
+    A signing failure is a publish failure: the caller asked for an attested
+    history and must not get an unattested one."""
     if not os.path.exists(history_path):
         log("FAIL. No local metric history to publish (append step did not run?).")
         return EXIT_ERROR
@@ -126,6 +140,21 @@ def publish(s3, bucket, history_path=HISTORY, etag_path=ETAG_SIDECAR, run_id=Non
     except ValueError as exc:
         log(f"FAIL. Local metric history is not valid JSON: {exc}")
         return EXIT_ERROR
+    if sign_key_arn:
+        if kms is None:
+            log("FAIL. --sign-key-arn given but no KMS client; refusing to publish an "
+                "unsigned history when signing was requested.")
+            return EXIT_ERROR
+        try:
+            digest = hi.record_heads(history)
+            history.setdefault("meta", {})["history_signature"] = se.sign_hash(kms, sign_key_arn, digest)
+        except Exception as exc:  # noqa: BLE001 - fail closed
+            log(f"FAIL. Could not sign the metric history digest: {type(exc).__name__}: {exc}")
+            return EXIT_ERROR
+        body = json.dumps(history, indent=1).encode("utf-8")
+        with open(history_path, "wb") as f:
+            f.write(body)
+        log(f"Signed metric history digest {digest[:23]}... with {sign_key_arn}.")
     etag = ""
     if os.path.exists(etag_path):
         with open(etag_path, encoding="utf-8") as f:
@@ -185,6 +214,10 @@ def main(argv=None):
     ap.add_argument("action", choices=["restore", "publish"])
     ap.add_argument("--bucket", default=os.environ.get("EVIDENCE_BUCKET"))
     ap.add_argument("--run-id", default=os.environ.get("CODEBUILD_BUILD_ID"))
+    ap.add_argument("--sign-key-arn", default=os.environ.get("SDR_HISTORY_SIGN_KEY_ARN"),
+                    help="AUD-F37: KMS asymmetric key (held by the SEPARATE signer "
+                         "principal) that signs the history digest before publish; "
+                         "required for evidence_store_profile production-assurance")
     args = ap.parse_args(argv)
     if not args.bucket:
         print("FAIL. --bucket or EVIDENCE_BUCKET is required.")
@@ -194,7 +227,8 @@ def main(argv=None):
     if args.action == "restore":
         return restore(s3, args.bucket)
     run_id = (args.run_id or "").replace(":", "-").replace("/", "-") or None
-    return publish(s3, args.bucket, run_id=run_id)
+    kms = boto3.client("kms") if args.sign_key_arn else None
+    return publish(s3, args.bucket, run_id=run_id, kms=kms, sign_key_arn=args.sign_key_arn)
 
 
 if __name__ == "__main__":

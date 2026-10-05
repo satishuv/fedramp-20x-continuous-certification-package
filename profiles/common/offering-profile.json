@@ -9,6 +9,8 @@
  "certification_type": "FedRAMP 20x",
  "certification_class": "B",
  "certification_path": "Program",
+ "evidence_store_profile": "development",
+ "_evidence_store_profile_note": "AUD-F37. 'development' (template default): an unchained, unattested or UNSIGNED metric history is an advisory at package-preflight. 'production-assurance': those are blockers - every metric observation must be hash-chained with collector run provenance, and the history digest must carry a signature that verifies offline against expected_evidence_signer (publish with `publish_history.py publish --sign-key-arn <separate signer's KMS key>`). A TAMPERED chain (edited, inserted or deleted observation) is a blocker under both profiles. A real Class C offering should declare production-assurance before submission.",
  "selected_optional_rules": [],
  "_selected_optional_rules_note": "Class A only. FRC-CLA-OFR optional (MAY) rules are extra credit; by default NONE are submitted. To include a specific optional rule in the Class A SDR, add its rule_id here (e.g. \"CCM-QTR-MTG\"). All MUST and SHOULD rules are always submitted. Ignored for Class B/C. FedRAMP fully reviews any optional rule that is included.",
  "selected_optional_ksis": [],
