@@ -48,6 +48,13 @@ def _utc_today():
 
 SCRIPTS = os.path.join(BASE, "validation", "scripts")
 SDRSCAN = os.path.join(BASE, "automation", "sdrscan", "sdrscan.py")
+
+# AUD-F37: package-preflight verifies the metric history's hash chain and its
+# signed digest with the same modules the appender and publisher use.
+sys.path.insert(0, os.path.join(BASE, "automation", "metrics"))
+sys.path.insert(0, os.path.join(BASE, "automation", "collectors"))
+import history_integrity as _hi  # noqa: E402
+import sign_evidence as _se  # noqa: E402
 VALIDATION_REPORT = os.path.join(BASE, "validation", "reports", "validation-report.json")
 SCAN_REPORT_GLOB = os.path.join(BASE, "validation", "reports", "sdrscan", "sdrscan-class-*.json")
 OFFERING_PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
@@ -297,6 +304,7 @@ TEST_SUITE = [
     "automation/collectors/test_collector_iam_matches.py",
     "automation/collectors/test_collection_fail_closed.py",
     "validation/scripts/test_docx_integrity.py",
+    "automation/metrics/test_history_integrity.py",
     "automation/collectors/test_service_registry.py",
     "automation/collectors/test_thirdparty_upsert.py",
     "automation/pipeline/test_release_gate.py",
@@ -1270,6 +1278,9 @@ def cmd_preflight(args):
         "telemetry_min_coverage",
         # AUD-F21: assessor-reviewable FRC-CSX-MOT continuity tolerance (days).
         "mot_max_gap_days",
+        # AUD-F37: "development" (default) or "production-assurance"; the latter
+        # makes an unattested, unchained or unsigned metric history a blocker.
+        "evidence_store_profile",
     }
     REQUIRED_FIELDS = [
         "organization_name", "offering_name", "offering_abbreviation",
@@ -2001,6 +2012,116 @@ def cmd_preflight(args):
     _kmt_hist = load_json(os.path.join(BASE, "automation", "metrics", "metric-history.json")) or {}
     _kmt_ksis = (_kmt_hist.get("ksis", _kmt_hist) if isinstance(_kmt_hist, dict) else {}) or {}
 
+    # AUD-F37: the metric history must be the collector's record, not a file
+    # someone completed. Three checks over the durable history:
+    #   1. Chain integrity. Every observation is hash-linked to its predecessor
+    #      and carries run provenance. A bad hash, a broken link, a bad pruning
+    #      anchor or a series point with no observation behind it is tampering or
+    #      corruption, never acceptable: HARD at Class C/D whenever the history
+    #      carries chain fields at all. Observations with NO chain fields or NO
+    #      provenance (pre-F37 histories, hand-written files) are an ADVISORY
+    #      under the development profile and HARD under production-assurance.
+    #   2. Signed digest. Anyone can rechain a tampered log; only the separate
+    #      signer principal can re-sign its digest. Under production-assurance
+    #      the history digest MUST carry a signature that verifies offline
+    #      against the independently pinned signer (expected_evidence_signer);
+    #      under development it is an advisory when absent.
+    #   3. Freshness for VVK binding (below): a method counts as "working" only if
+    #      its per-method series has a datapoint within its cadence window.
+    _store_profile = str(offering.get("evidence_store_profile") or "development").strip().lower()
+    _production = _store_profile == "production-assurance"
+    if _store_profile not in ("development", "production-assurance"):
+        blockers.append(f"evidence_store_profile {_store_profile!r} is not 'development' or "
+                        "'production-assurance' (AUD-F37)")
+    if cls in ("c", "d") and isinstance(_kmt_hist, dict) and _kmt_ksis:
+        _problems = _hi.verify_history(_kmt_hist)
+        _chained_any = any(all(k in o for k in _hi.CHAIN_FIELDS)
+                           for e in _kmt_ksis.values() if isinstance(e, dict)
+                           for o in (e.get("observations") or []))
+        if _chained_any:
+            _tamper = [p for p in _problems if p[0] in ("bad-hash", "chain-break", "bad-anchor",
+                                                        "unbacked-point", "head-mismatch")]
+            _soft = [p for p in _problems if p[0] in ("missing-chain", "unattested")]
+        else:
+            # Pre-F37 or hand-written shape: nothing is chained, so nothing can
+            # be verified. Not tampering, but not the collector's record either.
+            _tamper = []
+            _soft = [("unchained-history", "*", "no observation carries chain fields")]
+        if _tamper:
+            ex = _tamper[0]
+            blockers.append(
+                f"Class {cls.upper()}: metric history INTEGRITY FAILED: {len(_tamper)} chained "
+                f"observation(s) do not verify (e.g. {ex[1]}: {ex[0]}, {ex[2]}). An edited, "
+                "inserted or deleted observation breaks the hash chain; the history is not "
+                "the collector's record (AUD-F37, FRC-CSX-MOT/SDR-CSX-KMT evidence)")
+        if _soft:
+            ex = _soft[0]
+            msg = (f"Class {cls.upper()}: {len(_soft)} metric observation(s) are unchained or "
+                   f"unattested (e.g. {ex[1]}: {ex[0]}). They did not come through the "
+                   "collector -> appender path with run provenance, so nothing proves the "
+                   "collector produced them (AUD-F37)")
+            (blockers if _production else warnings).append(
+                msg + (" - HARD under evidence_store_profile production-assurance"
+                       if _production else " - advisory under the development profile; "
+                       "production-assurance makes it a blocker"))
+        # Signed digest over the whole log.
+        _sig = (_kmt_hist.get("meta") or {}).get("history_signature")
+        _signer = offering.get("expected_evidence_signer") or {}
+        _pub = _signer.get("public_key_pem") if isinstance(_signer, dict) else None
+        if isinstance(_signer, dict) and not _answered(_pub) and _answered(_signer.get("public_key_pem_path")):
+            try:
+                with open(os.path.join(BASE, str(_signer.get("public_key_pem_path"))), encoding="utf-8") as _pf:
+                    _pub = _pf.read()
+            except OSError:
+                _pub = None
+        if _sig:
+            _ok = False
+            _why = ""
+            if not _answered(_pub):
+                _why = "no trusted signer public key is pinned in expected_evidence_signer"
+            else:
+                try:
+                    _ok = _se.verify_signature_offline(
+                        _sig, _pub, recomputed_hash=_hi.history_digest(_kmt_hist),
+                        expected_fingerprint=(_signer.get("public_key_fingerprint")
+                                              if _answered(_signer.get("public_key_fingerprint")) else None))
+                except Exception as _e:  # noqa: BLE001 - any verifier failure is a fail
+                    _why = f"{type(_e).__name__}: {_e}"
+            if not _ok:
+                blockers.append(
+                    f"Class {cls.upper()}: metric history digest signature does NOT verify "
+                    f"({_why or 'signature does not cover the current digest, or signer mismatch'}); "
+                    "a present-but-unverifiable signature is a hard failure (AUD-F37)")
+        elif _production:
+            blockers.append(
+                f"Class {cls.upper()}: evidence_store_profile is production-assurance but the "
+                "metric history digest is UNSIGNED (meta.history_signature absent). Publish "
+                "with --sign-key-arn so the separate signer attests the chain head (AUD-F37)")
+        else:
+            warnings.append(
+                f"Class {cls.upper()}: metric history digest is unsigned; anyone with write "
+                "access to the history file can rechain a tampered log. Declare "
+                "evidence_store_profile production-assurance and publish with --sign-key-arn "
+                "to make the signature required (AUD-F37, advisory)")
+
+    # Cadence window (days) within which a declared method's per-method series
+    # must carry a datapoint to count as a WORKING automated method (AUD-F37).
+    # Derived from the method's declared cadence; a method with no recognisable
+    # cadence is held to the staleness advisory window. Project policy: FedRAMP
+    # requires persistent verification but names no cadence.
+    _VVK_FRESH_DAYS = {"daily": MOT_STALE_ADVISORY_DAYS, "weekly": 14, "monthly": 45,
+                       "quarterly": MOT_MAX_GAP_DAYS_CEILING}
+
+    def _method_is_fresh(metric_entry, cadence):
+        series = (metric_entry or {}).get("series") or []
+        dates = [str(p.get("date", ""))[:10] for p in series if isinstance(p, dict)]
+        if not dates:
+            return False
+        window = _VVK_FRESH_DAYS.get(str(cadence or "").strip().lower(), MOT_STALE_ADVISORY_DAYS)
+        import datetime as _df
+        cutoff = (_utc_today() - _df.timedelta(days=window)).isoformat()
+        return any(cutoff <= d <= _utc_today().isoformat() for d in dates)
+
     # Per-KSI class minimum number of automated verification methods (FRC-CSX-VVK),
     # read from the pinned KSI profile: class_c = 2, class_d = 4. Used by the VVK
     # method-to-telemetry binding gate so it requires the class minimum of declared
@@ -2229,10 +2350,16 @@ def cmd_preflight(args):
                     # BOUND if its per-method metric series actually carries
                     # observations (a keyed-but-empty series is not telemetry).
                     declared_ids = {t["method_id"] for t in declared}
+                    cadence_by_id = {t["method_id"]: t.get("cadence") for t in declared}
+                    # AUD-F37: "bound" now means WORKING: the per-method series
+                    # carries a datapoint within the method's cadence window. A
+                    # series that exists but stopped months ago, or one typed
+                    # into the file with old dates, is not a working automated
+                    # method (FRC-CSX-VVK: "persistently verify and validate").
                     bound_ids = {
                         mid for mid in declared_ids
                         if isinstance(metrics.get(mid), dict)
-                        and (metrics[mid].get("series") or [])
+                        and _method_is_fresh(metrics[mid], cadence_by_id.get(mid))
                     }
                     need = _vvk_min_by_ksi.get(kid, 2 if cls == "c" else 4)
                     # Cannot require more bound than the KSI actually declares
@@ -2245,10 +2372,11 @@ def cmd_preflight(args):
                     if len(bound_ids) < need:
                         gaps.append(
                             f"vvk_method_binding ({len(bound_ids)} of {need} required "
-                            "distinct automated method(s) bound to OBSERVED telemetry; "
+                            "distinct automated method(s) bound to FRESH observed telemetry "
+                            "(a datapoint within the method's cadence window); "
                             "declared: "
                             + ", ".join(sorted(declared_ids)[:5])
-                            + "; bound: "
+                            + "; working: "
                             + (", ".join(sorted(bound_ids)[:5]) or "none")
                             + ")")
         return gaps

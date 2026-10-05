@@ -8,6 +8,32 @@ One project-specific convention: the pinned FedRAMP dataset version is recorded 
 
 Pinned dataset: `2026.09.13.02` (unchanged)
 
+Attested metric history (SAS delivery review of `cb23eb7`, item 6, and the
+production-assurance profile of the 16-item verdict's finding 16; `AUD-F37`,
+with a killed mutation):
+
+- **The metric history can no longer be filled in after the fact unnoticed
+  (AUD-F37, Critical).** Every observation the appender writes is hash-chained
+  to its predecessor (or the KSI's pruning anchor) and carries the collector's
+  `run_id` and the digest of the facts store it came from. `history_digest()`
+  over every chain head is one value a separate signer attests:
+  `publish_history.py publish --sign-key-arn` writes `meta.history_signature`
+  and `package-preflight` verifies it offline against the independently pinned
+  `expected_evidence_signer`. At Class C/D an edited, inserted or deleted
+  observation, a bad anchor or a series point with nothing behind it is a
+  blocker under every profile. New offering field `evidence_store_profile`:
+  `development` (template default) reports unchained, unattested or unsigned
+  history as advisories; `production-assurance` makes them blockers; an
+  unknown value blocks. The FRC-CSX-VVK binding gate now counts a declared
+  method as working only when its series carries a datapoint inside its
+  cadence window, so "two working automated methods" can no longer be met by
+  a series that exists but stopped, or was typed in with old dates.
+  Assessor-attack probes for every tamper (backfill, edit, delete, stale
+  method, unsigned production, rechained tamper with a forged signature) block;
+  a production-assurance history with a valid signed digest stays READY.
+  Histories written before this release carry no chain fields and are reported
+  as unchained (advisory under development) until the collector re-accumulates.
+
 Word-document integrity and sample residue (SAS delivery review of `cb23eb7`,
 items 1 and 5; `AUD-F35`, `AUD-F36`, each with a killed mutation):
 
