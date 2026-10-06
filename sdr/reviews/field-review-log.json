@@ -1,0 +1,4 @@
+{
+ "log_note": "Field-level review log. Each entry records ONE named human's decision on ONE proposed field (from the collector prefill sidecar, the AI-draft sidecar, or a labelled example shipped in the template): accepted (proposal applied, label stripped), edited (the reviewer's text applied) or rejected (record untouched). applied_sha256 binds the decision to the exact value written; validate_reviews.py fails when a reviewed field was changed afterwards without a new decision. This log is not approval of a rule or KSI (that is the review register) and never records implementation_status or assessment.",
+ "reviews": []
+}

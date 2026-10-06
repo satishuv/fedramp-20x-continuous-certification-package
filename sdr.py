@@ -970,11 +970,20 @@ def cmd_diff(args):
 
 
 def cmd_review(args):
-    """Report the human review register: what is approved, what is pending.
+    """Report the human review register (read-only, the default), or walk the
+    pending field proposals (--list / --walk / --decisions / --accept-all).
 
-    Read-only. The pipeline never authors an approval; this only shows the
-    state a human recorded.
+    The register report never authors an approval. The proposal walk writes a
+    field only on a NAMED human's accept or edit decision, strips the DRAFT /
+    Example label, and records the decision bound to the written value's hash
+    in sdr/reviews/field-review-log.json (automation/review/review_proposals.py).
+    It never writes implementation_status or assessment.
     """
+    if any(getattr(args, f, None) for f in ("list", "walk", "decisions", "accept_all",
+                                            "source", "only")):
+        sys.path.insert(0, os.path.join(BASE, "automation", "review"))
+        import review_proposals  # noqa: E402
+        return review_proposals.run(args, out=out)
     register = load_json(os.path.join(BASE, "sdr", "reviews", "review-register.json"))
     out()
     out("Human review register")
@@ -983,11 +992,17 @@ def cmd_review(args):
         out("No review register found.")
         return 0
     reviews = register.get("reviews", [])
+    field_log = load_json(os.path.join(BASE, "sdr", "reviews", "field-review-log.json")) or {}
+    field_reviews = field_log.get("reviews", []) if isinstance(field_log, dict) else []
     if not reviews:
         out("Register present, no reviews recorded yet. Nothing is approved.")
         out()
         out("A reviewer records signoff in sdr/reviews/review-register.json. "
             "The pipeline cannot and will not do this.")
+        if field_reviews:
+            out(f"Field-level decisions recorded     {len(field_reviews)} "
+                "(sdr/reviews/field-review-log.json; not approvals)")
+        out("Pending proposals: python sdr.py review --list")
         return 0
     approved = [r for r in reviews if r.get("decision") == "approved"]
     other = [r for r in reviews if r.get("decision") != "approved"]
@@ -2992,7 +3007,28 @@ def build_parser():
     diff_p = sub.add_parser("diff", help="show what a dataset change would affect (read-only)")
     diff_p.add_argument("old", nargs="?", help="old dataset JSON (optional)")
     diff_p.add_argument("new", nargs="?", help="new dataset JSON (optional)")
-    sub.add_parser("review", help="report the human review register (read-only)")
+    review_p = sub.add_parser(
+        "review",
+        help="report the human review register (default, read-only), or decide pending "
+             "field proposals (--list / --walk / --decisions / --accept-all prefill)")
+    review_p.add_argument("--list", action="store_true",
+                          help="list pending proposals from the prefill and AI-draft sidecars "
+                               "and the template's labelled examples (read-only)")
+    review_p.add_argument("--walk", action="store_true",
+                          help="decide each pending proposal interactively: accept, edit, "
+                               "reject or skip (needs --reviewer and --role)")
+    review_p.add_argument("--decisions", metavar="FILE",
+                          help="apply decisions from a JSON file "
+                               "{\"frr/<ID>.implementation\": {\"decision\": \"accepted\"}, ...}")
+    review_p.add_argument("--accept-all", metavar="SOURCE", dest="accept_all",
+                          help="accept every pending proposal from one source; only "
+                               "'prefill' (deterministic collector facts) is allowed")
+    review_p.add_argument("--source", choices=["prefill", "ai-draft", "template-example"],
+                          help="restrict to proposals from one source")
+    review_p.add_argument("--only", metavar="PREFIX",
+                          help="restrict to field keys starting with PREFIX, e.g. frr/AFC-")
+    review_p.add_argument("--reviewer", help="the named human making the decisions")
+    review_p.add_argument("--role", help="that person's role")
     rel_p = sub.add_parser("release", help="build, run the full gate + reproducibility, print the tag")
     sub.add_parser("preflight", help="alias for application-preflight (read-only)")
     sub.add_parser("package-preflight", help="check the generated package for submission blockers (read-only)")
