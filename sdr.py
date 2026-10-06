@@ -292,6 +292,8 @@ TEST_SUITE = [
     "automation/collectors/test_multi_account.py",
     "automation/prefill/test_prefill.py",
     "automation/ai/test_draft_narratives.py",
+    "automation/review/test_review_proposals.py",
+    "validation/scripts/test_unreviewed_text.py",
     "automation/ai/test_explain_findings.py",
     "automation/ai/test_rollup_evidence.py",
     "automation/ai/test_review_overclaim.py",

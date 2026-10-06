@@ -285,6 +285,12 @@ MUTATIONS = [
      '    body = {k: v for k, v in obs.items() if k != "hash"}',
      '    body = {k: v for k, v in obs.items() if k not in ("hash", "prev_hash", "passing", "total")}  # MUTATION hash no longer covers content or linkage',
      "automation/metrics/test_history_integrity.py"),
+    # AUD-F38: a labelled proposal is unanswered until a human accepts it.
+    ("MUT-F38",
+     "validation/scripts/unreviewed_text.py",
+     '    "DRAFT (",      # draft_narratives.py output',
+     '    # "DRAFT (",  # MUTATION machine drafts count as answers',
+     "validation/scripts/test_unreviewed_text.py"),
 ]
 
 

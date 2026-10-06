@@ -509,6 +509,19 @@
       "mutation": "MUT-F37: the observation hash no longer covers content or linkage; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F38",
+      "severity": "High",
+      "requirement": "A Security Decision Record states the provider's facts (SDR-CSO-FRR item 1: explanation of how the rule is followed; FRC-CSX-VVK: the provider's implementation); a labelled example or machine draft is not a provider statement until a human confirms it",
+      "component": "validation/scripts/unreviewed_text.py (new, single definition); sdr.py package-preflight (_is_tbd, _answered); validation/scripts/validate_sdr.py (populated checks); automation/sdrscan/checks.py (state); automation/ai/draft_narratives.py (is_tbd, rule drafting); automation/review/review_proposals.py (new); validation/scripts/validate_reviews.py (field-review-log binding)",
+      "description": "Text beginning 'Example (reference architecture, replace with your real implementation): ...', 'Example: ...' or 'DRAFT (AI-assisted, unverified ...): ...' counted as a populated, answered narrative in preflight, the validator and the scanner, because every predicate recognized only TBD-style markers. Reproduced at 35aa70c: AFC-CSO-INB's Example implementation satisfied the 'reason-not-followed' element of SDR-CSO-FRR in package-preflight, and three template rules plus three KSIs read as populated. With the drafter extended to every rule, a package whose 168 narratives were all machine drafts would have read as fully populated without a human confirming one sentence.",
+      "root_cause": "The readiness predicates had no notion of a proposal: a value was either a TBD placeholder or an answer. The drafter and the template wrote labelled proposals into the same fields and nothing downstream distinguished them; the only review path was hand-copying JSON, which also left no record of who confirmed what.",
+      "fix_commit": "this PR -- (1) one shared predicate (validation/scripts/unreviewed_text.py) treats the three labels as unanswered, imported by preflight, validate_sdr.py, the scanner and the drafter; (2) `sdr.py review --walk` is the only path from proposal to record: a NAMED human accepts (label stripped), edits or rejects each field, never implementation_status or assessment, and each decision is logged with provenance and the SHA-256 of the written value; (3) validate_reviews.py fails when a reviewed field's current value no longer hashes to the applied value, so a later silent edit invalidates the review",
+      "regression_test": "validation/scripts/test_unreviewed_text.py (shared predicate; scanner state; validate_sdr call sites; real package-preflight reports reason-not-followed for the Example-implemented rules at the active class; drafter rule path keeps the boundary and labels); automation/review/test_review_proposals.py (discovery from both sidecars and template examples; accept strips the label, edit writes the reviewer's text, reject leaves the record; refusals for a non-human reviewer, a missing role, a forbidden path, a labelled edit, an unknown key; end to end through run() with validate_reviews.py accepting the log and failing after a silent post-review edit or a pipeline reviewer)",
+      "mutation": "MUT-F38: 'DRAFT (' removed from UNREVIEWED_PREFIXES so machine drafts count as answers; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

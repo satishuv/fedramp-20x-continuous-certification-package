@@ -4,6 +4,49 @@ Notable changes to this project. Format follows [Keep a Changelog](https://keepa
 
 One project-specific convention: the pinned FedRAMP dataset version is recorded alongside every release, because the same code against a different dataset produces a different record.
 
+## Unreleased
+
+Pinned dataset: `2026.09.13.02` (unchanged)
+
+From typing to deciding (`AUD-F38`, High, with a killed mutation):
+
+- **A labelled proposal is unanswered until a named human accepts it
+  (AUD-F38).** Text beginning `DRAFT (`, `Example (` or `Example:` counted as
+  a populated, answered narrative in `package-preflight`, `validate_sdr.py`
+  and the scanner; at `35aa70c` the template's Example implementation of
+  AFC-CSO-INB satisfied the SDR-CSO-FRR "reason not followed" element, and
+  three rules plus three KSIs read as populated. One shared definition
+  (`validation/scripts/unreviewed_text.py`) now feeds every predicate, so a
+  package whose narratives are all machine drafts reads as exactly as unfilled
+  as one full of TBDs. Template blocker counts rise accordingly; that is the
+  honest number.
+- **`sdr.py review --walk` replaces hand-editing JSON.** It lists every pending
+  proposal (the collector prefill sidecar, the AI-draft sidecar, and the
+  labelled examples shipped in the template) with its current value, the
+  proposal, its provenance and exactly what would be written, and takes one key
+  per field: accept (label stripped), edit (the reviewer's text), reject or
+  skip. `--accept-all prefill` bulk-accepts deterministic collector facts
+  (structured tests and evidence), never prose; `--decisions FILE` applies a
+  prepared set; `--list` is read-only. It refuses to run without `--reviewer`
+  and `--role`, refuses a pipeline identity, and never writes
+  `implementation_status` or `assessment`. The register report
+  (`sdr.py review` with no flags) is unchanged.
+- **Every decision is recorded and bound.** `sdr/reviews/field-review-log.json`
+  (new, shipped empty) records reviewer, role, timestamp, source, provenance
+  (collector run id, facts digest, drafter) and the SHA-256 of the proposal and
+  of the written value. `validate_reviews.py` checks the log in the gate and
+  FAILS when the latest accepted or edited field was changed afterwards without
+  a new decision.
+- **The drafter proposes every rule narrative.** `draft_narratives.py --scope
+  rules` drafts the 168 FRR process rules with no collected facts needed: the
+  curated reference-architecture example the template carries for that field
+  when present (kept verbatim, re-labelled as a proposal), else the
+  CR26-derived `fill_guidance` with the offering profile's real values named
+  (organization, offering, security and incident contacts, trust center;
+  template placeholders are never treated as facts). Same forbidden-field
+  boundary as KSIs. Default `--scope all` drafts KSIs (facts required) and
+  rules; KSIs are skipped with a notice when no facts exist.
+
 ## 1.5.0, 2026-10-05
 
 Pinned dataset: `2026.09.13.02` (unchanged)
