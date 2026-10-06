@@ -6,8 +6,10 @@ populated, answered narrative in sdr.py preflight (``_answered``),
 validate_sdr.py (``"TBD" in s``) and the scanner (``state()``). A package whose
 168 rule narratives were all machine drafts would have read as fully populated.
 
-This test pins the shared definition and every consumer of it. Mutation
-MUT-F38 removes "DRAFT (" from the prefix list; this test must go RED.
+This test pins the shared definition and every consumer of it. The template
+has shipped no Example text since fdf9acc, so the preflight before/after plants
+its own Example fixture in a temp copy of the tree. Mutation MUT-F38 removes
+"DRAFT (" from the prefix list; this test must go RED.
 
 Run: python validation/scripts/test_unreviewed_text.py
 """
@@ -54,40 +56,69 @@ def test_scanner_treats_proposals_as_placeholder():
     print("PASS: test_scanner_treats_proposals_as_placeholder")
 
 
-def _preflight_predicates():
-    """Pull _is_tbd / _answered out of sdr.py's preflight by executing the
-    command against a store whose only populated narratives are proposals.
-    Cheaper and more honest: run `sdr.py package-preflight` and read the report
-    text for the three Example rules."""
-    out = subprocess.run([sys.executable, os.path.join(BASE, "sdr.py"), "package-preflight"],
-                         capture_output=True, text=True, cwd=BASE)
+def _preflight_in(root):
+    """Run the real `sdr.py package-preflight` inside a tree copy and return
+    its text. The gate precondition runs too; a failed gate only adds a blocker,
+    the per-record gap list is still printed."""
+    out = subprocess.run([sys.executable, os.path.join(root, "sdr.py"), "package-preflight"],
+                         capture_output=True, text=True, cwd=root)
     return out.stdout + out.stderr
 
 
 def test_preflight_does_not_count_proposals_as_answered():
-    """The template ships Example text as the implementation of AFC-CSO-INB,
-    FRC-CSO-JSN and VDR-CSO-DET (status Not Implemented). For a not-followed
-    rule the implementation narrative may carry the reason, so at 35aa70c the
-    Example text SATISFIED the 'reason-not-followed' element and preflight did
-    not list it. It must now be listed as missing for every such rule."""
-    store = json.load(open(os.path.join(BASE, "sdr", "records", "records-store.json"), encoding="utf-8"))
-    example_rules = [k for k, v in store["frr"].items()
-                     if ut.is_unreviewed(v.get("implementation"))
-                     and str(v.get("implementation_status", "")).startswith("Not Implemented")]
-    assert example_rules, "fixture drift: the template no longer ships Example implementations"
-    text = _preflight_predicates()
-    checked = 0
-    for rid in example_rules:
-        marker = f"{rid} (missing: "
-        if marker not in text:
-            continue  # rule not applicable at the active class; preflight does not list it
-        gaps = text[text.index(marker) + len(marker):].split(")", 3)[0]
-        assert "reason-not-followed" in gaps, (
-            f"{rid}: the Example implementation text still counts as the reason: {gaps!r}")
-        checked += 1
-    assert checked >= 1, f"none of {example_rules} is reported by preflight at the active class"
-    print(f"PASS: test_preflight_does_not_count_proposals_as_answered ({checked} of "
-          f"{len(example_rules)} example rules applicable at the active class)")
+    """Before/after on the REAL preflight, in a temp copy of the tree.
+
+    Reproduced at 35aa70c: for a rule that is Not Implemented, the
+    implementation narrative may carry the reason it is not followed, and the
+    template's ``Example (reference architecture, ...)`` text SATISFIED that
+    'reason-not-followed' element. Since fdf9acc the template ships no Example
+    text, so this test plants the fixture itself: every applicable record is
+    answered (the readiness harness's fill), then ONE applicable rule is set
+    Not Implemented with the Example text as its implementation and no reason.
+    Preflight must list reason-not-followed for it. The same rule with real
+    text must drop off the list, so the assertion discriminates on the
+    predicate, not on the status."""
+    import shutil
+    import tempfile
+    import test_submission_readiness as rt
+    tmp = tempfile.mkdtemp(prefix="aud-f38-")
+    try:
+        root = os.path.join(tmp, "repo")
+        shutil.copytree(BASE, root, ignore=shutil.ignore_patterns(
+            ".git", "__pycache__", "*.log", ".tmp"))
+        rt._fill_records(root)
+        rp = os.path.join(root, "sdr", "records", "records-store.json")
+        store = json.load(open(rp, encoding="utf-8"))
+        prof = json.load(open(os.path.join(root, "profiles", "common", "offering-profile.json"),
+                              encoding="utf-8"))
+        cls = str(prof.get("certification_class") or "b").lower()
+        cprof = json.load(open(os.path.join(root, "profiles", f"class-{cls}", "profile.json"),
+                               encoding="utf-8"))
+        applicable = [r["rule_id"] for r in cprof.get("rules", []) if r.get("rule_id") in store["frr"]]
+        assert applicable, "no applicable rule found in the class profile"
+        rid = applicable[0]
+        rec = store["frr"][rid]
+        rec["implementation_status"] = "Not Implemented"
+        rec["implementation"] = [EXAMPLE_LONG]
+        ext = rec.setdefault("extension", {})
+        ext["nonimplementation_reason"] = "TBD: Information has not been provided."
+        ext["customer_risk"] = ("Customers rely on compensating manual review until the "
+                                "control is in place (fictional).")
+        json.dump(store, open(rp, "w", encoding="utf-8", newline="\n"), indent=1)
+
+        before = _preflight_in(root)
+        assert f"{rid} (missing: reason-not-followed" in before, (
+            f"{rid}: the Example implementation text still counts as the reason "
+            f"the rule is not followed:\n{before[-1500:]}")
+
+        rec["implementation"] = [REAL]
+        json.dump(store, open(rp, "w", encoding="utf-8", newline="\n"), indent=1)
+        after = _preflight_in(root)
+        assert f"{rid} (missing: " not in after, (
+            f"{rid}: a real narrative must satisfy the reason element:\n{after[-1500:]}")
+        print(f"PASS: test_preflight_does_not_count_proposals_as_answered ({rid}, Class {cls.upper()})")
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 def test_validate_sdr_populated_predicate():
