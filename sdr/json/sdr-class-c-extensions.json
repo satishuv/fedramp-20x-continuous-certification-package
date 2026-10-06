@@ -1,7 +1,7 @@
 {
  "extension_note": "Provider operational metadata companion to the official SDR JSON. Nonstandard fields live here so the official document remains schema-portable. Keyed by frrID and ksiId.",
  "metadata": {
-  "offering": "Example PaaS Foundation",
+  "offering": "TBD: name of the cloud service offering (CPO serviceIdentification.serviceName)",
   "certification_class": "C",
   "certification_path": "Program",
   "aws_partition": "aws (AWS Commercial)",

@@ -1,5 +1,5 @@
 SECURITY DECISION RECORD
-Example PaaS Foundation (EPF)
+Offering name not yet provided (TBD)
 
 Certification type: FedRAMP 20x
 Certification class: Class C

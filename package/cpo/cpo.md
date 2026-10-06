@@ -1,11 +1,11 @@
 Certification Package Overview
-Example PaaS Foundation (EPF)
+Offering name not yet provided (TBD)
 
 Provider: TBD: Information has not been provided
 Certification type: 20x
 Certification class: Class B
-Service description: Reference architecture assumption: a generic AWS-native Platform as a Service foundation that customers use to deploy and operate applications and SaaS workloads on AWS.
-Website: TBD: public product website URL (CPO serviceIdentification.website; CDS-CSO-PUB 'Product Website Link')
+Service description: TBD: one or two sentences on what the offering does (CPO serviceIdentification.serviceDescription; CDS-CSO-PUB 'Overall Service Description')
+Website: https://example.provider.gov-placeholder/tbd
 
 Service properties
 Service type: PaaS
@@ -28,7 +28,7 @@ TBD: CPO-CSO-OSA (Class B/C MUST, and required when Class A selects optional IVV
 
 Required information included in this Certification Package Overview (CPO-CSO-OVR)
 - CPO-CSO-MTD (Certification Package Overview: CPO-CSO-MTD (Certification Package Overview Metadata)): TBD: Information has not been provided.
-- CDS-CSO-PUB (Certification Data Sharing: CDS-CSO-PUB (Public Information)): {'fedramp_id': 'TBD: Information has not been provided.', 'service_model': 'PaaS', 'deployment_model': 'TBD: Information has not been provided.', 'business_category': 'TBD: Information has not been provided.', 'uei_number': 'TBD: Information has not been provided.', 'sales_contact_information': 'TBD: Information has not been provided.', 'security_contact_information': 'TBD: Information has not been provided.', 'product_website_link': 'TBD: Information has not been provided.', 'link_to_product_logo': 'TBD: Information has not been provided.', 'overall_service_description': 'Reference architecture assumption: a generic AWS-native Platform as a Service foundation that customers use to deploy and operate applications and SaaS workloads on AWS.', 'detailed_list_of_specific_services_and_their_security_categories': 'TBD: Information has not been provided.', 'link_to_secure_configuration_guidance': 'TBD: Information has not been provided.', 'overview_of_documentation_supplied_by_the_provider_for_the_cloud_service_offering': 'TBD: Information has not been provided.', 'link_to_trust_center_landing_page_that_includes_instructions_on_accessing_information_in_the_trust_center': 'TBD: Information has not been provided.', 'next_ongoing_certification_report_date': 'TBD: Information has not been provided.', 'current_fedramp_recognized_independent_assessment_service': 'TBD: Information has not been provided.'}
+- CDS-CSO-PUB (Certification Data Sharing: CDS-CSO-PUB (Public Information)): {'fedramp_id': 'TBD: Information has not been provided.', 'service_model': 'TBD: Information has not been provided.', 'deployment_model': 'TBD: Information has not been provided.', 'business_category': 'TBD: Information has not been provided.', 'uei_number': 'TBD: Information has not been provided.', 'sales_contact_information': 'TBD: Information has not been provided.', 'security_contact_information': 'TBD: Information has not been provided.', 'product_website_link': 'TBD: Information has not been provided.', 'link_to_product_logo': 'TBD: Information has not been provided.', 'overall_service_description': 'TBD: Information has not been provided.', 'detailed_list_of_specific_services_and_their_security_categories': 'TBD: Information has not been provided.', 'link_to_secure_configuration_guidance': 'TBD: Information has not been provided.', 'overview_of_documentation_supplied_by_the_provider_for_the_cloud_service_offering': 'TBD: Information has not been provided.', 'link_to_trust_center_landing_page_that_includes_instructions_on_accessing_information_in_the_trust_center': 'TBD: Information has not been provided.', 'next_ongoing_certification_report_date': 'TBD: Information has not been provided.', 'current_fedramp_recognized_independent_assessment_service': 'TBD: Information has not been provided.'}
 - CDS-CSO-SVC (Certification Data Sharing: CDS-CSO-SVC (Public Service List)): TBD: Information has not been provided.
 - CDS-CSO-IRP (Certification Data Sharing: CDS-CSO-IRP (Include Relevant Policies)): TBD: Information has not been provided.
 - MAS-CSO-IIR (Minimum Assessment Scope: MAS-CSO-IIR (Identify Information Resources)): TBD: Information has not been provided.

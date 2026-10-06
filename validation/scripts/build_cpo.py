@@ -319,7 +319,7 @@ def render_md(profile, doc):
     a = L.append
     si = doc["serviceIdentification"]
     a("Certification Package Overview")
-    a(f"{si['serviceName']} ({si['serviceAcronym']})")
+    a(_pc.offering_title(profile))
     a("")
     a(f"Provider: {si['providerName']}")
     a(f"Certification type: {si['certificationType']}")
