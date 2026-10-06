@@ -27,9 +27,36 @@ import sys
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 REGISTER = os.path.join(BASE, "sdr", "reviews", "review-register.json")
 GRAPH = os.path.join(BASE, "traceability", "assurance-graph.json")
+FIELD_LOG = os.path.join(BASE, "sdr", "reviews", "field-review-log.json")
+STORE = os.path.join(BASE, "sdr", "records", "records-store.json")
 
 REQUIRED = ["review_id", "assurance_id", "reviewer", "role", "decision", "reviewed_at"]
 ALLOWED_DECISIONS = {"approved", "rejected", "changes-requested", "pending"}
+# Field-level decisions (sdr.py review --walk): one per proposed field.
+FIELD_REQUIRED = ["review_id", "field", "decision", "reviewer", "role", "reviewed_at",
+                  "source", "proposed_sha256"]
+FIELD_DECISIONS = {"accepted", "edited", "rejected"}
+
+
+def _canon_sha256(value):
+    """Same canonical hash review_proposals.py writes as applied_sha256."""
+    import hashlib
+    canon = json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return "sha256:" + hashlib.sha256(canon.encode("utf-8")).hexdigest()
+
+
+def _field_value(store, key):
+    """Resolve 'frr/<ID>.extension.owner' against the record store, or None."""
+    if "/" not in key or "." not in key:
+        return None
+    section, rest = key.split("/", 1)
+    record_id, path = rest.split(".", 1)
+    node = (store.get(section) or {}).get(record_id)
+    for part in path.split("."):
+        if not isinstance(node, dict) or part not in node:
+            return None
+        node = node[part]
+    return node
 # A reviewer must be a real name/identity, never the pipeline.
 FORBIDDEN_REVIEWERS = {"", "deterministic", "pipeline", "sdr.py", "automation",
                        "system", "bot"}
@@ -185,11 +212,54 @@ def main():
                                             "does not match the current release manifest "
                                             "(a generated artifact changed since signoff)")
 
+    # Field-level review log (sdr.py review --walk). Not approvals: one named
+    # human's decision per proposed field. Checks: a human reviewer, an allowed
+    # decision, never implementation_status / assessment, and for the LATEST
+    # accepted/edited decision on a field, applied_sha256 must equal the hash
+    # of the field's CURRENT value in the record store (a later silent edit
+    # invalidates the review; the field must be decided again).
+    field_log = load(FIELD_LOG)
+    field_reviews = field_log.get("reviews", []) if isinstance(field_log, dict) else []
+    store = load(STORE) or {}
+    latest = {}
+    for i, r in enumerate(field_reviews):
+        where = r.get("review_id", f"field#{i}")
+        for f in FIELD_REQUIRED:
+            if not r.get(f):
+                problems.append(f"{where}: missing required field '{f}'")
+        dec = r.get("decision")
+        if dec not in FIELD_DECISIONS:
+            problems.append(f"{where}: field decision '{dec}' not in {sorted(FIELD_DECISIONS)}")
+        reviewer = str(r.get("reviewer", "")).strip().lower()
+        if reviewer in FORBIDDEN_REVIEWERS:
+            problems.append(f"{where}: reviewer '{r.get('reviewer')}' is not a human identity")
+        key = str(r.get("field", ""))
+        leaf = key.split(".", 1)[1] if "." in key else ""
+        if leaf.split(".")[0] in ("implementation_status", "assessment"):
+            problems.append(f"{where}: field '{key}' is never reviewable in the field log")
+        if key:
+            latest[key] = r  # entries are appended in time order
+    for key, r in latest.items():
+        if r.get("decision") not in ("accepted", "edited"):
+            continue
+        where = r.get("review_id", key)
+        applied = r.get("applied_sha256")
+        if not applied:
+            problems.append(f"{where}: {r['decision']} without applied_sha256")
+            continue
+        current = _field_value(store, key)
+        if current is None:
+            problems.append(f"{where}: field '{key}' no longer exists in the record store")
+        elif _canon_sha256(current) != applied:
+            problems.append(f"{where}: field '{key}' changed after it was {r['decision']} "
+                            "(review is stale; decide it again with sdr.py review)")
+
     if problems:
         for p in problems[:20]:
             print(f"    - {p}")
         return 1
     print(f"PASS: review register valid ({len(reviews)} review(s); "
+          f"{len(field_reviews)} field decision(s) bound to current values; "
           "no machine-authored approvals; all decisions human and well-formed).")
     return 0
 

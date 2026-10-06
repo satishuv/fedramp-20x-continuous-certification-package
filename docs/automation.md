@@ -89,22 +89,40 @@ Versioning and the evidence content hash give tamper-**evidence**: a reviewer or
 
 Five optional AI-assist modules live in `automation/ai/`, each a separate pluggable component with hard constraints fixed in code:
 
-- `draft_narratives.py` drafts implementation and validation prose into to-be-determined fields only; a per-indicator guard blocks any change to a forbidden field (status, assessment, tests, evidence) and writes only to a git-ignored draft sidecar.
+- `draft_narratives.py` drafts implementation and validation prose into unanswered fields only (TBD, or a labelled proposal); a per-record guard blocks any change to a forbidden field (status, assessment, tests, evidence) and writes only to a git-ignored draft sidecar. `--scope ksi` drafts the 46 indicators from collected facts; `--scope rules` drafts the 168 FRR process rules with no facts needed, from the curated reference-architecture example the template already carries for that field, else from the CR26-derived `fill_guidance` (`what_it_looks_for`, `how_to_comply`, `evidence_required`) plus the offering profile's real values (organization, offering, security and incident contacts, trust center); the default drafts both.
 - `explain_findings.py` explains findings in plain English. Advisory, no write path.
 - `rollup_evidence.py` summarizes dated facts into a paragraph. Summarizes only, never claims.
 - `review_overclaim.py` flags draft prose that claims more than the facts support. Flags only, never edits.
 - `suggest_ksi_mapping.py` suggests which indicators a provider's services support. Suggestions only, confirmed by a human against the dataset.
 
-Shared constraints, proven by 27 offline boundary tests wired into CI:
+Shared constraints, proven by offline boundary tests wired into CI:
 
-- Drafts, explains, summarizes, flags, or suggests only from facts already collected. No invented specifics.
-- Produces a diff or advisory output for human review. It never writes the record store.
+- Drafts, explains, summarizes, flags, or suggests only from facts already collected or from the official rule text. No invented specifics.
+- Produces a labelled proposal for human review. It never writes the record store.
 - Cannot set a status. Ever. Cannot produce evidence.
 - Default backend is offline and deterministic (no model, no network); an Amazon Bedrock backend is opt-in per module and imports its client only when explicitly chosen. The provider decides the backend and whether any data leaves their boundary.
 
-Why bother at all: the bottleneck in a real record is not knowing what the controls are, it is writing the narrative entries of clear prose describing them. A drafter that turns collected facts into a first draft, which a person then corrects, addresses the actual cost without touching the trust boundary.
+Why bother at all: the bottleneck in a real record is not knowing what the controls are, it is writing the narrative entries of clear prose describing them. A drafter that turns collected facts and the official rule text into a first draft, which a person then confirms or corrects, addresses the actual cost without touching the trust boundary.
 
-Also planned: annotating infrastructure-as-code modules with the indicators they satisfy, so the link between a resource and a requirement lives next to the resource.
+## Layer 3: the review step (from typing to deciding)
+
+A proposal is not an answer. Every readiness predicate (`sdr.py` preflight, `validate_sdr.py`, the scanner) treats text that starts with `DRAFT (`, `Example (` or `Example:` as unanswered, through one shared definition in `validation/scripts/unreviewed_text.py` (AUD-F38). A package whose narratives are all machine drafts therefore reads as exactly as unfilled as a template full of TBDs. The only way a proposal becomes the provider's record is a named human's decision:
+
+```
+python automation/collectors/collect_facts.py --profile <ReadOnly>   # facts (read-only)
+python automation/prefill/prefill_from_facts.py --write              # KSI tests/evidence proposals
+python automation/ai/draft_narratives.py --write                     # KSI + rule narrative proposals
+python sdr.py review --list                                          # what is pending, by source
+python sdr.py review --walk --reviewer "Jane Doe" --role "Compliance lead"
+```
+
+`review --walk` shows each pending field (the prefill sidecar, the AI-draft sidecar, and the labelled examples shipped in the template) with its current value, the proposal, its provenance, and exactly what would be written, then takes one key: accept (the proposal is written with its label stripped), edit (the reviewer's text is written), reject (nothing changes) or skip. `--accept-all prefill` bulk-accepts the deterministic collector facts (structured tests and evidence, not prose); prose is decided one field at a time. `--decisions FILE` applies a prepared JSON of decisions.
+
+Each decision is appended to `sdr/reviews/field-review-log.json` with the reviewer, role, timestamp, source, provenance (collector run id, facts digest, drafter), the hash of the proposal and the hash of what was written. `validate_reviews.py` checks the log in the gate: a human reviewer, an allowed decision, never `implementation_status` or `assessment`, and for the latest accepted or edited decision on a field, the field's CURRENT value must still hash to what was written. Change a reviewed field by hand afterwards and the gate fails until it is decided again.
+
+What typing remains: facts that exist nowhere in writing yet (a new offering with no landing zone, no policies, no prior package). Those are said once in the scoping call and typed once. Everything that exists somewhere (the account's posture, the official rule text, the template's reference architecture, the offering profile) arrives as a proposal to decide, not a sentence to compose.
+
+Also planned: importers for Config rules and Security Hub findings (mapping as data, with a review queue for unmapped rules), the landing-zone configuration, and an OSCAL Rev5 SSP, each producing proposals into the same review step; and annotating infrastructure-as-code modules with the indicators they satisfy.
 
 ## What deliberately is not automated
 

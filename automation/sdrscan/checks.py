@@ -23,6 +23,11 @@
 import json
 import os
 import re
+import sys
+
+_BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(_BASE, "validation", "scripts"))
+from unreviewed_text import is_unreviewed  # noqa: E402  (AUD-F38, single definition)
 
 # Placeholder vocabulary from CLAUDE.md. These are honest markers for missing
 # facts, so a field containing one is "not yet stated", never a pass.
@@ -103,6 +108,10 @@ def state(value):
         return "populated" if len(text) >= NA_MIN_JUSTIFICATION else "placeholder"
     if PLACEHOLDER.match(text):
         return "placeholder"
+    # AUD-F38: a labelled DRAFT / Example proposal is a machine's or the
+    # template's text, unanswered until a human accepts it in `sdr.py review`.
+    if is_unreviewed(text):
+        return "placeholder"
     return "populated"
 
 
@@ -111,6 +120,8 @@ def stated(value):
 
 
 def _why(value):
+    if state(value) == "placeholder" and is_unreviewed(value):
+        return "field holds an unreviewed DRAFT / Example proposal (accept or edit it in sdr.py review)"
     return {"empty": "field is absent or empty",
             "placeholder": "field still holds a placeholder marker"}.get(
         state(value), "field is populated")

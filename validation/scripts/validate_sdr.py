@@ -31,6 +31,8 @@ from fedramp_constants import VVK_FORCE
 # Single source of truth for FRC-CSX-VVK automated-method counting, shared with
 # build_assurance_graph.py so the reviewer-facing report cannot diverge.
 from verification_methods import count_automated_methods
+# AUD-F38: a labelled DRAFT / Example proposal is not a populated narrative.
+from unreviewed_text import is_unreviewed
 
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Shared Class B KSI-scope resolver (single source of truth). sdr.py guards
@@ -434,7 +436,8 @@ def main():
         authoring_tests = (records_ksi.get(kid, {}) or {}).get("tests", [])
         automated_count, string_tests, _tot = count_automated_methods(authoring_tests)
         needed = min_methods.get(kid, 0)
-        is_populated = not any("TBD" in s for s in k.get("ksiImplementation", []))
+        is_populated = not any("TBD" in s or is_unreviewed(s)
+                               for s in k.get("ksiImplementation", []))
         # In a populated record, only counted automated methods satisfy the
         # minimum. In template (TBD) state, the requirement is not yet asserted,
         # so report the raw test_count informationally and do not hard-fail.
@@ -633,7 +636,7 @@ def main():
     linkage_gaps = []
     for k in sdr["keySecurityIndicators"]:
         impl = k.get("ksiImplementation", [])
-        populated = not any("TBD" in s for s in impl)
+        populated = not any("TBD" in s or is_unreviewed(s) for s in impl)
         if not populated:
             continue
         if not (k.get("ksiEvidence") or []):

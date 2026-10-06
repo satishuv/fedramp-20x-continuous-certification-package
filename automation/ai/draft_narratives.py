@@ -46,10 +46,24 @@ AI_SIDECAR = os.path.join(BASE, "sdr", "records", "records-store.ai-draft.json")
 
 TBD_MARKERS = ("TBD:", "TBD ", "Information has not been provided", "FedRAMP pending")
 
+# AUD-F38: a labelled DRAFT / Example proposal is draftable too (it is not the
+# provider's confirmed fact), and the readiness predicates treat it as
+# unanswered until `sdr.py review` accepts it. Single definition shared with
+# preflight, the validator and the scanner.
+sys.path.insert(0, os.path.join(BASE, "validation", "scripts"))
+from unreviewed_text import is_unreviewed, strip_label  # noqa: E402
+
+OFFERING_PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
+
 # Fields this module may DRAFT into. Deliberately excludes implementation_status,
 # assessment, tests, and evidence. Guarded again at write time.
 DRAFTABLE_FIELDS = ("implementation", "validation")
 FORBIDDEN_FIELDS = ("implementation_status", "assessment", "tests", "evidence")
+
+DRAFT_LABEL = "DRAFT (AI-assisted, unverified -- review before use): "
+# A curated template example carries a known narrative; the drafter keeps the
+# narrative and only re-labels it as a reviewable proposal.
+EXAMPLE_LABEL = "DRAFT (reference-architecture example, unverified -- review before use): "
 
 
 def load(path, default=None):
@@ -62,10 +76,38 @@ def load(path, default=None):
 
 def is_tbd(value):
     if isinstance(value, str):
-        return any(m in value for m in TBD_MARKERS) or value.strip() == ""
+        return (any(m in value for m in TBD_MARKERS) or value.strip() == ""
+                or is_unreviewed(value))
     if isinstance(value, list):
         return len(value) == 0 or all(is_tbd(v) for v in value)
     return False
+
+
+def _profile_value(profile, key):
+    """A profile value that is real (not TBD / placeholder / proposal), else None."""
+    v = (profile or {}).get(key)
+    if not isinstance(v, str):
+        return None
+    s = v.strip()
+    if not s or any(m in s for m in TBD_MARKERS) or is_unreviewed(s) \
+            or "placeholder" in s.lower():
+        return None
+    return s
+
+
+def load_profile_context():
+    """The offering-profile values a rule narrative may name. Read-only; only
+    values the provider actually filled are used (template examples are not)."""
+    profile = load(OFFERING_PROFILE, {}) or {}
+    return {
+        "organization": _profile_value(profile, "organization_name"),
+        "offering": _profile_value(profile, "offering_name"),
+        "security_contact": _profile_value(profile, "security_contact"),
+        "incident_contact": _profile_value(profile, "incident_contact"),
+        "trust_center_uri": _profile_value(profile, "trust_center_uri"),
+        "primary_region": _profile_value(profile, "primary_region"),
+        "certification_class": _profile_value(profile, "certification_class"),
+    }
 
 
 def load_all_posture_facts():
@@ -213,6 +255,92 @@ def _assert_boundary(before_record, after_record, kid):
                 "which it must never touch. Aborting.")
 
 
+# ---- Rule (FRR) drafting -----------------------------------------------------
+#
+# The 168 FRR entries are process rules (security inbox, notifications, trust
+# center, change reporting, ...). No collector observes them, so a rule draft
+# is built from (a) the curated reference-architecture example the template
+# already carries for that field, when present, else (b) the CR26-derived
+# fill_guidance (what_it_looks_for / how_to_comply / evidence_required), with
+# the offering profile's REAL values named where they belong. Either way the
+# text is a labelled proposal: the readiness predicates treat it as unanswered
+# until a named human accepts it in `sdr.py review`.
+
+def _clip(s, n):
+    s = (s or "").strip()
+    return s if len(s) <= n else s[:s.rfind(" ", 0, n)].rstrip() + "..."
+
+
+def _existing_example(value):
+    """The curated example narrative in a field, label removed, or None."""
+    items = value if isinstance(value, list) else [value]
+    for item in items:
+        if isinstance(item, str) and item.strip().startswith("Example ("):
+            body = strip_label(item)
+            if body:
+                return body
+    return None
+
+
+def draft_rule_text(kind, rule_id, record, guidance, context):
+    """Deterministic, offline proposal for one rule field. Returns the labelled
+    DRAFT string, or None when the guidance carries nothing to draft from."""
+    example = _existing_example(record.get(kind))
+    if example:
+        return EXAMPLE_LABEL + example
+    looks = (guidance.get("what_it_looks_for") or "").strip()
+    how = (guidance.get("how_to_comply") or "").strip()
+    evidence = guidance.get("evidence_required") or []
+    if not (looks or how or evidence):
+        return None
+    who = context.get("organization") or "the provider"
+    what = context.get("offering") or "the offering"
+    if kind == "implementation":
+        body = (f"Proposed implementation narrative for {rule_id}, to be confirmed "
+                f"or edited by {who} for {what}. Requirement: {_clip(looks, 300)} "
+                f"Proposed approach: {_clip(how, 420)}")
+        contacts = []
+        if "inbox" in (looks + how).lower() and context.get("security_contact"):
+            contacts.append(f"security contact {context['security_contact']}")
+        if "incident" in (looks + how).lower() and context.get("incident_contact"):
+            contacts.append(f"incident contact {context['incident_contact']}")
+        if "trust center" in (looks + how).lower() and context.get("trust_center_uri"):
+            contacts.append(f"trust center {context['trust_center_uri']}")
+        if contacts:
+            body += " Offering-profile values that apply: " + "; ".join(contacts) + "."
+    else:
+        ev = "; ".join(str(e) for e in evidence[:4]) or "the artifacts the rule names"
+        body = (f"Proposed validation narrative for {rule_id}, to be confirmed or "
+                f"edited by {who}. Validation approach: produce and retain {_clip(ev, 300)} "
+                f"on the cadence stated in the implementation, review it against the "
+                f"requirement ({_clip(looks, 200)}), and record each check and any miss.")
+    body += (" A proposal is not a compliance conclusion; the provider must confirm "
+             "accuracy and completeness before relying on this text.")
+    return DRAFT_LABEL + body
+
+
+def draft_rule(rule_id, record, context):
+    """Draft implementation/validation prose into unanswered rule fields only
+    (TBD, or a labelled Example / DRAFT proposal). Returns (changed, notes).
+    Mutates the record on the proposed copy only; the boundary is enforced by
+    the caller with _assert_boundary, exactly as for KSIs."""
+    guidance = record.get("fill_guidance", {}) or {}
+    notes = []
+    changed = False
+    for field in DRAFTABLE_FIELDS:
+        current = record.get(field, "")
+        if not is_tbd(current):
+            continue  # never overwrite author-written prose
+        text = draft_rule_text(field, rule_id, record, guidance, context)
+        if not text:
+            continue
+        record[field] = [text] if isinstance(current, list) else text
+        changed = True
+        source = "example" if text.startswith(EXAMPLE_LABEL) else "guidance"
+        notes.append(f"{rule_id}: drafted {field} ({source})")
+    return changed, notes
+
+
 def main():
     ap = argparse.ArgumentParser(
         description="OPT-IN AI narrative drafting (reviewable diff; assists, never decides).")
@@ -221,6 +349,10 @@ def main():
     ap.add_argument("--drafter", default="template", choices=["template", "bedrock"],
                     help="drafting backend; 'template' is offline/default, "
                          "'bedrock' is opt-in and requires provider Bedrock access")
+    ap.add_argument("--scope", default="all", choices=["all", "ksi", "rules"],
+                    help="draft KSI narratives (needs collected facts), FRR rule "
+                         "narratives (from the curated example or the CR26-derived "
+                         "guidance plus the offering profile), or both (default)")
     args = ap.parse_args()
 
     registry = load(REGISTRY)
@@ -229,11 +361,18 @@ def main():
         print("Could not load the registry or the record store.")
         return 2
 
+    want_ksi = args.scope in ("all", "ksi")
+    want_rules = args.scope in ("all", "rules")
+
     posture_by_service = load_all_posture_facts()
-    if not posture_by_service:
-        print("No facts found in automation/facts/. Run the collector first "
-              "(read-only): python automation/collectors/collect_facts.py --profile <ReadOnly>")
-        return 1
+    if want_ksi and not posture_by_service:
+        if args.scope == "ksi":
+            print("No facts found in automation/facts/. Run the collector first "
+                  "(read-only): python automation/collectors/collect_facts.py --profile <ReadOnly>")
+            return 1
+        print("No facts found in automation/facts/; KSI narratives are skipped "
+              "(run the read-only collector first). Rule narratives are drafted.")
+        want_ksi = False
 
     try:
         drafter = get_drafter(args.drafter)
@@ -255,22 +394,34 @@ def main():
     ksi_records = proposed.get("ksi", {})
     all_notes = []
     drafted = 0
-    for kid, ksi_entry in registry.get("ksis", {}).items():
-        record = ksi_records.get(kid)
-        if record is None:
-            continue
-        before = copy.deepcopy(record)
-        changed, notes = draft_ksi(kid, record, ksi_entry, posture_by_service,
-                                   drafter, service_map)
-        _assert_boundary(before, record, kid)  # enforce the boundary per KSI
-        if changed:
-            drafted += 1
-        all_notes.extend(notes)
+    if want_ksi:
+        for kid, ksi_entry in registry.get("ksis", {}).items():
+            record = ksi_records.get(kid)
+            if record is None:
+                continue
+            before = copy.deepcopy(record)
+            changed, notes = draft_ksi(kid, record, ksi_entry, posture_by_service,
+                                       drafter, service_map)
+            _assert_boundary(before, record, kid)  # enforce the boundary per KSI
+            if changed:
+                drafted += 1
+            all_notes.extend(notes)
 
-    if drafted == 0:
-        print("No KSI narratives were drafted (fields already authored, or no "
-              "matching facts). AI drafting only fills TBD implementation/"
-              "validation prose.")
+    rules_drafted = 0
+    if want_rules:
+        context = load_profile_context()
+        for rule_id, record in sorted(proposed.get("frr", {}).items()):
+            before = copy.deepcopy(record)
+            changed, notes = draft_rule(rule_id, record, context)
+            _assert_boundary(before, record, rule_id)  # same boundary for rules
+            if changed:
+                rules_drafted += 1
+            all_notes.extend(notes)
+
+    if drafted == 0 and rules_drafted == 0:
+        print("No narratives were drafted (fields already authored, or no "
+              "matching facts). AI drafting only fills unanswered implementation/"
+              "validation prose (TBD, or a labelled Example / DRAFT proposal).")
         return 0
 
     before = json.dumps(store, indent=1, ensure_ascii=False).splitlines(keepends=True)
@@ -283,17 +434,20 @@ def main():
     print(f"\nAI draft summary (drafter={drafter.name}):")
     for note in all_notes:
         print(f"  {note}")
-    print(f"\n{drafted} KSI(s) received a DRAFT implementation/validation narrative.")
+    print(f"\n{drafted} KSI(s) and {rules_drafted} rule(s) received a DRAFT "
+          "implementation/validation narrative.")
     print("This is an AI-ASSISTED PROPOSAL. implementation_status, assessment, "
-          "tests, and evidence were NOT touched. Every draft is unverified; a "
-          "human must confirm accuracy before use.")
+          "tests, and evidence were NOT touched. Every draft is unverified; the "
+          "readiness predicates treat a labelled DRAFT as unanswered until a named "
+          "human accepts it with `python sdr.py review --walk`.")
 
     if args.write:
         with open(AI_SIDECAR, "w", encoding="utf-8", newline="\n") as f:
             json.dump(proposed, f, indent=1)
         print(f"\nWrote AI draft to {os.path.relpath(AI_SIDECAR, BASE)} "
-              "(git-excluded). Diff it against the real store and apply what is "
-              "correct by hand.")
+              "(git-excluded). Review each proposal with "
+              "`python sdr.py review --walk --reviewer \"<name>\" --role \"<role>\"`; "
+              "accept, edit or reject, nothing enters the record store otherwise.")
     return 0
 
 
