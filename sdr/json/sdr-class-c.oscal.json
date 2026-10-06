@@ -28,7 +28,7 @@
      {
       "uuid": "b57bf3f2-e8c6-51e6-beb5-073aa445defa",
       "title": "AFC-CSO-INB: Maintain a FedRAMP Security Inbox",
-      "description": "Example (reference architecture, replace with your real implementation): A dedicated FedRAMP security inbox is maintained as a monitored distribution list reaching the security on-call rotation, separate from customer support channels. The address is registered with FedRAMP and published in the certification data.",
+      "description": "TBD: Information has not been provided.",
       "props": [
        {
         "name": "sdr-implementation-status",
@@ -1594,7 +1594,7 @@
      {
       "uuid": "8ea31da1-f137-5daf-9167-a9f33f1334a6",
       "title": "FRC-CSO-JSN: FedRAMP JSON Schemas",
-      "description": "Example (reference architecture, replace with your real implementation): All machine-readable certification information is produced as JSON validated against the corresponding published FedRAMP JSON schema before release. The generation pipeline pins the current official schema, hash-compares it against the live published schema at each run, and fails the build on any validation error.",
+      "description": "TBD: Information has not been provided.",
       "props": [
        {
         "name": "sdr-implementation-status",
@@ -3566,7 +3566,7 @@
      {
       "uuid": "c67627b1-d112-5894-a4ad-28b48dccab6c",
       "title": "VDR-CSO-DET: Vulnerability Detection",
-      "description": "Example (reference architecture, replace with your real implementation): Amazon Inspector continuously scans EC2 instances, ECR container images, and Lambda functions for software vulnerabilities across all in-scope accounts. Findings aggregate to Security Hub in the security tooling account. Coverage is verified against the asset inventory so every in-scope machine-based resource has an active scanning source.",
+      "description": "TBD: Information has not been provided.",
       "props": [
        {
         "name": "sdr-implementation-status",
@@ -4639,7 +4639,7 @@
      {
       "uuid": "c6cc73d3-552c-559f-90c9-eba7a9ecab97",
       "title": "KSI-CMT-LMC: Logging Changes",
-      "description": "Example (reference architecture, replace with your real implementation): All modifications to the cloud service offering are made through version-controlled infrastructure as code deployed by the CI/CD pipeline. AWS CloudTrail organization trail records all management events in every account and region. AWS Config records configuration changes for all supported resource types. Manual changes are detected by comparing CloudTrail write events against pipeline deployment windows.",
+      "description": "TBD: Information has not been provided.",
       "props": [
        {
         "name": "sdr-implementation-status",
@@ -5016,7 +5016,7 @@
      {
       "uuid": "673d2b45-cc74-5bb3-b54d-def71430ff46",
       "title": "KSI-IAM-APM: Adopting Passwordless Methods",
-      "description": "Example (reference architecture, replace with your real implementation): Workforce access uses AWS IAM Identity Center federated to the corporate identity provider. Passwordless FIDO2 security keys are the primary authentication method; where passwordless is not feasible, strong passwords with phishing-resistant MFA (FIDO2/WebAuthn) are enforced by the identity provider conditional access policy. Console password login without MFA is blocked. Programmatic access uses short-lived STS credentials only; no long-lived IAM user access keys exist.",
+      "description": "TBD: Information has not been provided.",
       "props": [
        {
         "name": "sdr-implementation-status",
@@ -5857,7 +5857,7 @@
      {
       "uuid": "82a9ae45-fdbc-583d-865a-6044bfd4b3e2",
       "title": "KSI-SVC-SIN: Securing Information",
-      "description": "Example (reference architecture, replace with your real implementation): All federal information is encrypted in transit with TLS 1.2 or higher using FIPS-validated endpoints where required, and at rest with AWS KMS customer managed keys. S3 buckets enforce bucket-level encryption and deny unencrypted uploads by bucket policy. EBS volumes and RDS storage use KMS CMKs by default via account-level settings. Public access is blocked account-wide for S3.",
+      "description": "TBD: Information has not been provided.",
       "props": [
        {
         "name": "sdr-implementation-status",
@@ -5941,113 +5941,8 @@
        }
       }
      }
-    ],
-    "observations": [
-     {
-      "uuid": "12f3f6f2-43ac-56e9-8b82-6be2a312d6a4",
-      "title": "KSI-CMT-LMC observation 1",
-      "description": "Example (reference architecture, replace with your real evidence): AWS Config compliance results for the CloudTrail rules above, exported daily by the read-only collector to the evidence store.",
-      "methods": [
-       "EXAMINE"
-      ],
-      "relevant-evidence": [
-       {
-        "href": "#d76ef518-8850-5885-aeb8-b1110537587f",
-        "description": "Example (reference architecture, replace with your real evidence): AWS Config compliance results for the CloudTrail rules above, exported daily by the read-only collector to the evidence store."
-       }
-      ]
-     },
-     {
-      "uuid": "14e11a1c-b075-598a-849c-3e18513c2be6",
-      "title": "KSI-IAM-APM observation 1",
-      "description": "Example (reference architecture, replace with your real evidence): AWS Config compliance results for the IAM MFA rules above, exported daily by the read-only collector to the evidence store.",
-      "methods": [
-       "EXAMINE"
-      ],
-      "relevant-evidence": [
-       {
-        "href": "#267d6e67-d8ef-5146-9de7-ddb42cd83716",
-        "description": "Example (reference architecture, replace with your real evidence): AWS Config compliance results for the IAM MFA rules above, exported daily by the read-only collector to the evidence store."
-       }
-      ]
-     },
-     {
-      "uuid": "e91e3990-d302-56d5-8bc8-40fc76e38bf2",
-      "title": "KSI-SVC-SIN observation 1",
-      "description": "Example (reference architecture, replace with your real evidence): AWS Config compliance results for the encryption rules above, exported daily by the read-only collector to the evidence store.",
-      "methods": [
-       "EXAMINE"
-      ],
-      "relevant-evidence": [
-       {
-        "href": "#13a54c77-4b7f-589b-a3dd-5f29dfd3666a",
-        "description": "Example (reference architecture, replace with your real evidence): AWS Config compliance results for the encryption rules above, exported daily by the read-only collector to the evidence store."
-       }
-      ]
-     }
     ]
    }
-  ],
-  "back-matter": {
-   "resources": [
-    {
-     "uuid": "d76ef518-8850-5885-aeb8-b1110537587f",
-     "title": "KSI-CMT-LMC evidence 1",
-     "description": "Example (reference architecture, replace with your real evidence): AWS Config compliance results for the CloudTrail rules above, exported daily by the read-only collector to the evidence store.",
-     "props": [
-      {
-       "name": "type",
-       "value": "configuration"
-      }
-     ],
-     "rlinks": [
-      {
-       "href": "s3://your-evidence-bucket/facts/ (example location, replace)"
-      }
-     ],
-     "citation": {
-      "text": "multi-region-cloudtrail-enabled and cloud-trail-log-file-validation-enabled compliance, per account and region."
-     }
-    },
-    {
-     "uuid": "267d6e67-d8ef-5146-9de7-ddb42cd83716",
-     "title": "KSI-IAM-APM evidence 1",
-     "description": "Example (reference architecture, replace with your real evidence): AWS Config compliance results for the IAM MFA rules above, exported daily by the read-only collector to the evidence store.",
-     "props": [
-      {
-       "name": "type",
-       "value": "configuration"
-      }
-     ],
-     "rlinks": [
-      {
-       "href": "s3://your-evidence-bucket/facts/ (example location, replace)"
-      }
-     ],
-     "citation": {
-      "text": "mfa-enabled-for-iam-console-access and root-account-mfa-enabled compliance, per account."
-     }
-    },
-    {
-     "uuid": "13a54c77-4b7f-589b-a3dd-5f29dfd3666a",
-     "title": "KSI-SVC-SIN evidence 1",
-     "description": "Example (reference architecture, replace with your real evidence): AWS Config compliance results for the encryption rules above, exported daily by the read-only collector to the evidence store.",
-     "props": [
-      {
-       "name": "type",
-       "value": "configuration"
-      }
-     ],
-     "rlinks": [
-      {
-       "href": "s3://your-evidence-bucket/facts/ (example location, replace)"
-      }
-     ],
-     "citation": {
-      "text": "encrypted-volumes and s3-bucket-server-side-encryption-enabled compliance, per account and region."
-     }
-    }
-   ]
-  }
+  ]
  }
 }

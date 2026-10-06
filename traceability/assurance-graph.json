@@ -23,9 +23,9 @@
    "provider_claim": {
     "status": "Not Implemented",
     "implementation": [
-     "Example (reference architecture, replace with your real implementation): A dedicated FedRAMP security inbox is maintained as a monitored distribution list reaching the security on-call rotation, separate from customer support channels. The address is registered with FedRAMP and published in the certification data."
+     "TBD: Information has not been provided."
     ],
-    "owner": "Example: Security Operations Manager"
+    "owner": "TBD: Information has not been provided."
    },
    "verification": {
     "verification": "TBD: Information has not been provided.",
@@ -37,7 +37,7 @@
     "checker": "deterministic-structural"
    },
    "review": {
-    "reviewer": "Example: Security Operations Manager",
+    "reviewer": "TBD: Information has not been provided.",
     "review_status": "pending",
     "reviewed_evidence_hashes": [],
     "responses": "None recorded"
@@ -2183,9 +2183,9 @@
    "provider_claim": {
     "status": "Not Implemented",
     "implementation": [
-     "Example (reference architecture, replace with your real implementation): All machine-readable certification information is produced as JSON validated against the corresponding published FedRAMP JSON schema before release. The generation pipeline pins the current official schema, hash-compares it against the live published schema at each run, and fails the build on any validation error."
+     "TBD: Information has not been provided."
     ],
-    "owner": "Example: Compliance Engineering Lead"
+    "owner": "TBD: Information has not been provided."
    },
    "verification": {
     "verification": "TBD: Information has not been provided.",
@@ -2197,7 +2197,7 @@
     "checker": "deterministic-structural"
    },
    "review": {
-    "reviewer": "Example: Compliance Engineering Lead",
+    "reviewer": "TBD: Information has not been provided.",
     "review_status": "pending",
     "reviewed_evidence_hashes": [],
     "responses": "None recorded"
@@ -4903,9 +4903,9 @@
    "provider_claim": {
     "status": "Not Implemented",
     "implementation": [
-     "Example (reference architecture, replace with your real implementation): Amazon Inspector continuously scans EC2 instances, ECR container images, and Lambda functions for software vulnerabilities across all in-scope accounts. Findings aggregate to Security Hub in the security tooling account. Coverage is verified against the asset inventory so every in-scope machine-based resource has an active scanning source."
+     "TBD: Information has not been provided."
     ],
-    "owner": "Example: Vulnerability Management Lead"
+    "owner": "TBD: Information has not been provided."
    },
    "verification": {
     "verification": "TBD: Information has not been provided.",
@@ -4917,7 +4917,7 @@
     "checker": "deterministic-structural"
    },
    "review": {
-    "reviewer": "Example: Vulnerability Management Lead",
+    "reviewer": "TBD: Information has not been provided.",
     "review_status": "pending",
     "reviewed_evidence_hashes": [],
     "responses": "None recorded"
@@ -6393,53 +6393,26 @@
    "provider_claim": {
     "status": "Not Implemented",
     "implementation": [
-     "Example (reference architecture, replace with your real implementation): All modifications to the cloud service offering are made through version-controlled infrastructure as code deployed by the CI/CD pipeline. AWS CloudTrail organization trail records all management events in every account and region. AWS Config records configuration changes for all supported resource types. Manual changes are detected by comparing CloudTrail write events against pipeline deployment windows."
+     "TBD: Information has not been provided."
     ],
-    "owner": "Example: Platform Engineering Lead"
+    "owner": "TBD: Information has not been provided."
    },
    "verification": {
-    "methods": [
-     {
-      "method_id": "KSI-CMT-LMC:verify:config:multi-region-cloudtrail-enabled",
-      "method": "Example (reference architecture, replace with your real implementation): AWS Config managed rule multi-region-cloudtrail-enabled confirms an organization trail records management events in every region; pass requires COMPLIANT in every in-scope account.",
-      "automated": true,
-      "cadence": "continuous (AWS Config evaluation), collected daily"
-     },
-     {
-      "method_id": "KSI-CMT-LMC:verify:config:cloud-trail-log-file-validation-enabled",
-      "method": "Example (reference architecture, replace with your real implementation): AWS Config managed rule cloud-trail-log-file-validation-enabled confirms trail log-file integrity validation is on; pass requires COMPLIANT for every trail.",
-      "automated": true,
-      "cadence": "continuous (AWS Config evaluation), collected daily"
-     }
-    ],
+    "methods": [],
     "minimum_required": 1,
-    "automated_methods": 2,
+    "automated_methods": 0,
     "unclassified_string_tests": 0,
-    "meets_minimum": true,
+    "meets_minimum": false,
     "measures_verification": "TBD: Information has not been provided.",
     "automation_verification": "TBD: Information has not been provided."
    },
-   "evidence": [
-    {
-     "source": "multi-region-cloudtrail-enabled and cloud-trail-log-file-validation-enabled compliance, per account and region.",
-     "type": "Configuration",
-     "location": "s3://your-evidence-bucket/facts/ (example location, replace)",
-     "sha256": null,
-     "observed_at": null,
-     "evidence_id": "EV-unknown",
-     "freshness_status": "missing",
-     "fresh_until": null,
-     "expires_at": null,
-     "collection_status": "success",
-     "supersedes": null
-    }
-   ],
+   "evidence": [],
    "structural_linkage": {
     "result": "PRESENT",
     "checker": "deterministic-structural"
    },
    "review": {
-    "reviewer": "Example: Platform Engineering Lead",
+    "reviewer": "TBD: Information has not been provided.",
     "review_status": "pending",
     "reviewed_evidence_hashes": []
    },
@@ -6949,53 +6922,26 @@
    "provider_claim": {
     "status": "Not Implemented",
     "implementation": [
-     "Example (reference architecture, replace with your real implementation): Workforce access uses AWS IAM Identity Center federated to the corporate identity provider. Passwordless FIDO2 security keys are the primary authentication method; where passwordless is not feasible, strong passwords with phishing-resistant MFA (FIDO2/WebAuthn) are enforced by the identity provider conditional access policy. Console password login without MFA is blocked. Programmatic access uses short-lived STS credentials only; no long-lived IAM user access keys exist."
+     "TBD: Information has not been provided."
     ],
-    "owner": "Example: Identity and Access Lead"
+    "owner": "TBD: Information has not been provided."
    },
    "verification": {
-    "methods": [
-     {
-      "method_id": "KSI-IAM-APM:verify:config:mfa-enabled-for-iam-console-access",
-      "method": "Example (reference architecture, replace with your real implementation): AWS Config managed rule mfa-enabled-for-iam-console-access confirms no console password exists without MFA; pass requires COMPLIANT in every in-scope account.",
-      "automated": true,
-      "cadence": "continuous (AWS Config evaluation), collected daily"
-     },
-     {
-      "method_id": "KSI-IAM-APM:verify:config:root-account-mfa-enabled",
-      "method": "Example (reference architecture, replace with your real implementation): AWS Config managed rule root-account-mfa-enabled confirms the root user is MFA-protected; pass requires COMPLIANT in every in-scope account.",
-      "automated": true,
-      "cadence": "continuous (AWS Config evaluation), collected daily"
-     }
-    ],
+    "methods": [],
     "minimum_required": 1,
-    "automated_methods": 2,
+    "automated_methods": 0,
     "unclassified_string_tests": 0,
-    "meets_minimum": true,
+    "meets_minimum": false,
     "measures_verification": "TBD: Information has not been provided.",
     "automation_verification": "TBD: Information has not been provided."
    },
-   "evidence": [
-    {
-     "source": "mfa-enabled-for-iam-console-access and root-account-mfa-enabled compliance, per account.",
-     "type": "Configuration",
-     "location": "s3://your-evidence-bucket/facts/ (example location, replace)",
-     "sha256": null,
-     "observed_at": null,
-     "evidence_id": "EV-unknown",
-     "freshness_status": "missing",
-     "fresh_until": null,
-     "expires_at": null,
-     "collection_status": "success",
-     "supersedes": null
-    }
-   ],
+   "evidence": [],
    "structural_linkage": {
     "result": "PRESENT",
     "checker": "deterministic-structural"
    },
    "review": {
-    "reviewer": "Example: Identity and Access Lead",
+    "reviewer": "TBD: Information has not been provided.",
     "review_status": "pending",
     "reviewed_evidence_hashes": []
    },
@@ -8229,53 +8175,26 @@
    "provider_claim": {
     "status": "Not Implemented",
     "implementation": [
-     "Example (reference architecture, replace with your real implementation): All federal information is encrypted in transit with TLS 1.2 or higher using FIPS-validated endpoints where required, and at rest with AWS KMS customer managed keys. S3 buckets enforce bucket-level encryption and deny unencrypted uploads by bucket policy. EBS volumes and RDS storage use KMS CMKs by default via account-level settings. Public access is blocked account-wide for S3."
+     "TBD: Information has not been provided."
     ],
-    "owner": "Example: Security Engineering Lead"
+    "owner": "TBD: Information has not been provided."
    },
    "verification": {
-    "methods": [
-     {
-      "method_id": "KSI-SVC-SIN:verify:config:encrypted-volumes",
-      "method": "Example (reference architecture, replace with your real implementation): AWS Config managed rule encrypted-volumes confirms every attached EBS volume is encrypted; pass requires COMPLIANT for all resources.",
-      "automated": true,
-      "cadence": "continuous (AWS Config evaluation), collected daily"
-     },
-     {
-      "method_id": "KSI-SVC-SIN:verify:config:s3-bucket-server-side-encryption-enabled",
-      "method": "Example (reference architecture, replace with your real implementation): AWS Config managed rule s3-bucket-server-side-encryption-enabled confirms default encryption on every bucket; pass requires COMPLIANT for all buckets.",
-      "automated": true,
-      "cadence": "continuous (AWS Config evaluation), collected daily"
-     }
-    ],
+    "methods": [],
     "minimum_required": 1,
-    "automated_methods": 2,
+    "automated_methods": 0,
     "unclassified_string_tests": 0,
-    "meets_minimum": true,
+    "meets_minimum": false,
     "measures_verification": "TBD: Information has not been provided.",
     "automation_verification": "TBD: Information has not been provided."
    },
-   "evidence": [
-    {
-     "source": "encrypted-volumes and s3-bucket-server-side-encryption-enabled compliance, per account and region.",
-     "type": "Configuration",
-     "location": "s3://your-evidence-bucket/facts/ (example location, replace)",
-     "sha256": null,
-     "observed_at": null,
-     "evidence_id": "EV-unknown",
-     "freshness_status": "missing",
-     "fresh_until": null,
-     "expires_at": null,
-     "collection_status": "success",
-     "supersedes": null
-    }
-   ],
+   "evidence": [],
    "structural_linkage": {
     "result": "PRESENT",
     "checker": "deterministic-structural"
    },
    "review": {
-    "reviewer": "Example: Security Engineering Lead",
+    "reviewer": "TBD: Information has not been provided.",
     "review_status": "pending",
     "reviewed_evidence_hashes": []
    },
