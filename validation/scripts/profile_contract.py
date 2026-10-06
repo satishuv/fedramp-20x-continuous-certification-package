@@ -38,9 +38,10 @@ REQUIRED_FIELDS = [
     ("service_model", "cpo:serviceProperties.serviceType",
      "Service model: SaaS, PaaS or IaaS?"),
     ("deployment_model", "cpo:serviceProperties.deploymentModel",
-     "Deployment model: Public Cloud, Government Community Cloud, Private Cloud or Hybrid?"),
+     "Deployment model, exactly one of: Public Cloud, Government-Only Cloud, Hybrid Cloud, "
+     "Community Cloud, Government Community Cloud?"),
     ("certification_type", "cpo:serviceIdentification.certificationType",
-     "Certification type (FedRAMP 20x)?"),
+     "Certification type: 'FedRAMP 20x' (this framework resolves 20x rules only)?"),
     ("certification_class", "cr26:varies_by_class",
      "Certification class you are seeking: a, b or c? (every FRC-APP and class-varying rule resolves by it)"),
     ("fedramp_package_id", "cpo:serviceIdentification.fedRampPackageId",

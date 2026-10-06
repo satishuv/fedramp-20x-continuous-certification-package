@@ -10,6 +10,7 @@ freshness. So a clean local run means the validation suite would pass in CI, not
 that every CI gate would. If this file and that workflow ever disagree on the
 suite, the workflow is correct and this file is the bug.
 
+    python sdr.py init        answer every FedRAMP-required profile question
     python sdr.py all         build, validate, scan, then print a summary
     python sdr.py build       regenerate every deliverable
     python sdr.py validate    run the build gate (0 hard failures required)
@@ -25,9 +26,11 @@ not propagated; open findings are the normal state of an unfinished record.
 """
 
 import argparse
+import datetime as _d
 import glob
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -329,6 +332,7 @@ TEST_SUITE = [
     "validation/scripts/test_mot_continuity.py",
     "validation/scripts/test_vvk_automated_methods.py",
     "validation/scripts/test_init_wizard.py",
+    "validation/scripts/test_profile_traceability.py",
     "validation/scripts/test_customer_config_rules.py",
     "validation/scripts/test_assurance_graph_method_count.py",
     "validation/scripts/test_validate_class_matrix.py",
@@ -722,31 +726,128 @@ def classify_evidence_freshness(observed_at, now, policy_days=DEFAULT_EVIDENCE_F
     return "expired"
 
 
-# Plain-English offering-profile wizard (Max's request): the offering profile
-# is the single customization file the generators read. Editing raw JSON by hand
-# is the most error-prone first step; `sdr.py init` asks plain questions and
-# writes a valid profile, leaving the deep assessment blocks untouched.
-INIT_QUESTIONS = [
-    ("organization_name", "What is your organization's legal name?"),
-    ("offering_name", "What is the cloud offering's name?"),
-    ("offering_abbreviation", "A short abbreviation for the offering (e.g. EPF)?"),
-    ("business_purpose", "In one sentence, what does the offering do?"),
-    ("service_model", "Service model (IaaS | PaaS | SaaS)?"),
-    ("deployment_model", "Deployment model (Public | Government-only | Hybrid)?"),
-    ("certification_class", "Certification class (a | b | c)?"),
-    ("primary_region", "Primary AWS region (e.g. us-east-1)?"),
-    ("dr_region", "Disaster-recovery region (e.g. us-west-2)?"),
-    ("security_contact", "Security point-of-contact email?"),
-    ("incident_contact", "Incident-reporting point-of-contact email?"),
-    ("trust_center_uri", "URL of your FedRAMP-compatible trust center (CDS-CSO-UTC)?"),
-    ("secure_config_guide_uri", "URL of your published Secure Configuration Guide (SCG-CSO-RSC)?"),
-]
+# Plain-English offering-profile wizard. The offering profile is the single
+# customization file the generators read, and editing raw JSON by hand is the
+# most error-prone first step. `sdr.py init` asks ONLY the questions FedRAMP
+# requires an answer to: the one definition is validation/scripts/profile_contract.py
+# (REQUIRED_FIELDS, then the CLASS_CONDITIONAL blocks for the chosen class),
+# where every question names the CPO schema property or CR26 rule behind it.
+# The same contract is what package-preflight blocks on, so finishing the
+# wizard and clearing preflight's profile blockers are the same act. Operational
+# inputs with no FedRAMP source (regions, IaC technology) are not asked here;
+# they keep the template defaults and never block submission.
+#
+# What the wizard never asks: implementation_status (needs a passing check plus
+# a named sign-off through `sdr.py review`), assessment (the assessor's field),
+# or anything else the tool is forbidden to decide.
+
+# Fields whose answer is a contact: asked as three sub-prompts and stored as
+# {name, email, phone} (the CPO schema's contactInfo members).
+_CONTACT_FIELDS = ("security_contact", "sales_contact")
+# Fields whose answer must be an http(s) URL.
+_URL_FIELDS = {"offering_website", "offering_logo_uri", "certification_package_overview_uri",
+               "trust_center_uri", "secure_config_guide_uri", "assessment_report_uri",
+               "assessment_summary_uri", "human_readable_uri", "machine_readable_uri"}
+# Fields whose answer must be a calendar date (YYYY-MM-DD).
+_DATE_FIELDS = {"next_ocr_date", "completed_at", "assessment_date"}
+# Choice fields: (allowed answers, normalizer). The allowed values are the CPO
+# schema's enums verbatim (serviceProperties.serviceType items, deploymentModel);
+# build_cpo.py falls back to an ASSUMED value for anything else, so the wizard
+# refuses anything else rather than let "GovCloud" quietly become "Public Cloud".
+_DEPLOYMENT_MODELS = ("Public Cloud", "Government-Only Cloud", "Hybrid Cloud",
+                      "Community Cloud", "Government Community Cloud")
+_CHOICES = {
+    "certification_class": (("a", "b", "c"), str.lower),
+    "service_model": (("SaaS", "PaaS", "IaaS"), lambda s: {"saas": "SaaS", "paas": "PaaS",
+                                                            "iaas": "IaaS"}.get(s.lower(), s)),
+    "deployment_model": (_DEPLOYMENT_MODELS,
+                         lambda s: {m.lower(): m for m in _DEPLOYMENT_MODELS}.get(
+                             s.lower().replace("_", " ").replace("government only", "government-only"), s)),
+}
+
+# Backwards-compatible alias: older docs and tests refer to INIT_QUESTIONS.
+INIT_QUESTIONS = [(f, q) for f, _src, q in _pc.REQUIRED_FIELDS]
+
+
+def _init_validate(key, value):
+    """Return (normalized_value, error). Validation is shape-only (a class is
+    a/b/c, a date parses, a URL is http(s), an assessor ID is 6 digits); it
+    never judges whether the answer is TRUE, that is the reviewer's job."""
+    v = str(value).strip()
+    if key in _CHOICES:
+        allowed, norm = _CHOICES[key]
+        v = norm(v)
+        if v not in allowed:
+            return None, f"'{value}' is not one of {', '.join(allowed)}"
+        return v, None
+    if key == "assessor_id" and not _pc.is_missing_identity(v):
+        if not re.fullmatch(r"\d{6}", v):
+            return None, "the FedRAMP assessor ID is exactly 6 digits (CPO assessor.assessorID)"
+    if key in _URL_FIELDS and not _pc.is_hollow(v):
+        if not re.match(r"^https?://\S+$", v):
+            return None, "expected an http(s) URL"
+    if key in _DATE_FIELDS and not _pc.is_hollow(v):
+        try:
+            _d.date.fromisoformat(v[:10])
+        except ValueError:
+            return None, "expected a date in YYYY-MM-DD form"
+    if key == "provider_verified_at":
+        if v.lower() == "now":
+            v = _d.datetime.now(_d.timezone.utc).replace(microsecond=0).isoformat()
+        elif not _pc.is_hollow(v):
+            try:
+                _d.datetime.fromisoformat(v.replace("Z", "+00:00"))
+            except ValueError:
+                return None, "expected an ISO-8601 datetime (or 'now')"
+    return v, None
+
+
+def _init_prompt(prompt, current):
+    """One interactive question; '' means keep the current value."""
+    shown = ""
+    if current is not None and not _pc.is_hollow(current):
+        shown = f" [{_pc.contact_text(current) if isinstance(current, dict) else current}]"
+    try:
+        return input(f"{prompt}{shown} ").strip()
+    except EOFError:
+        return ""
+
+
+def _init_ask_contact(key, prompt, current, interactive, overrides):
+    """A contact is three sub-answers. Overrides accept either `key=Name <email>`
+    (kept as a string, the CPO builder understands it) or the dotted form
+    `key.name=`, `key.email=`, `key.phone=`."""
+    if key in overrides:
+        return overrides[key]
+    dotted = {sub: overrides[f"{key}.{sub}"] for sub in ("name", "email", "phone")
+              if f"{key}.{sub}" in overrides}
+    if dotted:
+        base = dict(current) if isinstance(current, dict) else {}
+        base.update(dotted)
+        return base
+    if not interactive:
+        return None
+    out(prompt)
+    cur = current if isinstance(current, dict) else {}
+    answers = {}
+    for sub, label in (("name", "  Name (person or team)?"), ("email", "  Email?"),
+                       ("phone", "  Phone (optional)?")):
+        resp = _init_prompt(label, cur.get(sub))
+        if resp:
+            answers[sub] = resp
+    if not answers:
+        return None
+    merged = dict(cur)
+    merged.update(answers)
+    return merged
 
 
 def cmd_init(args):
     """Interactive (or scripted via --set key=value) offering-profile wizard.
-    Reads the existing profile, prompts for the plain-English fields, writes it
-    back. Non-destructive to fields it does not ask about; validates class."""
+    Asks every FedRAMP-required question from profile_contract (REQUIRED_FIELDS,
+    then the class-conditional blocks for the chosen class), validates shape
+    only, writes the profile back, and reports what FedRAMP still needs.
+    Non-destructive to fields it does not ask about."""
     path = OFFERING_PROFILE
     try:
         with open(path, encoding="utf-8") as f:
@@ -765,31 +866,83 @@ def cmd_init(args):
 
     interactive = not overrides and not getattr(args, "non_interactive", False)
     answers = {}
-    for key, prompt in INIT_QUESTIONS:
-        if key in overrides:
-            answers[key] = overrides[key]
-        elif interactive:
-            try:
-                current = profile.get(key, "")
-                shown = f" [{current}]" if current and not str(current).startswith("TBD") else ""
-                resp = input(f"{prompt}{shown} ").strip()
-            except EOFError:
-                resp = ""
-            if resp:
-                answers[key] = resp
-        # non-interactive with no override for this key: leave the profile as-is.
+    errors = []
 
-    # Validate/normalize the certification class if it was answered.
-    if "certification_class" in answers:
-        cls = answers["certification_class"].strip().lower()
-        if cls not in ("a", "b", "c"):
-            out(f"'{cls}' is not a valid certification class (a|b|c). Aborting; "
-                "nothing was written.")
-            return 1
-        answers["certification_class"] = cls.upper() if False else cls
+    if interactive:
+        out(f"Offering profile: {os.path.relpath(path, BASE)}")
+        out("Every question below is one FedRAMP requires an answer to (the source is "
+            "shown in brackets). Press Enter to keep the value shown; what you leave "
+            "unanswered is listed at the end and blocks submission until answered.")
+        out()
+
+    # ---- Required at every class ------------------------------------------------
+    for key, src, question in _pc.REQUIRED_FIELDS:
+        current = profile.get(key)
+        if key in _CONTACT_FIELDS:
+            val = _init_ask_contact(key, f"{question}  [{src}]", current, interactive, overrides)
+            if val is not None:
+                answers[key] = val
+            continue
+        if key in overrides:
+            resp = overrides[key]
+        elif interactive:
+            resp = _init_prompt(f"{question}  [{src}]", current)
+        else:
+            continue  # non-interactive with no override: leave the profile as-is
+        if not resp:
+            continue
+        norm, err = _init_validate(key, resp)
+        if err:
+            errors.append(f"{key}: {err}")
+        else:
+            answers[key] = norm
+
+    # The class decides which blocks apply; take the answer just given, else the
+    # profile's current value, else the template default (b).
+    cls = str(answers.get("certification_class") or profile.get("certification_class")
+              or "b").strip().lower()
+
+    # ---- Required by class: nested blocks ----------------------------------------
+    for block, src, classes, questions in _pc.CLASS_CONDITIONAL:
+        if cls not in classes:
+            continue
+        flat = block in ("provider_verified_at", "overall_assessment_summary", "cpo_metadata")
+        node = profile.get(block) if not flat else None
+        node = dict(node) if isinstance(node, dict) else {}
+        block_answers = {}
+        for sub, question in questions:
+            # Flat blocks store each answer as a top-level profile key; nested
+            # blocks store them under profile[block][sub].
+            target_key = sub if flat else f"{block}.{sub}"
+            current = profile.get(sub) if flat else node.get(sub)
+            if target_key in overrides:
+                resp = overrides[target_key]
+            elif interactive:
+                resp = _init_prompt(f"{question}  [{src}, Class {cls.upper()}]", current)
+            else:
+                continue
+            if not resp:
+                continue
+            norm, err = _init_validate(sub, resp)
+            if err:
+                errors.append(f"{target_key}: {err}")
+            elif flat:
+                answers[sub] = norm
+            else:
+                block_answers[sub] = norm
+        if block_answers:
+            node.update(block_answers)
+            answers[block] = node
+
+    if errors:
+        out("Nothing was written. Fix these answers and run `python sdr.py init` again:")
+        for e in errors:
+            out(f"  - {e}")
+        return 1
 
     if not answers:
         out("No values provided; the offering profile is unchanged.")
+        _init_report_gaps(profile)
         return 0
 
     profile.update(answers)
@@ -798,9 +951,31 @@ def cmd_init(args):
         f.write("\n")
     out(f"Wrote {len(answers)} field(s) to {os.path.relpath(path, BASE)}: "
         f"{', '.join(sorted(answers))}.")
-    out("Next: `python sdr.py build` then `python sdr.py application-preflight` "
-        "to see what still blocks submission.")
+    _init_report_gaps(profile)
     return 0
+
+
+def _init_report_gaps(profile):
+    """What FedRAMP still needs from this profile, straight from the contract.
+    package-preflight remains the authority (it also checks freshness windows)."""
+    gaps = _pc.required_gaps(profile)
+    cgaps = _pc.class_gaps(profile)
+    cls = str(profile.get("certification_class") or "b").strip().lower()
+    if not gaps and not cgaps:
+        out("Every FedRAMP-required profile field is answered for Class "
+            f"{cls.upper()}. Next: `python sdr.py build` then "
+            "`python sdr.py package-preflight` (freshness windows are checked there).")
+        return
+    out(f"Still required by FedRAMP for Class {cls.upper()} "
+        f"({len(gaps) + sum(len(m) for _b, _s, m in cgaps)} answer(s)):")
+    for f, src in gaps:
+        out(f"  - {f}  [{src}]")
+    for block, src, missing in cgaps:
+        for m in missing:
+            out(f"  - {block if block == m else block + '.' + m}  [{src}]")
+    out("Run `python sdr.py init` again to answer them (Enter keeps a value), or "
+        "`--set key=value` to script them. `python sdr.py package-preflight` "
+        "reports the same gaps as submission blockers.")
 
 
 def cmd_build(args):
@@ -2956,11 +3131,15 @@ def build_parser():
     sub = p.add_subparsers(dest="command")
 
     init_p = sub.add_parser(
-        "init", help="fill the offering profile by answering plain questions")
+        "init", help="answer every FedRAMP-required offering-profile question in plain "
+                     "English (profile_contract: CPO schema properties and CR26 rules) "
+                     "and see what is still missing")
     init_p.add_argument("--non-interactive", action="store_true",
-                        help="do not prompt; only apply --set values")
+                        help="do not prompt; only apply --set values, then report gaps")
     init_p.add_argument("--set", action="append", metavar="KEY=VALUE",
-                        help="set a profile field non-interactively (repeatable)")
+                        help="set a profile field non-interactively (repeatable); nested "
+                             "answers use dots, e.g. security_contact.email=..., "
+                             "fedramp_independent_assessment.completed_at=2026-09-01")
 
     sub.add_parser("build", help="regenerate every deliverable from the record store")
     val_p = sub.add_parser("validate", help="run the full gate + offline test suite (CI parity)")
