@@ -19,6 +19,8 @@ import json
 import os
 import sys
 
+import profile_contract as _pc  # noqa: E402  (offering_title: honest title while the name is TBD)
+
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 OUT_MD = os.path.join(BASE, "package", "scg", "secure-configuration-guide.md")
@@ -36,11 +38,9 @@ def val(v):
 
 
 def render(profile):
-    name = val(profile.get("offering_name"))
-    acr = val(profile.get("offering_abbreviation"))
     L = []
     a = L.append
-    a(f"# Secure Configuration Guide: {name} ({acr})")
+    a(f"# Secure Configuration Guide: {_pc.offering_title(profile)}")
     a("")
     a("This is a generated scaffold for the FedRAMP 20x Secure Configuration "
       "Guide required by SCG-CSO-RSC, with the use-instructions component "
@@ -50,6 +50,8 @@ def render(profile):
     a("")
     a("## Purpose and scope")
     a("")
+    name = profile.get("offering_name")
+    name = "the offering" if _pc.is_hollow(name) else str(name)
     a(f"How to securely configure and operate {name}. Scope: {val(profile.get('business_purpose'))}")
     a("")
     a("## Recommendations for secure configuration (SCG-CSO-RSC)")

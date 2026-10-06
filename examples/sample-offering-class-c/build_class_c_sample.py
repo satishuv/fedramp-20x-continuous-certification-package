@@ -308,7 +308,7 @@ def generate_profile():
         "assessor_id": "123456",
         # CDS-CSO-PUB public information with no other home in the profile.
         "uei_number": "ZQGGHJH74DW7 (fictional)",
-        "business_category": "Data processing platform (fictional)",
+        "business_category": ["Data Management", "Analytics"],
         "documentation_overview": (f"{FICT} User guide, API reference, Secure Configuration Guide "
                                    "and the trust-center certification data, all published at "
                                    "https://trust.bfc-demo.invalid/."),

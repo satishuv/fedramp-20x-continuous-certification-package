@@ -34,6 +34,11 @@ SAMPLE_STORE = os.path.join(HERE, "records-store.sample.json")
 SAMPLE_PROFILE = os.path.join(HERE, "offering-profile.sample.json")
 
 SAMPLE_IDENTITY = {
+    # Every field the profile contract REQUIRES (validation/scripts/
+    # profile_contract.py) gets a fictional, schema-shaped value here, so the
+    # sample's CPO validates against the official schema (uri format, image
+    # extension on the logo, 6-digit assessor ID, enum tokens). Everything is
+    # fictional; .invalid is a reserved TLD that can never resolve.
     "organization_name": "Acme Cloud Systems, Inc. (fictional)",
     "offering_name": "Acme Cloud Widgets",
     "offering_abbreviation": "ACW",
@@ -41,18 +46,63 @@ SAMPLE_IDENTITY = {
                          "platform used to demonstrate a populated SDR."),
     "service_model": "SaaS",
     "deployment_model": "Public Cloud",
+    "certification_type": "FedRAMP 20x",
+    "certification_class": "B",
+    "fedramp_package_id": "FR20X-SAMPLE-ACW-0001 (fictional)",
+    "uei_number": "SAMPLEUEI001 (fictional)",
+    "business_category": ["Collaboration"],
+    "documentation_overview": ("[SAMPLE - fictional] Administrator guide, API reference and the "
+                               "Secure Configuration Guide are published on the ACW trust center."),
+    "offering_website": "https://www.example-acme.invalid/widgets",
+    "offering_logo_uri": "https://www.example-acme.invalid/widgets/logo.png",
     "aws_partition": "aws",
     "primary_region": "us-east-1",
     "dr_region": "us-west-2",
     "iac_technology": "AWS CloudFormation",
-    "certification_class": "B",
     "sdr_last_updated": "2026-09-07",
-    "management_plane": "Provider-hosted control plane, isolated from customer workloads (fictional).",
-    "federal_information_types": "None; illustrative example only.",
-    "security_contact": "security@example-acme.invalid (fictional)",
+    "security_contact": {"name": "ACW Security Operations (fictional)",
+                         "email": "security@example-acme.invalid"},
+    "sales_contact": {"name": "ACW Federal Sales (fictional)",
+                      "email": "fedsales@example-acme.invalid", "phone": "202-555-0100"},
     "incident_contact": "ir@example-acme.invalid (fictional)",
     "assessor": "Example 3PAO (fictional)",
-    "evidence_retention": "12 months rolling (fictional sample policy).",
+    "assessor_id": "000001",
+    "next_ocr_date": "2026-12-15",
+    "certification_package_overview_uri": "https://trust.example-acme.invalid/cpo.json",
+    "trust_center_uri": "https://trust.example-acme.invalid/",
+    "secure_config_guide_uri": "https://trust.example-acme.invalid/scg",
+    "cpo_responsible_official": "[SAMPLE - fictional] Jane Doe, CISO, ciso@example-acme.invalid",
+    "cpo_version": "1.0 (fictional sample)",
+    "cpo_last_updated": "2026-09-07T00:00:00+00:00",
+    "cpo_source_of_update": "[SAMPLE - fictional] ACW compliance team",
+}
+
+# Class B/C blocks the contract requires (FRC-APP-FIA, CPO-CSO-OSA, CDS-CSO-AVR),
+# merged INTO the template's nested objects so their notes survive. The
+# assessment dates are fixed sample values; the sample's own README says this
+# package is for reading the shape, not for the freshness windows (preflight
+# judges those against the real clock).
+SAMPLE_BLOCKS = {
+    "fedramp_independent_assessment": {
+        "assessor_name": "Example 3PAO (fictional)",
+        "assessor_fedramp_id": "000001",
+        "completed_at": "2026-09-01",
+        "assessment_summary_uri": "https://trust.example-acme.invalid/assessment-summary",
+        "assessment_report_uri": "https://trust.example-acme.invalid/assessment-report",
+        "assessment_report_sha256": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "freshness_basis": "current",
+    },
+    "availability_reporting": {
+        "human_readable_uri": "https://status.example-acme.invalid/",
+        "machine_readable_uri": "https://status.example-acme.invalid/feed.json",
+        "history_days": 90,
+        "available_when_primary_unavailable": True,
+        "verified_at": "2026-09-01",
+    },
+}
+SAMPLE_FLAT = {
+    "overall_assessment_summary": ("[SAMPLE - fictional] The assessor's overall summary of the "
+                                   "independent assessment, supplied verbatim for the worked example."),
 }
 
 
@@ -62,6 +112,11 @@ def generate_sample_profile():
     with open(REAL_PROFILE, encoding="utf-8") as f:
         profile = json.load(f)
     profile.update(SAMPLE_IDENTITY)
+    profile.update(SAMPLE_FLAT)
+    for block, values in SAMPLE_BLOCKS.items():
+        node = dict(profile.get(block) or {})
+        node.update(values)
+        profile[block] = node
     for key, val in list(profile.items()):
         if isinstance(val, str) and "TBD" in val:
             profile[key] = f"[SAMPLE - fictional] {key} for Acme Cloud Widgets."

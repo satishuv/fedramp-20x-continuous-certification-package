@@ -780,6 +780,13 @@ def _init_validate(key, value):
         if v not in allowed:
             return None, f"'{value}' is not one of {', '.join(allowed)}"
         return v, None
+    if key == "business_category" and not _pc.is_hollow(v) \
+            and not v.lower().startswith(("n/a", "not applicable")):
+        cats = _pc.business_categories(v)
+        if not cats:
+            return None, ("must be one or more of FedRAMP's business categories (CPO "
+                          "serviceProperties.businessCategory enum); answer 'list' to see them")
+        return cats, None
     if key == "assessor_id" and not _pc.is_missing_identity(v):
         if not re.fullmatch(r"\d{6}", v):
             return None, "the FedRAMP assessor ID is exactly 6 digits (CPO assessor.assessorID)"
@@ -791,7 +798,14 @@ def _init_validate(key, value):
             _d.date.fromisoformat(v[:10])
         except ValueError:
             return None, "expected a date in YYYY-MM-DD form"
-    if key == "provider_verified_at":
+    if key == "framework" and not _pc.is_hollow(v):
+        # The same alias map package-preflight uses (FRC-CLA-ASF permits exactly
+        # FedRAMP Rev5 incl. FedRAMP Ready, SOC 2 Type II, GovRAMP; SOC 2 must be
+        # Type II). Stored as typed; preflight canonicalizes it the same way.
+        if CLA_FRAMEWORK_ALIASES.get(v.strip().lower()) is None:
+            return None, ("not a FedRAMP-approved alternative framework (FRC-CLA-ASF): "
+                          "FedRAMP Rev5, FedRAMP Ready, SOC 2 Type II or GovRAMP")
+    if key in ("provider_verified_at", "cpo_last_updated"):
         if v.lower() == "now":
             v = _d.datetime.now(_d.timezone.utc).replace(microsecond=0).isoformat()
         elif not _pc.is_hollow(v):
@@ -881,12 +895,24 @@ def cmd_init(args):
         if key in _CONTACT_FIELDS:
             val = _init_ask_contact(key, f"{question}  [{src}]", current, interactive, overrides)
             if val is not None:
+                if isinstance(val, dict) and val.get("phone"):
+                    phone = _pc.normalize_phone(val["phone"])
+                    if phone is None:
+                        errors.append(f"{key}.phone: a 10-digit US number in ###-###-#### form "
+                                      "(CPO contactInfo.contactPhone pattern)")
+                        continue
+                    val["phone"] = phone
                 answers[key] = val
             continue
         if key in overrides:
             resp = overrides[key]
         elif interactive:
             resp = _init_prompt(f"{question}  [{src}]", current)
+            while key == "business_category" and resp.strip().lower() == "list":
+                out("FedRAMP business categories (CPO serviceProperties.businessCategory):")
+                for cat in _pc.business_category_enum():
+                    out(f"  - {cat}")
+                resp = _init_prompt(f"{question}  [{src}]", current)
         else:
             continue  # non-interactive with no override: leave the profile as-is
         if not resp:

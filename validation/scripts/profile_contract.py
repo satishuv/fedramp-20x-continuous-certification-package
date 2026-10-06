@@ -17,12 +17,69 @@ be submitted WITHOUT, which is what FedRAMP wrote down.
 """
 import json
 import os
+import re
 
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OFFERING_PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 DATASET = os.path.join(BASE, "references", "fedramp-consolidated-rules.json")
+CPO_SCHEMA = os.path.join(BASE, "artifacts", "schemas", "official",
+                          "fedramp-certification-package-overview-schema-2026-06-24.json")
 
 TBD = "TBD: Information has not been provided."
+
+
+def _cpo_schema():
+    try:
+        with open(CPO_SCHEMA, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
+
+def business_category_enum():
+    """The CPO schema's serviceProperties.businessCategory item enum, read from
+    the PINNED schema so the wizard and the builder can never accept or emit a
+    category FedRAMP does not list. Empty if the schema is unavailable."""
+    sp = ((_cpo_schema().get("properties") or {}).get("serviceProperties") or {})
+    cat = (sp.get("properties") or {}).get("businessCategory") or {}
+    return tuple((cat.get("items") or {}).get("enum") or ())
+
+
+def business_categories(value):
+    """Normalize a profile business_category (string, comma/semicolon separated,
+    or list) to the list of schema enum values it names, case-insensitive.
+    Returns [] when nothing matches, so a free-text category never reaches the
+    CPO (the schema would reject it); the text still appears in the derived
+    public-information object."""
+    enum = business_category_enum()
+    by_lower = {e.lower(): e for e in enum}
+    if value is None or is_hollow(value):
+        return []
+    parts = value if isinstance(value, list) else re.split(r"[;,]", str(value))
+    out = []
+    for p in parts:
+        hit = by_lower.get(str(p).strip().lower())
+        if hit and hit not in out:
+            out.append(hit)
+    return out
+
+
+CONTACT_PHONE_PATTERN = re.compile(r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$")
+
+
+def normalize_phone(value):
+    """CPO contactInfo.contactPhone is '###-###-####'. Accepts that form, or any
+    input with exactly ten digits (optionally with a leading +1 / 1), which is
+    reformatted. Returns None when the number cannot be expressed that way."""
+    s = str(value or "").strip()
+    if CONTACT_PHONE_PATTERN.match(s):
+        return s
+    digits = re.sub(r"\D", "", s)
+    if len(digits) == 11 and digits.startswith("1"):
+        digits = digits[1:]
+    if len(digits) == 10:
+        return f"{digits[:3]}-{digits[3:6]}-{digits[6:]}"
+    return None
 
 # ---- Required at every class: (field, FedRAMP source, plain-English question) ----
 # Order is the order `sdr.py init` asks them.
@@ -61,9 +118,11 @@ REQUIRED_FIELDS = [
     ("next_ocr_date", "CDS-CSO-PUB",
      "Date of your next Ongoing Certification Report (YYYY-MM-DD)?"),
     ("uei_number", "CDS-CSO-PUB",
-     "Unique Entity Identifier (UEI) from SAM.gov? (type 'N/A: <reason>' if you have none)"),
+     "Unique Entity Identifier (UEI) from SAM.gov? (type 'N/A: <reason>' if you have none; "
+     "the schema then leaves ueiNumber blank)"),
     ("business_category", "CDS-CSO-PUB",
-     "Business category of the offering (for example 'Data analytics')? (type 'N/A: <reason>' if none applies)"),
+     "Business category(ies) from FedRAMP's fixed list, comma-separated (for example "
+     "'Analytics, Data Management'; type 'list' to see the 36 values; 'N/A: <reason>' if none applies)?"),
     ("documentation_overview", "CDS-CSO-PUB",
      "One or two sentences describing the documentation you supply for the offering?"),
     ("certification_package_overview_uri", "CDS-CSO-PUB",
@@ -92,25 +151,37 @@ CLASS_CONDITIONAL = [
      [("provider_verified_at", "When did the provider last verify and validate the offering "
                                "(ISO-8601 datetime, or 'now')? Must be within 7 days at submission")]),
     ("fedramp_independent_assessment", "FRC-APP-FIA", ("b", "c"),
+     # The rule: an assessment "completed by a FedRAMP Recognized independent
+     # assessment service within the previous 3 months". That is WHO (the name
+     # and the Recognition id that evidences "Recognized") and WHEN. The report
+     # and summary URIs in the template are reference pointers the repo offers,
+     # not something the rule requires, so they are not asked here.
      [("assessor_name", "Independent assessment: assessor organization name?"),
-      ("assessor_fedramp_id", "Independent assessment: assessor's FedRAMP recognition id?"),
-      ("completed_at", "Independent assessment: completion date (YYYY-MM-DD; within 3 months at submission)?"),
-      ("assessment_report_uri", "Independent assessment: URL of the assessment report?"),
-      ("assessment_summary_uri", "Independent assessment: URL of the assessment summary?")]),
+      ("assessor_fedramp_id", "Independent assessment: assessor's FedRAMP Recognition id?"),
+      ("completed_at", "Independent assessment: completion date (YYYY-MM-DD; within 3 months at submission)?")]),
     ("overall_assessment_summary", "CPO-CSO-OSA", ("b", "c"),
      [("overall_assessment_summary", "The assessor's overall assessment summary (IVV-IAS-OSA), "
                                      "pasted verbatim? (leave blank until the assessor supplies it)")]),
     ("availability_reporting", "CDS-CSO-AVR", ("b", "c"),
      [("human_readable_uri", "Availability status page URL (human-readable, 30 days history)?"),
       ("machine_readable_uri", "Availability status feed URL (machine-readable)?")]),
-    ("cpo_metadata", "CPO-CSO-MTD", ("a", "b", "c"),
+    ("cpo_metadata", "CPO-CSO-MTD", ("b", "c"),
+     # The rule lists four items. Class A is excluded because CPO-CSO-MTD does
+     # not resolve for a Class A package (its applicable CPO-CSO-OVR set is
+     # CDS-CSO-PUB and MAS-CSO-IIR only), which is also how preflight gates it.
      [("cpo_responsible_official", "Name, title and contact of the official accountable for the package?"),
       ("cpo_version", "Package version label (for example 1.0)?"),
+      ("cpo_last_updated", "Date and time of the package's last update (ISO-8601, or 'now')?"),
       ("cpo_source_of_update", "Source of this update (team or system producing it)?")]),
     ("external_assessment", "FRC-CLA-ASF", ("a",),
-     [("framework", "Class A: alternative assurance framework relied on (for example SOC 2 Type 2, ISO 27001)?"),
-      ("assessor", "Class A: who performed that assessment?"),
-      ("assessment_date", "Class A: date that assessment was completed (YYYY-MM-DD)?")]),
+     # The rule: a certification "from one of the following alternative security
+     # frameworks within the past 12 months" (FedRAMP Rev5 including FedRAMP
+     # Ready, SOC 2 Type II, GovRAMP). WHICH framework and WHEN; preflight then
+     # checks the FRC-CLA-EAM materials, which are structured records added to
+     # the profile's external_assessment.materials list, not wizard answers.
+     [("framework", "Class A: alternative framework relied on, one of: FedRAMP Rev5, FedRAMP Ready, "
+                    "SOC 2 Type II, GovRAMP?"),
+      ("assessment_date", "Class A: date that assessment was completed (YYYY-MM-DD; within 12 months)?")]),
 ]
 
 # ---- Optional: operational inputs the generators print; never blockers ----
@@ -187,7 +258,10 @@ _BARE = {"n/a", "na", "none", "nil", "null", "unknown", "tbc", "?", ".", "-", "-
 
 
 def is_hollow(v):
-    """TBD, or a bare non-answer; a justified 'N/A: <reason>' is NOT hollow."""
+    """TBD, or a bare non-answer; a justified 'N/A: <reason>' is NOT hollow.
+    A list (business categories) is hollow when empty or all-hollow."""
+    if isinstance(v, list):
+        return not any(not is_hollow(x) for x in v)
     if isinstance(v, dict):
         return is_hollow(contact_text(v)) if any(k in v for k in ("name", "email", "phone")) \
             else not any(not is_hollow(x) for x in v.values())
@@ -267,6 +341,8 @@ def derive_public_information(profile):
             val = profile.get(path[0])
         if isinstance(val, dict):
             val = contact_text(val) or None
+        elif isinstance(val, list):
+            val = ", ".join(str(x) for x in val if not is_hollow(x)) or None
         if not is_hollow(supplied.get(key)):
             out[key] = supplied[key]
         else:
@@ -276,6 +352,32 @@ def derive_public_information(profile):
     for k, v in supplied.items():
         out.setdefault(k, v)
     return out
+
+
+PLACEHOLDER_CPO_URI = "https://example.provider.gov-placeholder/cpo.json"
+
+
+def cpo_uri(profile):
+    """The Certification Package Overview URI every artifact references
+    (certificationPackageOverviewUri). A TBD or empty profile value resolves to
+    one clearly-placeholder URI so the schemas' uri format holds and every
+    artifact and the consistency validator see the SAME value; package-preflight
+    blocks on the TBD profile field, so the placeholder can never reach a
+    submission-ready package."""
+    v = profile.get("certification_package_overview_uri")
+    return PLACEHOLDER_CPO_URI if is_tbd(v) else str(v).strip()
+
+
+def offering_title(profile):
+    """The 'Name (ACR)' title line every deliverable prints. Until the wizard has
+    the real name, the title says so briefly instead of repeating the TBD marker
+    text twice; the marker itself stays in the profile, where `sdr.py init` and
+    package-preflight report it."""
+    name = profile.get("offering_name")
+    acr = profile.get("offering_abbreviation")
+    if is_hollow(name):
+        return "Offering name not yet provided (TBD)"
+    return f"{name} ({acr})" if not is_hollow(acr) else str(name)
 
 
 def load_profile(path=OFFERING_PROFILE):

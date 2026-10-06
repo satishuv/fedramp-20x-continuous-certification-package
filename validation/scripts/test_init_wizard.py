@@ -186,15 +186,28 @@ def test_class_decides_which_blocks_are_required():
     p = _tmp_profile()
     rc, text_a = _capture(lambda: _run_with_profile(p, _args(set=["certification_class=a"])))
     check("Class A asks the alternative-framework block (FRC-CLA-ASF)",
-          "external_assessment.framework  [FRC-CLA-ASF]" in text_a)
+          "external_assessment.framework  [FRC-CLA-ASF]" in text_a
+          and "external_assessment.assessment_date  [FRC-CLA-ASF]" in text_a)
     check("Class A does not require the FedRAMP independent assessment (FRC-APP-FIA is MAY)",
           "FRC-APP-FIA" not in text_a)
     check("Class A does not require availability reporting (CDS-CSO-AVR is SHOULD)",
           "CDS-CSO-AVR" not in text_a)
+    check("Class A does not require CPO metadata (CPO-CSO-MTD does not resolve for Class A)",
+          "CPO-CSO-MTD" not in text_a)
+    check("a framework outside FRC-CLA-ASF is refused (SOC 2 Type I is not eligible)",
+          _run_with_profile(p, _args(set=["external_assessment.framework=SOC 2 Type I"])) == 1)
+    check("an FRC-CLA-ASF framework is accepted",
+          _run_with_profile(p, _args(set=["external_assessment.framework=SOC 2 Type II"])) == 0)
     rc, text_c = _capture(lambda: _run_with_profile(p, _args(set=["certification_class=c"])))
     check("Class C requires FRC-APP-FIA", "fedramp_independent_assessment.assessor_name  [FRC-APP-FIA]" in text_c)
+    check("FRC-APP-FIA asks who and when only (name, Recognition id, date)",
+          [s for s, _q in dict((b, q) for b, _s, _c, q in pc.CLASS_CONDITIONAL)["fedramp_independent_assessment"]]
+          == ["assessor_name", "assessor_fedramp_id", "completed_at"])
     check("Class C requires CPO-CSO-OSA", "overall_assessment_summary  [CPO-CSO-OSA]" in text_c)
     check("Class C requires CDS-CSO-AVR", "availability_reporting.human_readable_uri  [CDS-CSO-AVR]" in text_c)
+    check("Class C requires all four CPO-CSO-MTD items",
+          all(f"cpo_metadata.{k}  [CPO-CSO-MTD]" in text_c
+              for k in ("cpo_responsible_official", "cpo_version", "cpo_last_updated", "cpo_source_of_update")))
     check("Class C does not ask the Class A block", "FRC-CLA-ASF" not in text_c)
 
 
@@ -212,7 +225,7 @@ def test_fully_answered_profile_has_no_contract_gaps():
         "security_contact.name=Security Operations", "security_contact.email=security@contoso.example",
         "sales_contact.name=Federal Sales", "sales_contact.email=fedsales@contoso.example",
         "assessor=Acme Assessors LLC", "assessor_id=123456", "next_ocr_date=2027-01-15",
-        "uei_number=ABC123DEF456", "business_category=Data analytics",
+        "uei_number=ABC123DEF456", "business_category=analytics, Data Management",
         "documentation_overview=Admin guide, API reference and SCG on the trust center.",
         "certification_package_overview_uri=https://trust.contoso.example/cpo.json",
         "trust_center_uri=https://trust.contoso.example/",
@@ -221,13 +234,11 @@ def test_fully_answered_profile_has_no_contract_gaps():
         "fedramp_independent_assessment.assessor_name=Acme Assessors LLC",
         "fedramp_independent_assessment.assessor_fedramp_id=123456",
         "fedramp_independent_assessment.completed_at=2026-09-20",
-        "fedramp_independent_assessment.assessment_report_uri=https://trust.contoso.example/ia-report",
-        "fedramp_independent_assessment.assessment_summary_uri=https://trust.contoso.example/ia-summary",
         "overall_assessment_summary=The assessor's summary text, supplied verbatim.",
         "availability_reporting.human_readable_uri=https://status.contoso.example/",
         "availability_reporting.machine_readable_uri=https://status.contoso.example/feed.json",
         "cpo_responsible_official=Jane Doe, CISO, jane@contoso.example", "cpo_version=1.0",
-        "cpo_source_of_update=Compliance team",
+        "cpo_last_updated=now", "cpo_source_of_update=Compliance team",
     ]
     rc, text = _capture(lambda: _run_with_profile(p, _args(set=sets)))
     prof = json.load(open(p, encoding="utf-8"))
@@ -238,6 +249,10 @@ def test_fully_answered_profile_has_no_contract_gaps():
           "Every FedRAMP-required profile field is answered for Class B" in text)
     check("'now' became an ISO-8601 UTC datetime",
           prof["provider_verified_at"].endswith("+00:00"))
+    check("business categories stored as the schema's enum list",
+          prof["business_category"] == ["Analytics", "Data Management"])
+    check("a free-text business category is refused",
+          _run_with_profile(p, _args(set=["business_category=Widgets"])) == 1)
 
 
 def test_wizard_never_asks_what_the_tool_may_not_decide():

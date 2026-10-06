@@ -144,7 +144,12 @@ def _contact(contact_type, value):
         if real_email:
             out["contactEmail"] = real_email
         if phone and not _pc.is_tbd(phone):
-            out["contactPhone"] = phone
+            # Schema pattern is ###-###-####; normalize a 10-digit number into it,
+            # omit anything that cannot be expressed that way (the schema would
+            # reject it, and a phone is not what CDS-CSO-PUB requires).
+            normalized = _pc.normalize_phone(phone)
+            if normalized:
+                out["contactPhone"] = normalized
     else:
         out["contactName"] = val(value)
     return out
@@ -218,18 +223,25 @@ def build_cpo(profile):
     aid = profile.get("assessor_id")
     if not (isinstance(aid, str) and aid.isdigit() and len(aid) == 6):
         aid = "000000"
+    # A TBD profile value is UNSET for the schema's purposes: the raw marker text
+    # fails `logo`'s image-extension pattern and `website`'s uri format, so each
+    # falls back to the same clearly-placeholder value an empty field does.
+    # package-preflight blocks on the TBD profile field either way.
+    website = profile.get("offering_website")
+    logo = profile.get("offering_logo_uri")
+    pkg_id = profile.get("fedramp_package_id")
     doc = {
         "serviceIdentification": {
-            "fedRampPackageId": profile.get("fedramp_package_id") or "TBD-PACKAGE-ID",
+            "fedRampPackageId": "TBD-PACKAGE-ID" if _unset(pkg_id) else pkg_id,
             "providerName": val(profile.get("organization_name")),
             "serviceName": val(profile.get("offering_name")),
             "serviceAcronym": val(profile.get("offering_abbreviation")),
             "serviceDescription": val(profile.get("business_purpose")),
             "certificationType": ctype,
-            "website": profile.get("offering_website") or TBD_URI,
+            "website": TBD_URI if _unset(website) else website,
             # logo must end in an image extension per schema; placeholder .png.
-            "logo": profile.get("offering_logo_uri")
-            or "https://example.provider.gov-placeholder/logo.png",
+            "logo": ("https://example.provider.gov-placeholder/logo.png"
+                     if _unset(logo) else logo),
         },
         "serviceProperties": {
             "serviceType": [stype],
@@ -260,8 +272,15 @@ def build_cpo(profile):
     if not _pc.is_hollow(uei) and not str(uei).strip().lower().startswith(("n/a", "not applicable")):
         doc["serviceIdentification"]["ueiNumber"] = str(uei).strip()
     cat = profile.get("business_category")
-    if not _pc.is_hollow(cat) and not str(cat).strip().lower().startswith(("n/a", "not applicable")):
-        doc["serviceProperties"]["businessCategory"] = str(cat).strip()
+    cats = _pc.business_categories(cat)
+    if cats:
+        doc["serviceProperties"]["businessCategory"] = cats
+    elif not _pc.is_hollow(cat) and not str(cat).strip().lower().startswith(("n/a", "not applicable")):
+        # Free text the schema enum does not contain: keep it OUT of the schema
+        # member (it would fail validation) and say so; it still appears in the
+        # derived CDS-CSO-PUB public-information object.
+        assumptions.append(f"businessCategory omitted: profile business_category {cat!r} is not "
+                           "one of the CPO schema's enum values; answer with `sdr.py init`")
     # CPO-CSO-MTD (MUST): basic metadata - responsible official, version,
     # last-updated, source of update. Carried as a provider extension.
     doc["xCpoMetadata"] = {

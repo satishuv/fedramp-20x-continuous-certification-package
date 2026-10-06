@@ -170,6 +170,42 @@ def main():
         check(f"derivation {key} reads a profile field the contract knows ({src_field})",
               src_field in known)
 
+    print("schema constraints the contract enforces are the schema's own")
+    enum = pc.business_category_enum()
+    schema_enum = tuple(((schema.get("properties") or {}).get("serviceProperties") or {})
+                        .get("properties", {}).get("businessCategory", {}).get("items", {}).get("enum") or ())
+    check("business_category enum is read from the pinned schema (not retyped)",
+          enum == schema_enum and len(enum) >= 1, f"{len(enum)} vs {len(schema_enum)}")
+    check("business_categories() maps case-insensitively onto enum values",
+          pc.business_categories("analytics, DATA MANAGEMENT") == ["Analytics", "Data Management"])
+    check("business_categories() rejects free text", pc.business_categories("Widgets (fictional)") == [])
+    pattern = (schema.get("$defs") or {}).get("contactInfo", {}).get("properties", {}) \
+        .get("contactPhone", {}).get("pattern")
+    check("contactPhone pattern matches the schema's", pattern == pc.CONTACT_PHONE_PATTERN.pattern)
+    check("normalize_phone reformats a 10-digit number", pc.normalize_phone("+1 (202) 555-0123") == "202-555-0123")
+    check("normalize_phone refuses a non-10-digit number", pc.normalize_phone("+1 555 0100") is None)
+
+    print("both sample offerings build a schema-valid CPO")
+    try:
+        import jsonschema
+        sys.path.insert(0, os.path.join(BASE, "examples", "sample-offering"))
+        sys.path.insert(0, os.path.join(BASE, "examples", "sample-offering-class-c"))
+        import build_cpo  # noqa: E402
+        import build_sample as _acme  # noqa: E402
+        import build_class_c_sample as _beacon  # noqa: E402
+        validator_cls = getattr(jsonschema, "Draft202012Validator", jsonschema.Draft7Validator)
+        validator = validator_cls(schema)
+        for label, prof in (("Acme Class B", _acme.generate_sample_profile()),
+                            ("Beacon Class C", _beacon.generate_profile())):
+            errs = list(validator.iter_errors(build_cpo.build_cpo(prof)))
+            check(f"{label} sample profile -> CPO has no schema errors", not errs,
+                  "; ".join(f"{list(e.path)}: {e.message[:80]}" for e in errs[:3]))
+            check(f"{label} sample profile has no contract gaps",
+                  not pc.required_gaps(prof) and not pc.class_gaps(prof),
+                  f"{pc.required_gaps(prof)} {pc.class_gaps(prof)}")
+    except ImportError as e:  # jsonschema is a pinned dependency; fail loudly if absent
+        check("jsonschema available for the sample CPO check", False, str(e))
+
     print("the template profile matches the contract")
     for field, _src, _q in pc.REQUIRED_FIELDS:
         check(f"template carries required field {field}", field in template)
