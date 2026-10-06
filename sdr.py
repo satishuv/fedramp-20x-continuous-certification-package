@@ -59,6 +59,10 @@ import sign_evidence as _se  # noqa: E402
 # AUD-F38: a labelled proposal (DRAFT / Example) is unanswered until a human
 # accepts it; the one definition lives in validation/scripts/unreviewed_text.py.
 from unreviewed_text import is_unreviewed as _is_unreviewed  # noqa: E402
+# The offering-profile input contract: required fields traced to FedRAMP, the
+# class-conditional blocks, and the CDS-CSO-PUB derivation. Shared by preflight,
+# `sdr.py init` and build_cpo.py.
+import profile_contract as _pc  # noqa: E402
 VALIDATION_REPORT = os.path.join(BASE, "validation", "reports", "validation-report.json")
 SCAN_REPORT_GLOB = os.path.join(BASE, "validation", "reports", "sdrscan", "sdrscan-class-*.json")
 OFFERING_PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
@@ -1290,46 +1294,19 @@ def cmd_preflight(args):
             last = (_dt.date(y, m + 1, 1) - _dt.timedelta(days=1)).day
         return _dt.date(y, m, min(ref.day, last))
 
-    # Required offering-profile fields. Everything not on the optional allowlist
-    # that is still a TBD is a submission blocker, not a warning.
-    OPTIONAL_FIELDS = {
-        "profile_note", "evidence_sources", "external_assessment",
-        "provider_verified_at", "dr_region", "iac_technology",
-        "materials_item_schema", "note",
-        "selected_optional_rules", "_selected_optional_rules_note",
-        "evidence_freshness_policy_days", "expected_evidence_signer",
-        # AUD-F17: offering may TIGHTEN the telemetry evaluated-coverage floor.
-        "telemetry_min_coverage",
-        # AUD-F21: assessor-reviewable FRC-CSX-MOT continuity tolerance (days).
-        "mot_max_gap_days",
-        # AUD-F37: "development" (default) or "production-assurance"; the latter
-        # makes an unattested, unchained or unsigned metric history a blocker.
-        "evidence_store_profile",
-    }
-    REQUIRED_FIELDS = [
-        "organization_name", "offering_name", "offering_abbreviation",
-        "business_purpose", "service_model", "deployment_model",
-        "certification_type", "certification_class", "aws_partition",
-        "primary_region", "management_plane", "federal_information_types",
-        "certification_package_overview_uri", "security_contact",
-        "incident_contact", "assessor", "evidence_retention",
-    ]
-    # A required field answered with a bare non-answer (N/A, none, '.') is not
-    # a real answer any more than a TBD is. Narrative required fields may carry a
-    # justified 'N/A: <reason>' (so _is_hollow), but identity / contact / URI
-    # required fields MUST name a real entity or location, where even a justified
-    # N/A is missing (so the stricter _is_missing_required_identity).
-    IDENTITY_REQUIRED = {"security_contact", "incident_contact", "assessor",
-                         "certification_package_overview_uri"}
-    unresolved_required = [
-        f for f in REQUIRED_FIELDS
-        if (_is_missing_required_identity(offering.get(f)) if f in IDENTITY_REQUIRED
-            else _is_hollow(offering.get(f)))
-    ]
+    # Required offering-profile fields: the ONE definition is
+    # validation/scripts/profile_contract.py, where every required field names
+    # the FedRAMP source that requires it (an official CPO schema property or a
+    # CR26 rule). A field with no FedRAMP source is never a blocker. Identity /
+    # contact / URL fields must name a real entity (even a justified N/A is
+    # missing); CDS-CSO-PUB's "available and applicable" items (UEI, business
+    # category, documentation overview) accept a justified 'N/A: <reason>'.
+    unresolved_required = _pc.required_gaps(offering)
     if unresolved_required:
         blockers.append(f"{len(unresolved_required)} required offering-profile "
-                        f"field(s) unresolved (TBD/placeholder): "
-                        f"{', '.join(unresolved_required)}")
+                        f"field(s) unresolved (TBD/placeholder), each required by "
+                        f"FedRAMP: " + ", ".join(f"{f} ({src})" for f, src in unresolved_required)
+                        + ". Answer them with `python sdr.py init`.")
 
     # The engine resolves 20x + Program only. If the profile claims a different
     # path, the generated package would silently be the wrong applicability

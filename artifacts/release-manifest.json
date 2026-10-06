@@ -47,14 +47,14 @@
   }
  },
  "inputs": {
-  "profiles/common/offering-profile.json": "sha256:c58127fcf6bcd74ee1e34e8305d0d2ffe1b81332f12d1e4a6b3e975b7eb04835",
+  "profiles/common/offering-profile.json": "sha256:09121a3cb0e5f05cf9cb0fefcafd157ef7752bdb575a6c239e60af151f6db241",
   "sdr/records/records-store.json": "sha256:fe030beea95cc27c30abcdb77932e52ee7470068282e28c1491db7c435fc69b3"
  },
  "artifacts": {
   "artifacts/sbom.cdx.json": "sha256:d9c871f6134c58165d1bab268f3b741b1e1acb1ed11484a7093459e0d342034b",
   "package/certification-package-manifest.json": "sha256:9cae6d6ee3216e60c35fcdc427b1e485d5033c1eeb79f234b83e55ea6b6e1a0d",
-  "package/cpo/cpo.json": "sha256:f0f62eef2b8916e300a0b4b6a409c9ecdf5dcd86a00cc559ae33146db7cb9c00",
-  "package/cpo/cpo.md": "sha256:4979306e40bfd3604cbb7acfe2e2d998acf79276bde857d3b14145a9c8c53fee",
+  "package/cpo/cpo.json": "sha256:b12732b289dbe94f34751764a04347b728e1c0ea015de748dadfe5ff465352c7",
+  "package/cpo/cpo.md": "sha256:79bd273d0cbec581f770b4901d6df31b34493ec9671a50905e4ebb79351ecd71",
   "package/events/accepted-vulnerabilities-example.json": "sha256:85835cbb67f0b46cb6deb5402510dfa1f47ed15e8cbc34f4633a596818a6b0ff",
   "package/events/historical-ver-activity-example.json": "sha256:6e1f3d2e8e70af4d606f0ec5d219e024aee30bf34dfec0a5972deba396757937",
   "package/events/incident-report-final-example.json": "sha256:e2e0093c8b30fd5ae87421915ae5d6e9b9340bf9b62a4e0789a3f37a5ee4f227",

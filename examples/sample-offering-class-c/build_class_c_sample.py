@@ -300,15 +300,18 @@ def generate_profile():
         "aws_partition": "aws",
         "primary_region": "us-east-1",
         "dr_region": "us-west-2",
-        "management_plane": "Provider-hosted control plane, isolated from customer workloads (fictional).",
-        "federal_information_types": "Illustrative example only; no real federal data.",
         "certification_package_overview_uri": "https://trust.bfc-demo.invalid/cpo.json",
         "security_contact": "security@bfc-demo.invalid (fictional)",
         "incident_contact": "ir@bfc-demo.invalid (fictional)",
         "sales_contact": "sales@bfc-demo.invalid (fictional)",
         "assessor": "Cascade Assurance LLC (fictional Recognized assessor)",
         "assessor_id": "123456",
-        "evidence_retention": "13 months rolling (fictional sample policy).",
+        # CDS-CSO-PUB public information with no other home in the profile.
+        "uei_number": "ZQGGHJH74DW7 (fictional)",
+        "business_category": "Data processing platform (fictional)",
+        "documentation_overview": (f"{FICT} User guide, API reference, Secure Configuration Guide "
+                                   "and the trust-center certification data, all published at "
+                                   "https://trust.bfc-demo.invalid/."),
         "provider_verified_at": recent + "T00:00:00+00:00",
         "overall_assessment_summary": (f"{FICT} The independent assessor's overall summary: "
                                        "no unresolved high findings; all in-scope KSIs validated."),
@@ -584,8 +587,8 @@ def attack():
     #     and the KSI metric summaries. A package this empty must never be ready.
     def _hollow_everything(st, pr, hi):
         pr["business_purpose"] = "N/A"
-        pr["management_plane"] = "N/A"
-        pr["federal_information_types"] = "N/A"
+        pr["business_category"] = "N/A"
+        pr["documentation_overview"] = "N/A"
         pr["overall_assessment_summary"] = "N/A"
         pr["security_contact"] = "N/A"
         pr["sales_contact"] = "N/A"
