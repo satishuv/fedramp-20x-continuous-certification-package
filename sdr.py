@@ -53,8 +53,12 @@ SDRSCAN = os.path.join(BASE, "automation", "sdrscan", "sdrscan.py")
 # signed digest with the same modules the appender and publisher use.
 sys.path.insert(0, os.path.join(BASE, "automation", "metrics"))
 sys.path.insert(0, os.path.join(BASE, "automation", "collectors"))
+sys.path.insert(0, os.path.join(BASE, "validation", "scripts"))
 import history_integrity as _hi  # noqa: E402
 import sign_evidence as _se  # noqa: E402
+# AUD-F38: a labelled proposal (DRAFT / Example) is unanswered until a human
+# accepts it; the one definition lives in validation/scripts/unreviewed_text.py.
+from unreviewed_text import is_unreviewed as _is_unreviewed  # noqa: E402
 VALIDATION_REPORT = os.path.join(BASE, "validation", "reports", "validation-report.json")
 SCAN_REPORT_GLOB = os.path.join(BASE, "validation", "reports", "sdrscan", "sdrscan-class-*.json")
 OFFERING_PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
@@ -1182,8 +1186,11 @@ def cmd_preflight(args):
                         "until `python sdr.py validate` is clean")
 
     def _is_tbd(v):
+        # AUD-F38: a labelled DRAFT / Example proposal is not the provider's
+        # answer until a named human accepts it (sdr.py review strips the label).
         return v is None or str(v).strip() == "" or str(v).strip().startswith("TBD") \
-            or "placeholder" in str(v).lower() or "has not been provided" in str(v).lower()
+            or "placeholder" in str(v).lower() or "has not been provided" in str(v).lower() \
+            or _is_unreviewed(v)
 
     def _is_hollow(v):
         """A content VALUE is hollow if it is TBD/empty/placeholder (per _is_tbd)
@@ -1909,6 +1916,11 @@ def cmd_preflight(args):
             return False
         if s.startswith("TBD") or "has not been provided" in s \
                 or "has not been performed" in s or s.startswith("sdr://placeholder/"):
+            return False
+        # AUD-F38: a labelled DRAFT / Example proposal is a machine's or the
+        # template's text, not the provider's confirmed fact. Unanswered until a
+        # named human accepts it through `sdr.py review` (which strips the label).
+        if _is_unreviewed(s):
             return False
         # Bare N/A / not-applicable tokens without a justification do not count.
         low = s.lower()
