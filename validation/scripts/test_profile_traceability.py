@@ -206,6 +206,18 @@ def main():
     except ImportError as e:  # jsonschema is a pinned dependency; fail loudly if absent
         check("jsonschema available for the sample CPO check", False, str(e))
 
+    # The checks below describe the SHIPPED template. Once `sdr.py init` has
+    # named a provider (or a sample builder has swapped its filled profile in,
+    # as the Acme sample's nested gate does), the live file is that provider's
+    # profile, not the template: it legitimately carries prose, an assessor
+    # whose name may begin with "Example", and optional keys such as
+    # sdr_last_updated. Those are not template defects, so the section runs
+    # only while organization_name is still unanswered.
+    if not pc.is_hollow(template.get("organization_name")):
+        print("the live profile names a provider; template-only checks skipped "
+              "(they run in the repository's own CI, where the profile is the template)")
+        print(f"\n{'PASS' if _fail == 0 else 'FAIL'}: profile traceability ({_fail} failures)")
+        return 1 if _fail else 0
     print("the template profile matches the contract")
     for field, _src, _q in pc.REQUIRED_FIELDS:
         check(f"template carries required field {field}", field in template)

@@ -103,6 +103,42 @@ Only what FedRAMP requires, asked by the script:
   AUD-F38 preflight before/after plants its own Example fixture in a temp
   copy instead of relying on the template to ship one.
 
+The Class B sample's gate, run as documented (`AUD-F39`, High, with a killed
+mutation):
+
+- **A content minimum binds at the class the offering submits (AUD-F39).**
+  Since `sdr.py build` regenerates the inactive classes from the live record
+  store, the A/B/C class matrix validates one store under three classes. The
+  validator made a MUST shortfall on populated records a hard failure wherever
+  the validated class was C, so a populated Class B offering, with exactly the
+  one automated method per KSI that FRC-CSX-VVK asks at Class B, failed
+  `sdr.py validate` on the Class C matrix run with 46 "hard failures" for a
+  class it never claimed. Reproduced at `e3b28a6` with
+  `examples/sample-offering/build_sample.py`: Build gate PASS, then
+  `FAIL. validate_sdr.py class C exited 1`. In an inactive-class run the
+  FRC-CSX-VVK minimum and the evidence-linkage expectation are now reported as
+  ADVISORY, naming the class the offering submits at; at the submitted class
+  they stay hard, and every structural, schema and dataset-fidelity check
+  keeps its force in every class.
+- **Suites that describe the template no longer measure a provider's
+  profile.** The wizard tests build their fixture from the contract instead of
+  copying the live profile; the traceability test's template-only section runs
+  while `organization_name` is unanswered and says so otherwise. Both had
+  failed under any filled profile (the sample's, or a provider's whose
+  assessor is named "Example ..." or who set `sdr_last_updated`, which the
+  scanner asks for and the contract now declares optional).
+- **Every FRC-APP-FCP blocker cites the rule**, including the one for a
+  `provider_verified_at` value that is not a timezone-aware ISO-8601 datetime.
+- **The 30-day window test uses the UTC day the derivation uses.** Its fixture
+  ended on the host's local date, one day short of the window every US
+  evening; the same code passed in the UTC runner and failed locally.
+- **The Class C sample restores the review register from its backup**, like
+  every other input, instead of `git checkout`, which discarded a provider's
+  uncommitted sign-offs and needed a git checkout to exist.
+- The committed Acme sample inputs and generated package are regenerated from
+  the contract-following builder, so running the sample as documented leaves
+  the tree byte-identical.
+
 ## 1.5.0, 2026-10-05
 
 Pinned dataset: `2026.09.13.02` (unchanged)

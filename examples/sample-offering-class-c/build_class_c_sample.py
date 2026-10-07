@@ -42,7 +42,12 @@ REAL_REPORTS = (
     os.path.join(BASE, "validation", "reports", "validation-report.json"),
     os.path.join(BASE, "validation", "reports", "ksi-test-results.json"),
 )
-BACKED_UP = (REAL_STORE, REAL_PROFILE, REAL_HISTORY) + REAL_REPORTS
+# The sample records its fictional sign-offs in the review register; it is
+# backed up and restored byte-for-byte like the other inputs. A `git checkout`
+# restore would discard a provider's own uncommitted sign-offs and needs a git
+# checkout to exist (the sample also runs inside copied test trees).
+REAL_REGISTER = os.path.join(BASE, "sdr", "reviews", "review-register.json")
+BACKED_UP = (REAL_STORE, REAL_PROFILE, REAL_HISTORY, REAL_REGISTER) + REAL_REPORTS
 
 
 def _backup(tmp):
@@ -59,9 +64,9 @@ def _backup(tmp):
 def _restore_tree(baks, history_existed, tmp):
     """Leave the working tree exactly as found (AUD-F36).
 
-    Restores every backed-up file (inputs AND validation reports), removes the
-    sample metric history if none existed before, restores the review register
-    (the signoff is sample-only), then regenerates EVERY deliverable from the
+    Restores every backed-up file (inputs, the review register whose sign-offs
+    are sample-only, AND validation reports), removes the sample metric history
+    if none existed before, then regenerates EVERY deliverable from the
     restored real inputs with the single build definition. `sdr.py build` now
     regenerates the inactive classes too (JSON, text AND Word document, see
     build_inactive_classes.py), so sample content cannot linger in a committed
@@ -72,8 +77,6 @@ def _restore_tree(baks, history_existed, tmp):
         shutil.copy2(b, real)
     if not history_existed and os.path.exists(REAL_HISTORY):
         os.remove(REAL_HISTORY)
-    subprocess.run(["git", "-C", BASE, "checkout", "--",
-                    "sdr/reviews/review-register.json"], capture_output=True, text=True)
     shutil.rmtree(tmp, ignore_errors=True)
     subprocess.run([sys.executable, os.path.join(BASE, "sdr.py"), "build"],
                    cwd=BASE, capture_output=True, text=True)

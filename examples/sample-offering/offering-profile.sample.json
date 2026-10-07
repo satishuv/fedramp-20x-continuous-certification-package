@@ -3,25 +3,47 @@
  "organization_name": "Acme Cloud Systems, Inc. (fictional)",
  "offering_name": "Acme Cloud Widgets",
  "offering_abbreviation": "ACW",
+ "fedramp_package_id": "FR20X-SAMPLE-ACW-0001 (fictional)",
+ "uei_number": "SAMPLEUEI001 (fictional)",
+ "offering_website": "https://www.example-acme.invalid/widgets",
+ "offering_logo_uri": "https://www.example-acme.invalid/widgets/logo.png",
+ "business_category": [
+  "Collaboration"
+ ],
+ "documentation_overview": "[SAMPLE - fictional] Administrator guide, API reference and the Secure Configuration Guide are published on the ACW trust center.",
  "business_purpose": "A fictional multi-tenant SaaS widget-processing platform used to demonstrate a populated SDR.",
  "service_model": "SaaS",
  "deployment_model": "Public Cloud",
  "certification_type": "FedRAMP 20x",
  "certification_class": "B",
  "certification_path": "Program",
+ "evidence_store_profile": "development",
+ "_evidence_store_profile_note": "AUD-F37. 'development' (template default): an unchained, unattested or UNSIGNED metric history is an advisory at package-preflight. 'production-assurance': those are blockers - every metric observation must be hash-chained with collector run provenance, and the history digest must carry a signature that verifies offline against expected_evidence_signer (publish with `publish_history.py publish --sign-key-arn <separate signer's KMS key>`). A TAMPERED chain (edited, inserted or deleted observation) is a blocker under both profiles. A real Class C offering should declare production-assurance before submission.",
+ "selected_optional_rules": [],
+ "_selected_optional_rules_note": "Class A only. FRC-CLA-OFR optional (MAY) rules are extra credit; by default NONE are submitted. To include a specific optional rule in the Class A SDR, add its rule_id here (e.g. \"CCM-QTR-MTG\"). All MUST and SHOULD rules are always submitted. Ignored for Class B/C. FedRAMP fully reviews any optional rule that is included.",
+ "selected_optional_ksis": [],
+ "_selected_optional_ksis_note": "Class B only. Five KSIs are OPTIONAL at Class B (varies_by_class 'b' marked **Optional:**): KSI-CNA-EIS, KSI-MLA-ALA, KSI-SVC-PRR, KSI-SVC-RUD, KSI-SVC-VCM. By default NONE are submitted in the Class B SDR. To include one, add its ksi_id here. A ksi_id that is not one of those five is a hard error at preflight (a bad selection silently opts in nothing). All other KSIs are always submitted. Ignored for Class A/C (they are mandatory at Class C).",
  "aws_partition": "aws",
  "primary_region": "us-east-1",
  "dr_region": "us-west-2",
  "iac_technology": "AWS CloudFormation",
- "management_plane": "Provider-hosted control plane, isolated from customer workloads (fictional).",
- "federal_information_types": "None; illustrative example only.",
- "certification_package_overview_uri": "https://example.provider.gov-placeholder/cpo.json",
- "security_contact": "security@example-acme.invalid (fictional)",
+ "certification_package_overview_uri": "https://trust.example-acme.invalid/cpo.json",
+ "security_contact": {
+  "name": "ACW Security Operations (fictional)",
+  "email": "security@example-acme.invalid"
+ },
+ "sales_contact": {
+  "name": "ACW Federal Sales (fictional)",
+  "email": "fedsales@example-acme.invalid",
+  "phone": "202-555-0100"
+ },
  "incident_contact": "ir@example-acme.invalid (fictional)",
  "assessor": "Example 3PAO (fictional)",
- "evidence_retention": "12 months rolling (fictional sample policy).",
- "trust_center_uri": "[SAMPLE - fictional] trust_center_uri for Acme Cloud Widgets.",
- "secure_config_guide_uri": "[SAMPLE - fictional] secure_config_guide_uri for Acme Cloud Widgets.",
+ "assessor_id": "000001",
+ "next_ocr_date": "2026-12-15",
+ "trust_center_uri": "https://trust.example-acme.invalid/",
+ "secure_config_guide_uri": "https://trust.example-acme.invalid/scg",
+ "secure_config_guide_machine_uri": "Optional: URL to the MACHINE-READABLE Secure Configuration Guide data (SCG-ENH-MRG - providers SHOULD also provide the guide in machine-readable format). Recommended, not required: if unset, preflight emits an SCG-ENH-MRG advisory but does NOT block submission.",
  "provider_verified_at": "[SAMPLE - fictional] provider_verified_at for Acme Cloud Widgets.",
  "external_assessment": {
   "note": "Required for Class A (FRC-CLA-ASF, FRC-CLA-EAM). Model the alternative-framework assessment as references; do NOT store confidential reports in this repository. All values TBD in the template.",
@@ -40,40 +62,66 @@
  },
  "fedramp_independent_assessment": {
   "note": "FRC-APP-FIA: a FRESH initial FedRAMP independent assessment completed by a FedRAMP Recognized independent assessment service within the previous 3 months. Class B and C MUST supply this; Class A MAY. Distinct from external_assessment (the Class A alternative-framework path). FRC-APP-USA allows a Recognized assessor to freshen a stale assessment unless it is more than 9 months old. All values TBD in the template.",
-  "assessor_name": "TBD: name of the FedRAMP Recognized independent assessment service",
-  "assessor_fedramp_id": "TBD: the assessor's FedRAMP Recognition id",
-  "completed_at": "TBD: YYYY-MM-DD the assessment was completed (must be within the previous 3 months for B/C)",
-  "assessment_summary_uri": "TBD: location of the overall assessment summary (IVV-IAS-OSA)",
-  "assessment_report_uri": "TBD: location reference (the report is NOT stored in this repository)",
-  "assessment_report_sha256": "TBD: hash of the referenced report"
+  "assessor_name": "Example 3PAO (fictional)",
+  "assessor_fedramp_id": "000001",
+  "completed_at": "2026-09-01",
+  "assessment_summary_uri": "https://trust.example-acme.invalid/assessment-summary",
+  "assessment_report_uri": "https://trust.example-acme.invalid/assessment-report",
+  "assessment_report_sha256": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "freshness_basis": "current",
+  "freshening": {
+   "note": "FRC-APP-USA: only used when the initial assessment is 3-9 months old. The freshening MUST be performed by a FedRAMP Recognized independent assessment service.",
+   "reviewed_at": "TBD: YYYY-MM-DD the Recognized service reviewed the changes (must not be a future date)",
+   "reviewed_by": "TBD: name of the FedRAMP Recognized independent assessment service that performed the freshening review",
+   "reviewer_fedramp_id": "TBD: the freshening reviewer's FedRAMP Recognition id",
+   "changes_reviewed_reference": "TBD: reference to the record of changes reviewed between the original assessment and current status"
+  }
  },
- "overall_assessment_summary": "[SAMPLE - fictional] overall_assessment_summary for Acme Cloud Widgets.",
- "cpo_responsible_official": "[SAMPLE - fictional] cpo_responsible_official for Acme Cloud Widgets.",
- "cpo_version": "[SAMPLE - fictional] cpo_version for Acme Cloud Widgets.",
- "cpo_last_updated": "[SAMPLE - fictional] cpo_last_updated for Acme Cloud Widgets.",
- "cpo_source_of_update": "[SAMPLE - fictional] cpo_source_of_update for Acme Cloud Widgets.",
+ "expected_evidence_signer": {
+  "note": "Findings 7/8 - the INDEPENDENTLY PINNED trusted evidence signer. When any evidence carries an xEvidenceSignature, validate_evidence.py cryptographically verifies it (offline ECDSA) against public_key_pem here and requires the evidence keyId to equal key_arn. The public key is obtained ONCE via kms:GetPublicKey on the audit-account signing key and pinned here by the VERIFIER; it is never taken from the evidence. Leave TBD when evidence signing is not in use (unsigned evidence stays verified-by-hash). A present-but-unpinned or non-verifying signature is a HARD failure.",
+  "key_arn": "TBD: arn:aws:kms:<region>:<audit-account>:key/<id> of the audit-account signing key (must equal the evidence xEvidenceSignature.keyId)",
+  "public_key_pem": "TBD: the PEM SubjectPublicKeyInfo public key from kms:GetPublicKey on the signing key (or set public_key_pem_path to a file)",
+  "public_key_pem_path": "TBD: optional path (repo-relative) to a .pem file holding the pinned public key, as an alternative to inlining public_key_pem",
+  "public_key_fingerprint": "TBD: optional sha256:<hex> of the DER SubjectPublicKeyInfo, a second independent pin checked before verification"
+ },
+ "metric_history_exception": {
+  "note": "FRC-CSX-MOT initial-certification exception: only for a NEW offering that cannot yet show the normal metric-of-time history. Set both booleans to true AND provide the descriptions/references; when valid, MOT preflight requires a CURRENT datapoint per in-scope KSI instead of the full history window. Omit or leave the booleans false once real history exists. Eligibility is measured from metrics_available_since (the date persistent KSI metrics first became available), NOT the offering launch date - the exception applies when metrics have been available for less than the required window (6 months at C, 18 at D). The date must not be in the future.",
+  "mechanisms_in_place": false,
+  "mechanisms_description": "TBD: description of the mechanisms in place to produce the required KSI metrics going forward (required when mechanisms_in_place is true)",
+  "commitment_to_meet_mot": false,
+  "commitment_reference": "TBD: reference to the provider's recorded commitment to meet the metric-of-time requirement (required when commitment_to_meet_mot is true)",
+  "metrics_available_since": "TBD: YYYY-MM-DD the date persistent KSI metrics first became available (the FRC-CSX-MOT eligibility date; must not be in the future)",
+  "operating_since": "TBD: YYYY-MM-DD (deprecated fallback for metrics_available_since; the offering launch date is NOT the metrics-available date - prefer metrics_available_since)",
+  "responsible_official": "TBD: name, title, and contact of the official accountable for the commitment"
+ },
+ "overall_assessment_summary": "[SAMPLE - fictional] The assessor's overall summary of the independent assessment, supplied verbatim for the worked example.",
+ "cpo_responsible_official": "[SAMPLE - fictional] Jane Doe, CISO, ciso@example-acme.invalid",
+ "cpo_version": "1.0 (fictional sample)",
+ "cpo_last_updated": "2026-09-07T00:00:00+00:00",
+ "cpo_source_of_update": "[SAMPLE - fictional] ACW compliance team",
  "cpo_required_information": {
-  "note": "CPO-CSO-OVR: for each APPLICABLE referenced rule, a pointer to (or the actual) information required by that rule. Anything left unset is a preflight blocker. Keys are rule ids: CPO-CSO-MTD, CDS-CSO-PUB, CDS-CSO-SVC, CDS-CSO-IRP, MAS-CSO-IIR, MAS-CSO-FLO, MAS-CSO-TPR, CMU-CSO-CMD, IVV-CSO-ICP. Only the rules that resolve for your class/type are required (Class A resolves only CDS-CSO-PUB and MAS-CSO-IIR of this set); the builder omits non-applicable rules automatically. STRUCTURED rules: CDS-CSO-PUB must be an OBJECT whose keys are the CR26 CDS-CSO-PUB following_information items; CDS-CSO-IRP and MAS-CSO-TPR must each be a non-empty ARRAY of records covering the CR26 per-record fields. A single sentence does NOT satisfy those three."
+  "note": "CPO-CSO-OVR: for each APPLICABLE referenced rule, a pointer to (or the actual) information required by that rule. Anything left unset is a preflight blocker. Keys are rule ids: CPO-CSO-MTD, CDS-CSO-PUB, CDS-CSO-SVC, CDS-CSO-IRP, MAS-CSO-IIR, MAS-CSO-FLO, MAS-CSO-TPR, CMU-CSO-CMD, IVV-CSO-ICP. Only the rules that resolve for your class/type are required (Class A resolves only CDS-CSO-PUB and MAS-CSO-IIR of this set); the builder omits non-applicable rules automatically. STRUCTURED rules: CDS-CSO-PUB must be an OBJECT whose keys are the CR26 CDS-CSO-PUB following_information items (each supplied); CDS-CSO-IRP and MAS-CSO-TPR must each be a non-empty ARRAY of records covering the CR26 per-record fields. A single sentence does NOT satisfy those three."
  },
  "availability_reporting": {
   "note": "CDS-CSO-AVR: a web service showing current and >=30 days historical core-service availability (including incidents) in both human-readable and machine-readable formats, available even when the primary offering is down. Class B and C MUST; Class A SHOULD. This repository references the provider's service; it does not host it.",
-  "human_readable_uri": "TBD: URL of the human-readable availability page",
-  "machine_readable_uri": "TBD: URL of the machine-readable availability feed",
-  "history_days": "TBD: integer, must be >= 30",
-  "available_when_primary_unavailable": "TBD: true/false (independently hosted); human-verified, not machine-asserted",
-  "verified_at": "TBD: YYYY-MM-DD the provider verified the service"
+  "human_readable_uri": "https://status.example-acme.invalid/",
+  "machine_readable_uri": "https://status.example-acme.invalid/feed.json",
+  "history_days": 90,
+  "available_when_primary_unavailable": true,
+  "verified_at": "2026-09-01"
  },
  "application_prerequisites": {
   "note": "Checked by `sdr.py application-preflight` (not package-preflight). FedRAMP's applying rules require the provider to be listed in the FedRAMP Marketplace and to complete the FedRAMP Certification Application Form. These are external prerequisites, referenced here, not properties of the generated package.",
   "marketplace_listing_uri": "TBD: URL of the provider's FedRAMP Marketplace listing",
   "application_form_reference": "TBD: reference/confirmation of the completed FedRAMP Certification Application Form",
   "provider_is_applicant": false,
-  "_provider_is_applicant_note": "FRC-APP-NTP (MUST NOT): set to true ONLY when the CSP itself is the applicant. Preflight requires exactly true.",
-  "provider_is_applicant_attestation": "TBD: optional human note recording who attested the CSP itself is the applicant (evidence for provider_is_applicant: true)"
+  "_provider_is_applicant_note": "FRC-APP-NTP (MUST NOT): set to true ONLY when the CSP itself is the applicant submitting this FedRAMP Certification application. A third party (including an independent assessment service) MUST NOT apply on the provider's behalf; a third party MAY only help prepare materials. Preflight requires this to be exactly true. The free-form attestation below is an optional human evidence note, not the gate.",
+  "provider_is_applicant_attestation": "TBD: optional human note recording who attested that the CSP itself is the applicant (evidence for provider_is_applicant: true)"
  },
  "sdr_version": "0.1.0",
  "schema_version": "2026-06-24",
  "dataset_version": "2026.09.13.02",
+ "evidence_freshness_policy_days": 90,
  "evidence_sources": {
   "note": "Optional third-party evidence sources, opt-in per customer. Off by default. Set enabled=true and point export_path at a customer-produced export (produced in the customer's own environment; this repository holds no API client or credentials). See automation/collectors/thirdparty_adapters.py.",
   "crowdstrike-falcon": {

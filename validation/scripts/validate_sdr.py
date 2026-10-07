@@ -267,6 +267,17 @@ def main():
     # gitignored matrix directory so the committed canonical reports (which
     # describe the active class) are untouched.
     cls = (os.environ.get("SDR_VALIDATE_CLASS") or active_cls).lower()
+    # AUD-F39: the content-force checks (FRC-CSX-VVK automated-method minimum,
+    # evidence linkage for populated MUST work) bind the offering at the class it
+    # SUBMITS, the profile's class. A matrix run at an inactive class renders the
+    # same record store under another class's rules so that class's committed
+    # artifacts stay structurally valid and dataset-faithful; a content minimum
+    # only a higher class mandates is reported there as ADVISORY, never a hard
+    # failure. Before this, a populated Class B offering with exactly the one
+    # automated method per KSI that FRC-CSX-VVK asks at Class B failed
+    # `sdr.py validate` on the Class C matrix run (first seen with the Acme
+    # sample's nested gate).
+    inactive_run = cls != active_cls
     reports_dir = REPORTS if cls == active_cls else os.path.join(REPORTS, "matrix", f"class-{cls}")
     # Tests may redirect the reports entirely (SDR_REPORTS_DIR) so a test-driven
     # run never rewrites the committed canonical reports.
@@ -473,7 +484,7 @@ def main():
     # count is informational for every class.
     populated_below = [r["ksi_id"] for r in ksi_results
                        if not r["meets_test_minimum"] and r["content_state"] == "populated"]
-    vvk_hard = force == "MUST" and bool(populated_below)
+    vvk_hard = force == "MUST" and bool(populated_below) and not inactive_run
     check("ksi_test_minimums", not below_min,
           f"{len(below_min)} KSIs below the FRC-CSX-VVK AUTOMATED-method minimum "
           f"for class {cls.upper()} (counted from distinct automated authoring "
@@ -484,6 +495,8 @@ def main():
              "requirement; repository release policy may still require it")
           + (f"; {len(populated_below)} populated KSIs short"
              if populated_below else "; all shortfalls are template TBD state")
+          + (f"; matrix run at an inactive class, the offering submits at class "
+             f"{active_cls.upper()}, so this is advisory here" if inactive_run else "")
           + ")",
           hard=vvk_hard)
 
@@ -641,12 +654,14 @@ def main():
             continue
         if not (k.get("ksiEvidence") or []):
             linkage_gaps.append(k["ksiId"])
-    linkage_hard = force == "MUST" and bool(linkage_gaps)
+    linkage_hard = force == "MUST" and bool(linkage_gaps) and not inactive_run
     check("evidence_linkage_for_populated_musts", not linkage_gaps,
           (f"{len(linkage_gaps)} populated KSIs have no evidence entry "
            f"(force {force} at class {cls.upper()}"
            + ("; hard failure" if linkage_hard else
-              "; reported, hard only at Class C/D where the force is MUST")
+              (f"; matrix run at an inactive class, the offering submits at class "
+               f"{active_cls.upper()}, so this is advisory here" if inactive_run else
+               "; reported, hard only at Class C/D where the force is MUST"))
            + f"): {linkage_gaps[:5]}")
           if linkage_gaps else
           "every populated KSI carries at least one evidence entry",

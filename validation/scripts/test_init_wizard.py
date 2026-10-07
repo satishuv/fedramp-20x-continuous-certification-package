@@ -7,7 +7,6 @@ import contextlib
 import io
 import json
 import os
-import shutil
 import sys
 import tempfile
 import types
@@ -30,10 +29,45 @@ def check(name, cond):
         print(f"  FAIL {name}")
 
 
+def _blank_profile():
+    """A template-state profile built from the CONTRACT, not copied from the live
+    file. The live profile is the template only in the repository's own CI;
+    once `sdr.py init` has named a provider, or a sample builder has swapped
+    its filled profile in (the Acme sample's nested gate runs this suite), a
+    copy of it would already have the answers these tests expect to be asked
+    for, and the suite would measure the provider's profile instead of the
+    wizard. Shape mirrors profiles/common/offering-profile.json: every required
+    field unanswered except the two the template presets, every
+    class-conditional block present with its note and TBD sub-fields, plus a
+    sub-field the wizard never asks (to prove it is left alone)."""
+    prof = {"profile_note": "test fixture built from profile_contract"}
+    for field, _src, _q in pc.REQUIRED_FIELDS:
+        prof[field] = pc.TBD
+    prof["certification_type"] = "FedRAMP 20x"
+    prof["certification_class"] = "b"
+    for block, src, _classes, questions in pc.CLASS_CONDITIONAL:
+        if block in ("provider_verified_at", "overall_assessment_summary"):
+            prof[block] = pc.TBD
+        elif block == "cpo_metadata":
+            for sub, _q in questions:
+                prof[sub] = pc.TBD
+        else:
+            node = {"note": f"{src}: fixture note"}
+            for sub, _q in questions:
+                node[sub] = pc.TBD
+            prof[block] = node
+    prof["fedramp_independent_assessment"]["assessment_report_sha256"] = "TBD: hash of the referenced report"
+    prof["availability_reporting"]["history_days"] = "TBD: days of history"
+    for field in ("aws_partition", "primary_region", "dr_region", "iac_technology"):
+        prof[field] = pc.TBD
+    return prof
+
+
 def _tmp_profile():
     d = tempfile.mkdtemp()
     p = os.path.join(d, "offering-profile.json")
-    shutil.copyfile(sdr.OFFERING_PROFILE, p)
+    with open(p, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(_blank_profile(), f, indent=1)
     return p
 
 
@@ -161,6 +195,7 @@ def test_enum_answers_are_normalized_to_schema_tokens():
 
 def test_contacts_are_structured_and_nested_blocks_keep_their_notes():
     p = _tmp_profile()
+    before = json.load(open(p, encoding="utf-8"))
     rc = _run_with_profile(p, _args(set=[
         "security_contact.name=Security Operations", "security_contact.email=sec@x.example",
         "sales_contact=Federal Sales <sales@x.example>",
@@ -176,10 +211,14 @@ def test_contacts_are_structured_and_nested_blocks_keep_their_notes():
     fia = prof["fedramp_independent_assessment"]
     check("nested answers land inside the block", fia["assessor_name"] == "Acme Assessors"
           and fia["completed_at"] == "2026-09-20")
+    fia_before = before["fedramp_independent_assessment"]
     check("the block's note and unanswered sub-fields survive",
-          "note" in fia and str(fia["assessment_report_sha256"]).startswith("TBD"))
+          fia.get("note") == fia_before["note"]
+          and fia.get("assessment_report_sha256") == fia_before["assessment_report_sha256"]
+          and fia.get("assessor_fedramp_id") == fia_before["assessor_fedramp_id"])
     check("availability_reporting keeps history_days untouched",
-          str(prof["availability_reporting"]["history_days"]).startswith("TBD"))
+          prof["availability_reporting"].get("history_days")
+          == before["availability_reporting"]["history_days"])
 
 
 def test_class_decides_which_blocks_are_required():

@@ -1527,7 +1527,8 @@ def cmd_preflight(args):
     else:
         dt, err = _parse_dt(verified)
         if err:
-            blockers.append(f"provider_verified_at {err}: {verified}")
+            blockers.append(f"provider_verified_at {err}: {verified} (FRC-APP-FCP requires a "
+                            "timezone-aware ISO-8601 datetime within the previous 7 days)")
         elif (_dt.datetime.now(_dt.timezone.utc) - dt) > _dt.timedelta(days=7):
             blockers.append("provider_verified_at is older than 7 days "
                             "(FRC-APP-FCP requires within the previous 7 days)")
