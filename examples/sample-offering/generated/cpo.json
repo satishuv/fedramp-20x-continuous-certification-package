@@ -1,13 +1,14 @@
 {
  "serviceIdentification": {
-  "fedRampPackageId": "TBD-PACKAGE-ID",
+  "fedRampPackageId": "FR20X-SAMPLE-ACW-0001 (fictional)",
   "providerName": "Acme Cloud Systems, Inc. (fictional)",
   "serviceName": "Acme Cloud Widgets",
   "serviceAcronym": "ACW",
   "serviceDescription": "A fictional multi-tenant SaaS widget-processing platform used to demonstrate a populated SDR.",
   "certificationType": "20x",
-  "website": "https://example.provider.gov-placeholder/tbd",
-  "logo": "https://example.provider.gov-placeholder/logo.png"
+  "website": "https://www.example-acme.invalid/widgets",
+  "logo": "https://www.example-acme.invalid/widgets/logo.png",
+  "ueiNumber": "SAMPLEUEI001 (fictional)"
  },
  "serviceProperties": {
   "serviceType": [
@@ -18,7 +19,7 @@
    "repositoryType": [
     "Website"
    ],
-   "url": "[SAMPLE - fictional] trust_center_uri for Acme Cloud Widgets.",
+   "url": "https://trust.example-acme.invalid/",
    "repositoryDescription": "FedRAMP-compatible trust center for Certification Data (CDS-CSO-UTC).",
    "authenticationRequired": false
   },
@@ -26,36 +27,42 @@
    "repositoryType": [
     "Website"
    ],
-   "url": "[SAMPLE - fictional] secure_config_guide_uri for Acme Cloud Widgets.",
+   "url": "https://trust.example-acme.invalid/scg",
    "repositoryDescription": "Secure Configuration Guide (SCG-CSO-RSC).",
    "authenticationRequired": false
   },
-  "nextOngoingCertificationReportDate": "2026-10-12"
+  "nextOngoingCertificationReportDate": "2026-12-15",
+  "businessCategory": [
+   "Collaboration"
+  ]
  },
  "contactInformation": [
   {
    "contactType": "Security",
-   "contactName": "security@example-acme.invalid (fictional)"
+   "contactName": "ACW Security Operations (fictional)",
+   "contactEmail": "security@example-acme.invalid"
   },
   {
    "contactType": "Sales",
-   "contactName": "TBD: Information has not been provided."
+   "contactName": "ACW Federal Sales (fictional)",
+   "contactEmail": "fedsales@example-acme.invalid",
+   "contactPhone": "202-555-0100"
   }
  ],
  "assessor": {
   "name": "Example 3PAO (fictional)",
-  "assessorID": "000000"
+  "assessorID": "000001"
  },
  "xCpoMetadata": {
   "cr26_rule": "CPO-CSO-MTD",
-  "responsible_official": "[SAMPLE - fictional] cpo_responsible_official for Acme Cloud Widgets.",
-  "version": "[SAMPLE - fictional] cpo_version for Acme Cloud Widgets.",
-  "last_updated": "[SAMPLE - fictional] cpo_last_updated for Acme Cloud Widgets.",
-  "source_of_update": "[SAMPLE - fictional] cpo_source_of_update for Acme Cloud Widgets."
+  "responsible_official": "[SAMPLE - fictional] Jane Doe, CISO, ciso@example-acme.invalid",
+  "version": "1.0 (fictional sample)",
+  "last_updated": "2026-09-07T00:00:00+00:00",
+  "source_of_update": "[SAMPLE - fictional] ACW compliance team"
  },
  "xCpoRequiredInformation": {
   "cr26_rule": "CPO-CSO-OVR",
-  "note": "Each referenced rule's information must appear in the CPO unless the rule does not apply to this class/type.",
+  "note": "Each referenced rule's information must appear in the CPO unless the rule does not apply to this class/type. The applicable set is the intersection of CPO-CSO-OVR's referenced rules with this class's resolved rule set.",
   "items": [
    {
     "rule": "CPO-CSO-MTD",
@@ -65,7 +72,24 @@
    {
     "rule": "CDS-CSO-PUB",
     "description": "Certification Data Sharing: CDS-CSO-PUB (Public Information)",
-    "provider_content": "TBD: Information has not been provided."
+    "provider_content": {
+     "fedramp_id": "FR20X-SAMPLE-ACW-0001 (fictional)",
+     "service_model": "SaaS",
+     "deployment_model": "Public Cloud",
+     "business_category": "Collaboration",
+     "uei_number": "SAMPLEUEI001 (fictional)",
+     "sales_contact_information": "ACW Federal Sales (fictional), fedsales@example-acme.invalid, 202-555-0100",
+     "security_contact_information": "ACW Security Operations (fictional), security@example-acme.invalid",
+     "product_website_link": "https://www.example-acme.invalid/widgets",
+     "link_to_product_logo": "https://www.example-acme.invalid/widgets/logo.png",
+     "overall_service_description": "A fictional multi-tenant SaaS widget-processing platform used to demonstrate a populated SDR.",
+     "detailed_list_of_specific_services_and_their_security_categories": "TBD: Information has not been provided.",
+     "link_to_secure_configuration_guidance": "https://trust.example-acme.invalid/scg",
+     "overview_of_documentation_supplied_by_the_provider_for_the_cloud_service_offering": "[SAMPLE - fictional] Administrator guide, API reference and the Secure Configuration Guide are published on the ACW trust center.",
+     "link_to_trust_center_landing_page_that_includes_instructions_on_accessing_information_in_the_trust_center": "https://trust.example-acme.invalid/",
+     "next_ongoing_certification_report_date": "2026-12-15",
+     "current_fedramp_recognized_independent_assessment_service": "Example 3PAO (fictional) (FedRAMP assessor ID 000001)"
+    }
    },
    {
     "rule": "CDS-CSO-SVC",
@@ -108,9 +132,6 @@
  "xOverallAssessmentSummary": {
   "cr26_rule": "CPO-CSO-OSA",
   "source_rule": "IVV-IAS-OSA (assessor-supplied)",
-  "summary": "[SAMPLE - fictional] overall_assessment_summary for Acme Cloud Widgets."
- },
- "_cpoAssumptions": [
-  "nextOngoingCertificationReportDate is a placeholder (2026-10-12) derived from the dataset date + 3 months (CCM-OCR-AVL cadence); the provider must set next_ocr_date"
- ]
+  "summary": "[SAMPLE - fictional] The assessor's overall summary of the independent assessment, supplied verbatim for the worked example."
+ }
 }
