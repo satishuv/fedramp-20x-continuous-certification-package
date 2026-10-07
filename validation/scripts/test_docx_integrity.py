@@ -174,6 +174,8 @@ def test_f36_running_the_class_c_sample_leaves_the_tree_byte_identical():
                 watched.append(os.path.join(dirpath, fn))
     watched.append(os.path.join(BASE, "artifacts", "release-manifest.json"))
     before = {p: _sha(p) for p in watched}
+    docx_c = os.path.join(DOCX_DIR, "sdr-class-c-authoring.docx")
+    xml_before = zipfile.ZipFile(docx_c).read("word/document.xml")
     r = subprocess.run([sys.executable, os.path.join(BASE, "examples", "sample-offering-class-c",
                                                      "build_class_c_sample.py")],
                        cwd=BASE, capture_output=True, text=True)
@@ -181,8 +183,15 @@ def test_f36_running_the_class_c_sample_leaves_the_tree_byte_identical():
     after = {p: _sha(p) for p in watched}
     changed = sorted(os.path.relpath(p, BASE) for p in watched if before[p] != after.get(p))
     assert not changed, "sample run changed committed files: " + ", ".join(changed[:10])
-    xml = zipfile.ZipFile(os.path.join(DOCX_DIR, "sdr-class-c-authoring.docx")).read("word/document.xml")
-    assert b"Beacon Federal Cloud" not in xml and b"[SAMPLE" not in xml
+    # The Class C fiction must never remain, and the run must add no sample
+    # marker. Relative to the pre-run document on purpose: this test also runs
+    # inside the Class B sample's own gate (build_sample.py swaps the Acme
+    # inputs in and runs `sdr.py all`), where the tree legitimately carries
+    # Acme's "[SAMPLE - fictional]" labels before this test starts.
+    xml = zipfile.ZipFile(docx_c).read("word/document.xml")
+    assert b"Beacon Federal Cloud" not in xml
+    assert (b"[SAMPLE" in xml) == (b"[SAMPLE" in xml_before), (
+        "the Class C sample run left its [SAMPLE markers in the Class C document")
 
 
 def _run_all():

@@ -127,7 +127,22 @@ Either way the pipeline, the build gate, the drift check, and the trust boundary
 
 ## Describing your offering
 
-Still in `profiles/common/offering-profile.json`, replace the placeholder identity fields: `organization_name`, `offering_name`, `offering_abbreviation`, `business_purpose`, `service_model`, `deployment_model`, `aws_partition`, `primary_region`, `dr_region`, `iac_technology`. These feed the metadata block that `SDR-CSO-MTD` requires.
+Do not hand-edit `profiles/common/offering-profile.json`. Run the wizard:
+
+```bash
+python sdr.py init
+```
+
+It asks, in plain English, every question FedRAMP requires an answer to, and nothing else. The list is one Python module, `validation/scripts/profile_contract.py`, and every question in it names its FedRAMP source: a property of the official Certification Package Overview schema (for example `cpo:serviceIdentification.serviceName`) or a CR26 rule id (for example `CDS-CSO-PUB`, the public information a provider must publish). A test checks each source against the pinned schema and dataset, so the wizard cannot ask for something FedRAMP did not write down.
+
+What it asks:
+
+- 22 questions at every class: who you are and what the offering is (legal name, offering name and acronym, one or two sentences of description), the service and deployment model, the FedRAMP package ID, website and logo, the Security and Sales contacts (name, email, phone), your FedRAMP Recognized assessor and their six-digit ID, the next Ongoing Certification Report date, the UEI, business category (type `list` to see FedRAMP's 36 values), a sentence on the documentation you supply, and the three URLs FedRAMP expects you to publish (the Certification Package Overview, the trust center, the Secure Configuration Guide).
+- By class: when the provider last verified the offering (`FRC-APP-FCP`, every class); for Class B and C the fresh independent assessment (`FRC-APP-FIA`: assessor, Recognition id, completion date), the assessor's overall summary (`CPO-CSO-OSA`), the two availability status URLs (`CDS-CSO-AVR`) and the four package metadata items (`CPO-CSO-MTD`); for Class A the alternative-framework assessment (`FRC-CLA-ASF`: framework and date).
+
+Fields you leave blank keep their `TBD` marker, and the wizard ends by listing exactly what is still missing. `package-preflight` blocks on the same list, so you can answer in several sittings. Three items (UEI, business category, documentation overview) accept a justified `N/A: <reason>` because FedRAMP lists them as "available and applicable" information; identity fields, contacts and URLs do not. For scripting, `--set key=value` (repeatable, dotted paths for nested answers such as `security_contact.email=...`) and `--non-interactive` apply answers without prompting.
+
+The AWS partition, regions and IaC technology are operational inputs the generators print; they are not FedRAMP requirements and are never blockers.
 
 Set `sdr_last_updated` when your content genuinely changes. It is manual on purpose: generated files carry no automatic timestamps, so that two builds of unchanged inputs stay byte-identical.
 
