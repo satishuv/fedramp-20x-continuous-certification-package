@@ -548,6 +548,19 @@
       "mutation": "MUT-F40: main() no longer calls refresh_dataset_pins (the adoption leaves every curated pin at the old dataset, exactly the 2026-10-07 state); expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F41",
+      "severity": "High",
+      "requirement": "The adoption PR's change summary is what the human reviewer reads to decide whether package content must change (docs/validation.md: 'A wording change in a requirement statement can change what your record needs to say, so this is a review step'). A summary that omits a changed rule field defeats that review",
+      "component": "validation/scripts/dataset_diff.py (_index_rules, diff_datasets, render); consumed by change_impact.py and the drift workflow's PR body",
+      "description": "dataset_diff.py compared a fixed list of rule fields (force, statement, applicability, timeframe*, artifacts, following_information, varies_by_class). For CR26 2026.09.13.02 -> 2026.10.05.01 it reported '4 rules changed' and change_impact listed 3 items for review. The upstream changelog names five rules and a PAIN0 addition; a recursive diff of the two files shows 7 rules changed: VER-EVA-EPA gained the N0 rating in following_information_bullets ('**N0**: Exploitation is extremely unlikely to have any adverse effects on agencies that use the cloud service offering.'), CDS-CSO-PUB, FRC-CSO-JSN and CMU-CSO-UVM gained notes (FRC-CSO-JSN's includes 'The Schema Validator available at fedramp.gov will not work properly if Cross-Origin Resource Sharing is not properly configured.'), MKT-CAS-LRQ and MKT-IAS-LRQ changed notification form name/URL, and 'Likely' was added to two rules' terms. None of these was in the summary or the impact report. The tool's own comment records the same failure mode once before: 2026.09.13.02 added timeframe ranges that the then field list ignored, and the fix was to add those names to the list.",
+      "root_cause": "A diff that compares a list of known field names reports only what its author knew about when the list was written; each upstream release can add a field. The bookkeeping key `updated` was the only key that needed excluding, and it was never named either.",
+      "fix_commit": "this PR -- _rule_deltas compares every key of the rule object except `updated`, grouping the timeframe keys as before so change_impact's vocabulary holds; keys outside the named set are reported under their own name and counted as other_key_changes in the summary line; list changes render as the items added and removed (so the N0 bullet is one line, not two dumped lists); the rule's new `updated` entry is carried as the upstream comment. On the real pair the tool now reports 7 rules changed and change_impact lists 4 items for review",
+      "regression_test": "validation/scripts/test_dataset_diff.py::test_following_information_bullets_change_detected (plus test_notes_and_notification_changes_detected, test_a_key_this_tool_has_never_seen_is_still_reported, test_history_alone_is_not_a_change_but_is_carried_as_the_upstream_comment, test_reordered_list_is_reported_as_reordered_only)",
+      "mutation": "MUT-F41: _rule_deltas compares only {force, statement} again (the pre-F41 posture in miniature) so the N0 bullet, the notes and the notification changes vanish from the report; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

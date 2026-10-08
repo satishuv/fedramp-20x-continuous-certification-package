@@ -305,6 +305,14 @@ MUTATIONS = [
      '    pin_changes, holds = refresh_dataset_pins(version, ds)',
      '    pin_changes, holds = [], []  # MUTATION the adoption leaves every curated pin at the old dataset',
      "validation/scripts/test_update_sources_lock.py"),
+    # AUD-F41: the dataset diff compares every key of a rule, not a chosen list;
+    # the 2026.10.05.01 adoption summary missed the PAIN N0 rating, three notes
+    # and two notification changes.
+    ("MUT-F41",
+     "validation/scripts/dataset_diff.py",
+     '    keys = (set(old_rule) | set(new_rule)) - {HISTORY_KEY}',
+     '    keys = {"force", "statement"}  # MUTATION compare the pre-F41 field list only',
+     "validation/scripts/test_dataset_diff.py"),
 ]
 
 

@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """Diff two FedRAMP Consolidated Rules datasets and report what materially moved.
 
-Reports rules added/removed, and for surviving rules any change in force level
-(MAY/SHOULD/MUST/...), applicability branch (all/20x/rev5), or statement text;
-plus KSI count and per-family changes. Reporting tool, not a gate: always exits 0.
+Reports rules added/removed and, for surviving rules, EVERY key of the rule
+object whose value changed (force, statement, applicability branch, timeframe
+fields, artifacts, following_information, following_information_bullets,
+varies_by_class, notification, notes, terms, and any key this tool has never
+seen), with list changes shown as the items added and removed and the dataset's
+own `updated` comment for the change; plus KSI count, per-KSI and FRD definition
+changes. Reporting tool, not a gate: always exits 0.
 
 Wire into the drift workflow after a dataset bump: run
   python validation/scripts/dataset_diff.py <old.json> <new.json> --json diff.json
@@ -28,10 +32,28 @@ import sys
 RULE_ID = re.compile(r"^[A-Z]{2,4}-[A-Z]{2,4}-[A-Z]{2,4}$")
 APPLICABILITIES = {"all", "20x", "rev5"}
 
+# The one rule key that is bookkeeping, not content: the dataset's own change
+# history for the rule. It changes whenever anything else does and is reported
+# separately (as the upstream comment) rather than as a delta of its own.
+HISTORY_KEY = "updated"
+
+# Keys compared before AUD-F41. They stay named so the report and change_impact
+# keep their vocabulary, but the comparison is no longer limited to them: every
+# other key of the rule object is compared too and reported under its own name.
+# Two prior under-reports taught this: 2026.09.13.02 added timeframe ranges
+# (added to this list then), and 2026.10.05.01 added a PAIN N0 rating to
+# VER-EVA-EPA in `following_information_bullets`, new `notes` on three rules
+# and a changed notification form on two, none of which this tool reported.
+NAMED_KEYS = ("force", "statement", "timeframe_type", "timeframe_num",
+              "timeframe_num_min", "timeframe_num_max", "artifacts",
+              "following_information", "following_information_bullets",
+              "varies_by_class", "notification", "note", "notes", "terms")
+
 
 def _index_rules(dataset):
-    """Return {rule_id: {'force','statement','applicability'}} from a dataset.
-    Walks FRR defensively; applicability is the nearest all/20x/rev5 ancestor."""
+    """Return {rule_id: {'applicability', 'rule'}} from a dataset, where 'rule'
+    is the rule object itself. Walks FRR defensively; applicability is the
+    nearest all/20x/rev5 ancestor."""
     frr = dataset.get("FRR", {})
     out = {}
 
@@ -43,28 +65,37 @@ def _index_rules(dataset):
             if isinstance(val, dict) and (
                     "force" in val or "statement" in val or "varies_by_class" in val) \
                     and RULE_ID.match(key or ""):
-                out[key] = {
-                    "force": val.get("force"),
-                    "statement": val.get("statement"),
-                    "applicability": next_applic,
-                    # Structured semantics that can change without touching the
-                    # statement text. CR26 2026.09.13.02 added timeframe ranges
-                    # and top-level timing to several rules; a diff that ignores
-                    # these silently under-reports a material rule change.
-                    "timeframe": {
-                        t: val.get(t) for t in
-                        ("timeframe_type", "timeframe_num",
-                         "timeframe_num_min", "timeframe_num_max")
-                        if t in val
-                    },
-                    "artifacts": val.get("artifacts"),
-                    "following_information": val.get("following_information"),
-                    "varies_by_class": val.get("varies_by_class"),
-                }
+                out[key] = {"applicability": next_applic, "rule": val}
             walk(val, next_applic)
 
     walk(frr)
     return out
+
+
+def _rule_deltas(old_rule, new_rule):
+    """Every key whose value differs between two versions of one rule, keyed by
+    the rule's own field name, plus 'timeframe' as the grouped view the report
+    and change_impact already use. The history key is excluded from the deltas
+    and returned separately as the upstream comment(s) added."""
+    deltas = {}
+    keys = (set(old_rule) | set(new_rule)) - {HISTORY_KEY}
+    for k in sorted(keys):
+        o, n = old_rule.get(k), new_rule.get(k)
+        if k == "statement":
+            o, n = (o or ""), (n or "")
+        if o != n:
+            deltas[k] = {"old": old_rule.get(k), "new": new_rule.get(k)}
+    tf_keys = [k for k in deltas if k.startswith("timeframe")]
+    if tf_keys:
+        deltas["timeframe"] = {
+            "old": {k: old_rule.get(k) for k in tf_keys if k in old_rule},
+            "new": {k: new_rule.get(k) for k in tf_keys if k in new_rule}}
+        for k in tf_keys:
+            del deltas[k]
+    old_hist = old_rule.get(HISTORY_KEY) or []
+    new_hist = new_rule.get(HISTORY_KEY) or []
+    upstream_comments = [h for h in new_hist if h not in old_hist]
+    return deltas, upstream_comments
 
 
 def _index_ksis(dataset):
@@ -138,29 +169,15 @@ def diff_datasets(old, new):
     changed = []
     for rid in sorted(old_ids & new_ids):
         o, n = old_rules[rid], new_rules[rid]
-        deltas = {}
-        if o["force"] != n["force"]:
-            deltas["force"] = {"old": o["force"], "new": n["force"]}
+        deltas, upstream_comments = _rule_deltas(o["rule"], n["rule"])
         if o["applicability"] != n["applicability"]:
             deltas["applicability"] = {"old": o["applicability"],
                                        "new": n["applicability"]}
-        if (o["statement"] or "") != (n["statement"] or ""):
-            deltas["statement"] = {"old": o["statement"], "new": n["statement"]}
-        if o.get("timeframe") != n.get("timeframe"):
-            deltas["timeframe"] = {"old": o.get("timeframe"),
-                                   "new": n.get("timeframe")}
-        if o.get("artifacts") != n.get("artifacts"):
-            deltas["artifacts"] = {"old": o.get("artifacts"),
-                                   "new": n.get("artifacts")}
-        if o.get("following_information") != n.get("following_information"):
-            deltas["following_information"] = {
-                "old": o.get("following_information"),
-                "new": n.get("following_information")}
-        if o.get("varies_by_class") != n.get("varies_by_class"):
-            deltas["varies_by_class"] = {"old": o.get("varies_by_class"),
-                                         "new": n.get("varies_by_class")}
         if deltas:
-            changed.append({"id": rid, "changes": deltas})
+            entry = {"id": rid, "changes": deltas}
+            if upstream_comments:
+                entry["upstream_comments"] = upstream_comments
+            changed.append(entry)
 
     old_fam, old_total = _index_ksis(old)
     new_fam, new_total = _index_ksis(new)
@@ -215,6 +232,13 @@ def diff_datasets(old, new):
             "changed": len(changed),
             "force_changes": sum(1 for c in changed if "force" in c["changes"]),
             "timeframe_changes": sum(1 for c in changed if "timeframe" in c["changes"]),
+            # Rules with a changed key this tool had no name for (a field
+            # upstream introduced after this list was written): still reported
+            # per rule, and counted here so the summary line cannot hide it.
+            "other_key_changes": sum(
+                1 for c in changed
+                if any(k not in NAMED_KEYS and k not in ("timeframe", "applicability")
+                       for k in c["changes"])),
             "ksis_added": len(ksis_added),
             "ksis_removed": len(ksis_removed),
             "ksis_changed": len(ksis_changed),
@@ -225,11 +249,28 @@ def diff_datasets(old, new):
     }
 
 
+def _list_delta(old, new):
+    """Human-readable additions/removals between two lists (order ignored);
+    a list that only reordered reports as such."""
+    o = old if isinstance(old, list) else ([] if old is None else [old])
+    n = new if isinstance(new, list) else ([] if new is None else [new])
+    key = lambda x: json.dumps(x, sort_keys=True, ensure_ascii=False)  # noqa: E731
+    ok, nk = {key(x) for x in o}, {key(x) for x in n}
+    added = [x for x in n if key(x) not in ok]
+    removed = [x for x in o if key(x) not in nk]
+    if not added and not removed:
+        return ["(reordered only)"]
+    return ([f"+ {json.dumps(x, ensure_ascii=False)}" for x in added]
+            + [f"- {json.dumps(x, ensure_ascii=False)}" for x in removed])
+
+
 def render(d):
     lines = []
     s = d["summary"]
     lines.append(f"Rules: +{s['added']} added, -{s['removed']} removed, "
-                 f"{s['changed']} changed ({s['force_changes']} force changes).")
+                 f"{s['changed']} changed ({s['force_changes']} force changes"
+                 + (f", {s['other_key_changes']} with a changed key outside the named set"
+                    if s.get("other_key_changes") else "") + ").")
     if d["ksi_total"]["old"] != d["ksi_total"]["new"]:
         lines.append(f"KSI total: {d['ksi_total']['old']} -> {d['ksi_total']['new']}")
     for rid in d["rules_added"]:
@@ -238,10 +279,20 @@ def render(d):
         lines.append(f"  - {rid}")
     for c in d["rules_changed"]:
         for field, delta in c["changes"].items():
+            old, new = delta.get("old"), delta.get("new")
             if field == "statement":
                 lines.append(f"  ~ {c['id']} statement changed")
+            elif isinstance(old, list) or isinstance(new, list):
+                lines.append(f"  ~ {c['id']} {field}:")
+                for item in _list_delta(old, new):
+                    lines.append(f"      {item}")
             else:
-                lines.append(f"  ~ {c['id']} {field}: {delta['old']} -> {delta['new']}")
+                lines.append(f"  ~ {c['id']} {field}: {old} -> {new}")
+        for h in c.get("upstream_comments", []):
+            if isinstance(h, dict):
+                lines.append(f"      upstream {h.get('date', '?')}: {h.get('comment', '')}")
+            else:
+                lines.append(f"      upstream: {h}")
     for fam, delta in sorted(d["ksi_family_changes"].items()):
         lines.append(f"  ~ KSI {fam}: {delta['old']} -> {delta['new']}")
     # Individual KSI changes (statement/controls), not just family counts.
