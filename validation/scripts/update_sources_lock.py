@@ -27,8 +27,8 @@ What is refreshed:
     classification, Config rules manifest) advance to the dataset's
     info.version with a one-line textual edit, formatting untouched. The AWS
     service-KSI map's pin is a VERIFICATION claim, so it advances only after
-    this script re-verifies the map's KSI ids, names and families against the
-    new dataset; otherwise it is HELD and reported, and
+    this script re-verifies the map's KSI ids, names, families and canonical
+    control lists against the new dataset; otherwise it is HELD and reported, and
     test_dataset_version_consistency.py fails until a human re-verifies it.
     Without this, swapping the dataset left the offering pin behind and the
     build's own consistency check stopped the drift workflow before it could
@@ -111,27 +111,35 @@ def _rewrite_pin(path, version):
 
 
 def _dataset_ksis(ds):
-    """{ksi_id: (name, family, family_name)} from the dataset's KSI section."""
+    """{ksi_id: (name, family, family_name, controls)} from the dataset's KSI
+    section; `controls` is the official per-KSI control list, sorted."""
     out = {}
     for fam, node in (ds.get("KSI") or {}).items():
         if not isinstance(node, dict) or not isinstance(node.get("indicators"), dict):
             continue
         for kid, ind in node["indicators"].items():
-            out[kid] = ((ind or {}).get("name"), fam, node.get("name"))
+            ind = ind or {}
+            out[kid] = (ind.get("name"), fam, node.get("name"),
+                        tuple(sorted(str(c) for c in (ind.get("controls") or []))))
     return out
 
 
 def service_map_differences(ds, smap):
-    """Every way the service map's KSI ids, names and families disagree with
-    the dataset. Empty means the map's verification claim holds for `ds`."""
+    """Every way the service map disagrees with the dataset on what its
+    provenance claims was verified: KSI ids, names, families, and the canonical
+    control list per KSI (rev5_controls_canonical against the dataset's
+    controls). Empty means the map's verification claim holds for `ds`."""
     want = _dataset_ksis(ds)
-    have = {kid: (e.get("name"), e.get("family"), e.get("family_name"))
+    have = {kid: (e.get("name"), e.get("family"), e.get("family_name"),
+                  tuple(sorted(str(c) for c in (e.get("rev5_controls_canonical") or []))))
             for kid, e in ((smap.get("ksis") or {}).items())}
     diffs = [f"{kid}: in dataset, not in map" for kid in sorted(set(want) - set(have))]
     diffs += [f"{kid}: in map, not in dataset" for kid in sorted(set(have) - set(want))]
     for kid in sorted(set(have) & set(want)):
-        if have[kid] != want[kid]:
-            diffs.append(f"{kid}: map {have[kid]} != dataset {want[kid]}")
+        if have[kid][:3] != want[kid][:3]:
+            diffs.append(f"{kid}: map {have[kid][:3]} != dataset {want[kid][:3]}")
+        if have[kid][3] != want[kid][3]:
+            diffs.append(f"{kid}: canonical controls {list(have[kid][3])} != dataset {list(want[kid][3])}")
     return diffs
 
 
@@ -162,7 +170,7 @@ def refresh_dataset_pins(version, ds):
             old = _rewrite_pin(path, version)
             if old != version:
                 changes.append(f"{VERIFIED_PIN} dataset_version {old} -> {version} "
-                               "(KSI ids, names and families re-verified unchanged)")
+                               "(KSI ids, names, families and canonical control lists re-verified unchanged)")
     return changes, holds
 
 
