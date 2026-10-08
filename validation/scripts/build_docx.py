@@ -29,6 +29,7 @@ import re
 import sys
 import zipfile
 
+import profile_contract as _pc  # noqa: E402  (offering_title: honest title while the name is TBD)
 try:
     from docx import Document
     from docx.shared import Pt, RGBColor
@@ -119,8 +120,7 @@ def main():
     normal.font.size = Pt(10)
 
     doc.add_heading("Security Decision Record, authoring document", level=0)
-    doc.add_paragraph(
-        f"Offering: {profile['offering_name']} ({profile['offering_abbreviation']})")
+    doc.add_paragraph(f"Offering: {_pc.offering_title(profile)}")
     doc.add_paragraph(
         f"Certification: FedRAMP 20x, Class {cls.upper()}, "
         f"{profile['certification_path']} path")

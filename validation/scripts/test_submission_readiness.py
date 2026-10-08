@@ -45,19 +45,29 @@ def _fill(profile_path, now, cls="C"):
         "offering_abbreviation": "CSP",
         "deployment_model": "Government-Only Cloud",
         "service_model": "PaaS",
-        "management_plane": "Provider-hosted control plane isolated from customer workloads.",
-        "federal_information_types": "Moderate impact federal operational data.",
         "certification_package_overview_uri": "https://contoso.gov/cpo.json",
-        "security_contact": "security@contoso.gov",
+        # cpo:serviceIdentification.serviceDescription (required by the contract).
+        "business_purpose": "Contoso Secure Platform is a fictional government-only "
+                            "PaaS for hosting agency data-processing workloads.",
+        # Contacts in the structured shape the CPO schema's contactInfo carries
+        # (name, email, phone); a plain string remains accepted by the contract.
+        "security_contact": {"name": "Contoso Security Operations",
+                             "email": "security@contoso.gov"},
         "incident_contact": "soc@contoso.gov",
         "assessor": "Acme FedRAMP Assessors LLC",
-        "evidence_retention": "3 years",
+        "uei_number": "J7X9QK2M4N81",
+        # Values from the CPO schema's serviceProperties.businessCategory enum;
+        # free text is not a category FedRAMP lists and the builder records it
+        # as an unresolved assumption (which preflight blocks on).
+        "business_category": ["Data Management", "Analytics"],
+        "documentation_overview": "User guide, API reference and Secure Configuration Guide published at https://contoso.gov/docs.",
         "provider_verified_at": now.isoformat(),
         "fedramp_package_id": "FR-2026-CSP-0001",
         "offering_website": "https://contoso.gov",
         "offering_logo_uri": "https://contoso.gov/logo.png",
         "assessor_id": "482913",
-        "sales_contact": "sales@contoso.gov",
+        "sales_contact": {"name": "Contoso Federal Sales", "email": "sales@contoso.gov",
+                          "phone": "(202) 555-0199"},
         "next_ocr_date": (now.date() + datetime.timedelta(days=90)).isoformat(),
         "trust_center_uri": "https://contoso.gov/trust",
         "secure_config_guide_uri": "https://contoso.gov/scg",
@@ -89,24 +99,9 @@ def _fill(profile_path, now, cls="C"):
         "cpo_source_of_update": "Initial certification package preparation",
         "cpo_required_information": {
             "CPO-CSO-MTD": "See metadata section.",
-            "CDS-CSO-PUB": {
-                "FedRAMP ID": "FR2026-CSP-0001",
-                "Service Model": "SaaS",
-                "Deployment Model": "Government Community Cloud",
-                "Business Category": "IT Management",
-                "UEI Number": "ABC123DEF456",
-                "Sales Contact Information": "sales@contoso.gov",
-                "Security Contact Information": "security@contoso.gov",
-                "Product Website Link": "https://contoso.gov/product",
-                "Link to Product Logo": "https://contoso.gov/logo.png",
-                "Overall Service Description": "Contoso secure workflow platform.",
-                "Detailed list of specific services and their security categories": "https://contoso.gov/services",
-                "Link to Secure Configuration Guidance": "https://contoso.gov/scg",
-                "Overview of documentation supplied by the provider for the cloud service offering": "https://contoso.gov/docs",
-                "Link to Trust Center landing page that includes instructions on accessing information in the trust center": "https://contoso.gov/trust",
-                "Next Ongoing Certification Report date": "2027-03-01",
-                "Current FedRAMP Recognized independent assessment service": "Acme FedRAMP Assessors LLC (FR-ASSESSOR-0007)",
-            },
+            # CDS-CSO-PUB is NOT typed here: build_cpo.py derives its 16 items
+            # from the profile fields above (one place per fact), so this
+            # fixture also proves the derivation reaches a READY package.
             "CDS-CSO-SVC": "Service list published at https://contoso.gov/services.",
             "CDS-CSO-IRP": [
                 {
@@ -453,52 +448,68 @@ def main():
         reg2["package_signoff"]["release_tag"] = json.load(open(manifest, encoding="utf-8")).get("release_tag")
         json.dump(reg2, open(register, "w", encoding="utf-8", newline="\n"), indent=1)
 
-        # Structured CPO semantics adversarial: a bare sentence for CDS-CSO-PUB
-        # must NOT satisfy the rule (it enumerates 16 concrete items). This is
-        # the "impossible to fool" property applied to the CPO.
+        # Structured CPO semantics adversarial. CDS-CSO-PUB enumerates 16
+        # concrete items; build_cpo.py derives them from the profile fields (one
+        # place per fact) and a typed cpo_required_information["CDS-CSO-PUB"]
+        # value only wins when it is real. So the attacks go through the SOURCE
+        # fields, which is where a provider would actually try them. This is the
+        # "impossible to fool" property applied to the CPO.
+        import copy as _copy
         p = json.load(open(profile, encoding="utf-8"))
-        good_pub = p["cpo_required_information"]["CDS-CSO-PUB"]
+        good_profile = _copy.deepcopy(p)
+        # 1. A bare sentence typed as the whole block must NOT stand in for a
+        #    missing item: with next_ocr_date hollow, the derived item is TBD
+        #    and the sentence does not paper over it.
         p["cpo_required_information"]["CDS-CSO-PUB"] = "Public information is documented."
+        p["next_ocr_date"] = "TBD"
         json.dump(p, open(profile, "w", encoding="utf-8", newline="\n"), indent=1)
         _build(root)
         rpub = _preflight(root)
         check("a bare-string CDS-CSO-PUB does NOT satisfy the structured rule",
-              "not structurally complete" in rpub.stdout and rpub.returncode == 1)
-        # Dropping a single required CDS-CSO-PUB member (Sales Contact
-        # Information) must also block - the structured check is member-level.
-        import copy as _copy
-        pub_missing_sales = _copy.deepcopy(good_pub)
-        pub_missing_sales.pop("Sales Contact Information", None)
-        p["cpo_required_information"]["CDS-CSO-PUB"] = pub_missing_sales
+              "not structurally complete" in rpub.stdout
+              and "next_ongoing_certification_report_date" in rpub.stdout
+              and rpub.returncode == 1)
+        # 2. Member-level: a hollow Sales contact (the rule requires BOTH Sales
+        #    and Security contact information) must block.
+        p = _copy.deepcopy(good_profile)
+        p["sales_contact"] = "TBD"
         json.dump(p, open(profile, "w", encoding="utf-8", newline="\n"), indent=1)
         _build(root)
         rsales = _preflight(root)
         check("a missing Sales Contact Information in CDS-CSO-PUB blocks",
-              "not structurally complete" in rsales.stdout and rsales.returncode == 1)
-        # Semantic-hollowness regression: every CDS-CSO-PUB member PRESENT but set
-        # to a bare "N/A" (structurally complete, content-free) must block. A
-        # presence-only check would accept this; the content check must reject it.
-        pub_hollow = _copy.deepcopy(good_pub)
-        for _k in list(pub_hollow.keys()):
-            pub_hollow[_k] = "N/A"
-        p["cpo_required_information"]["CDS-CSO-PUB"] = pub_hollow
+              "not structurally complete" in rsales.stdout
+              and "sales_contact_information" in rsales.stdout
+              and rsales.returncode == 1)
+        # 3. Semantic hollowness: every CDS-CSO-PUB source PRESENT but set to a
+        #    bare "N/A" (structurally complete, content-free) must block. A
+        #    presence-only check would accept this; the content check must not.
+        #    (service_model / deployment_model stay valid: a bare N/A there is a
+        #    schema enum violation, a different gate.)
+        p = _copy.deepcopy(good_profile)
+        for _k in ("fedramp_package_id", "uei_number", "business_category",
+                   "documentation_overview", "next_ocr_date", "offering_website",
+                   "offering_logo_uri", "sales_contact", "assessor"):
+            p[_k] = "N/A"
+        p["cpo_required_information"]["CDS-CSO-SVC"] = "N/A"
         json.dump(p, open(profile, "w", encoding="utf-8", newline="\n"), indent=1)
         _build(root)
         rhollow = _preflight(root)
         check("a CDS-CSO-PUB with all members bare 'N/A' blocks (hollow but structured)",
               "not structurally complete" in rhollow.stdout and rhollow.returncode == 1)
-        # A JUSTIFIED N/A ("N/A: <reason>") on a member is still acceptable - the
-        # check rejects content-free non-answers, not honest justified ones.
-        pub_justified = _copy.deepcopy(good_pub)
-        for _k in list(pub_justified.keys()):
-            pub_justified[_k] = "N/A: not applicable to this SaaS boundary (fictional)."
-        p["cpo_required_information"]["CDS-CSO-PUB"] = pub_justified
+        # 4. A JUSTIFIED N/A ("N/A: <reason>") is still acceptable on the three
+        #    items CDS-CSO-PUB lists as "available and applicable" information
+        #    (UEI, business category, documentation overview): the check rejects
+        #    content-free non-answers, not honest justified ones.
+        p = _copy.deepcopy(good_profile)
+        for _k in ("uei_number", "business_category", "documentation_overview"):
+            p[_k] = "N/A: not applicable to this fictional government-only boundary."
         json.dump(p, open(profile, "w", encoding="utf-8", newline="\n"), indent=1)
         _build(root)
         rjust = _preflight(root)
         check("a justified 'N/A: <reason>' CDS-CSO-PUB member is accepted (not over-blocked)",
-              "not structurally complete" not in rjust.stdout)
-        p["cpo_required_information"]["CDS-CSO-PUB"] = good_pub
+              "not structurally complete" not in rjust.stdout
+              and "required offering-profile field" not in rjust.stdout)
+        p = good_profile
         json.dump(p, open(profile, "w", encoding="utf-8", newline="\n"), indent=1)
         _build(root)
 

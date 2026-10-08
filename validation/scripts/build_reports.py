@@ -17,6 +17,8 @@ import json
 import os
 import sys
 
+import profile_contract as _pc  # noqa: E402  (offering_title: honest title while the name is TBD)
+
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OFFERING = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 GRAPH = os.path.join(BASE, "traceability", "assurance-graph.json")
@@ -95,8 +97,7 @@ def reviewer_md(graph, decisions, offering, cov):
     cls = graph.get("certification_class", "?")
     L = []
     a = L.append
-    a(f"# Reviewer package summary: {offering.get('offering_name', 'Offering')} "
-      f"(Class {cls})")
+    a(f"# Reviewer package summary: {_pc.offering_title(offering)} (Class {cls})")
     a("")
     a("Assessor-facing summary generated from the assurance graph. It is not a "
       "compliance determination; it points a reviewer at what to examine.")
@@ -104,8 +105,7 @@ def reviewer_md(graph, decisions, offering, cov):
     a("## Package metadata")
     a(f"- Certification class: {cls}")
     a(f"- Dataset version: {graph.get('dataset_version')}")
-    a(f"- Offering: {offering.get('offering_name')} "
-      f"({offering.get('offering_abbreviation')})")
+    a(f"- Offering: {_pc.offering_title(offering)}")
     a("")
     a("## Requirement scope")
     if decisions:

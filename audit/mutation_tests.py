@@ -291,6 +291,13 @@ MUTATIONS = [
      '    "DRAFT (",      # draft_narratives.py output',
      '    # "DRAFT (",  # MUTATION machine drafts count as answers',
      "validation/scripts/test_unreviewed_text.py"),
+    # AUD-F39: a content minimum binds at the class the offering submits; the
+    # inactive-class matrix run reports it, never fails on it.
+    ("MUT-F39",
+     "validation/scripts/validate_sdr.py",
+     '    vvk_hard = force == "MUST" and bool(populated_below) and not inactive_run',
+     '    vvk_hard = force == "MUST" and bool(populated_below)  # MUTATION inactive-class run fails a Class B offering on Class C minimums',
+     "validation/scripts/test_validate_class_matrix.py"),
 ]
 
 

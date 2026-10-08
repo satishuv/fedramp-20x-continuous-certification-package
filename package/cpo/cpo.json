@@ -2,9 +2,9 @@
  "serviceIdentification": {
   "fedRampPackageId": "TBD-PACKAGE-ID",
   "providerName": "TBD: Information has not been provided",
-  "serviceName": "Example PaaS Foundation",
-  "serviceAcronym": "EPF",
-  "serviceDescription": "Reference architecture assumption: a generic AWS-native Platform as a Service foundation that customers use to deploy and operate applications and SaaS workloads on AWS.",
+  "serviceName": "TBD: name of the cloud service offering (CPO serviceIdentification.serviceName)",
+  "serviceAcronym": "TBD: short acronym for the offering (CPO serviceIdentification.serviceAcronym)",
+  "serviceDescription": "TBD: one or two sentences on what the offering does (CPO serviceIdentification.serviceDescription; CDS-CSO-PUB 'Overall Service Description')",
   "certificationType": "20x",
   "website": "https://example.provider.gov-placeholder/tbd",
   "logo": "https://example.provider.gov-placeholder/logo.png"
@@ -39,7 +39,7 @@
   },
   {
    "contactType": "Sales",
-   "contactName": "TBD: Information has not been provided."
+   "contactName": "TBD: Sales contact, 'Name <email>' or {name, email, phone} (CPO contactInformation Sales; CDS-CSO-PUB 'Sales Contact Information')"
   }
  ],
  "assessor": {
@@ -65,7 +65,24 @@
    {
     "rule": "CDS-CSO-PUB",
     "description": "Certification Data Sharing: CDS-CSO-PUB (Public Information)",
-    "provider_content": "TBD: Information has not been provided."
+    "provider_content": {
+     "fedramp_id": "TBD: Information has not been provided.",
+     "service_model": "TBD: Information has not been provided.",
+     "deployment_model": "TBD: Information has not been provided.",
+     "business_category": "TBD: Information has not been provided.",
+     "uei_number": "TBD: Information has not been provided.",
+     "sales_contact_information": "TBD: Information has not been provided.",
+     "security_contact_information": "TBD: Information has not been provided.",
+     "product_website_link": "TBD: Information has not been provided.",
+     "link_to_product_logo": "TBD: Information has not been provided.",
+     "overall_service_description": "TBD: Information has not been provided.",
+     "detailed_list_of_specific_services_and_their_security_categories": "TBD: Information has not been provided.",
+     "link_to_secure_configuration_guidance": "TBD: Information has not been provided.",
+     "overview_of_documentation_supplied_by_the_provider_for_the_cloud_service_offering": "TBD: Information has not been provided.",
+     "link_to_trust_center_landing_page_that_includes_instructions_on_accessing_information_in_the_trust_center": "TBD: Information has not been provided.",
+     "next_ongoing_certification_report_date": "TBD: Information has not been provided.",
+     "current_fedramp_recognized_independent_assessment_service": "TBD: Information has not been provided."
+    }
    },
    {
     "rule": "CDS-CSO-SVC",
@@ -112,6 +129,7 @@
  },
  "_cpoAssumptions": [
   "deploymentModel assumed 'Public Cloud' because the offering profile deployment_model is unset/unknown",
+  "serviceType assumed 'PaaS' because the offering profile service_model is unset/unknown",
   "nextOngoingCertificationReportDate is a placeholder (2026-12-13) derived from the dataset date + 3 months (CCM-OCR-AVL cadence); the provider must set next_ocr_date"
  ]
 }

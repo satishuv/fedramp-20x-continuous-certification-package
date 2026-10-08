@@ -24,6 +24,8 @@ import sys
 
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OFFERING = os.path.join(BASE, "profiles", "common", "offering-profile.json")
+sys.path.insert(0, os.path.join(BASE, "validation", "scripts"))
+import profile_contract as _pc  # noqa: E402  (cpo_uri: the generators' resolver)
 
 
 def load(rel, default=None):
@@ -51,7 +53,10 @@ def main():
         return 1
     problems = []
 
-    cpo_uri = offering.get("certification_package_overview_uri")
+    # The SAME resolver the generators use (profile_contract.cpo_uri): while
+    # the profile value is TBD every artifact carries the shared placeholder, and
+    # this check must compare against that, not against the TBD marker text.
+    cpo_uri = _pc.cpo_uri(offering)
 
     # Class consistency: extensions, CPO, assurance graph.
     ext = load(f"sdr/json/sdr-class-{cls}-extensions.json", {})

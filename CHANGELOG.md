@@ -38,14 +38,106 @@ From typing to deciding (`AUD-F38`, High, with a killed mutation):
   FAILS when the latest accepted or edited field was changed afterwards without
   a new decision.
 - **The drafter proposes every rule narrative.** `draft_narratives.py --scope
-  rules` drafts the 168 FRR process rules with no collected facts needed: the
-  curated reference-architecture example the template carries for that field
-  when present (kept verbatim, re-labelled as a proposal), else the
+  rules` drafts the 168 FRR process rules with no collected facts needed: a
+  labelled `Example (` value a fork may still carry for that field when
+  present (kept verbatim, re-labelled as a proposal; the shipped template
+  carries none, see below), else the
   CR26-derived `fill_guidance` with the offering profile's real values named
   (organization, offering, security and incident contacts, trust center;
   template placeholders are never treated as facts). Same forbidden-field
   boundary as KSIs. Default `--scope all` drafts KSIs (facts required) and
   rules; KSIs are skipped with a notice when no facts exist.
+
+Only what FedRAMP requires, asked by the script:
+
+- **The template ships no example prose.** The 48 `Example (reference
+  architecture, replace with your real implementation): ...` values the
+  record store carried since `688c27c` (three rules, three KSIs) and the
+  profile's "Example PaaS Foundation" identity were text this project wrote,
+  with no FedRAMP source. They are gone: every narrative field is a `TBD`
+  marker plus the official `fill_guidance`, and `--scope rules` drafts from
+  that guidance alone. Nothing the framework authored can be mistaken for a
+  provider's fact, and the review walk has nothing to accept that a human
+  did not first say.
+- **The offering profile is a contract traced to FedRAMP.**
+  `validation/scripts/profile_contract.py` is the one definition of what the
+  profile must contain: 22 fields required at every class and six class-
+  conditional blocks, each naming its source as a Certification Package
+  Overview schema property (`cpo:serviceIdentification.serviceName`) or a
+  CR26 rule id (`CDS-CSO-PUB`, `FRC-APP-FIA`, `CPO-CSO-MTD`, `FRC-CLA-ASF`).
+  `test_profile_traceability.py` checks every source against the pinned
+  schema and dataset, so a field cannot claim a requirement that does not
+  exist. Three fields with no FedRAMP source (`management_plane`,
+  `federal_information_types`, `evidence_retention`) are removed and the
+  test asserts they stay removed. The AWS partition, regions and IaC
+  technology remain as operational inputs the generators print; they are
+  never blockers.
+- **`sdr.py init` asks every required question.** The wizard asks the
+  contract's questions in plain English with the FedRAMP source beside each,
+  the class-conditional blocks for the class just answered (`FRC-APP-FIA`,
+  `CPO-CSO-OSA`, `CDS-CSO-AVR` and `CPO-CSO-MTD` for B and C; `FRC-CLA-ASF`
+  for A; `FRC-APP-FCP` for all), contacts as name, email and phone, the
+  business category against the schema's 36-value enum (`list` prints it;
+  free text is refused), and ends by listing exactly what is still missing.
+  `--set key=value` takes dotted paths for nested answers; `--non-interactive`
+  applies them without prompting. Preflight blocks on the same list through
+  the same module, so the wizard and the gate cannot disagree.
+- **One place per fact.** `build_cpo.py` derives the 16 `CDS-CSO-PUB`
+  public-information items from the profile fields that already carry them
+  (package id, service and deployment model, contacts, website, logo,
+  description, SCG and trust-center links, next OCR date, assessor and id);
+  a typed `cpo_required_information["CDS-CSO-PUB"]` value wins only when it
+  is real. Contacts are structured (`{name, email, phone}`, a plain string
+  still accepted) and reach the CPO's `contactInfo` members with the phone
+  normalized to the schema's `###-###-####`; a free-text business category is
+  kept out of the schema member and recorded as an unresolved assumption,
+  which `package-preflight` blocks on. The CPO, SDR text, SCG and reviewer
+  package share one title helper and one resolved CPO URI, so the
+  consistency validator compares like with like.
+- **Fixtures follow the contract.** The readiness harness's "fully filled"
+  Class C fixture never set `business_purpose`, used a free-text category and
+  typed a `CDS-CSO-PUB` block that contradicted the profile (PaaS vs SaaS,
+  two FedRAMP IDs, two UEIs); it now fills the contract and types no public-
+  information block, so the READY path also proves the derivation. Its four
+  `CDS-CSO-PUB` probes attack the source fields the builder reads. The
+  AUD-F38 preflight before/after plants its own Example fixture in a temp
+  copy instead of relying on the template to ship one.
+
+The Class B sample's gate, run as documented (`AUD-F39`, High, with a killed
+mutation):
+
+- **A content minimum binds at the class the offering submits (AUD-F39).**
+  Since `sdr.py build` regenerates the inactive classes from the live record
+  store, the A/B/C class matrix validates one store under three classes. The
+  validator made a MUST shortfall on populated records a hard failure wherever
+  the validated class was C, so a populated Class B offering, with exactly the
+  one automated method per KSI that FRC-CSX-VVK asks at Class B, failed
+  `sdr.py validate` on the Class C matrix run with 46 "hard failures" for a
+  class it never claimed. Reproduced at `e3b28a6` with
+  `examples/sample-offering/build_sample.py`: Build gate PASS, then
+  `FAIL. validate_sdr.py class C exited 1`. In an inactive-class run the
+  FRC-CSX-VVK minimum and the evidence-linkage expectation are now reported as
+  ADVISORY, naming the class the offering submits at; at the submitted class
+  they stay hard, and every structural, schema and dataset-fidelity check
+  keeps its force in every class.
+- **Suites that describe the template no longer measure a provider's
+  profile.** The wizard tests build their fixture from the contract instead of
+  copying the live profile; the traceability test's template-only section runs
+  while `organization_name` is unanswered and says so otherwise. Both had
+  failed under any filled profile (the sample's, or a provider's whose
+  assessor is named "Example ..." or who set `sdr_last_updated`, which the
+  scanner asks for and the contract now declares optional).
+- **Every FRC-APP-FCP blocker cites the rule**, including the one for a
+  `provider_verified_at` value that is not a timezone-aware ISO-8601 datetime.
+- **The 30-day window test uses the UTC day the derivation uses.** Its fixture
+  ended on the host's local date, one day short of the window every US
+  evening; the same code passed in the UTC runner and failed locally.
+- **The Class C sample restores the review register from its backup**, like
+  every other input, instead of `git checkout`, which discarded a provider's
+  uncommitted sign-offs and needed a git checkout to exist.
+- The committed Acme sample inputs and generated package are regenerated from
+  the contract-following builder, so running the sample as documented leaves
+  the tree byte-identical.
 
 ## 1.5.0, 2026-10-05
 

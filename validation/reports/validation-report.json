@@ -35,7 +35,7 @@
   {
    "check": "ksi_test_minimums",
    "result": "ADVISORY",
-   "detail": "38 KSIs below the FRC-CSX-VVK AUTOMATED-method minimum for class B (counted from distinct automated authoring methods, not raw ksiTests strings; FedRAMP force: SHOULD; SHOULD at this class, so this is an expectation, not a FedRAMP requirement; repository release policy may still require it; all shortfalls are template TBD state)"
+   "detail": "41 KSIs below the FRC-CSX-VVK AUTOMATED-method minimum for class B (counted from distinct automated authoring methods, not raw ksiTests strings; FedRAMP force: SHOULD; SHOULD at this class, so this is an expectation, not a FedRAMP requirement; repository release policy may still require it; all shortfalls are template TBD state)"
   },
   {
    "check": "no_markdown_in_human_readable",

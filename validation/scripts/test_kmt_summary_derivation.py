@@ -35,8 +35,14 @@ def check(name, cond):
 
 
 def _series(n_days, frac_fn, end=None):
-    """Build n_days of daily {date,passing,total} ending today (or `end`)."""
-    end = end or datetime.date.today()
+    """Build n_days of daily {date,passing,total} ending today (or `end`).
+
+    'Today' is the UTC calendar day: _window_summaries slices on _utc_today()
+    (finding F10/F11), so a fixture ending on the host's LOCAL date is one day
+    short of the 30-date window whenever local time is west of UTC and past
+    UTC midnight (every US evening). Same clock as production, or the test
+    measures the host's timezone instead of the derivation."""
+    end = end or bs._utc_today()
     out = []
     for i in range(n_days):
         d = end - datetime.timedelta(days=i)

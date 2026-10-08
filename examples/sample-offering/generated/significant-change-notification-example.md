@@ -2,7 +2,7 @@
 
 Human-readable rendering required by SCN-CSO-HRM (available in both human-readable and JSON formats). The paired machine format is `significant-change-notification-example.json`.
 
-- Certification Package Overview: https://example.provider.gov-placeholder/cpo.json
+- Certification Package Overview: https://trust.example-acme.invalid/cpo.json
 - Change type: Adaptive
 
 ## Change description

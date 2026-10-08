@@ -27,6 +27,7 @@ import sys
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(BASE, "validation", "scripts"))
 from fedramp_time import add_calendar_months  # noqa: E402
+import profile_contract as _pc  # noqa: E402  (cpo_uri: one resolver shared with the validator)
 PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 OUT_JSON = os.path.join(BASE, "package", "ocr", "ocr-example.json")
 OUT_MD = os.path.join(BASE, "package", "ocr", "ocr-example.md")
@@ -52,8 +53,9 @@ def build_ocr(profile):
     to_d = datetime.date.fromisoformat(dataset_date)
     from_d = add_calendar_months(to_d, -3)
     horizon = add_calendar_months(to_d, 3)
-    cpo_uri = profile.get("certification_package_overview_uri") \
-        or "https://example.provider.gov-placeholder/cpo.json"
+    # One resolver for the CPO URI (profile_contract.cpo_uri), shared with the
+    # events builder and the consistency validator. Preflight blocks on TBD.
+    cpo_uri = _pc.cpo_uri(profile)
     doc = {
         "certificationPackageOverviewUri": cpo_uri,
         "reportPeriod": {"from": from_d.isoformat(), "to": to_d.isoformat()},

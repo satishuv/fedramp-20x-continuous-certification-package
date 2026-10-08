@@ -1,11 +1,11 @@
-# Reviewer package summary: Example PaaS Foundation (Class B)
+# Reviewer package summary: Offering name not yet provided (TBD) (Class B)
 
 Assessor-facing summary generated from the assurance graph. It is not a compliance determination; it points a reviewer at what to examine.
 
 ## Package metadata
 - Certification class: B
 - Dataset version: 2026.09.13.02
-- Offering: Example PaaS Foundation (EPF)
+- Offering: Offering name not yet provided (TBD)
 
 ## Requirement scope
 - Applicable rules: 158
@@ -15,10 +15,10 @@ Assessor-facing summary generated from the assurance graph. It is not a complian
 
 ## Coverage (not compliance)
 - Rules with evidence: 0 of 158
-- KSIs with evidence: 3 of 41
-- KSIs meeting verification-method minimum: 3 of 41
-- Rules still in template TBD state: 155
-- KSIs still in template TBD state: 38
+- KSIs with evidence: 0 of 41
+- KSIs meeting verification-method minimum: 0 of 41
+- Rules still in template TBD state: 158
+- KSIs still in template TBD state: 41
 - Nodes pending human review: 199
 
 ## Where to look

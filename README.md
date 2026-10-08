@@ -113,7 +113,7 @@ python sdr.py all
 
 That builds every deliverable, runs the validator, and prints a readiness summary. Expect `hard failures: 0` and a long list of open items: the repository ships as a template with honest placeholders, so open items are the correct result on a fresh clone.
 
-Then open `sdr/records/records-store.json` and start replacing `TBD` with facts about your system. Along with `profiles/common/offering-profile.json` (offering metadata), those are the two files you edit. See the [implementation guide](docs/implementation-guide.md).
+Then run `python sdr.py init`: it asks every offering-profile question FedRAMP requires (each traced to a Certification Package Overview schema property or a CR26 rule) and writes `profiles/common/offering-profile.json` for you. For the record itself, `sdr/records/records-store.json`, the collectors, the pre-fill and the drafter propose content and `python sdr.py review --walk` takes one keystroke per field from a named human; nothing enters the record without that decision. See the [implementation guide](docs/implementation-guide.md).
 
 If you have GNU make, `make all` wraps the same command. To run the build steps individually, see [getting started](docs/getting-started.md).
 

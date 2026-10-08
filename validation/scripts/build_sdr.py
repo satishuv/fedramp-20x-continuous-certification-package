@@ -34,6 +34,7 @@ RECORDS = os.path.join(BASE, "sdr", "records", "records-store.json")
 if BASE not in sys.path:
     sys.path.insert(0, BASE)
 from sdr import submitted_ksi_ids, _utc_today  # noqa: E402
+import profile_contract as _pc  # noqa: E402  (offering_title: honest title while the name is TBD)
 
 TBD = "TBD: Information has not been provided."
 
@@ -221,7 +222,9 @@ def build_official(profile, rules, ksis, records, metric_history=None, cls=None)
     dataset_date = "-".join(profile["dataset_version"].split(".")[:3])
     last_updated = profile.get("sdr_last_updated") or f"{dataset_date}T00:00:00+00:00"
     doc = {
-        "certificationPackageOverviewUri": profile["certification_package_overview_uri"],
+        # One resolver (profile_contract.cpo_uri): the schema types this as a URI,
+        # so a TBD profile value becomes the shared placeholder; preflight blocks.
+        "certificationPackageOverviewUri": _pc.cpo_uri(profile),
         "metadata": {
             "version": profile["sdr_version"],
             "lastUpdated": last_updated,
@@ -644,7 +647,7 @@ def render_human(profile, rules, ksis, records, cls, metric_history=None):
     L = []
     a = L.append
     a("SECURITY DECISION RECORD")
-    a(f"{profile['offering_name']} ({profile['offering_abbreviation']})")
+    a(_pc.offering_title(profile))
     a("")
     a(f"Certification type: {profile['certification_type']}")
     a(f"Certification class: Class {cls.upper()}")

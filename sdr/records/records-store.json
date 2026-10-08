@@ -1,23 +1,23 @@
 {
- "store_note": "Statement content for every rule and KSI. Generic template text and TBD markers only in the public template. Reference-architecture examples are labeled as assumptions, never as confirmed implementations.",
+ "store_note": "Statement content for every rule and KSI. The public template carries ONLY content derived from the pinned FedRAMP CR26 dataset (each entry's fill_guidance) and TBD markers; no reference-architecture or illustrative text is shipped. Provider facts enter through sdr.py review (accept, edit or reject a proposal) or by direct authoring, never from the template.",
  "frr": {
   "AFC-CSO-INB": {
    "implementation_status": "Not Implemented",
    "implementation": [
-    "Example (reference architecture, replace with your real implementation): A dedicated FedRAMP security inbox is maintained as a monitored distribution list reaching the security on-call rotation, separate from customer support channels. The address is registered with FedRAMP and published in the certification data."
+    "TBD: Information has not been provided."
    ],
    "validation": [
-    "Example (reference architecture, replace with your real implementation): A monthly synthetic test email is sent to the inbox; the on-call rotation must acknowledge within the documented response window. Delivery, spam-filter, and distribution-list membership checks run monthly and after any mail-system change."
+    "TBD: Information has not been provided."
    ],
    "assessment": [
     "TBD: Independent assessment has not been performed."
    ],
    "extension": {
-    "owner": "Example: Security Operations Manager",
+    "owner": "TBD: Information has not been provided.",
     "verification": "TBD: Information has not been provided.",
-    "validation_frequency": "Example: monthly synthetic test.",
-    "failure_condition": "Example: test email not acknowledged within the response window.",
-    "failure_response": "Example: fix routing same day, re-test, record the miss.",
+    "validation_frequency": "TBD: Information has not been provided.",
+    "failure_condition": "TBD: Information has not been provided.",
+    "failure_response": "TBD: Information has not been provided.",
     "evidence_freshness": "TBD: Information has not been provided.",
     "exception_reference": "None recorded",
     "customer_risk": "TBD: Information has not been provided.",
@@ -2360,20 +2360,20 @@
   "FRC-CSO-JSN": {
    "implementation_status": "Not Implemented",
    "implementation": [
-    "Example (reference architecture, replace with your real implementation): All machine-readable certification information is produced as JSON validated against the corresponding published FedRAMP JSON schema before release. The generation pipeline pins the current official schema, hash-compares it against the live published schema at each run, and fails the build on any validation error."
+    "TBD: Information has not been provided."
    ],
    "validation": [
-    "Example (reference architecture, replace with your real implementation): Schema validation runs in CI on every change to certification data; results are retained with the build record. A scheduled job re-validates published artifacts weekly against the live schema to catch in-place schema updates."
+    "TBD: Information has not been provided."
    ],
    "assessment": [
     "TBD: Independent assessment has not been performed."
    ],
    "extension": {
-    "owner": "Example: Compliance Engineering Lead",
+    "owner": "TBD: Information has not been provided.",
     "verification": "TBD: Information has not been provided.",
-    "validation_frequency": "Example: every change plus weekly re-validation.",
-    "failure_condition": "Example: any schema validation error or schema drift detected.",
-    "failure_response": "Example: block release until the artifact validates.",
+    "validation_frequency": "TBD: Information has not been provided.",
+    "failure_condition": "TBD: Information has not been provided.",
+    "failure_response": "TBD: Information has not been provided.",
     "evidence_freshness": "TBD: Information has not been provided.",
     "exception_reference": "None recorded",
     "customer_risk": "TBD: Information has not been provided.",
@@ -5486,20 +5486,20 @@
   "VDR-CSO-DET": {
    "implementation_status": "Not Implemented",
    "implementation": [
-    "Example (reference architecture, replace with your real implementation): Amazon Inspector continuously scans EC2 instances, ECR container images, and Lambda functions for software vulnerabilities across all in-scope accounts. Findings aggregate to Security Hub in the security tooling account. Coverage is verified against the asset inventory so every in-scope machine-based resource has an active scanning source."
+    "TBD: Information has not been provided."
    ],
    "validation": [
-    "Example (reference architecture, replace with your real implementation): A daily job compares Inspector coverage status against the resource inventory from AWS Config; any in-scope resource without coverage opens a ticket. Finding ingestion freshness is checked daily so no source is silent for more than 24 hours."
+    "TBD: Information has not been provided."
    ],
    "assessment": [
     "TBD: Independent assessment has not been performed."
    ],
    "extension": {
-    "owner": "Example: Vulnerability Management Lead",
+    "owner": "TBD: Information has not been provided.",
     "verification": "TBD: Information has not been provided.",
-    "validation_frequency": "Example: daily coverage and freshness checks.",
-    "failure_condition": "Example: any in-scope resource without an active detection source.",
-    "failure_response": "Example: enroll the resource or document the exception within 3 business days.",
+    "validation_frequency": "TBD: Information has not been provided.",
+    "failure_condition": "TBD: Information has not been provided.",
+    "failure_response": "TBD: Information has not been provided.",
     "evidence_freshness": "TBD: Information has not been provided.",
     "exception_reference": "None recorded",
     "customer_risk": "TBD: Information has not been provided.",
@@ -7416,44 +7416,24 @@
   "KSI-CMT-LMC": {
    "implementation_status": "Not Implemented",
    "implementation": [
-    "Example (reference architecture, replace with your real implementation): All modifications to the cloud service offering are made through version-controlled infrastructure as code deployed by the CI/CD pipeline. AWS CloudTrail organization trail records all management events in every account and region. AWS Config records configuration changes for all supported resource types. Manual changes are detected by comparing CloudTrail write events against pipeline deployment windows."
+    "TBD: Information has not been provided."
    ],
    "validation": [
-    "Example (reference architecture, replace with your real implementation): A scheduled validation confirms the organization trail is logging, multi-region, and log-file validated, and that AWS Config recorders are running in every in-scope account and region. An EventBridge rule alerts on any out-of-pipeline write event by a non-pipeline principal."
+    "TBD: Information has not been provided."
    ],
    "assessment": [
     "TBD: Independent assessment has not been performed."
    ],
-   "tests": [
-    {
-     "method_id": "KSI-CMT-LMC:verify:config:multi-region-cloudtrail-enabled",
-     "method": "Example (reference architecture, replace with your real implementation): AWS Config managed rule multi-region-cloudtrail-enabled confirms an organization trail records management events in every region; pass requires COMPLIANT in every in-scope account.",
-     "automated": true,
-     "cadence": "continuous (AWS Config evaluation), collected daily"
-    },
-    {
-     "method_id": "KSI-CMT-LMC:verify:config:cloud-trail-log-file-validation-enabled",
-     "method": "Example (reference architecture, replace with your real implementation): AWS Config managed rule cloud-trail-log-file-validation-enabled confirms trail log-file integrity validation is on; pass requires COMPLIANT for every trail.",
-     "automated": true,
-     "cadence": "continuous (AWS Config evaluation), collected daily"
-    }
-   ],
-   "evidence": [
-    {
-     "evidenceType": "Configuration",
-     "evidenceDescription": "Example (reference architecture, replace with your real evidence): AWS Config compliance results for the CloudTrail rules above, exported daily by the read-only collector to the evidence store.",
-     "evidenceText": "multi-region-cloudtrail-enabled and cloud-trail-log-file-validation-enabled compliance, per account and region.",
-     "evidenceLocation": "s3://your-evidence-bucket/facts/ (example location, replace)"
-    }
-   ],
+   "tests": [],
+   "evidence": [],
    "extension": {
-    "owner": "Example: Platform Engineering Lead",
+    "owner": "TBD: Information has not been provided.",
     "measures": "TBD: Information has not been provided.",
     "operating_cycle": "TBD: Information has not been provided.",
     "metric_source": "TBD: Information has not been provided.",
-    "pass_condition": "Example: trail logging and Config recording confirmed everywhere; zero unexplained out-of-pipeline changes.",
-    "failure_condition": "Example: trail stopped, Config recorder stopped, or unexplained manual write event.",
-    "failure_response": "Example: page on-call, restore logging within 1 hour, investigate the change.",
+    "pass_condition": "TBD: Information has not been provided.",
+    "failure_condition": "TBD: Information has not been provided.",
+    "failure_response": "TBD: Information has not been provided.",
     "known_limitation": "TBD: Information has not been provided.",
     "customer_responsibility": "TBD: Information has not been provided.",
     "aws_responsibility": "TBD: Information has not been provided.",
@@ -8086,44 +8066,24 @@
   "KSI-IAM-APM": {
    "implementation_status": "Not Implemented",
    "implementation": [
-    "Example (reference architecture, replace with your real implementation): Workforce access uses AWS IAM Identity Center federated to the corporate identity provider. Passwordless FIDO2 security keys are the primary authentication method; where passwordless is not feasible, strong passwords with phishing-resistant MFA (FIDO2/WebAuthn) are enforced by the identity provider conditional access policy. Console password login without MFA is blocked. Programmatic access uses short-lived STS credentials only; no long-lived IAM user access keys exist."
+    "TBD: Information has not been provided."
    ],
    "validation": [
-    "Example (reference architecture, replace with your real implementation): A daily AWS Config custom rule checks that no IAM users have console passwords or active access keys. A daily Identity Center API check confirms MFA enforcement is active for every permission set. A CloudTrail Lake query detects any console login event without MFA; any hit creates a high-priority ticket within 15 minutes."
+    "TBD: Information has not been provided."
    ],
    "assessment": [
     "TBD: Independent assessment has not been performed."
    ],
-   "tests": [
-    {
-     "method_id": "KSI-IAM-APM:verify:config:mfa-enabled-for-iam-console-access",
-     "method": "Example (reference architecture, replace with your real implementation): AWS Config managed rule mfa-enabled-for-iam-console-access confirms no console password exists without MFA; pass requires COMPLIANT in every in-scope account.",
-     "automated": true,
-     "cadence": "continuous (AWS Config evaluation), collected daily"
-    },
-    {
-     "method_id": "KSI-IAM-APM:verify:config:root-account-mfa-enabled",
-     "method": "Example (reference architecture, replace with your real implementation): AWS Config managed rule root-account-mfa-enabled confirms the root user is MFA-protected; pass requires COMPLIANT in every in-scope account.",
-     "automated": true,
-     "cadence": "continuous (AWS Config evaluation), collected daily"
-    }
-   ],
-   "evidence": [
-    {
-     "evidenceType": "Configuration",
-     "evidenceDescription": "Example (reference architecture, replace with your real evidence): AWS Config compliance results for the IAM MFA rules above, exported daily by the read-only collector to the evidence store.",
-     "evidenceText": "mfa-enabled-for-iam-console-access and root-account-mfa-enabled compliance, per account.",
-     "evidenceLocation": "s3://your-evidence-bucket/facts/ (example location, replace)"
-    }
-   ],
+   "tests": [],
+   "evidence": [],
    "extension": {
-    "owner": "Example: Identity and Access Lead",
-    "measures": "Example: percent of authentications using FIDO2; count of MFA-less console logins (target 0).",
-    "operating_cycle": "Example: continuous enforcement, daily automated checks.",
-    "metric_source": "Example: CloudTrail Lake, Identity Center API, AWS Config.",
-    "pass_condition": "Example: zero MFA-less logins and zero IAM user credentials across all accounts.",
-    "failure_condition": "Example: any MFA-less console login or any IAM user access key detected.",
-    "failure_response": "Example: high-priority ticket, credential disabled within 4 hours, root-cause review.",
+    "owner": "TBD: Information has not been provided.",
+    "measures": "TBD: Information has not been provided.",
+    "operating_cycle": "TBD: Information has not been provided.",
+    "metric_source": "TBD: Information has not been provided.",
+    "pass_condition": "TBD: Information has not been provided.",
+    "failure_condition": "TBD: Information has not been provided.",
+    "failure_response": "TBD: Information has not been provided.",
     "known_limitation": "TBD: Information has not been provided.",
     "customer_responsibility": "TBD: Information has not been provided.",
     "aws_responsibility": "TBD: Information has not been provided.",
@@ -9556,44 +9516,24 @@
   "KSI-SVC-SIN": {
    "implementation_status": "Not Implemented",
    "implementation": [
-    "Example (reference architecture, replace with your real implementation): All federal information is encrypted in transit with TLS 1.2 or higher using FIPS-validated endpoints where required, and at rest with AWS KMS customer managed keys. S3 buckets enforce bucket-level encryption and deny unencrypted uploads by bucket policy. EBS volumes and RDS storage use KMS CMKs by default via account-level settings. Public access is blocked account-wide for S3."
+    "TBD: Information has not been provided."
    ],
    "validation": [
-    "Example (reference architecture, replace with your real implementation): AWS Config managed rules check encrypted-volumes, rds-storage-encrypted, and S3 default encryption continuously. A daily query confirms account-level EBS default encryption and S3 Block Public Access remain enabled in every account."
+    "TBD: Information has not been provided."
    ],
    "assessment": [
     "TBD: Independent assessment has not been performed."
    ],
-   "tests": [
-    {
-     "method_id": "KSI-SVC-SIN:verify:config:encrypted-volumes",
-     "method": "Example (reference architecture, replace with your real implementation): AWS Config managed rule encrypted-volumes confirms every attached EBS volume is encrypted; pass requires COMPLIANT for all resources.",
-     "automated": true,
-     "cadence": "continuous (AWS Config evaluation), collected daily"
-    },
-    {
-     "method_id": "KSI-SVC-SIN:verify:config:s3-bucket-server-side-encryption-enabled",
-     "method": "Example (reference architecture, replace with your real implementation): AWS Config managed rule s3-bucket-server-side-encryption-enabled confirms default encryption on every bucket; pass requires COMPLIANT for all buckets.",
-     "automated": true,
-     "cadence": "continuous (AWS Config evaluation), collected daily"
-    }
-   ],
-   "evidence": [
-    {
-     "evidenceType": "Configuration",
-     "evidenceDescription": "Example (reference architecture, replace with your real evidence): AWS Config compliance results for the encryption rules above, exported daily by the read-only collector to the evidence store.",
-     "evidenceText": "encrypted-volumes and s3-bucket-server-side-encryption-enabled compliance, per account and region.",
-     "evidenceLocation": "s3://your-evidence-bucket/facts/ (example location, replace)"
-    }
-   ],
+   "tests": [],
+   "evidence": [],
    "extension": {
-    "owner": "Example: Security Engineering Lead",
+    "owner": "TBD: Information has not been provided.",
     "measures": "TBD: Information has not been provided.",
     "operating_cycle": "TBD: Information has not been provided.",
     "metric_source": "TBD: Information has not been provided.",
-    "pass_condition": "Example: 100 percent of storage resources encrypted with CMKs; zero public buckets.",
-    "failure_condition": "Example: any unencrypted resource or public-access finding.",
-    "failure_response": "Example: auto-remediate where safe, otherwise ticket with 24-hour fix target.",
+    "pass_condition": "TBD: Information has not been provided.",
+    "failure_condition": "TBD: Information has not been provided.",
+    "failure_response": "TBD: Information has not been provided.",
     "known_limitation": "TBD: Information has not been provided.",
     "customer_responsibility": "TBD: Information has not been provided.",
     "aws_responsibility": "TBD: Information has not been provided.",

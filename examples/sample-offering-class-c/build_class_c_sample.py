@@ -42,7 +42,12 @@ REAL_REPORTS = (
     os.path.join(BASE, "validation", "reports", "validation-report.json"),
     os.path.join(BASE, "validation", "reports", "ksi-test-results.json"),
 )
-BACKED_UP = (REAL_STORE, REAL_PROFILE, REAL_HISTORY) + REAL_REPORTS
+# The sample records its fictional sign-offs in the review register; it is
+# backed up and restored byte-for-byte like the other inputs. A `git checkout`
+# restore would discard a provider's own uncommitted sign-offs and needs a git
+# checkout to exist (the sample also runs inside copied test trees).
+REAL_REGISTER = os.path.join(BASE, "sdr", "reviews", "review-register.json")
+BACKED_UP = (REAL_STORE, REAL_PROFILE, REAL_HISTORY, REAL_REGISTER) + REAL_REPORTS
 
 
 def _backup(tmp):
@@ -59,9 +64,9 @@ def _backup(tmp):
 def _restore_tree(baks, history_existed, tmp):
     """Leave the working tree exactly as found (AUD-F36).
 
-    Restores every backed-up file (inputs AND validation reports), removes the
-    sample metric history if none existed before, restores the review register
-    (the signoff is sample-only), then regenerates EVERY deliverable from the
+    Restores every backed-up file (inputs, the review register whose sign-offs
+    are sample-only, AND validation reports), removes the sample metric history
+    if none existed before, then regenerates EVERY deliverable from the
     restored real inputs with the single build definition. `sdr.py build` now
     regenerates the inactive classes too (JSON, text AND Word document, see
     build_inactive_classes.py), so sample content cannot linger in a committed
@@ -72,8 +77,6 @@ def _restore_tree(baks, history_existed, tmp):
         shutil.copy2(b, real)
     if not history_existed and os.path.exists(REAL_HISTORY):
         os.remove(REAL_HISTORY)
-    subprocess.run(["git", "-C", BASE, "checkout", "--",
-                    "sdr/reviews/review-register.json"], capture_output=True, text=True)
     shutil.rmtree(tmp, ignore_errors=True)
     subprocess.run([sys.executable, os.path.join(BASE, "sdr.py"), "build"],
                    cwd=BASE, capture_output=True, text=True)
@@ -300,15 +303,18 @@ def generate_profile():
         "aws_partition": "aws",
         "primary_region": "us-east-1",
         "dr_region": "us-west-2",
-        "management_plane": "Provider-hosted control plane, isolated from customer workloads (fictional).",
-        "federal_information_types": "Illustrative example only; no real federal data.",
         "certification_package_overview_uri": "https://trust.bfc-demo.invalid/cpo.json",
         "security_contact": "security@bfc-demo.invalid (fictional)",
         "incident_contact": "ir@bfc-demo.invalid (fictional)",
         "sales_contact": "sales@bfc-demo.invalid (fictional)",
         "assessor": "Cascade Assurance LLC (fictional Recognized assessor)",
         "assessor_id": "123456",
-        "evidence_retention": "13 months rolling (fictional sample policy).",
+        # CDS-CSO-PUB public information with no other home in the profile.
+        "uei_number": "ZQGGHJH74DW7 (fictional)",
+        "business_category": ["Data Management", "Analytics"],
+        "documentation_overview": (f"{FICT} User guide, API reference, Secure Configuration Guide "
+                                   "and the trust-center certification data, all published at "
+                                   "https://trust.bfc-demo.invalid/."),
         "provider_verified_at": recent + "T00:00:00+00:00",
         "overall_assessment_summary": (f"{FICT} The independent assessor's overall summary: "
                                        "no unresolved high findings; all in-scope KSIs validated."),
@@ -584,8 +590,8 @@ def attack():
     #     and the KSI metric summaries. A package this empty must never be ready.
     def _hollow_everything(st, pr, hi):
         pr["business_purpose"] = "N/A"
-        pr["management_plane"] = "N/A"
-        pr["federal_information_types"] = "N/A"
+        pr["business_category"] = "N/A"
+        pr["documentation_overview"] = "N/A"
         pr["overall_assessment_summary"] = "N/A"
         pr["security_contact"] = "N/A"
         pr["sales_contact"] = "N/A"

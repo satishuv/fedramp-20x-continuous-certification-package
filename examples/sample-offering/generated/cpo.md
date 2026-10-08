@@ -5,30 +5,30 @@ Provider: Acme Cloud Systems, Inc. (fictional)
 Certification type: 20x
 Certification class: Class B
 Service description: A fictional multi-tenant SaaS widget-processing platform used to demonstrate a populated SDR.
-Website: https://example.provider.gov-placeholder/tbd
+Website: https://www.example-acme.invalid/widgets
 
 Service properties
 Service type: SaaS
 Deployment model: Public Cloud
-Next Ongoing Certification Report date: 2026-10-12
-Trust center: [SAMPLE - fictional] trust_center_uri for Acme Cloud Widgets.
-Secure Configuration Guidance: [SAMPLE - fictional] secure_config_guide_uri for Acme Cloud Widgets.
+Next Ongoing Certification Report date: 2026-12-15
+Trust center: https://trust.example-acme.invalid/
+Secure Configuration Guidance: https://trust.example-acme.invalid/scg
 
 Assessor
 Name: Example 3PAO (fictional)
 
 Certification Package Overview metadata (CPO-CSO-MTD)
-Responsible official: [SAMPLE - fictional] cpo_responsible_official for Acme Cloud Widgets.
-Version: [SAMPLE - fictional] cpo_version for Acme Cloud Widgets.
-Last updated: [SAMPLE - fictional] cpo_last_updated for Acme Cloud Widgets.
-Source of update: [SAMPLE - fictional] cpo_source_of_update for Acme Cloud Widgets.
+Responsible official: [SAMPLE - fictional] Jane Doe, CISO, ciso@example-acme.invalid
+Version: 1.0 (fictional sample)
+Last updated: 2026-09-07T00:00:00+00:00
+Source of update: [SAMPLE - fictional] ACW compliance team
 
 Overall assessment summary (CPO-CSO-OSA)
-[SAMPLE - fictional] overall_assessment_summary for Acme Cloud Widgets.
+[SAMPLE - fictional] The assessor's overall summary of the independent assessment, supplied verbatim for the worked example.
 
 Required information included in this Certification Package Overview (CPO-CSO-OVR)
 - CPO-CSO-MTD (Certification Package Overview: CPO-CSO-MTD (Certification Package Overview Metadata)): TBD: Information has not been provided.
-- CDS-CSO-PUB (Certification Data Sharing: CDS-CSO-PUB (Public Information)): TBD: Information has not been provided.
+- CDS-CSO-PUB (Certification Data Sharing: CDS-CSO-PUB (Public Information)): {'fedramp_id': 'FR20X-SAMPLE-ACW-0001 (fictional)', 'service_model': 'SaaS', 'deployment_model': 'Public Cloud', 'business_category': 'Collaboration', 'uei_number': 'SAMPLEUEI001 (fictional)', 'sales_contact_information': 'ACW Federal Sales (fictional), fedsales@example-acme.invalid, 202-555-0100', 'security_contact_information': 'ACW Security Operations (fictional), security@example-acme.invalid', 'product_website_link': 'https://www.example-acme.invalid/widgets', 'link_to_product_logo': 'https://www.example-acme.invalid/widgets/logo.png', 'overall_service_description': 'A fictional multi-tenant SaaS widget-processing platform used to demonstrate a populated SDR.', 'detailed_list_of_specific_services_and_their_security_categories': 'TBD: Information has not been provided.', 'link_to_secure_configuration_guidance': 'https://trust.example-acme.invalid/scg', 'overview_of_documentation_supplied_by_the_provider_for_the_cloud_service_offering': '[SAMPLE - fictional] Administrator guide, API reference and the Secure Configuration Guide are published on the ACW trust center.', 'link_to_trust_center_landing_page_that_includes_instructions_on_accessing_information_in_the_trust_center': 'https://trust.example-acme.invalid/', 'next_ongoing_certification_report_date': '2026-12-15', 'current_fedramp_recognized_independent_assessment_service': 'Example 3PAO (fictional) (FedRAMP assessor ID 000001)'}
 - CDS-CSO-SVC (Certification Data Sharing: CDS-CSO-SVC (Public Service List)): TBD: Information has not been provided.
 - CDS-CSO-IRP (Certification Data Sharing: CDS-CSO-IRP (Include Relevant Policies)): TBD: Information has not been provided.
 - MAS-CSO-IIR (Minimum Assessment Scope: MAS-CSO-IIR (Identify Information Resources)): TBD: Information has not been provided.

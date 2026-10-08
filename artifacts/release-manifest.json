@@ -47,14 +47,14 @@
   }
  },
  "inputs": {
-  "profiles/common/offering-profile.json": "sha256:c58127fcf6bcd74ee1e34e8305d0d2ffe1b81332f12d1e4a6b3e975b7eb04835",
-  "sdr/records/records-store.json": "sha256:2264f89f08831b81994036bcbb4a7514141b3c8f5c7f9e00423ad0a492213da4"
+  "profiles/common/offering-profile.json": "sha256:66a9b3c0fd3c6531a54f0404430ae735dd43b806f5c416fa538d8481c7980a3e",
+  "sdr/records/records-store.json": "sha256:fe030beea95cc27c30abcdb77932e52ee7470068282e28c1491db7c435fc69b3"
  },
  "artifacts": {
   "artifacts/sbom.cdx.json": "sha256:d9c871f6134c58165d1bab268f3b741b1e1acb1ed11484a7093459e0d342034b",
   "package/certification-package-manifest.json": "sha256:9cae6d6ee3216e60c35fcdc427b1e485d5033c1eeb79f234b83e55ea6b6e1a0d",
-  "package/cpo/cpo.json": "sha256:f0f62eef2b8916e300a0b4b6a409c9ecdf5dcd86a00cc559ae33146db7cb9c00",
-  "package/cpo/cpo.md": "sha256:4979306e40bfd3604cbb7acfe2e2d998acf79276bde857d3b14145a9c8c53fee",
+  "package/cpo/cpo.json": "sha256:a34ae0a7c8a2a7523717f8389c30d6a4dea1278177bd89eb5c1a18d70ec792ee",
+  "package/cpo/cpo.md": "sha256:79b063beebd5b7e8ea6d48a64a681dad6fd477d84c4684ec3c59ca9e3f6012ca",
   "package/events/accepted-vulnerabilities-example.json": "sha256:85835cbb67f0b46cb6deb5402510dfa1f47ed15e8cbc34f4633a596818a6b0ff",
   "package/events/historical-ver-activity-example.json": "sha256:6e1f3d2e8e70af4d606f0ec5d219e024aee30bf34dfec0a5972deba396757937",
   "package/events/incident-report-final-example.json": "sha256:e2e0093c8b30fd5ae87421915ae5d6e9b9340bf9b62a4e0789a3f37a5ee4f227",
@@ -65,13 +65,13 @@
   "package/events/vulnerability-detail-report-example.json": "sha256:60bd36ed0be004b68afd642f9214558e56a08e1d899995855d4bdfdb098f3a63",
   "package/ocr/ocr-example.json": "sha256:2f2881b13c6ba3bb3cf25ccc9d26245b06a739a3b6b9eedabe5d1bfbb2c7d149",
   "package/ocr/ocr-example.md": "sha256:13a8ed41e38a49875195732e81193ac5a15a8082226b8f1433ac3a9f26376431",
-  "package/scg/secure-configuration-guide.md": "sha256:e33594964ad23ab3abef5798814c37c39fdadd3157258c5c23b76f70eab156d6",
-  "sdr/human-readable/sdr-class-b-authoring.docx": "sha256:75bfe9842b208f1f22bcbca2d7a45c7090cd9fd4161327254aef047130511bbc",
-  "sdr/human-readable/sdr-class-b.txt": "sha256:084e30bdc2763eb29f03dd51136ea84f4702bc3abe07c1752f2db2d03a66b42c",
-  "sdr/json/sdr-class-b-extensions.json": "sha256:2157beebcf4b8efb5b31e7ca81bf33a1c6e479e94c1fbba882c31256adb5d5ca",
-  "sdr/json/sdr-class-b.json": "sha256:764211f10bada6ddef300899f1aae70991748c3c4222eb8386fec6a105885b9c",
+  "package/scg/secure-configuration-guide.md": "sha256:747c948b042a34e4118ac58a7e08a30cbe75f4c40a1085d19ee533d0c5ee2a4b",
+  "sdr/human-readable/sdr-class-b-authoring.docx": "sha256:5a97f00eca909b9b6e31dd8c99824a349db14ad81e96cb969173669474c7a276",
+  "sdr/human-readable/sdr-class-b.txt": "sha256:a82084c7ee590da5da3331a2bb7b1c5232f8d770e4594d71b3536d0912e5a4c5",
+  "sdr/json/sdr-class-b-extensions.json": "sha256:89b6b0de742814b49ec1ba215e6a77c96422e437ded641b6f3e8e179f736f220",
+  "sdr/json/sdr-class-b.json": "sha256:94ee7692d18c36523d83e44d2c275d68aa0e2f46f73445207fb17e88174a4bd8",
   "traceability/applicability-decisions.json": "sha256:13ca770aae658ea9ae6a3655c759965854ca2646bafb1b6ded715120c1d13ff5",
-  "traceability/assurance-graph.json": "sha256:4648136f968c5068ae4b87a95d5bc4c78c7e5da4488839f2f3276c03fc3bd806",
+  "traceability/assurance-graph.json": "sha256:ab7890fe2e93effa4e8a47e31a33ce70dcdf6b121bb98d849c54308db7acae8e",
   "traceability/rev5-to-20x-crosswalk.csv": "sha256:54abb349fbf14d1d8ec15da7fe2de5615f132f14309dc3957a81563e5575db43"
  },
  "artifact_count": 22,

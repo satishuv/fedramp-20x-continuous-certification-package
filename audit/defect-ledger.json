@@ -522,6 +522,19 @@
       "mutation": "MUT-F38: 'DRAFT (' removed from UNREVIEWED_PREFIXES so machine drafts count as answers; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F39",
+      "severity": "High",
+      "requirement": "FRC-CSX-VVK (varies_by_class: Class B SHOULD >= 1 automated method, Class C MUST >= 2) and the evidence-linkage expectation for populated MUST work bind the offering at the class it submits (the profile's certification_class); a package is validated, and later assessed, at one class",
+      "component": "validation/scripts/validate_sdr.py (ksi_test_minimums, evidence_linkage_for_populated_musts under SDR_VALIDATE_CLASS); sdr.py validate class matrix (AUD-F23)",
+      "description": "Since AUD-F36 `sdr.py build` regenerates the inactive classes' artifacts from the live record store, and the AUD-F23 class matrix then runs the authoritative validator against each. The validator made a MUST shortfall on populated records a hard failure wherever the validated class is C, regardless of the class the offering submits at. A populated Class B offering with exactly the one automated method per KSI that FRC-CSX-VVK asks at Class B (or, as in the Class B sample, narratives populated before any test exists) therefore failed `sdr.py validate` on the Class C matrix run, with 46 'hard failures' for a class it never claimed. Reproduced at e3b28a6 by running examples/sample-offering/build_sample.py as documented: Build gate PASS, then `FAIL. validate_sdr.py class C exited 1` on ksi_test_minimums and evidence_linkage_for_populated_musts, gate exit 1.",
+      "root_cause": "The hard/advisory decision read the validated class's force but not whether that class is the one submitted. The matrix intends structural and dataset-fidelity assurance for every committed class artifact; content minimums are the submitting class's obligations, and nothing distinguished the two once the matrix validated one store under three classes.",
+      "fix_commit": "this PR -- validate_sdr.py records inactive_run (SDR_VALIDATE_CLASS names a class other than the profile's) and scopes both hard decisions to the active class; in an inactive-class run the two checks are reported as ADVISORY with the detail naming the class the offering submits at. Schema, dataset-fidelity, applicability and every other check keep their force in every class",
+      "regression_test": "validation/scripts/test_validate_class_matrix.py::test_f39_content_force_binds_at_the_submitted_class (the populated Class B sample swapped into a temp copy, Class C regenerated from it: SDR_VALIDATE_CLASS=c exits 0 with both checks ADVISORY naming Class B; the same store with Class C active exits 1 with both checks FAIL)",
+      "mutation": "MUT-F39: the `and not inactive_run` scope removed from vvk_hard so an inactive-class run fails a Class B offering on Class C minimums; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

@@ -1,23 +1,23 @@
 {
- "store_note": "Statement content for every rule and KSI. Generic template text and TBD markers only in the public template. Reference-architecture examples are labeled as assumptions, never as confirmed implementations.",
+ "store_note": "Statement content for every rule and KSI. The public template carries ONLY content derived from the pinned FedRAMP CR26 dataset (each entry's fill_guidance) and TBD markers; no reference-architecture or illustrative text is shipped. Provider facts enter through sdr.py review (accept, edit or reject a proposal) or by direct authoring, never from the template.",
  "frr": {
   "AFC-CSO-INB": {
    "implementation_status": "Not Implemented",
    "implementation": [
-    "Example (reference architecture, replace with your real implementation): A dedicated FedRAMP security inbox is maintained as a monitored distribution list reaching the security on-call rotation, separate from customer support channels. The address is registered with FedRAMP and published in the certification data."
+    "TBD: Information has not been provided."
    ],
    "validation": [
-    "Example (reference architecture, replace with your real implementation): A monthly synthetic test email is sent to the inbox; the on-call rotation must acknowledge within the documented response window. Delivery, spam-filter, and distribution-list membership checks run monthly and after any mail-system change."
+    "TBD: Information has not been provided."
    ],
    "assessment": [
     "TBD: Independent assessment has not been performed."
    ],
    "extension": {
-    "owner": "Example: Security Operations Manager",
+    "owner": "TBD: Information has not been provided.",
     "verification": "TBD: Information has not been provided.",
-    "validation_frequency": "Example: monthly synthetic test.",
-    "failure_condition": "Example: test email not acknowledged within the response window.",
-    "failure_response": "Example: fix routing same day, re-test, record the miss.",
+    "validation_frequency": "TBD: Information has not been provided.",
+    "failure_condition": "TBD: Information has not been provided.",
+    "failure_response": "TBD: Information has not been provided.",
     "evidence_freshness": "TBD: Information has not been provided.",
     "exception_reference": "None recorded",
     "customer_risk": "TBD: Information has not been provided.",
@@ -381,7 +381,7 @@
    "fill_guidance": {
     "read_me": "Fill implementation, validation, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs. Do not edit the generated files in sdr/json or sdr/human-readable.",
     "rule_family": "CCM (Collaborative Continuous Monitoring)",
-    "what_it_looks_for": "Providers MUST supply an Ongoing Certification Report to all necessary parties every 3 months, covering the entire period since the previous summary, in a consistent format that is human readable; this report MUST include high-level summaries of at least the following information:",
+    "what_it_looks_for": "Providers MUST supply an Ongoing Certification Report to all necessary parties every 3 months, covering the entire period since the previous summary, in a consistent format that is human readable; this report MUST include high-level summaries of at least the following information (if applicable):",
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
     "evidence_required": [
      "Most recent Ongoing Certification Report. If the report is not available, the provider MUST provide a sample report that includes all required information.",
@@ -2360,20 +2360,20 @@
   "FRC-CSO-JSN": {
    "implementation_status": "Not Implemented",
    "implementation": [
-    "Example (reference architecture, replace with your real implementation): All machine-readable certification information is produced as JSON validated against the corresponding published FedRAMP JSON schema before release. The generation pipeline pins the current official schema, hash-compares it against the live published schema at each run, and fails the build on any validation error."
+    "TBD: Information has not been provided."
    ],
    "validation": [
-    "Example (reference architecture, replace with your real implementation): Schema validation runs in CI on every change to certification data; results are retained with the build record. A scheduled job re-validates published artifacts weekly against the live schema to catch in-place schema updates."
+    "TBD: Information has not been provided."
    ],
    "assessment": [
     "TBD: Independent assessment has not been performed."
    ],
    "extension": {
-    "owner": "Example: Compliance Engineering Lead",
+    "owner": "TBD: Information has not been provided.",
     "verification": "TBD: Information has not been provided.",
-    "validation_frequency": "Example: every change plus weekly re-validation.",
-    "failure_condition": "Example: any schema validation error or schema drift detected.",
-    "failure_response": "Example: block release until the artifact validates.",
+    "validation_frequency": "TBD: Information has not been provided.",
+    "failure_condition": "TBD: Information has not been provided.",
+    "failure_response": "TBD: Information has not been provided.",
     "evidence_freshness": "TBD: Information has not been provided.",
     "exception_reference": "None recorded",
     "customer_risk": "TBD: Information has not been provided.",
@@ -3267,7 +3267,7 @@
    "fill_guidance": {
     "read_me": "Fill implementation, validation, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs. Do not edit the generated files in sdr/json or sdr/human-readable.",
     "rule_family": "IEC (Incident Evaluation and Communication)",
-    "what_it_looks_for": "Providers with Class B Certifications MUST responsibly notify all affected parties of ongoing activity as new information becomes available during incident response for FedRAMP Reportable Incidents, including updates (or lack of updates) to all previously reported information and as much of the the following additional information that is available and/or the current relevant status for each item:",
+    "what_it_looks_for": "Providers with Class B Certifications MUST responsibly notify all affected parties of ongoing activity as new information becomes available during incident response for FedRAMP Reportable Incidents, including updates (or lack of updates) to all previously reported information and as much of the following additional information that is available and/or the current relevant status for each item:",
     "how_to_comply": "Define incident evaluation and reporting procedures with the FedRAMP Reportable Incident test, the Potential Agency Impact N-rating scale, and the class-specific reporting timeframes. Wire detection (GuardDuty, Security Hub) to an on-call process that can meet the clock.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
@@ -5486,20 +5486,20 @@
   "VDR-CSO-DET": {
    "implementation_status": "Not Implemented",
    "implementation": [
-    "Example (reference architecture, replace with your real implementation): Amazon Inspector continuously scans EC2 instances, ECR container images, and Lambda functions for software vulnerabilities across all in-scope accounts. Findings aggregate to Security Hub in the security tooling account. Coverage is verified against the asset inventory so every in-scope machine-based resource has an active scanning source."
+    "TBD: Information has not been provided."
    ],
    "validation": [
-    "Example (reference architecture, replace with your real implementation): A daily job compares Inspector coverage status against the resource inventory from AWS Config; any in-scope resource without coverage opens a ticket. Finding ingestion freshness is checked daily so no source is silent for more than 24 hours."
+    "TBD: Information has not been provided."
    ],
    "assessment": [
     "TBD: Independent assessment has not been performed."
    ],
    "extension": {
-    "owner": "Example: Vulnerability Management Lead",
+    "owner": "TBD: Information has not been provided.",
     "verification": "TBD: Information has not been provided.",
-    "validation_frequency": "Example: daily coverage and freshness checks.",
-    "failure_condition": "Example: any in-scope resource without an active detection source.",
-    "failure_response": "Example: enroll the resource or document the exception within 3 business days.",
+    "validation_frequency": "TBD: Information has not been provided.",
+    "failure_condition": "TBD: Information has not been provided.",
+    "failure_response": "TBD: Information has not been provided.",
     "evidence_freshness": "TBD: Information has not been provided.",
     "exception_reference": "None recorded",
     "customer_risk": "TBD: Information has not been provided.",
@@ -7391,7 +7391,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CED-RAT for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CED-RAT for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CED-RAT for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -7415,27 +7416,24 @@
   "KSI-CMT-LMC": {
    "implementation_status": "Not Implemented",
    "implementation": [
-    "Example (reference architecture, replace with your real implementation): All modifications to the cloud service offering are made through version-controlled infrastructure as code deployed by the CI/CD pipeline. AWS CloudTrail organization trail records all management events in every account and region. AWS Config records configuration changes for all supported resource types. Manual changes are detected by comparing CloudTrail write events against pipeline deployment windows."
+    "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-LMC for the 'implementation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    ],
    "validation": [
-    "Example (reference architecture, replace with your real implementation): A scheduled validation confirms the organization trail is logging, multi-region, and log-file validated, and that AWS Config recorders are running in every in-scope account and region. An EventBridge rule alerts on any out-of-pipeline write event by a non-pipeline principal."
+    "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-LMC for the 'validation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    ],
    "assessment": [
     "TBD: Independent assessment has not been performed."
    ],
-   "tests": [
-    "Example test 1: describe-trails confirms multi-region and log file validation are enabled and the trail is logging (every 6 hours).",
-    "Example test 2: Config aggregator query confirms recorder status is recording in 100 percent of in-scope accounts (daily)."
-   ],
+   "tests": [],
    "evidence": [],
    "extension": {
-    "owner": "Example: Platform Engineering Lead",
+    "owner": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-LMC for the 'owner' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "measures": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-LMC for the 'measures' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "operating_cycle": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-LMC for the 'operating_cycle' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "metric_source": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-LMC for the 'metric_source' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "pass_condition": "Example: trail logging and Config recording confirmed everywhere; zero unexplained out-of-pipeline changes.",
-    "failure_condition": "Example: trail stopped, Config recorder stopped, or unexplained manual write event.",
-    "failure_response": "Example: page on-call, restore logging within 1 hour, investigate the change.",
+    "pass_condition": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-LMC for the 'pass_condition' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
+    "failure_condition": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-LMC for the 'failure_condition' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
+    "failure_response": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-LMC for the 'failure_response' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "known_limitation": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-LMC for the 'known_limitation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "customer_responsibility": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-LMC for the 'customer_responsibility' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "aws_responsibility": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-LMC for the 'aws_responsibility' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
@@ -7443,7 +7441,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-LMC for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-LMC for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-LMC for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -7492,7 +7491,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-RMV for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-RMV for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-RMV for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -7541,7 +7541,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-RVP for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-RVP for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-RVP for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -7590,7 +7591,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-VTD for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-VTD for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CMT-VTD for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -7639,7 +7641,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-DFP for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-DFP for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-DFP for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -7663,7 +7666,7 @@
   "KSI-CNA-EIS": {
    "implementation_status": "Not Implemented",
    "implementation": [
-    "FedRAMP pending: this indicator has no statement in the official dataset yet."
+    "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-EIS for the 'implementation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    ],
    "validation": [
     "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-EIS for the 'validation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
@@ -7688,13 +7691,14 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-EIS for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-EIS for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-EIS for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
     "ksi_family": "CNA (Cloud Native Architecture)",
     "what_it_looks_for": "FedRAMP pending: no statement published yet for this indicator.",
-    "how_to_comply": "FedRAMP pending: this indicator has no statement in the official dataset yet. Track the dataset for updates before building anything specific.",
+    "how_to_comply": "Class-varying (optional/MAY at Class B, required at Class C): automated services persistently assess the security of all machine-based information resources and automatically enforce their intended operational state. Evidence: Config rules with auto-remediation, Systems Manager State Manager/associations, drift-detection and enforcement records over time.",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -7737,7 +7741,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-IBP for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-IBP for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-IBP for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -7786,7 +7791,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-MAT for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-MAT for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-MAT for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -7835,7 +7841,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-OFA for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-OFA for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-OFA for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -7884,7 +7891,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-RNT for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-RNT for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-RNT for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -7933,7 +7941,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-RVP for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-RVP for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-RVP for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -7982,7 +7991,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-ULN for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-ULN for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-CNA-ULN for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8031,7 +8041,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-AAM for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-AAM for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-AAM for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8055,27 +8066,24 @@
   "KSI-IAM-APM": {
    "implementation_status": "Not Implemented",
    "implementation": [
-    "Example (reference architecture, replace with your real implementation): Workforce access uses AWS IAM Identity Center federated to the corporate identity provider. Passwordless FIDO2 security keys are the primary authentication method; where passwordless is not feasible, strong passwords with phishing-resistant MFA (FIDO2/WebAuthn) are enforced by the identity provider conditional access policy. Console password login without MFA is blocked. Programmatic access uses short-lived STS credentials only; no long-lived IAM user access keys exist."
+    "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-APM for the 'implementation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    ],
    "validation": [
-    "Example (reference architecture, replace with your real implementation): A daily AWS Config custom rule checks that no IAM users have console passwords or active access keys. A daily Identity Center API check confirms MFA enforcement is active for every permission set. A CloudTrail Lake query detects any console login event without MFA; any hit creates a high-priority ticket within 15 minutes."
+    "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-APM for the 'validation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    ],
    "assessment": [
     "TBD: Independent assessment has not been performed."
    ],
-   "tests": [
-    "Example test 1: config rule iam-user-no-passwords-or-keys returns COMPLIANT for all accounts (daily).",
-    "Example test 2: CloudTrail Lake query for console login events without MFA returns zero rows (daily)."
-   ],
+   "tests": [],
    "evidence": [],
    "extension": {
-    "owner": "Example: Identity and Access Lead",
-    "measures": "Example: percent of authentications using FIDO2; count of MFA-less console logins (target 0).",
-    "operating_cycle": "Example: continuous enforcement, daily automated checks.",
-    "metric_source": "Example: CloudTrail Lake, Identity Center API, AWS Config.",
-    "pass_condition": "Example: zero MFA-less logins and zero IAM user credentials across all accounts.",
-    "failure_condition": "Example: any MFA-less console login or any IAM user access key detected.",
-    "failure_response": "Example: high-priority ticket, credential disabled within 4 hours, root-cause review.",
+    "owner": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-APM for the 'owner' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
+    "measures": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-APM for the 'measures' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
+    "operating_cycle": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-APM for the 'operating_cycle' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
+    "metric_source": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-APM for the 'metric_source' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
+    "pass_condition": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-APM for the 'pass_condition' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
+    "failure_condition": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-APM for the 'failure_condition' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
+    "failure_response": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-APM for the 'failure_response' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "known_limitation": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-APM for the 'known_limitation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "customer_responsibility": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-APM for the 'customer_responsibility' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "aws_responsibility": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-APM for the 'aws_responsibility' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
@@ -8083,7 +8091,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-APM for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-APM for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-APM for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8132,7 +8141,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-ELP for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-ELP for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-ELP for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8181,7 +8191,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-JIT for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-JIT for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-JIT for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8230,7 +8241,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-SNU for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-SNU for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-SNU for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8279,7 +8291,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-SUS for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-SUS for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-IAM-SUS for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8328,7 +8341,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-INR-AAR for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-INR-AAR for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-INR-AAR for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8377,7 +8391,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-INR-RIR for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-INR-RIR for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-INR-RIR for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8426,7 +8441,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-INR-RPI for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-INR-RPI for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-INR-RPI for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8450,7 +8466,7 @@
   "KSI-MLA-ALA": {
    "implementation_status": "Not Implemented",
    "implementation": [
-    "FedRAMP pending: this indicator has no statement in the official dataset yet."
+    "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-MLA-ALA for the 'implementation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    ],
    "validation": [
     "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-MLA-ALA for the 'validation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
@@ -8475,13 +8491,14 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-MLA-ALA for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-MLA-ALA for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-MLA-ALA for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
     "ksi_family": "MLA (Monitoring, Logging, and Auditing)",
     "what_it_looks_for": "FedRAMP pending: no statement published yet for this indicator.",
-    "how_to_comply": "FedRAMP pending: this indicator has no statement in the official dataset yet. Track the dataset for updates before building anything specific.",
+    "how_to_comply": "Class-varying (optional/MAY at Class B, required at Class C): a least-privileged, role/attribute-based, just-in-time authorization model governs access to log data by data sensitivity, and is persistently reviewed. Evidence: IAM/Access Analyzer for log-store access, JIT-access records, periodic access reviews of the log data store.",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8524,7 +8541,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-MLA-EVC for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-MLA-EVC for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-MLA-EVC for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8573,7 +8591,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-MLA-LET for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-MLA-LET for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-MLA-LET for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8622,7 +8641,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-MLA-OSM for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-MLA-OSM for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-MLA-OSM for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8671,7 +8691,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-MLA-RVL for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-MLA-RVL for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-MLA-RVL for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8720,7 +8741,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-PIY-GIV for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-PIY-GIV for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-PIY-GIV for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8769,7 +8791,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-PIY-RES for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-PIY-RES for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-PIY-RES for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8818,7 +8841,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-PIY-RIS for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-PIY-RIS for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-PIY-RIS for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8867,7 +8891,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-PIY-RSD for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-PIY-RSD for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-PIY-RSD for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8916,7 +8941,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-PIY-RVD for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-PIY-RVD for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-PIY-RVD for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -8965,7 +8991,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-RPL-ABO for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-RPL-ABO for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-RPL-ABO for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -9014,7 +9041,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-RPL-ARP for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-RPL-ARP for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-RPL-ARP for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -9063,7 +9091,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-RPL-RRO for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-RPL-RRO for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-RPL-RRO for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -9112,7 +9141,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-RPL-TRC for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-RPL-TRC for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-RPL-TRC for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -9161,7 +9191,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SCR-MIT for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SCR-MIT for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SCR-MIT for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -9210,7 +9241,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SCR-MON for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SCR-MON for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SCR-MON for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -9259,7 +9291,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-ACM for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-ACM for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-ACM for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -9308,7 +9341,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-ASM for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-ASM for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-ASM for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -9357,7 +9391,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-EIS for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-EIS for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-EIS for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -9381,7 +9416,7 @@
   "KSI-SVC-PRR": {
    "implementation_status": "Not Implemented",
    "implementation": [
-    "FedRAMP pending: this indicator has no statement in the official dataset yet."
+    "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-PRR for the 'implementation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    ],
    "validation": [
     "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-PRR for the 'validation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
@@ -9406,13 +9441,14 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-PRR for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-PRR for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-PRR for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
     "ksi_family": "SVC (Service Configuration)",
     "what_it_looks_for": "FedRAMP pending: no statement published yet for this indicator.",
-    "how_to_comply": "FedRAMP pending: this indicator has no statement in the official dataset yet. Track the dataset for updates before building anything specific.",
+    "how_to_comply": "Class-varying (optional/MAY at Class B, required at Class C): plans, procedures, and resource state are persistently reviewed after changes to limit and remove unwanted residual elements that could affect confidentiality, integrity, or availability of federal customer data. Evidence: post-change review records, drift/residual-resource cleanup logs.",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -9430,7 +9466,7 @@
   "KSI-SVC-RUD": {
    "implementation_status": "Not Implemented",
    "implementation": [
-    "FedRAMP pending: this indicator has no statement in the official dataset yet."
+    "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-RUD for the 'implementation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    ],
    "validation": [
     "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-RUD for the 'validation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
@@ -9455,13 +9491,14 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-RUD for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-RUD for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-RUD for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
     "ksi_family": "SVC (Service Configuration)",
     "what_it_looks_for": "FedRAMP pending: no statement published yet for this indicator.",
-    "how_to_comply": "FedRAMP pending: this indicator has no statement in the official dataset yet. Track the dataset for updates before building anything specific.",
+    "how_to_comply": "Class-varying (optional/MAY at Class B, required at Class C): unwanted federal customer data is removed promptly when an agency requests it per customer agreements, including from backups where appropriate (e.g. data spill or usage change). Evidence: data-removal request handling records, backup-scoped deletion procedures and logs.",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -9479,27 +9516,24 @@
   "KSI-SVC-SIN": {
    "implementation_status": "Not Implemented",
    "implementation": [
-    "Example (reference architecture, replace with your real implementation): All federal information is encrypted in transit with TLS 1.2 or higher using FIPS-validated endpoints where required, and at rest with AWS KMS customer managed keys. S3 buckets enforce bucket-level encryption and deny unencrypted uploads by bucket policy. EBS volumes and RDS storage use KMS CMKs by default via account-level settings. Public access is blocked account-wide for S3."
+    "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-SIN for the 'implementation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    ],
    "validation": [
-    "Example (reference architecture, replace with your real implementation): AWS Config managed rules check encrypted-volumes, rds-storage-encrypted, and S3 default encryption continuously. A daily query confirms account-level EBS default encryption and S3 Block Public Access remain enabled in every account."
+    "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-SIN for the 'validation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    ],
    "assessment": [
     "TBD: Independent assessment has not been performed."
    ],
-   "tests": [
-    "Example test 1: Config rules encrypted-volumes and rds-storage-encrypted are COMPLIANT for all resources (continuous).",
-    "Example test 2: EBS default encryption and S3 Block Public Access report enabled for every in-scope account (daily)."
-   ],
+   "tests": [],
    "evidence": [],
    "extension": {
-    "owner": "Example: Security Engineering Lead",
+    "owner": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-SIN for the 'owner' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "measures": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-SIN for the 'measures' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "operating_cycle": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-SIN for the 'operating_cycle' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "metric_source": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-SIN for the 'metric_source' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "pass_condition": "Example: 100 percent of storage resources encrypted with CMKs; zero public buckets.",
-    "failure_condition": "Example: any unencrypted resource or public-access finding.",
-    "failure_response": "Example: auto-remediate where safe, otherwise ticket with 24-hour fix target.",
+    "pass_condition": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-SIN for the 'pass_condition' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
+    "failure_condition": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-SIN for the 'failure_condition' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
+    "failure_response": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-SIN for the 'failure_response' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "known_limitation": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-SIN for the 'known_limitation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "customer_responsibility": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-SIN for the 'customer_responsibility' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "aws_responsibility": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-SIN for the 'aws_responsibility' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
@@ -9507,7 +9541,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-SIN for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-SIN for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-SIN for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
@@ -9531,7 +9566,7 @@
   "KSI-SVC-VCM": {
    "implementation_status": "Not Implemented",
    "implementation": [
-    "FedRAMP pending: this indicator has no statement in the official dataset yet."
+    "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-VCM for the 'implementation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    ],
    "validation": [
     "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-VCM for the 'validation' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
@@ -9556,13 +9591,14 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-VCM for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-VCM for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-VCM for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
     "ksi_family": "SVC (Service Configuration)",
     "what_it_looks_for": "FedRAMP pending: no statement published yet for this indicator.",
-    "how_to_comply": "FedRAMP pending: this indicator has no statement in the official dataset yet. Track the dataset for updates before building anything specific.",
+    "how_to_comply": "Class-varying (optional/MAY at Class B, required at Class C): the authenticity and integrity of communications between machine-based information resources is persistently validated using automation. Evidence: mutual-TLS/service-mesh identity validation, signed inter-service requests, automated integrity-verification records.",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -9605,7 +9641,8 @@
     "exception_reference": "None recorded",
     "measures_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-VRI for the 'measures_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
     "automation_verification": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-VRI for the 'automation_verification' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance.",
-    "assessor_responses": "None recorded"
+    "assessor_responses": "None recorded",
+    "resulting_customer_risk": "[SAMPLE - fictional] Acme Cloud Widgets addresses KSI-SVC-VRI for the 'resulting_customer_risk' aspect via documented, reviewed controls in the ACW boundary. This is illustrative example text, not a real attestation, and must not be treated as evidence of compliance."
    },
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",

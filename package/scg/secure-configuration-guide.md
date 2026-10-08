@@ -1,10 +1,10 @@
-# Secure Configuration Guide: Example PaaS Foundation (EPF)
+# Secure Configuration Guide: Offering name not yet provided (TBD)
 
 This is a generated scaffold for the FedRAMP 20x Secure Configuration Guide required by SCG-CSO-RSC, with the use-instructions component required by SCG-CSO-AUP. Sections marked TBD are filled by the provider. This document is referenced from the Certification Package Overview and is not a compliance claim.
 
 ## Purpose and scope
 
-How to securely configure and operate Example PaaS Foundation. Scope: Reference architecture assumption: a generic AWS-native Platform as a Service foundation that customers use to deploy and operate applications and SaaS workloads on AWS.
+How to securely configure and operate the offering. Scope: TBD: one or two sentences on what the offering does (CPO serviceIdentification.serviceDescription; CDS-CSO-PUB 'Overall Service Description')
 
 ## Recommendations for secure configuration (SCG-CSO-RSC)
 

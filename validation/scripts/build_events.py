@@ -33,6 +33,7 @@ import sys
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(BASE, "validation", "scripts"))
 from fedramp_time import add_calendar_months  # noqa: E402
+import profile_contract as _pc  # noqa: E402  (cpo_uri: one resolver shared with the validator)
 PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 OUT_DIR = os.path.join(BASE, "package", "events")
 
@@ -49,8 +50,10 @@ def dump_json(obj, path):
 
 
 def build_all(profile):
-    cpo_uri = profile.get("certification_package_overview_uri") \
-        or "https://example.provider.gov-placeholder/cpo.json"
+    # One resolver for the CPO URI (profile_contract.cpo_uri): a TBD profile value
+    # becomes the shared placeholder, so events, OCR, CPO and the consistency
+    # validator agree. Preflight blocks on the TBD field.
+    cpo_uri = _pc.cpo_uri(profile)
     # Deterministic period derived from the pinned dataset date, never a run
     # clock, so examples are byte-stable across builds.
     dataset_date = "-".join(profile["dataset_version"].split(".")[:3])
