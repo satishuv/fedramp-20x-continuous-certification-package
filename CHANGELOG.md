@@ -21,8 +21,8 @@ The adoption path works end to end (`AUD-F40`, High, with a killed mutation):
   workflow and the documented manual adoption already run, now advances every
   curated pin with a one-line edit proven to change nothing else. The service
   map's pin is a verification claim, so it advances only after the script has
-  re-verified the map's KSI ids, names and families against the new dataset;
-  otherwise it is held and reported. `test_dataset_version_consistency.py`
+  re-verified the map's KSI ids, names, families and canonical control lists
+  against the new dataset; otherwise it is held and reported. `test_dataset_version_consistency.py`
   takes its file list from the updater (one definition) and re-runs that
   verification instead of trusting the pin.
 - **The adoption commit includes the regenerated Word documents.** The drift

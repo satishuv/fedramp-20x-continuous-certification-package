@@ -180,29 +180,40 @@ def test_main_writes_lock_file_and_returns_zero():
 OLD_PIN = "2025.12.31.01"
 # The synthetic dataset's KSI section, mirrored by the synthetic service map.
 KSI_SECTION = {"CED": {"name": "Cybersecurity Education",
-                       "indicators": {"KSI-CED-RAT": {"name": "Reviewing All Training"}}},
+                       "indicators": {"KSI-CED-RAT": {"name": "Reviewing All Training",
+                                                      "controls": ["at-2", "cp-3"]}}},
                "IAM": {"name": "Identity and Access Management",
-                       "indicators": {"KSI-IAM-MFA": {"name": "Multi-Factor Authentication"}}}}
+                       "indicators": {"KSI-IAM-MFA": {"name": "Multi-Factor Authentication",
+                                                      "controls": ["ia-2"]}}}}
 
 
-def _curated_files(repo, extra_ksi=None):
+def _curated_files(repo, extra_ksi=None, controls_override=None):
     """Write the curated pinned files in their real shapes: a top-level pin with
     1-space indentation and CRLF endings (offering profile), a meta pin with
     2-space indentation (manifest), and the service map. Returns {rel: bytes}."""
     ksi = json.loads(json.dumps(KSI_SECTION))
     if extra_ksi:
-        ksi["CED"]["indicators"][extra_ksi] = {"name": "Added Upstream"}
+        ksi["CED"]["indicators"][extra_ksi] = {"name": "Added Upstream", "controls": []}
+    if controls_override:
+        for kid, controls in controls_override.items():
+            for node in ksi.values():
+                if kid in node["indicators"]:
+                    node["indicators"][kid]["controls"] = controls
     _write(os.path.join(repo.root, "references", "fedramp-consolidated-rules.json"),
            json.dumps({"info": {"version": "2026.01.01.01"}, "KSI": ksi}).encode())
     offering = ('{\r\n "organization": "Example",\r\n "_note": "dataset_version is below",\r\n'
                 f' "dataset_version": "{OLD_PIN}",\r\n "sdr_version": "0.1.0"\r\n}}\r\n').encode()
     manifest = ('{\n  "meta": {\n    "title": "rules",\n'
                 f'    "dataset_version": "{OLD_PIN}",\n    "count": 1\n  }},\n  "rules": []\n}}\n').encode()
+    # The map lists its canonical controls in a different order: order is not
+    # a difference, membership is.
     smap = {"meta": {"title": "map", "dataset_version": OLD_PIN},
             "ksis": {"KSI-CED-RAT": {"name": "Reviewing All Training", "family": "CED",
-                                     "family_name": "Cybersecurity Education"},
+                                     "family_name": "Cybersecurity Education",
+                                     "rev5_controls_canonical": ["cp-3", "at-2"]},
                      "KSI-IAM-MFA": {"name": "Multi-Factor Authentication", "family": "IAM",
-                                     "family_name": "Identity and Access Management"}}}
+                                     "family_name": "Identity and Access Management",
+                                     "rev5_controls_canonical": ["ia-2"]}}}
     files = {usl.TRACKING_PINS[0]: offering, usl.TRACKING_PINS[3]: manifest,
              usl.VERIFIED_PIN: json.dumps(smap, indent=2).encode()}
     for rel, data in files.items():
@@ -246,6 +257,19 @@ def test_service_map_pin_is_held_when_the_ksi_set_changed():
         smap = json.loads(_read(repo, usl.VERIFIED_PIN).decode("utf-8"))
         assert usl.declared_pin(smap) == OLD_PIN, "a held pin must not move"
         assert usl.service_map_differences(ds, smap) == ["KSI-CED-NEW: in dataset, not in map"]
+    _with_repo(body)
+
+
+def test_service_map_pin_is_held_when_a_canonical_control_list_changed():
+    def body(repo):
+        # Same KSI ids, names and families; upstream added a control to one KSI.
+        _curated_files(repo, controls_override={"KSI-IAM-MFA": ["ia-2", "ia-5"]})
+        ds = json.load(open(usl.DATASET, encoding="utf-8"))
+        changes, holds = usl.refresh_dataset_pins("2026.01.01.01", ds)
+        assert len(changes) == 2 and all(usl.VERIFIED_PIN not in c for c in changes), changes
+        assert len(holds) == 1 and "KSI-IAM-MFA: canonical controls ['ia-2'] != dataset ['ia-2', 'ia-5']" in holds[0], holds
+        smap = json.loads(_read(repo, usl.VERIFIED_PIN).decode("utf-8"))
+        assert usl.declared_pin(smap) == OLD_PIN, "a held pin must not move"
     _with_repo(body)
 
 
