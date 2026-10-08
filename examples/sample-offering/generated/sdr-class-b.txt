@@ -8,7 +8,7 @@ AWS partition: aws
 Primary region: us-east-1
 Disaster recovery region: us-west-2
 SDR version: 0.1.0
-Generated from dataset version: 2026.09.13.02
+Generated from dataset version: 2026.10.05.01
 Source of update: build_sdr.py generator
 
 This is a generic template record. Statements marked TBD require real
