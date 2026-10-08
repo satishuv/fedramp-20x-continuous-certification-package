@@ -8,6 +8,21 @@ One project-specific convention: the pinned FedRAMP dataset version is recorded 
 
 Pinned dataset: `2026.09.13.02` (unchanged; upstream `2026.10.05.01` is adopted by the regenerate-and-review PR this entry makes possible)
 
+The adoption summary reports every changed rule field (`AUD-F41`, High, with a killed mutation):
+
+- **`dataset_diff.py` compares the whole rule, not a chosen list of fields
+  (AUD-F41).** For `2026.09.13.02` to `2026.10.05.01` it reported "4 rules
+  changed" and the impact report listed 3 items for review; a recursive diff
+  shows 7 rules changed, including the new PAIN **N0** rating in
+  VER-EVA-EPA's `following_information_bullets`, new `notes` on CDS-CSO-PUB,
+  FRC-CSO-JSN and CMU-CSO-UVM, changed notification forms on MKT-CAS-LRQ and
+  MKT-IAS-LRQ, and `terms` additions. The tool's own comment records the same
+  failure for `2026.09.13.02` (timeframe ranges), fixed then by adding names
+  to the list. Every key of the rule object except the `updated` history is
+  now compared; a key the tool has no name for is reported under its own name
+  and counted in the summary line; list changes show the items added and
+  removed; the rule's `updated` entry is carried as the upstream comment.
+
 The adoption path works end to end (`AUD-F40`, High, with a killed mutation):
 
 - **Curated `dataset_version` pins advance with the dataset (AUD-F40).** The

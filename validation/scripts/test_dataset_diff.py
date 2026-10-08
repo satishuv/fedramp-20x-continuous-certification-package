@@ -72,9 +72,81 @@ def test_no_change_reports_empty():
     d = dd.diff_datasets(OLD, OLD)
     assert d["summary"] == {"added": 0, "removed": 0, "changed": 0,
                             "force_changes": 0, "timeframe_changes": 0,
+                            "other_key_changes": 0,
                             "ksis_added": 0, "ksis_removed": 0, "ksis_changed": 0,
                             "definitions_added": 0, "definitions_removed": 0,
                             "definitions_changed": 0}
+    assert dd.render(d).splitlines()[-1] == "  No material changes detected."
+
+
+# ---- AUD-F41: every changed key of a rule is reported, not a chosen few ------
+
+def _rule_copy(extra_old=None, extra_new=None):
+    import copy
+    old = copy.deepcopy(OLD)
+    new = copy.deepcopy(OLD)
+    o = old["FRR"]["XXX"]["data"]["20x"]["FRP"]["AFC-FRP-VRE"]
+    n = new["FRR"]["XXX"]["data"]["20x"]["FRP"]["AFC-FRP-VRE"]
+    o.update(extra_old or {})
+    n.update(extra_new or {})
+    return old, new
+
+
+def test_following_information_bullets_change_detected():
+    # CR26 2026.10.05.01 added the PAIN N0 rating to VER-EVA-EPA in
+    # following_information_bullets; the pre-F41 diff did not report it.
+    old, new = _rule_copy(
+        {"following_information_bullets": ["**N1**: low", "**N2**: high"]},
+        {"following_information_bullets": ["**N0**: none", "**N1**: low", "**N2**: high"]})
+    d = dd.diff_datasets(old, new)
+    changed = {c["id"]: c["changes"] for c in d["rules_changed"]}
+    assert "following_information_bullets" in changed["AFC-FRP-VRE"], changed
+    text = dd.render(d)
+    assert '+ "**N0**: none"' in text, text
+    assert "N1" not in text.split("following_information_bullets:")[1].split("\n")[1], \
+        "unchanged items must not be listed as added or removed"
+
+
+def test_notes_and_notification_changes_detected():
+    old, new = _rule_copy(
+        {"note": "one note", "notification": [{"party": "FedRAMP", "name": "Old Form"}]},
+        {"notes": ["one note", "a second note"],
+         "notification": [{"party": "FedRAMP", "name": "New Form"}]})
+    d = dd.diff_datasets(old, new)
+    changed = {c["id"]: c["changes"] for c in d["rules_changed"]}
+    assert set(changed["AFC-FRP-VRE"]) == {"note", "notes", "notification"}, changed
+    text = dd.render(d)
+    assert '+ "a second note"' in text and '- {"party": "FedRAMP", "name": "Old Form"}' in text, text
+
+
+def test_a_key_this_tool_has_never_seen_is_still_reported():
+    old, new = _rule_copy({}, {"brand_new_upstream_field": {"x": 1}})
+    d = dd.diff_datasets(old, new)
+    changed = {c["id"]: c["changes"] for c in d["rules_changed"]}
+    assert changed["AFC-FRP-VRE"]["brand_new_upstream_field"] == {"old": None, "new": {"x": 1}}
+    assert d["summary"]["other_key_changes"] == 1
+    assert "1 with a changed key outside the named set" in dd.render(d).splitlines()[0]
+
+
+def test_history_alone_is_not_a_change_but_is_carried_as_the_upstream_comment():
+    # `updated` is the dataset's own change log; by itself it is bookkeeping.
+    old, new = _rule_copy({"updated": []}, {"updated": [{"date": "2026-10-05", "comment": "typo"}]})
+    assert dd.diff_datasets(old, new)["rules_changed"] == []
+    # With a real change, the new history entry is carried as the comment.
+    old, new = _rule_copy({"updated": []},
+                          {"statement": "changed", "updated": [{"date": "2026-10-05", "comment": "why"}]})
+    d = dd.diff_datasets(old, new)
+    c = d["rules_changed"][0]
+    assert "updated" not in c["changes"]
+    assert c["upstream_comments"] == [{"date": "2026-10-05", "comment": "why"}]
+    assert "upstream 2026-10-05: why" in dd.render(d)
+
+
+def test_reordered_list_is_reported_as_reordered_only():
+    old, new = _rule_copy({"terms": ["a", "b"]}, {"terms": ["b", "a"]})
+    d = dd.diff_datasets(old, new)
+    assert "terms" in d["rules_changed"][0]["changes"]
+    assert "(reordered only)" in dd.render(d)
 
 
 def test_ksi_statement_change_detected():
