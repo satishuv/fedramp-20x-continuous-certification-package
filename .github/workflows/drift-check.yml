@@ -176,7 +176,11 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
-          git add -- . ':(exclude)*.docx'
+          # Everything the build regenerated, Word documents included: since
+          # AUD-F35 the .docx is byte-reproducible and CI refuses a tree whose
+          # generated files differ from the committed ones, so excluding it
+          # here made every adoption PR fail that gate (AUD-F40).
+          git add -- .
           git commit -m "chore: adopt CR26 dataset $NEWVER (lock + full regenerate)"
           git push -u origin "$BRANCH" || { echo "branch may already exist"; exit 0; }
           DIFF_SUMMARY=$(cat /tmp/dataset-diff.txt 2>/dev/null || echo "(diff unavailable)")
