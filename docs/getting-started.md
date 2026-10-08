@@ -44,7 +44,7 @@ The validator prints fourteen checks and one gating line:
 
 ```text
 PASS: official_schema_validation | 0 schema errors
-PASS: dataset_version_agreement | pinned dataset info.version 2026.09.13.02 vs profile 2026.09.13.02
+PASS: dataset_version_agreement | pinned dataset info.version 2026.10.05.01 vs profile 2026.10.05.01
 PASS: pinned_schema_version_guard | all 9 pinned schemas match expected $id and version
 PASS: rule_coverage | missing: [] extra: [] (158/158 rules)
 PASS: ksi_coverage | 46/46 KSIs present
@@ -68,7 +68,7 @@ Certification class          Class B
 Build gate                   BUILD PASS - structurally valid, hard failures: 0
 Checks                       12 of 14 passing
 Advisory failures            ksi_test_minimums, evidence_linkage_for_populated_musts
-Dataset                      deterministic check against dataset 2026.09.13.02
+Dataset                      deterministic check against dataset 2026.10.05.01
 Assessment readiness         24.3% (531 pass, 1657 fail, 407 manual of 2595 findings)
 ```
 

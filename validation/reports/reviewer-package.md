@@ -4,7 +4,7 @@ Assessor-facing summary generated from the assurance graph. It is not a complian
 
 ## Package metadata
 - Certification class: B
-- Dataset version: 2026.09.13.02
+- Dataset version: 2026.10.05.01
 - Offering: Offering name not yet provided (TBD)
 
 ## Requirement scope

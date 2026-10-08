@@ -6,7 +6,72 @@ One project-specific convention: the pinned FedRAMP dataset version is recorded 
 
 ## Unreleased
 
-Pinned dataset: `2026.09.13.02` (unchanged; upstream `2026.10.05.01` is adopted by the regenerate-and-review PR this entry makes possible)
+Pinned dataset: `2026.10.05.01` (adopted 2026-10-08 from `2026.09.13.02`)
+
+CR26 dataset `2026.10.05.01` adopted:
+
+- **Adopted by the drift workflow's own regenerate-and-review path** (first
+  adoption through it; the path is the AUD-F40 fix below). Upstream change
+  between `2026.09.13.02` and `2026.10.05.01`: 7 rules changed, 0 added,
+  0 removed, 0 force changes; the KSI set is unchanged (46 KSIs, 10 families;
+  the service map's ids, names, families and canonical control lists
+  re-verified). The workflow's own summary said 4 rules; it compared a fixed
+  list of fields and missed the rest (AUD-F41, fixed separately). Lock, every
+  curated pin, all three classes' SDR (JSON, text, Word), the CPO, the OCR and
+  event examples, the profiles, the catalogs and the reports regenerated;
+  `sources.lock.json` `verified_current_on` stamped 2026-10-08 by the updater.
+  No status changed and no assessment written.
+- **VER-EVA-EPA gained a PAIN rating.** `following_information_bullets` now
+  includes, verbatim: "**N0**: Exploitation is extremely unlikely to have any
+  adverse effects on agencies that use the cloud service offering."; the
+  statement now reads "estimate the likely potential agency impact"; "Likely"
+  joined the rule's `terms`. The upstream comment: "added PAIN0 to clarify
+  that likely potential agency impact can be entirely mitigated/remediated."
+  A Vulnerability Detail Report cannot record N0 yet: the pinned
+  common-definitions schema (`$schemaVersion` 0.4.0) defines `nRating` as
+  `enum [1, 2, 3, 4, 5]` and the document schemas are unchanged upstream, so
+  N0 is rule text today and a schema adoption when FedRAMP ships one (the
+  daily schema hash check surfaces it).
+- **FRC-CSO-JSN now names public-JSON delivery expectations.** The statement
+  gained "public JSON data MUST be supplied in a manner compatible with modern
+  web frameworks, including:" with two `following_information` items (CORS
+  should allow other domains to read the public JSON; Content-Type
+  application/json and X-Content-Type-Options nosniff should be set), and two
+  new `notes`, one of which reads: "The Schema Validator available at
+  fedramp.gov will not work properly if Cross-Origin Resource Sharing is not
+  properly configured." `automation/pipeline/check_json_download_headers.py`
+  now reports `Access-Control-Allow-Origin` alongside the two headers it
+  already checked, labels each header with its source (the rule, or the
+  2026-09-15 Help Center guidance for `Content-Disposition: attachment`), and
+  its documentation no longer says these headers are absent from the dataset.
+  It stays advisory and reports presence only; the FRC-CSO-JSN decision
+  belongs to the provider's record and the assessor (`docs/ci-cd.md`).
+- **CDS-CSO-PUB "Link to Product Logo"** gained "(must be a valid image link,
+  properly named, that will display in a browser without processing -
+  transparent PNG preferred)", and a new note: the JSON for this rule "will be
+  consumed by FedRAMP and agency GRC tools using automation with web-based
+  tools", with FedRAMP recommending that application engineers be involved.
+  The profile contract already derives this item from `offering_logo_uri` by
+  the text before the parenthetical, so the derivation is unchanged; the
+  wizard's question and the CPO schema's image extension pattern already ask
+  for an image link.
+- **CMU-CSO-UVM** gained a note: algorithms added by a cryptographic module's
+  update stream that were never validated are outside the scope of
+  validated-module update usage. Note only; no package field changes.
+- **MKT-CAS-LRQ and MKT-IAS-LRQ** (marketplace listing requests for advisors
+  and assessors; not provider rules) changed their notification form names,
+  and the assessor form moved to Help Center ticket form `54220455254427`.
+- **FRC-CSF-RDY** wording only ("following dates"); regenerated into every
+  rule record and catalog.
+- README badge, pinned-version line and derived counts (246 entries, 234 in
+  20x scope, 46 KSIs: re-counted from the new dataset), the illustrative
+  outputs in `docs/getting-started.md` and `automation/sdrscan/README.md`,
+  and the service map's provenance note (now describes the standing
+  verification instead of naming one past version) updated by hand.
+- The release manifest's `release_tag` now reads `v1.5.0-cr26-2026.10.05.01`:
+  same framework version, new dataset suffix, a tag distinct from the published
+  `v1.5.0-cr26-2026.09.13.02` (`docs/versioning.md`: two versions, always
+  both). Whether to cut it is a maintainer decision.
 
 The adoption path works end to end (`AUD-F40`, High, with a killed mutation):
 

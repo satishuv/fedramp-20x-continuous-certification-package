@@ -1,8 +1,8 @@
 {
  "meta": {
   "derived_from": "fedramp-consolidated-rules.json",
-  "dataset_version": "2026.09.13.02",
-  "generated": "deterministic build from dataset 2026.09.13.02",
+  "dataset_version": "2026.10.05.01",
+  "generated": "deterministic build from dataset 2026.10.05.01",
   "scope": "FRR requirements applicable to 20x (data.all and data.20x); all KSI indicators"
  },
  "count": 234,
@@ -3440,7 +3440,7 @@
    "applicability": "all",
    "name": "FedRAMP JSON Schemas",
    "force": "MUST",
-   "statement": "Providers MUST supply machine-readable information in JSON documents that are valid against the corresponding JSON schema when a rule contains a FedRAMP JSON schema, UNLESS otherwise specified in the rule.",
+   "statement": "Providers MUST supply machine-readable information in JSON documents that are valid against the corresponding JSON schema when a rule contains a FedRAMP JSON schema, UNLESS otherwise specified in the rule; public JSON data MUST be supplied in a manner compatible with modern web frameworks, including:",
    "affects": [
     "Providers"
    ],
@@ -8757,7 +8757,7 @@
    "applicability": "all",
    "name": "Estimate Potential Agency Impact",
    "force": "MUST",
-   "statement": "Providers MUST evaluate detected vulnerabilities, considering the context of the cloud service offering, to estimate the potential agency impact of exploitation on government customers AND assign one of the following Potential Agency Impact N-ratings (PAIN):",
+   "statement": "Providers MUST evaluate detected vulnerabilities, considering the context of the cloud service offering, to estimate the likely potential agency impact of exploitation on government customers AND assign one of the following Potential Agency Impact N-ratings (PAIN):",
    "affects": [
     "Providers"
    ],
