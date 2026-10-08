@@ -71,10 +71,11 @@ def main():
         check(f"{rel} dataset_version == {pin} (got {got}; run "
               f"validation/scripts/update_sources_lock.py after adopting a dataset)",
               got == pin)
-    # The service map's pin claims its KSI set was verified against the dataset.
-    # Re-run that verification instead of trusting the claim.
+    # The service map's pin claims its KSI set and canonical control lists were
+    # verified against the dataset. Re-run that verification instead of trusting
+    # the claim.
     diffs = usl.service_map_differences(ds, _load(usl.VERIFIED_PIN))
-    check(f"{usl.VERIFIED_PIN} KSI ids, names and families match dataset {pin}"
+    check(f"{usl.VERIFIED_PIN} KSI ids, names, families and canonical control lists match dataset {pin}"
           + (f" ({len(diffs)} difference(s); first: {diffs[0]})" if diffs else ""),
           not diffs)
     print(f"\n{'PASS' if not _fail else 'FAIL'}: dataset-version consistency "
