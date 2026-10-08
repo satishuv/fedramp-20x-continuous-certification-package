@@ -1,14 +1,14 @@
 {
  "certificationPackageOverviewUri": "https://trust.example-acme.invalid/cpo.json",
  "reportPeriod": {
-  "from": "2026-06-13",
-  "to": "2026-09-13"
+  "from": "2026-07-05",
+  "to": "2026-10-05"
  },
  "certificationDataChanges": [
   "EXAMPLE: no changes to FedRAMP Certification Data during this period."
  ],
  "plannedCertificationDataChanges": {
-  "planningHorizonThrough": "2026-12-13",
+  "planningHorizonThrough": "2027-01-05",
   "changes": [
    "EXAMPLE: no planned changes to Certification Data in the next 3 months."
   ]
