@@ -6,6 +6,38 @@ One project-specific convention: the pinned FedRAMP dataset version is recorded 
 
 ## Unreleased
 
+Pinned dataset: `2026.09.13.02` (unchanged; upstream `2026.10.05.01` is adopted by the regenerate-and-review PR this entry makes possible)
+
+The adoption path works end to end (`AUD-F40`, High, with a killed mutation):
+
+- **Curated `dataset_version` pins advance with the dataset (AUD-F40).** The
+  2026-10-07 drift run detected CR26 `2026.10.05.01`, swapped the dataset,
+  refreshed the lock and rebuilt, then stopped at the build's own consistency
+  check: `assurance graph dataset 2026.10.05.01 != offering 2026.09.13.02`.
+  The offering profile's pin (and the sample profile's, the pending-KSI
+  classification's, the Config rules manifest's and the AWS service-KSI map's)
+  is a curated input nothing regenerates, so the adoption PR was never opened
+  and issue #198 was the only trace. `update_sources_lock.py`, which the drift
+  workflow and the documented manual adoption already run, now advances every
+  curated pin with a one-line edit proven to change nothing else. The service
+  map's pin is a verification claim, so it advances only after the script has
+  re-verified the map's KSI ids, names and families against the new dataset;
+  otherwise it is held and reported. `test_dataset_version_consistency.py`
+  takes its file list from the updater (one definition) and re-runs that
+  verification instead of trusting the pin.
+- **The adoption commit includes the regenerated Word documents.** The drift
+  workflow staged everything except `*.docx`; since AUD-F35 the documents are
+  reproducible and CI refuses a tree whose generated files differ from the
+  committed ones, so every adoption PR would have failed that gate.
+- Verified against upstream `2026.10.05.01` in a throwaway clone: lock and five
+  pins advanced, `sdr.py build` 21 steps 0 failures, `sdr.py validate
+  --no-tests` 0 hard failures. Upstream change in that release: 4 rules
+  changed, 0 added, 0 removed, 0 force changes (CDS-CSO-PUB logo wording,
+  FRC-CSO-JSN statement plus two CORS/header expectations, FRC-CSF-RDY and
+  VER-EVA-EPA statements); the KSI set is unchanged.
+
+Earlier in this cycle:
+
 Pinned dataset: `2026.09.13.02` (unchanged)
 
 From typing to deciding (`AUD-F38`, High, with a killed mutation):

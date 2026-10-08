@@ -298,6 +298,13 @@ MUTATIONS = [
      '    vvk_hard = force == "MUST" and bool(populated_below) and not inactive_run',
      '    vvk_hard = force == "MUST" and bool(populated_below)  # MUTATION inactive-class run fails a Class B offering on Class C minimums',
      "validation/scripts/test_validate_class_matrix.py"),
+    # AUD-F40: an adoption advances the curated dataset_version pins with the
+    # dataset; the 2026-10-07 drift run left them behind and could not open its PR.
+    ("MUT-F40",
+     "validation/scripts/update_sources_lock.py",
+     '    pin_changes, holds = refresh_dataset_pins(version, ds)',
+     '    pin_changes, holds = [], []  # MUTATION the adoption leaves every curated pin at the old dataset',
+     "validation/scripts/test_update_sources_lock.py"),
 ]
 
 
