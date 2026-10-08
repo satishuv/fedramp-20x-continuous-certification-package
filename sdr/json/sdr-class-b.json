@@ -2,7 +2,7 @@
  "certificationPackageOverviewUri": "https://example.provider.gov-placeholder/cpo.json",
  "metadata": {
   "version": "0.1.0",
-  "lastUpdated": "2026-09-13T00:00:00+00:00",
+  "lastUpdated": "2026-10-05T00:00:00+00:00",
   "updateSource": "build_sdr.py generator",
   "xIndependentAssessmentSummary": {
    "assessorName": "TBD: name of the FedRAMP Recognized independent assessment service",

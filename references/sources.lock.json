@@ -4,14 +4,14 @@
  "sources": {
   "cr26_consolidated_rules": {
    "description": "FedRAMP Consolidated Rules for 2026, the canonical machine-readable requirements dataset and source of truth for rule text, identifiers, force, class applicability, KSIs, and definitions.",
-   "version": "2026.09.13.02",
+   "version": "2026.10.05.01",
    "upstream_repo": "https://github.com/FedRAMP/rules",
    "upstream_raw": "https://raw.githubusercontent.com/FedRAMP/rules/main/fedramp-consolidated-rules.json",
    "pinned_path": "references/fedramp-consolidated-rules.json",
-   "sha256": "64915d88e72353c95f321ea4a9014516ac9441972cbd7f3d1abef7d1514c8fc8",
+   "sha256": "d8a1cd5513fb0e1ecebf2ad8a74259c4b74900e8f7b4b429d6d6741bf9fe555f",
    "status": "current",
    "notes": "The official guidance site states AI agents and automation must use the machine-readable repositories, not the rendered HTML at fedramp.gov. Refreshed from 2026.07.14.01 to 2026.09.13.02: added timeframe range fields (timeframe_num_min/max on CCM-QTR-SAR), top-level timing on 6 rules, and the force-of-rule definitions FRD-MAY/MST/MNT/SHD/SNT; no rules added or removed.",
-   "upstream_commit": "58487bda77d76d9ce334304ec2e779ece7cc7d54"
+   "upstream_commit": "1c33385a06acf4faf50da2b9b4dc31cd826e5b91"
   },
   "sdr_schema": {
    "description": "Official FedRAMP Security Decision Record JSON schema.",
@@ -111,7 +111,7 @@
    "description": "Official FedRAMP Consolidated Rules JSON Schema; source of truth for the dataset structure. The pinned dataset is validated against this before any catalog is derived.",
    "upstream_repo": "https://github.com/FedRAMP/rules",
    "upstream_raw": "https://raw.githubusercontent.com/FedRAMP/rules/main/schemas/fedramp-consolidated-rules.schema.json",
-   "upstream_commit": "58487bda77d76d9ce334304ec2e779ece7cc7d54",
+   "upstream_commit": "1c33385a06acf4faf50da2b9b4dc31cd826e5b91",
    "pinned_path": "references/fedramp-consolidated-rules.schema.json",
    "sha256": "eb4710bee0b06d0f8f803302ac2e88b934ef2bc942d0b548738c7304f0cb418f",
    "status": "current",

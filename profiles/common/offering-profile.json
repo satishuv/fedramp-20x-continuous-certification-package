@@ -111,7 +111,7 @@
  },
  "sdr_version": "0.1.0",
  "schema_version": "2026-06-24",
- "dataset_version": "2026.09.13.02",
+ "dataset_version": "2026.10.05.01",
  "evidence_freshness_policy_days": 90,
  "evidence_sources": {
   "note": "Optional third-party evidence sources, opt-in per customer. Off by default. Set enabled=true and point export_path at a customer-produced export (produced in the customer's own environment; this repository holds no API client or credentials). See automation/collectors/thirdparty_adapters.py.",

@@ -11,8 +11,8 @@
   ],
   "sdr_version": "0.1.0",
   "schema_version": "2026-06-24",
-  "dataset_version": "2026.09.13.02",
-  "generated": "deterministic build from dataset 2026.09.13.02",
+  "dataset_version": "2026.10.05.01",
+  "generated": "deterministic build from dataset 2026.10.05.01",
   "source_of_update": "build_sdr.py generator"
  },
  "frr": {
@@ -964,7 +964,8 @@
    "guidance": {
     "what_it_looks_for": "Providers MUST publicly share up-to-date information about the cloud service offering in both human-readable and JSON formats, including at least the following information that is available and applicable:",
     "official_notes": [
-     "Generally, this information should be available on a public webpage or publicly shared in a FedRAMP-compatible trust center."
+     "Generally, this information should be available on a public webpage or publicly shared in a FedRAMP-compatible trust center.",
+     "The JSON data for this rule will be consumed by FedRAMP and agency GRC tools using automation with web-based tools. Do not expect FedRAMP or your customers to download this data directly, it should be accessible for common web frameworks. FedRAMP strongly recommends that application engineering experts be involved in making public JSON data and the related information available in a way that can work with web-based applications."
     ],
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
     "evidence_required": [
@@ -1738,7 +1739,9 @@
    "family_name": "Cryptographic Module Use",
    "guidance": {
     "what_it_looks_for": "Providers with Class B Certifications MAY use cryptographic modules or update streams of cryptographic modules with active validations under the NIST Cryptographic Module Validation Program when using cryptographic services to protect federal customer data.",
-    "official_notes": [],
+    "official_notes": [
+     "Cryptographic modules include specific algorithms by definition; if an update stream of a cryptographic module adds new algorithms that were not previously validated then those algorithms can not be considered within the scope of update stream usage under these rules as they are new algorithms within the module that have never been validated."
+    ],
     "how_to_comply": "Use FIPS-validated cryptographic modules for federal data: AWS KMS (validated HSM-backed) for keys, FIPS endpoints for service APIs where required, and TLS 1.2 or higher. Record module certificates and validation numbers; document any exception formally.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
@@ -2045,9 +2048,11 @@
    "family": "FRC",
    "family_name": "FedRAMP Certification",
    "guidance": {
-    "what_it_looks_for": "Providers MUST supply machine-readable information in JSON documents that are valid against the corresponding JSON schema when a rule contains a FedRAMP JSON schema, UNLESS otherwise specified in the rule.",
+    "what_it_looks_for": "Providers MUST supply machine-readable information in JSON documents that are valid against the corresponding JSON schema when a rule contains a FedRAMP JSON schema, UNLESS otherwise specified in the rule; public JSON data MUST be supplied in a manner compatible with modern web frameworks, including:",
     "official_notes": [
-     "FedRAMP JSON schemas are designed to be lightweight and flexible to establish a minimum set of structured information while allowing providers to improve on the format and structure of the information as needed to meet their needs and the needs of their customers."
+     "FedRAMP JSON schemas are designed to be lightweight and flexible to establish a minimum set of structured information while allowing providers to improve on the format and structure of the information as needed to meet their needs and the needs of their customers.",
+     "Public JSON data is intended to be consumed by FedRAMP, agency GRC tools, and more - it should be available in a way that enables standard web-application use following standard web frameworks. Generally, if you can't write a web app to parse this data without configuring a browser to bypass security defaults then there has likely been a problem.",
+     "The Schema Validator available at fedramp.gov will not work properly if Cross-Origin Resource Sharing is not properly configured."
     ],
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
     "evidence_required": [
@@ -5341,7 +5346,7 @@
    "family": "VER",
    "family_name": "Vulnerability Evaluation and Reporting",
    "guidance": {
-    "what_it_looks_for": "Providers MUST evaluate detected vulnerabilities, considering the context of the cloud service offering, to estimate the potential agency impact of exploitation on government customers AND assign one of the following Potential Agency Impact N-ratings (PAIN):",
+    "what_it_looks_for": "Providers MUST evaluate detected vulnerabilities, considering the context of the cloud service offering, to estimate the likely potential agency impact of exploitation on government customers AND assign one of the following Potential Agency Impact N-ratings (PAIN):",
     "official_notes": [],
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
     "evidence_required": [

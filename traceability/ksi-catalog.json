@@ -1,8 +1,8 @@
 {
  "meta": {
   "derived_from": "fedramp-consolidated-rules.json",
-  "dataset_version": "2026.09.13.02",
-  "generated": "deterministic build from dataset 2026.09.13.02",
+  "dataset_version": "2026.10.05.01",
+  "generated": "deterministic build from dataset 2026.10.05.01",
   "scope": "FRR requirements applicable to 20x (data.all and data.20x); all KSI indicators"
  },
  "count": 46,

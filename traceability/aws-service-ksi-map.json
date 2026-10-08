@@ -2,7 +2,7 @@
  "meta": {
   "title": "AWS service to Key Security Indicator (KSI) implementation map",
   "provenance": "Seeded from AWS Security Assurance Services internal implementation guidance (2026-09); KSI identifiers, names, families, and canonical control lists verified against the canonical CR26 dataset. Re-verified against CR26 2026.09.13.02: the KSI set is unchanged (46 KSIs, same ids/names/families). Guidance text is example reference architecture, not a compliance claim.",
-  "dataset_version": "2026.09.13.02",
+  "dataset_version": "2026.10.05.01",
   "count": 46,
   "missing_ksis": [],
   "name_or_id_problems": [],

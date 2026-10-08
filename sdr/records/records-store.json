@@ -2391,7 +2391,7 @@
    "fill_guidance": {
     "read_me": "Fill implementation, validation, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs. Do not edit the generated files in sdr/json or sdr/human-readable.",
     "rule_family": "FRC (FedRAMP Certification)",
-    "what_it_looks_for": "Providers MUST supply machine-readable information in JSON documents that are valid against the corresponding JSON schema when a rule contains a FedRAMP JSON schema, UNLESS otherwise specified in the rule.",
+    "what_it_looks_for": "Providers MUST supply machine-readable information in JSON documents that are valid against the corresponding JSON schema when a rule contains a FedRAMP JSON schema, UNLESS otherwise specified in the rule; public JSON data MUST be supplied in a manner compatible with modern web frameworks, including:",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
@@ -6372,7 +6372,7 @@
    "fill_guidance": {
     "read_me": "Fill implementation, validation, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs. Do not edit the generated files in sdr/json or sdr/human-readable.",
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
-    "what_it_looks_for": "Providers MUST evaluate detected vulnerabilities, considering the context of the cloud service offering, to estimate the potential agency impact of exploitation on government customers AND assign one of the following Potential Agency Impact N-ratings (PAIN):",
+    "what_it_looks_for": "Providers MUST evaluate detected vulnerabilities, considering the context of the cloud service offering, to estimate the likely potential agency impact of exploitation on government customers AND assign one of the following Potential Agency Impact N-ratings (PAIN):",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
