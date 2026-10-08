@@ -6,7 +6,48 @@ One project-specific convention: the pinned FedRAMP dataset version is recorded 
 
 ## Unreleased
 
-Pinned dataset: `2026.09.13.02` (unchanged; upstream `2026.10.05.01` is adopted by the regenerate-and-review PR this entry makes possible)
+Pinned dataset: `2026.10.05.01` (adopted 2026-10-08 from `2026.09.13.02`)
+
+CR26 dataset `2026.10.05.01` adopted:
+
+- **Adopted by the drift workflow's own regenerate-and-review path** (first
+  adoption through it; the path is the AUD-F40 fix below). Upstream change
+  between `2026.09.13.02` and `2026.10.05.01`: 4 rules changed, 0 added,
+  0 removed, 0 force changes; the KSI set is unchanged (46 KSIs, 10 families;
+  the service map's ids, names, families and canonical control lists
+  re-verified). Lock, every curated pin, all three classes' SDR (JSON, text,
+  Word), the CPO, the OCR and event examples, the profiles, the catalogs and
+  the reports regenerated; `sources.lock.json` `verified_current_on` stamped
+  2026-10-08 by the updater. No status changed and no assessment written.
+- **FRC-CSO-JSN now names public-JSON delivery expectations.** The statement
+  gained "public JSON data MUST be supplied in a manner compatible with modern
+  web frameworks, including:" with two `following_information` items (CORS
+  should allow other domains to read the public JSON; Content-Type
+  application/json and X-Content-Type-Options nosniff should be set).
+  `automation/pipeline/check_json_download_headers.py` now reports
+  `Access-Control-Allow-Origin` alongside the two headers it already checked,
+  labels each header with its source (the rule, or the 2026-09-15 Help Center
+  guidance for `Content-Disposition: attachment`), and its documentation no
+  longer says these headers are absent from the dataset. It stays advisory and
+  reports presence only; the FRC-CSO-JSN decision belongs to the provider's
+  record and the assessor (`docs/ci-cd.md`).
+- **CDS-CSO-PUB "Link to Product Logo"** gained "(must be a valid image link,
+  properly named, that will display in a browser without processing -
+  transparent PNG preferred)". The profile contract already derives this item
+  from `offering_logo_uri` by the text before the parenthetical, so the
+  derivation is unchanged; the wizard's question and the CPO schema's image
+  extension pattern already ask for an image link.
+- **FRC-CSF-RDY and VER-EVA-EPA** wording only ("following dates"; "likely
+  potential agency impact"); regenerated into every rule record and catalog.
+- README badge, pinned-version line and derived counts (246 entries, 234 in
+  20x scope, 46 KSIs: re-counted from the new dataset), the illustrative
+  outputs in `docs/getting-started.md` and `automation/sdrscan/README.md`,
+  and the service map's provenance note (now describes the standing
+  verification instead of naming one past version) updated by hand.
+- The release manifest's `release_tag` now reads `v1.5.0-cr26-2026.10.05.01`:
+  same framework version, new dataset suffix, a tag distinct from the published
+  `v1.5.0-cr26-2026.09.13.02` (`docs/versioning.md`: two versions, always
+  both). Whether to cut it is a maintainer decision.
 
 The adoption path works end to end (`AUD-F40`, High, with a killed mutation):
 
