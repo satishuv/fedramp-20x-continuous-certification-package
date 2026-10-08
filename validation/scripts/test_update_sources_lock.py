@@ -175,6 +175,116 @@ def test_main_writes_lock_file_and_returns_zero():
     _with_repo(body)
 
 
+# ---- AUD-F40: curated dataset_version pins advance with the dataset ----------
+
+OLD_PIN = "2025.12.31.01"
+# The synthetic dataset's KSI section, mirrored by the synthetic service map.
+KSI_SECTION = {"CED": {"name": "Cybersecurity Education",
+                       "indicators": {"KSI-CED-RAT": {"name": "Reviewing All Training"}}},
+               "IAM": {"name": "Identity and Access Management",
+                       "indicators": {"KSI-IAM-MFA": {"name": "Multi-Factor Authentication"}}}}
+
+
+def _curated_files(repo, extra_ksi=None):
+    """Write the curated pinned files in their real shapes: a top-level pin with
+    1-space indentation and CRLF endings (offering profile), a meta pin with
+    2-space indentation (manifest), and the service map. Returns {rel: bytes}."""
+    ksi = json.loads(json.dumps(KSI_SECTION))
+    if extra_ksi:
+        ksi["CED"]["indicators"][extra_ksi] = {"name": "Added Upstream"}
+    _write(os.path.join(repo.root, "references", "fedramp-consolidated-rules.json"),
+           json.dumps({"info": {"version": "2026.01.01.01"}, "KSI": ksi}).encode())
+    offering = ('{\r\n "organization": "Example",\r\n "_note": "dataset_version is below",\r\n'
+                f' "dataset_version": "{OLD_PIN}",\r\n "sdr_version": "0.1.0"\r\n}}\r\n').encode()
+    manifest = ('{\n  "meta": {\n    "title": "rules",\n'
+                f'    "dataset_version": "{OLD_PIN}",\n    "count": 1\n  }},\n  "rules": []\n}}\n').encode()
+    smap = {"meta": {"title": "map", "dataset_version": OLD_PIN},
+            "ksis": {"KSI-CED-RAT": {"name": "Reviewing All Training", "family": "CED",
+                                     "family_name": "Cybersecurity Education"},
+                     "KSI-IAM-MFA": {"name": "Multi-Factor Authentication", "family": "IAM",
+                                     "family_name": "Identity and Access Management"}}}
+    files = {usl.TRACKING_PINS[0]: offering, usl.TRACKING_PINS[3]: manifest,
+             usl.VERIFIED_PIN: json.dumps(smap, indent=2).encode()}
+    for rel, data in files.items():
+        _write(os.path.join(repo.root, rel), data)
+    return files
+
+
+def _read(repo, rel):
+    with open(os.path.join(repo.root, rel), "rb") as f:
+        return f.read()
+
+
+def test_curated_pins_advance_with_a_one_line_edit():
+    def body(repo):
+        files = _curated_files(repo)
+        ds = json.load(open(usl.DATASET, encoding="utf-8"))
+        changes, holds = usl.refresh_dataset_pins("2026.01.01.01", ds)
+        assert holds == [], holds
+        assert len(changes) == 3, changes
+        for rel, before in files.items():
+            after = _read(repo, rel)
+            # Exactly the pin changed: bytes, indentation and CRLF line endings
+            # are otherwise identical, so the adoption PR shows a one-line diff.
+            assert after == before.replace(OLD_PIN.encode(), b"2026.01.01.01", 1), rel
+            assert usl.declared_pin(json.loads(after.decode("utf-8"))) == "2026.01.01.01", rel
+        assert any(c.startswith(f"{usl.VERIFIED_PIN} dataset_version {OLD_PIN} -> 2026.01.01.01")
+                   for c in changes), changes
+        # Idempotent: a second run changes nothing and reports nothing.
+        assert usl.refresh_dataset_pins("2026.01.01.01", ds) == ([], [])
+    _with_repo(body)
+
+
+def test_service_map_pin_is_held_when_the_ksi_set_changed():
+    def body(repo):
+        _curated_files(repo, extra_ksi="KSI-CED-NEW")
+        ds = json.load(open(usl.DATASET, encoding="utf-8"))
+        changes, holds = usl.refresh_dataset_pins("2026.01.01.01", ds)
+        # Tracking pins still advance; the verification pin does not.
+        assert len(changes) == 2 and all(usl.VERIFIED_PIN not in c for c in changes), changes
+        assert len(holds) == 1 and "KSI-CED-NEW: in dataset, not in map" in holds[0], holds
+        smap = json.loads(_read(repo, usl.VERIFIED_PIN).decode("utf-8"))
+        assert usl.declared_pin(smap) == OLD_PIN, "a held pin must not move"
+        assert usl.service_map_differences(ds, smap) == ["KSI-CED-NEW: in dataset, not in map"]
+    _with_repo(body)
+
+
+def test_rewrite_refuses_a_file_whose_first_dataset_version_is_not_its_pin():
+    def body(repo):
+        rel = usl.TRACKING_PINS[1]
+        decoy = ('{"note": {"dataset_version": "decoy"}, "dataset_version": "%s"}' % OLD_PIN).encode()
+        _write(os.path.join(repo.root, rel), decoy)
+        try:
+            usl._rewrite_pin(os.path.join(repo.root, rel), "2026.01.01.01")
+        except ValueError as e:
+            assert "not its pin" in str(e), e
+        else:
+            raise AssertionError("an edit that would change a non-pin value must be refused")
+        assert _read(repo, rel) == decoy, "a refused edit must leave the file untouched"
+    _with_repo(body)
+
+
+def test_missing_curated_files_are_skipped_not_invented():
+    def body(repo):
+        ds = json.load(open(usl.DATASET, encoding="utf-8"))
+        assert usl.refresh_dataset_pins("2026.01.01.01", ds) == ([], [])
+        for rel in usl.CURATED_PINS:
+            assert not os.path.exists(os.path.join(repo.root, rel)), rel
+    _with_repo(body)
+
+
+def test_main_advances_curated_pins_in_the_same_adoption():
+    def body(repo):
+        _curated_files(repo)
+        with open(usl.LOCK, "w", encoding="utf-8", newline="\n") as f:
+            json.dump(repo.lock, f, indent=1)
+        assert usl.main([]) == 0
+        for rel in (usl.TRACKING_PINS[0], usl.TRACKING_PINS[3], usl.VERIFIED_PIN):
+            got = usl.declared_pin(json.loads(_read(repo, rel).decode("utf-8")))
+            assert got == "2026.01.01.01", f"{rel}: main() left the pin at {got}"
+    _with_repo(body)
+
+
 def _run_all():
     tests = [v for k, v in sorted(globals().items())
              if k.startswith("test_") and callable(v)]
