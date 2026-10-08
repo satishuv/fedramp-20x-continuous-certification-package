@@ -1,7 +1,7 @@
 {
  "meta": {
   "title": "Bucket B provider-deployed Config custom rules",
-  "dataset_version": "2026.09.13.02",
+  "dataset_version": "2026.10.05.01",
   "handler": "evidence_existence_rule.lambda_handler",
   "boundary": "These are provider-deployed AWS Config custom rules, NOT read-only collectors in this repository. Each checks that a provider-produced evidence artifact exists and is fresh within a review interval. A COMPLIANT result is telemetry (an artifact is present and current), never a compliance determination and never a source-eligibility or assessment decision. The provider owns the evidence S3 bucket and the review cadence. max_age_days values below are DEFAULT SUGGESTIONS the provider confirms against their own policy and the FedRAMP interval; they are not asserted as the FedRAMP-required values.",
   "count": 11

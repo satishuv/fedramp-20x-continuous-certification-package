@@ -2,7 +2,7 @@
  "meta": {
   "title": "Triage of the 30 not-yet-directly-collectable KSIs",
   "derived_from": "automation/collectors/registry.json (collectable_now == false)",
-  "dataset_version": "2026.09.13.02",
+  "dataset_version": "2026.10.05.01",
   "purpose": "Stage 1 output. Classifies each pending KSI as bucket_a (a read-only AWS API exposes the state, so a deterministic collector can gather it now) or bucket_b (the evidence is a document, artifact, or reviewed-within-interval process that needs a deployable AWS Config custom rule plus provider-produced evidence, and is NOT honestly collectable read-only from this repo).",
   "boundary_note": "Bucket A collectors read posture and emit facts, never statuses. Bucket B is provider-deployed infrastructure, not a read-only collector; marking it collectable_now would be over-claiming and is refused.",
   "counts": {

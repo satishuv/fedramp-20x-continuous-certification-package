@@ -1,7 +1,7 @@
 {
  "decisions_note": "Applicability decision for every FedRAMP Rule in the dataset, for this certification class. Included AND excluded rules are recorded with the exact reason, so absence is provable, not silent. Reasons use only real CR26 fields (affects, subset_applicability, varies_by_class). Document-level status/effective is surfaced from the canonical family metadata (FRR info.status/effective, KSI status); the dataset carries NO per-rule effective/status field, so none is invented at the rule level.",
  "certification_class": "B",
- "dataset_version": "2026.09.13.02",
+ "dataset_version": "2026.10.05.01",
  "total_rules": 234,
  "included": 158,
  "excluded": 76,

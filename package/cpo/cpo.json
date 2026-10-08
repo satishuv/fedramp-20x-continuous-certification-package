@@ -30,7 +30,7 @@
    "repositoryDescription": "Secure Configuration Guide (SCG-CSO-RSC).",
    "authenticationRequired": false
   },
-  "nextOngoingCertificationReportDate": "2026-12-13"
+  "nextOngoingCertificationReportDate": "2027-01-05"
  },
  "contactInformation": [
   {
@@ -130,6 +130,6 @@
  "_cpoAssumptions": [
   "deploymentModel assumed 'Public Cloud' because the offering profile deployment_model is unset/unknown",
   "serviceType assumed 'PaaS' because the offering profile service_model is unset/unknown",
-  "nextOngoingCertificationReportDate is a placeholder (2026-12-13) derived from the dataset date + 3 months (CCM-OCR-AVL cadence); the provider must set next_ocr_date"
+  "nextOngoingCertificationReportDate is a placeholder (2027-01-05) derived from the dataset date + 3 months (CCM-OCR-AVL cadence); the provider must set next_ocr_date"
  ]
 }

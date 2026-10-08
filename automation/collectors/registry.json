@@ -2,7 +2,7 @@
  "meta": {
   "title": "KSI collector registry (Layer 1: deterministic read-only checks)",
   "derived_from": "traceability/aws-service-ksi-map.json",
-  "dataset_version": "2026.09.13.02",
+  "dataset_version": "2026.10.05.01",
   "ksis": 46,
   "config_managed_rule_checks": 44,
   "boundary": "Collectors are read-only by design and produce facts, never statuses. A status changes only through deterministic checks plus human sign-off; generative output is never deterministic telemetry (FedRAMP definitions).",

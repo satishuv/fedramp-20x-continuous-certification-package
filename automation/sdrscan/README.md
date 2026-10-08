@@ -27,7 +27,7 @@ A scanner emitting per-resource findings is how you answer those two with eviden
 
 ## Does FedRAMP really ask for both formats?
 
-Yes, in ten separate rules. Every row below is verified against the pinned CR26 dataset, version 2026.09.13.02, not recalled:
+Yes, in ten separate rules. Every row below is verified against the pinned CR26 dataset, version 2026.10.05.01, not recalled:
 
 | Rule | Force | What it requires |
 |---|---|---|
@@ -76,7 +76,7 @@ python automation/sdrscan/sdrscan.py --list-checks
 Terminal, verbatim:
 
 ```
-sdrscan 1.0.0  class B  dataset 2026.09.13.02
+sdrscan 1.0.0  class B  dataset 2026.10.05.01
 Example PaaS Foundation
 
 FAIL   high          KSI-CED-RAT    ksi_automation_verified
@@ -196,7 +196,7 @@ Both run in continuous integration: the gate blocks the pipeline, the scan attac
 
 ## Deterministic by default
 
-Two scans of unchanged inputs produce byte-identical reports. Reports are stamped with the pinned dataset version rather than the run time (`"generated": "deterministic scan against dataset 2026.09.13.02"`), and record freshness is measured against the dataset date rather than today. This is verified by scanning twice and hash-comparing all five outputs.
+Two scans of unchanged inputs produce byte-identical reports. Reports are stamped with the pinned dataset version rather than the run time (`"generated": "deterministic scan against dataset 2026.10.05.01"`), and record freshness is measured against the dataset date rather than today. This is verified by scanning twice and hash-comparing all five outputs.
 
 Pass `--timestamp` for an operational run where you want the real UTC time recorded. It is off by default so determinism is what you get without having to think about it.
 
@@ -233,7 +233,7 @@ Being explicit about this matters more than the feature list.
 
 Every requirement quoted here was checked against the pinned dataset while writing this file, not recalled:
 
-- [references/fedramp-consolidated-rules.json](../../references/fedramp-consolidated-rules.json), CR26 version 2026.09.13.02, from [github.com/FedRAMP/rules](https://github.com/FedRAMP/rules)
+- [references/fedramp-consolidated-rules.json](../../references/fedramp-consolidated-rules.json), CR26 version 2026.10.05.01, from [github.com/FedRAMP/rules](https://github.com/FedRAMP/rules)
 - [artifacts/schemas/official/](../../artifacts/schemas/official/), the FedRAMP Security Decision Record and common definitions schemas dated 2026-06-24
 - [fedramp.gov/2026/rules](https://www.fedramp.gov/2026/rules/), the published rules
 

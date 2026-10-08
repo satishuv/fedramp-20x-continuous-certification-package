@@ -112,11 +112,11 @@ One thing to get right before your first push: confirm the secret scan is runnin
 
 See [validation](validation.md) for what each gate checks, and [automation](automation.md) for the collector the scheduled stage runs.
 
-## Certification-JSON download headers (deployment hardening)
+## Public certification-JSON headers (deployment hardening)
 
-FedRAMP Help Center guidance (September 15, 2026) RECOMMENDS that when you serve certification data JSON for download, the response carry `Content-Type: application/json`, `X-Content-Type-Options: nosniff`, and `Content-Disposition: attachment`, so the JSON is not interpreted as active content by a browser or a downstream automated FedRAMP/agency system. This is guidance, not a Consolidated Rules MUST: it is not in the pinned dataset, so it is never a package-preflight blocker. It applies to your provider-hosted download endpoint (for example a Trust Center), not to this repository's S3 publish step.
+Since CR26 dataset `2026.10.05.01`, FRC-CSO-JSN (force MUST) states that "public JSON data MUST be supplied in a manner compatible with modern web frameworks, including:" and lists two expectations verbatim in its `following_information`: "Cross-Origin Resource Sharing (CORS) should allow web applications running on a different domain to access the public JSON data directly." and "Proper web application headers should be supplied for public JSON data, including at least setting Content-Type to application/json and X-Content-Type-Options: nosniff." The MUST is compatibility with modern web frameworks; the two listed items are the rule's own "should" expectations of what that includes. FedRAMP Help Center guidance (September 15, 2026) additionally RECOMMENDS `Content-Disposition: attachment` for certification-JSON downloads; that header is not named by any Consolidated Rule.
 
-Check your endpoint with the advisory helper:
+These apply to your provider-hosted public endpoint (for example a Trust Center), not to this repository's S3 publish step. The package preflight does not gate on headers: whether your endpoint meets FRC-CSO-JSN is recorded in your FRC-CSO-JSN record and assessed by your assessor. Check the endpoint with the advisory helper, which reports presence and nothing more:
 
 ```bash
 python automation/pipeline/check_json_download_headers.py --url https://<your-trust-center>/certification.json
@@ -124,4 +124,4 @@ python automation/pipeline/check_json_download_headers.py --url https://<your-tr
 python automation/pipeline/check_json_download_headers.py --headers-file headers.json
 ```
 
-It exits 0 by default (RECOMMENDED, not MUST); pass `--strict` to make an absent header a non-zero exit in your own deployment gate.
+It exits 0 by default and labels each header with its source (the rule or the guidance); pass `--strict` to make an absent header a non-zero exit in your own deployment gate.
