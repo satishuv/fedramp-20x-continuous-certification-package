@@ -1,8 +1,8 @@
 {
  "meta": {
   "derived_from": "rule-catalog.json / ksi-catalog.json",
-  "dataset_version": "2026.10.05.01",
-  "generated": "deterministic build from dataset 2026.10.05.01",
+  "dataset_version": "2026.10.08.01",
+  "generated": "deterministic build from dataset 2026.10.08.01",
   "path": "FedRAMP 20x Program Certification",
   "filter": "rules whose affects includes Providers"
  },

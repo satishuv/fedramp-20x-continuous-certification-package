@@ -1,5 +1,5 @@
 {
- "generated": "deterministic check against dataset 2026.10.05.01",
+ "generated": "deterministic check against dataset 2026.10.08.01",
  "class": "B",
  "checks": [
   {
@@ -10,7 +10,7 @@
   {
    "check": "dataset_version_agreement",
    "result": "PASS",
-   "detail": "pinned dataset info.version 2026.10.05.01 vs profile dataset_version 2026.10.05.01"
+   "detail": "pinned dataset info.version 2026.10.08.01 vs profile dataset_version 2026.10.08.01"
   },
   {
    "check": "pinned_schema_version_guard",
@@ -20,7 +20,7 @@
   {
    "check": "rule_coverage",
    "result": "PASS",
-   "detail": "missing: [] extra: [] (158/158 rules)"
+   "detail": "missing: [] extra: [] (157/157 rules)"
   },
   {
    "check": "ksi_coverage",

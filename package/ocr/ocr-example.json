@@ -1,14 +1,14 @@
 {
  "certificationPackageOverviewUri": "https://example.provider.gov-placeholder/cpo.json",
  "reportPeriod": {
-  "from": "2026-07-05",
-  "to": "2026-10-05"
+  "from": "2026-07-08",
+  "to": "2026-10-08"
  },
  "certificationDataChanges": [
   "EXAMPLE: no changes to FedRAMP Certification Data during this period."
  ],
  "plannedCertificationDataChanges": {
-  "planningHorizonThrough": "2027-01-05",
+  "planningHorizonThrough": "2027-01-08",
   "changes": [
    "EXAMPLE: no planned changes to Certification Data in the next 3 months."
   ]

@@ -1,9 +1,9 @@
 {
  "decisions_note": "Applicability decision for every FedRAMP Rule in the dataset, for this certification class. Included AND excluded rules are recorded with the exact reason, so absence is provable, not silent. Reasons use only real CR26 fields (affects, subset_applicability, varies_by_class). Document-level status/effective is surfaced from the canonical family metadata (FRR info.status/effective, KSI status); the dataset carries NO per-rule effective/status field, so none is invented at the rule level.",
  "certification_class": "B",
- "dataset_version": "2026.10.05.01",
- "total_rules": 234,
- "included": 158,
+ "dataset_version": "2026.10.08.01",
+ "total_rules": 233,
+ "included": 157,
  "excluded": 76,
  "decisions": [
   {
@@ -2101,39 +2101,6 @@
    "document_review_needed": false,
    "applicable": true,
    "reason": "20x + Program + Class B + top_level",
-   "resolution_chain": {
-    "document_status": "stable",
-    "effective_is": "required",
-    "subset": "CSX",
-    "class": "B",
-    "final_applicability": true,
-    "document_review_needed": false
-   }
-  },
-  {
-   "rule_id": "FRC-CSX-MOT",
-   "family": "FRC",
-   "subset": "CSX",
-   "affects": [
-    "Providers"
-   ],
-   "document_status": "stable",
-   "document_effective": {
-    "is": "required",
-    "current_status": "Consolidated Rules for 2026",
-    "date": {
-     "obtain": "2026-07-04",
-     "maintain": "2027-01-01",
-     "optional_adoption": "2026-07-04",
-     "grace": {
-      "default": "2027-01-01",
-      "until_next_assessment": true
-     }
-    }
-   },
-   "document_review_needed": false,
-   "applicable": true,
-   "reason": "20x + Program + Class B + class_variant",
    "resolution_chain": {
     "document_status": "stable",
     "effective_is": "required",

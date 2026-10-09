@@ -11,8 +11,8 @@
   ],
   "sdr_version": "0.1.0",
   "schema_version": "2026-06-24",
-  "dataset_version": "2026.10.05.01",
-  "generated": "deterministic build from dataset 2026.10.05.01",
+  "dataset_version": "2026.10.08.01",
+  "generated": "deterministic build from dataset 2026.10.08.01",
   "source_of_update": "build_sdr.py generator"
  },
  "frr": {

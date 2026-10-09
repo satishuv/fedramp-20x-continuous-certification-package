@@ -8,7 +8,7 @@ AWS partition: aws (AWS Commercial)
 Primary region: us-east-1
 Disaster recovery region: us-west-2
 SDR version: 0.1.0
-Generated from dataset version: 2026.10.05.01
+Generated from dataset version: 2026.10.08.01
 Source of update: build_sdr.py generator
 
 This is a generic template record. Statements marked TBD require real
@@ -1176,25 +1176,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.65 FRC-CSX-MOT Metrics Over Time for Key Security Indicators
-FedRAMP rule: FRC-CSX-MOT
-Rule family: FRC (FedRAMP Certification)
-Force: SHOULD
-Status: Not Implemented
-Implementation: TBD: Information has not been provided.
-Validation: TBD: Information has not been provided.
-Independent assessment: TBD: Independent assessment has not been performed.
-Implementation or nonimplementation risk: TBD: Information has not been provided.
-Reason for not following the rule (if not followed): Not applicable: rule is followed
-Verification: TBD: Information has not been provided.
-Independent verification: TBD: Information has not been provided.
-Independent validation: TBD: Information has not been provided.
-Responses to independent review comments: None recorded
-Senior official acceptance (if not implemented): Not required: rule is followed
-Rule-specific artifacts: None recorded
-Owner: TBD: Information has not been provided.
-
-1.66 FRC-CSX-VVR Automated Verification and Validation of FedRAMP Rules
+1.65 FRC-CSX-VVR Automated Verification and Validation of FedRAMP Rules
 FedRAMP rule: FRC-CSX-VVR
 Rule family: FRC (FedRAMP Certification)
 Force: SHOULD
@@ -1212,7 +1194,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.67 FRC-CSX-MAS Application within MAS
+1.66 FRC-CSX-MAS Application within MAS
 FedRAMP rule: FRC-CSX-MAS
 Rule family: FRC (FedRAMP Certification)
 Force: SHOULD
@@ -1230,7 +1212,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.68 IEC-CSO-EFR Evaluate FedRAMP Reportability
+1.67 IEC-CSO-EFR Evaluate FedRAMP Reportability
 FedRAMP rule: IEC-CSO-EFR
 Rule family: IEC (Incident Evaluation and Communication)
 Force: MUST
@@ -1248,7 +1230,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.69 IEC-CSO-DPR Default PAIN Rating
+1.68 IEC-CSO-DPR Default PAIN Rating
 FedRAMP rule: IEC-CSO-DPR
 Rule family: IEC (Incident Evaluation and Communication)
 Force: MUST
@@ -1266,7 +1248,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.70 IEC-CSO-IIR Initial Incident Report
+1.69 IEC-CSO-IIR Initial Incident Report
 FedRAMP rule: IEC-CSO-IIR
 Rule family: IEC (Incident Evaluation and Communication)
 Force: MUST
@@ -1284,7 +1266,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.71 IEC-CSO-OIR Ongoing Incident Reports
+1.70 IEC-CSO-OIR Ongoing Incident Reports
 FedRAMP rule: IEC-CSO-OIR
 Rule family: IEC (Incident Evaluation and Communication)
 Force: MUST
@@ -1302,7 +1284,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.72 IEC-CSO-FIR Final Incident Report
+1.71 IEC-CSO-FIR Final Incident Report
 FedRAMP rule: IEC-CSO-FIR
 Rule family: IEC (Incident Evaluation and Communication)
 Force: MUST
@@ -1320,7 +1302,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.73 IEC-CSO-EFI Estimate Federal Impact
+1.72 IEC-CSO-EFI Estimate Federal Impact
 FedRAMP rule: IEC-CSO-EFI
 Rule family: IEC (Incident Evaluation and Communication)
 Force: SHOULD
@@ -1338,7 +1320,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.74 IEC-CSO-AIR Automated Incident Reporting
+1.73 IEC-CSO-AIR Automated Incident Reporting
 FedRAMP rule: IEC-CSO-AIR
 Rule family: IEC (Incident Evaluation and Communication)
 Force: SHOULD
@@ -1356,7 +1338,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.75 IVV-CSO-FIA FedRAMP Independent Assessments
+1.74 IVV-CSO-FIA FedRAMP Independent Assessments
 FedRAMP rule: IVV-CSO-FIA
 Rule family: IVV (Independent Verification and Validation)
 Force: MUST
@@ -1374,7 +1356,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.76 IVV-CSO-SEI Supply Evidence of Implementation
+1.75 IVV-CSO-SEI Supply Evidence of Implementation
 FedRAMP rule: IVV-CSO-SEI
 Rule family: IVV (Independent Verification and Validation)
 Force: MUST
@@ -1392,7 +1374,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.77 IVV-CSO-SEE Supply Evidence of Effectiveness
+1.76 IVV-CSO-SEE Supply Evidence of Effectiveness
 FedRAMP rule: IVV-CSO-SEE
 Rule family: IVV (Independent Verification and Validation)
 Force: MUST
@@ -1410,7 +1392,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.78 IVV-CSO-ICP Inclusion in Certification Package
+1.77 IVV-CSO-ICP Inclusion in Certification Package
 FedRAMP rule: IVV-CSO-ICP
 Rule family: IVV (Independent Verification and Validation)
 Force: MUST
@@ -1428,7 +1410,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.79 IVV-CSO-DUS Document Use of Representative Samples
+1.78 IVV-CSO-DUS Document Use of Representative Samples
 FedRAMP rule: IVV-CSO-DUS
 Rule family: IVV (Independent Verification and Validation)
 Force: MUST
@@ -1446,7 +1428,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.80 IVV-CSO-STE Supply Technical Explanations
+1.79 IVV-CSO-STE Supply Technical Explanations
 FedRAMP rule: IVV-CSO-STE
 Rule family: IVV (Independent Verification and Validation)
 Force: SHOULD
@@ -1464,7 +1446,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.81 IVV-CSO-USR Use Representative Samples
+1.80 IVV-CSO-USR Use Representative Samples
 FedRAMP rule: IVV-CSO-USR
 Rule family: IVV (Independent Verification and Validation)
 Force: MAY
@@ -1482,7 +1464,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.82 IVV-CSO-RAA Receiving Assessor Advice
+1.81 IVV-CSO-RAA Receiving Assessor Advice
 FedRAMP rule: IVV-CSO-RAA
 Rule family: IVV (Independent Verification and Validation)
 Force: MAY
@@ -1500,7 +1482,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.83 IVV-CSX-AIA Annual Independent Assessments for 20x
+1.82 IVV-CSX-AIA Annual Independent Assessments for 20x
 FedRAMP rule: IVV-CSX-AIA
 Rule family: IVV (Independent Verification and Validation)
 Force: MUST
@@ -1518,7 +1500,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.84 MAS-CSO-IIR Identify Information Resources
+1.83 MAS-CSO-IIR Identify Information Resources
 FedRAMP rule: MAS-CSO-IIR
 Rule family: MAS (Minimum Assessment Scope)
 Force: MUST
@@ -1536,7 +1518,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.85 MAS-CSO-FLO Information Flows and Security Categories
+1.84 MAS-CSO-FLO Information Flows and Security Categories
 FedRAMP rule: MAS-CSO-FLO
 Rule family: MAS (Minimum Assessment Scope)
 Force: MUST
@@ -1554,7 +1536,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.86 MAS-CSO-TPR Third-Party Information Resources
+1.85 MAS-CSO-TPR Third-Party Information Resources
 FedRAMP rule: MAS-CSO-TPR
 Rule family: MAS (Minimum Assessment Scope)
 Force: MUST
@@ -1572,7 +1554,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.87 MAS-CSO-MDI Metadata Inclusion
+1.86 MAS-CSO-MDI Metadata Inclusion
 FedRAMP rule: MAS-CSO-MDI
 Rule family: MAS (Minimum Assessment Scope)
 Force: MUST
@@ -1590,7 +1572,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.88 MAS-CSO-SUP Supplemental Information
+1.87 MAS-CSO-SUP Supplemental Information
 FedRAMP rule: MAS-CSO-SUP
 Rule family: MAS (Minimum Assessment Scope)
 Force: MAY
@@ -1608,7 +1590,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.89 MKT-CSO-MLR Marketplace Listing Requirements
+1.88 MKT-CSO-MLR Marketplace Listing Requirements
 FedRAMP rule: MKT-CSO-MLR
 Rule family: MKT (Marketplace Listing)
 Force: MUST
@@ -1626,7 +1608,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.90 MKT-CSO-PML Provider Marketplace Listing Requests
+1.89 MKT-CSO-PML Provider Marketplace Listing Requests
 FedRAMP rule: MKT-CSO-PML
 Rule family: MKT (Marketplace Listing)
 Force: MUST
@@ -1644,7 +1626,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.91 MKT-IIP-AGU Agency Use Cases
+1.90 MKT-IIP-AGU Agency Use Cases
 FedRAMP rule: MKT-IIP-AGU
 Rule family: MKT (Marketplace Listing)
 Force: MUST
@@ -1662,7 +1644,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.92 MKT-IIP-DCP Demonstrating Continuous Progress
+1.91 MKT-IIP-DCP Demonstrating Continuous Progress
 FedRAMP rule: MKT-IIP-DCP
 Rule family: MKT (Marketplace Listing)
 Force: MUST
@@ -1680,7 +1662,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.93 MKT-IIP-DLA Deadline for Assessment
+1.92 MKT-IIP-DLA Deadline for Assessment
 FedRAMP rule: MKT-IIP-DLA
 Rule family: MKT (Marketplace Listing)
 Force: MUST
@@ -1698,7 +1680,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.94 SCG-CSO-RSC Recommended Secure Configuration
+1.93 SCG-CSO-RSC Recommended Secure Configuration
 FedRAMP rule: SCG-CSO-RSC
 Rule family: SCG (Secure Configuration Guide)
 Force: MUST
@@ -1716,7 +1698,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.95 SCG-CSO-AUP Use Instructions
+1.94 SCG-CSO-AUP Use Instructions
 FedRAMP rule: SCG-CSO-AUP
 Rule family: SCG (Secure Configuration Guide)
 Force: MUST
@@ -1734,7 +1716,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.96 SCG-CSO-PUB Public Secure Configuration Guidance
+1.95 SCG-CSO-PUB Public Secure Configuration Guidance
 FedRAMP rule: SCG-CSO-PUB
 Rule family: SCG (Secure Configuration Guide)
 Force: SHOULD
@@ -1752,7 +1734,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.97 SCG-CSO-SDF Secure Defaults
+1.96 SCG-CSO-SDF Secure Defaults
 FedRAMP rule: SCG-CSO-SDF
 Rule family: SCG (Secure Configuration Guide)
 Force: SHOULD
@@ -1770,7 +1752,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.98 SCG-ENH-CMP Comparison Capability
+1.97 SCG-ENH-CMP Comparison Capability
 FedRAMP rule: SCG-ENH-CMP
 Rule family: SCG (Secure Configuration Guide)
 Force: SHOULD
@@ -1788,7 +1770,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.99 SCG-ENH-EXP Export Capability
+1.98 SCG-ENH-EXP Export Capability
 FedRAMP rule: SCG-ENH-EXP
 Rule family: SCG (Secure Configuration Guide)
 Force: SHOULD
@@ -1806,7 +1788,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.100 SCG-ENH-API API Capability
+1.99 SCG-ENH-API API Capability
 FedRAMP rule: SCG-ENH-API
 Rule family: SCG (Secure Configuration Guide)
 Force: SHOULD
@@ -1824,7 +1806,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.101 SCG-ENH-MRG Machine-Readable Guidance
+1.100 SCG-ENH-MRG Machine-Readable Guidance
 FedRAMP rule: SCG-ENH-MRG
 Rule family: SCG (Secure Configuration Guide)
 Force: SHOULD
@@ -1842,7 +1824,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.102 SCG-ENH-VRH Versioning and Release History
+1.101 SCG-ENH-VRH Versioning and Release History
 FedRAMP rule: SCG-ENH-VRH
 Rule family: SCG (Secure Configuration Guide)
 Force: SHOULD
@@ -1860,7 +1842,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.103 SCN-CSO-EVA Evaluate Changes
+1.102 SCN-CSO-EVA Evaluate Changes
 FedRAMP rule: SCN-CSO-EVA
 Rule family: SCN (Significant Change Notification)
 Force: MUST
@@ -1878,7 +1860,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.104 SCN-CSO-MAR Maintain Audit Records
+1.103 SCN-CSO-MAR Maintain Audit Records
 FedRAMP rule: SCN-CSO-MAR
 Rule family: SCN (Significant Change Notification)
 Force: MUST
@@ -1896,7 +1878,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.105 SCN-CSO-INF Required Information
+1.104 SCN-CSO-INF Required Information
 FedRAMP rule: SCN-CSO-INF
 Rule family: SCN (Significant Change Notification)
 Force: MUST
@@ -1914,7 +1896,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.106 SCN-CSO-HIS Historical Notifications
+1.105 SCN-CSO-HIS Historical Notifications
 FedRAMP rule: SCN-CSO-HIS
 Rule family: SCN (Significant Change Notification)
 Force: MUST
@@ -1932,7 +1914,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.107 SCN-CSO-HRM Human and Machine-Readable Notifications
+1.106 SCN-CSO-HRM Human and Machine-Readable Notifications
 FedRAMP rule: SCN-CSO-HRM
 Rule family: SCN (Significant Change Notification)
 Force: MUST
@@ -1950,7 +1932,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.108 SCN-CSO-ARI Additional Relevant Information
+1.107 SCN-CSO-ARI Additional Relevant Information
 FedRAMP rule: SCN-CSO-ARI
 Rule family: SCN (Significant Change Notification)
 Force: MAY
@@ -1968,7 +1950,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.109 SCN-CSO-NOM Notification Mechanisms
+1.108 SCN-CSO-NOM Notification Mechanisms
 FedRAMP rule: SCN-CSO-NOM
 Rule family: SCN (Significant Change Notification)
 Force: MAY
@@ -1986,7 +1968,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.110 SCN-CSO-EMG Emergency Changes
+1.109 SCN-CSO-EMG Emergency Changes
 FedRAMP rule: SCN-CSO-EMG
 Rule family: SCN (Significant Change Notification)
 Force: MAY
@@ -2004,7 +1986,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.111 SCN-ADP-NTF Notification Requirements
+1.110 SCN-ADP-NTF Notification Requirements
 FedRAMP rule: SCN-ADP-NTF
 Rule family: SCN (Significant Change Notification)
 Force: MUST
@@ -2022,7 +2004,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.112 SCN-RTR-NNR No Notification Requirements
+1.111 SCN-RTR-NNR No Notification Requirements
 FedRAMP rule: SCN-RTR-NNR
 Rule family: SCN (Significant Change Notification)
 Force: SHOULD NOT
@@ -2040,7 +2022,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.113 SCN-TRF-NIP Notification of Initial Plans
+1.112 SCN-TRF-NIP Notification of Initial Plans
 FedRAMP rule: SCN-TRF-NIP
 Rule family: SCN (Significant Change Notification)
 Force: MUST
@@ -2058,7 +2040,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.114 SCN-TRF-NFP Notification of Final Plans
+1.113 SCN-TRF-NFP Notification of Final Plans
 FedRAMP rule: SCN-TRF-NFP
 Rule family: SCN (Significant Change Notification)
 Force: MUST
@@ -2076,7 +2058,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.115 SCN-TRF-NAF Notification After Finishing
+1.114 SCN-TRF-NAF Notification After Finishing
 FedRAMP rule: SCN-TRF-NAF
 Rule family: SCN (Significant Change Notification)
 Force: MUST
@@ -2094,7 +2076,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.116 SCN-TRF-NAV Notification After Verification
+1.115 SCN-TRF-NAV Notification After Verification
 FedRAMP rule: SCN-TRF-NAV
 Rule family: SCN (Significant Change Notification)
 Force: MUST
@@ -2112,7 +2094,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.117 SCN-TRF-UPD Update Documentation
+1.116 SCN-TRF-UPD Update Documentation
 FedRAMP rule: SCN-TRF-UPD
 Rule family: SCN (Significant Change Notification)
 Force: MUST
@@ -2130,7 +2112,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.118 SCN-TRF-TPR Third-Party Review
+1.117 SCN-TRF-TPR Third-Party Review
 FedRAMP rule: SCN-TRF-TPR
 Rule family: SCN (Significant Change Notification)
 Force: SHOULD
@@ -2148,7 +2130,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.119 SDR-CSO-FRR FedRAMP Rules
+1.118 SDR-CSO-FRR FedRAMP Rules
 FedRAMP rule: SDR-CSO-FRR
 Rule family: SDR (Security Decision Record)
 Force: MUST
@@ -2166,7 +2148,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.120 SDR-CSO-MTD Security Decision Record Metadata
+1.119 SDR-CSO-MTD Security Decision Record Metadata
 FedRAMP rule: SDR-CSO-MTD
 Rule family: SDR (Security Decision Record)
 Force: MUST
@@ -2184,7 +2166,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.121 SDR-CSX-KSI Key Security Indicators
+1.120 SDR-CSX-KSI Key Security Indicators
 FedRAMP rule: SDR-CSX-KSI
 Rule family: SDR (Security Decision Record)
 Force: MUST
@@ -2202,10 +2184,10 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.122 SDR-CSX-KMT Key Security Indicator Metrics
+1.121 SDR-CSX-KMT Key Security Indicator Metrics
 FedRAMP rule: SDR-CSX-KMT
 Rule family: SDR (Security Decision Record)
-Force: MUST
+Force: SHOULD
 Status: Not Implemented
 Implementation: TBD: Information has not been provided.
 Validation: TBD: Information has not been provided.
@@ -2220,7 +2202,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.123 VDR-CSO-DET Vulnerability Detection
+1.122 VDR-CSO-DET Vulnerability Detection
 FedRAMP rule: VDR-CSO-DET
 Rule family: VDR (Vulnerability Detection and Response)
 Force: MUST
@@ -2238,7 +2220,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.124 VDR-CSO-RES Vulnerability Response
+1.123 VDR-CSO-RES Vulnerability Response
 FedRAMP rule: VDR-CSO-RES
 Rule family: VDR (Vulnerability Detection and Response)
 Force: MUST
@@ -2256,7 +2238,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.125 VDR-CSO-FAV Failures Are Vulnerabilities
+1.124 VDR-CSO-FAV Failures Are Vulnerabilities
 FedRAMP rule: VDR-CSO-FAV
 Rule family: VDR (Vulnerability Detection and Response)
 Force: MUST
@@ -2274,7 +2256,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.126 VDR-CSO-DFR Design For Resilience
+1.125 VDR-CSO-DFR Design For Resilience
 FedRAMP rule: VDR-CSO-DFR
 Rule family: VDR (Vulnerability Detection and Response)
 Force: SHOULD
@@ -2292,7 +2274,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.127 VDR-CSO-ADT Automate Detection
+1.126 VDR-CSO-ADT Automate Detection
 FedRAMP rule: VDR-CSO-ADT
 Rule family: VDR (Vulnerability Detection and Response)
 Force: SHOULD
@@ -2310,7 +2292,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.128 VDR-CSO-DAC Detect After Changes
+1.127 VDR-CSO-DAC Detect After Changes
 FedRAMP rule: VDR-CSO-DAC
 Rule family: VDR (Vulnerability Detection and Response)
 Force: SHOULD
@@ -2328,7 +2310,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.129 VDR-CSO-MSP Maintain Security
+1.128 VDR-CSO-MSP Maintain Security
 FedRAMP rule: VDR-CSO-MSP
 Rule family: VDR (Vulnerability Detection and Response)
 Force: SHOULD NOT
@@ -2346,7 +2328,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.130 VDR-CSO-AKE Avoid KEVs
+1.129 VDR-CSO-AKE Avoid KEVs
 FedRAMP rule: VDR-CSO-AKE
 Rule family: VDR (Vulnerability Detection and Response)
 Force: SHOULD NOT
@@ -2364,7 +2346,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.131 VDR-CSO-SIR Sampling
+1.130 VDR-CSO-SIR Sampling
 FedRAMP rule: VDR-CSO-SIR
 Rule family: VDR (Vulnerability Detection and Response)
 Force: MAY
@@ -2382,7 +2364,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.132 VDR-TFR-NMV Non-Machine Verification and Validation
+1.131 VDR-TFR-NMV Non-Machine Verification and Validation
 FedRAMP rule: VDR-TFR-NMV
 Rule family: VDR (Vulnerability Detection and Response)
 Force: MUST
@@ -2400,7 +2382,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.133 VDR-TFR-PDD Persistent Drift Detection
+1.132 VDR-TFR-PDD Persistent Drift Detection
 FedRAMP rule: VDR-TFR-PDD
 Rule family: VDR (Vulnerability Detection and Response)
 Force: SHOULD
@@ -2418,7 +2400,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.134 VDR-TFR-PCD Persistently Complete Detection
+1.133 VDR-TFR-PCD Persistently Complete Detection
 FedRAMP rule: VDR-TFR-PCD
 Rule family: VDR (Vulnerability Detection and Response)
 Force: SHOULD
@@ -2436,7 +2418,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.135 VDR-TFR-PVR Mitigation and Remediation Expectations
+1.134 VDR-TFR-PVR Mitigation and Remediation Expectations
 FedRAMP rule: VDR-TFR-PVR
 Rule family: VDR (Vulnerability Detection and Response)
 Force: SHOULD
@@ -2454,7 +2436,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.136 VDR-TFR-RMN Remaining Vulnerabilities
+1.135 VDR-TFR-RMN Remaining Vulnerabilities
 FedRAMP rule: VDR-TFR-RMN
 Rule family: VDR (Vulnerability Detection and Response)
 Force: SHOULD
@@ -2472,7 +2454,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.137 VDR-TFR-KEV Remediate KEVs
+1.136 VDR-TFR-KEV Remediate KEVs
 FedRAMP rule: VDR-TFR-KEV
 Rule family: VDR (Vulnerability Detection and Response)
 Force: SHOULD
@@ -2490,7 +2472,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.138 VDR-TFR-PSD Persistent Sample Detection
+1.137 VDR-TFR-PSD Persistent Sample Detection
 FedRAMP rule: VDR-TFR-PSD
 Rule family: VDR (Vulnerability Detection and Response)
 Force: SHOULD
@@ -2508,7 +2490,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.139 VDR-TFR-MVX Persistent Machine Verification and Validation for 20x
+1.138 VDR-TFR-MVX Persistent Machine Verification and Validation for 20x
 FedRAMP rule: VDR-TFR-MVX
 Rule family: VDR (Vulnerability Detection and Response)
 Force: MUST
@@ -2526,7 +2508,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.140 VER-EVA-ELX Evaluate Exploitability
+1.139 VER-EVA-ELX Evaluate Exploitability
 FedRAMP rule: VER-EVA-ELX
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: MUST
@@ -2544,7 +2526,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.141 VER-EVA-EIR Evaluate Internet-Reachability
+1.140 VER-EVA-EIR Evaluate Internet-Reachability
 FedRAMP rule: VER-EVA-EIR
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: MUST
@@ -2562,7 +2544,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.142 VER-EVA-EPA Estimate Potential Agency Impact
+1.141 VER-EVA-EPA Estimate Potential Agency Impact
 FedRAMP rule: VER-EVA-EPA
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: MUST
@@ -2580,7 +2562,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.143 VER-EVA-AIA Assume It's Automatable
+1.142 VER-EVA-AIA Assume It's Automatable
 FedRAMP rule: VER-EVA-AIA
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: MUST
@@ -2598,7 +2580,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.144 VER-EVA-GRV Group Vulnerabilities
+1.143 VER-EVA-GRV Group Vulnerabilities
 FedRAMP rule: VER-EVA-GRV
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: SHOULD
@@ -2616,7 +2598,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.145 VER-EVA-EFP Evaluate False Positives
+1.144 VER-EVA-EFP Evaluate False Positives
 FedRAMP rule: VER-EVA-EFP
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: SHOULD
@@ -2634,7 +2616,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.146 VER-EVA-EFA Evaluation Factors
+1.145 VER-EVA-EFA Evaluation Factors
 FedRAMP rule: VER-EVA-EFA
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: SHOULD
@@ -2652,7 +2634,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.147 VER-RPT-PER Persistent Reporting
+1.146 VER-RPT-PER Persistent Reporting
 FedRAMP rule: VER-RPT-PER
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: MUST
@@ -2670,7 +2652,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.148 VER-RPT-VDT Vulnerability Details
+1.147 VER-RPT-VDT Vulnerability Details
 FedRAMP rule: VER-RPT-VDT
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: MUST
@@ -2688,7 +2670,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.149 VER-RPT-AVI Accepted Vulnerability Info
+1.148 VER-RPT-AVI Accepted Vulnerability Info
 FedRAMP rule: VER-RPT-AVI
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: MUST
@@ -2706,7 +2688,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.150 VER-RPT-NID Responsible Disclosure
+1.149 VER-RPT-NID Responsible Disclosure
 FedRAMP rule: VER-RPT-NID
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: MUST NOT
@@ -2724,7 +2706,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.151 VER-RPT-HLO High-Level Overviews
+1.150 VER-RPT-HLO High-Level Overviews
 FedRAMP rule: VER-RPT-HLO
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: SHOULD
@@ -2742,7 +2724,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.152 VER-RPT-RPD Responsible Public Disclosure
+1.151 VER-RPT-RPD Responsible Public Disclosure
 FedRAMP rule: VER-RPT-RPD
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: MAY
@@ -2760,7 +2742,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.153 VER-TFR-MHR Monthly Activity Report
+1.152 VER-TFR-MHR Monthly Activity Report
 FedRAMP rule: VER-TFR-MHR
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: MUST
@@ -2778,7 +2760,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.154 VER-TFR-MAV Mark Accepted Vulnerabilities
+1.153 VER-TFR-MAV Mark Accepted Vulnerabilities
 FedRAMP rule: VER-TFR-MAV
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: MUST
@@ -2796,7 +2778,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.155 VER-TFR-MRH Historical Activity
+1.154 VER-TFR-MRH Historical Activity
 FedRAMP rule: VER-TFR-MRH
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: SHOULD
@@ -2814,7 +2796,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.156 VER-TFR-EVU Evaluate Vulnerabilities Quickly
+1.155 VER-TFR-EVU Evaluate Vulnerabilities Quickly
 FedRAMP rule: VER-TFR-EVU
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: SHOULD
@@ -2832,7 +2814,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.157 VER-TFR-IRI Internet-Reachable Incidents
+1.156 VER-TFR-IRI Internet-Reachable Incidents
 FedRAMP rule: VER-TFR-IRI
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: MAY
@@ -2850,7 +2832,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.158 VER-TFR-NRI Non-Internet-Reachable Incidents
+1.157 VER-TFR-NRI Non-Internet-Reachable Incidents
 FedRAMP rule: VER-TFR-NRI
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: MAY

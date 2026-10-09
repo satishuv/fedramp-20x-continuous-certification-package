@@ -11,8 +11,8 @@
   ],
   "sdr_version": "0.1.0",
   "schema_version": "2026-06-24",
-  "dataset_version": "2026.10.05.01",
-  "generated": "deterministic build from dataset 2026.10.05.01",
+  "dataset_version": "2026.10.08.01",
+  "generated": "deterministic build from dataset 2026.10.08.01",
   "source_of_update": "build_sdr.py generator"
  },
  "frr": {
@@ -2431,46 +2431,6 @@
    "rule_artifacts": [],
    "senior_official_acceptance": "Not required: rule is followed"
   },
-  "FRC-CSX-MOT": {
-   "name": "Metrics Over Time for Key Security Indicators",
-   "force": "SHOULD",
-   "family": "FRC",
-   "family_name": "FedRAMP Certification",
-   "guidance": {
-    "what_it_looks_for": "Providers seeking 20x Class B Certification SHOULD supply historical metrics for Key Security Indicators.",
-    "official_notes": [
-     "For initial FedRAMP Certification, providers will need to have mechanisms in place and agree to meet this requirement in the event the cloud service has not been operating with related metrics available for the required period prior to applying for initial certification."
-    ],
-    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
-    "evidence_required": [
-     "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
-     "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
-     "Validation that the implementation is in place and working as intended, or that the reason for not implementing is accepted by a senior official.",
-     "Independent verification.",
-     "Independent validation."
-    ],
-    "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
-   },
-   "owner": "TBD: Information has not been provided.",
-   "verification": "TBD: Information has not been provided.",
-   "validation_frequency": "TBD: Information has not been provided.",
-   "failure_condition": "TBD: Information has not been provided.",
-   "failure_response": "TBD: Information has not been provided.",
-   "evidence_freshness": "TBD: Information has not been provided.",
-   "exception_reference": "None recorded",
-   "customer_risk": "TBD: Information has not been provided.",
-   "responsibility": {
-    "aws": "TBD: Information has not been provided.",
-    "provider": "TBD: Information has not been provided.",
-    "customer": "TBD: Information has not been provided."
-   },
-   "independent_verification": "TBD: Information has not been provided.",
-   "independent_validation": "TBD: Information has not been provided.",
-   "assessor_responses": "None recorded",
-   "rule_artifacts": [],
-   "senior_official_acceptance": "Not required: rule is followed"
-  },
   "FRC-CSX-VVR": {
    "name": "Automated Verification and Validation of FedRAMP Rules",
    "force": "SHOULD",
@@ -4567,12 +4527,14 @@
   },
   "SDR-CSX-KMT": {
    "name": "Key Security Indicator Metrics",
-   "force": "MUST",
+   "force": "SHOULD",
    "family": "SDR",
    "family_name": "Security Decision Record",
    "guidance": {
-    "what_it_looks_for": "Providers with 20x Class B Certifications MUST also include historical metrics in their Security Decision Record, supplying at least the following information for each applicable Key Security Indicator:",
-    "official_notes": [],
+    "what_it_looks_for": "Providers with 20x Class B Certifications SHOULD also include historical metrics in their Security Decision Record, supplying at least the following information for each applicable Key Security Indicator:",
+    "official_notes": [
+     "For initial FedRAMP Certification, providers will need to have mechanisms in place and agree to meet this requirement in the event the cloud service has not been operating with related metrics available for the required period prior to applying for initial certification."
+    ],
     "how_to_comply": "Maintain the Security Decision Record in both human-readable and JSON form, schema-valid, with an entry for every applicable rule and KSI, metadata (version, last updated, update source), and the per-class historical metrics.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",

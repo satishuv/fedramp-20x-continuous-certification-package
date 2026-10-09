@@ -1,12 +1,12 @@
 {
  "meta": {
   "derived_from": "rule-catalog.json / ksi-catalog.json",
-  "dataset_version": "2026.10.05.01",
-  "generated": "deterministic build from dataset 2026.10.05.01",
+  "dataset_version": "2026.10.08.01",
+  "generated": "deterministic build from dataset 2026.10.08.01",
   "path": "FedRAMP 20x Program Certification",
   "filter": "rules whose affects includes Providers"
  },
- "count": 158,
+ "count": 157,
  "rules": [
   {
    "rule_id": "AFC-CSO-INB",
@@ -987,21 +987,6 @@
    "schema": null
   },
   {
-   "rule_id": "FRC-CSX-MOT",
-   "family": "FRC",
-   "family_name": "FedRAMP Certification",
-   "subset": "CSX",
-   "name": "Metrics Over Time for Key Security Indicators",
-   "force": "SHOULD",
-   "statement": "Providers seeking 20x Class B Certification SHOULD supply historical metrics for Key Security Indicators.",
-   "timeframe_type": null,
-   "timeframe_num": null,
-   "timeframe_num_min": null,
-   "timeframe_num_max": null,
-   "resolution": "class_variant",
-   "schema": null
-  },
-  {
    "rule_id": "FRC-CSX-VVR",
    "family": "FRC",
    "family_name": "FedRAMP Certification",
@@ -1880,8 +1865,8 @@
    "family_name": "Security Decision Record",
    "subset": "CSX",
    "name": "Key Security Indicator Metrics",
-   "force": "MUST",
-   "statement": "Providers with 20x Class B Certifications MUST also include historical metrics in their Security Decision Record, supplying at least the following information for each applicable Key Security Indicator:",
+   "force": "SHOULD",
+   "statement": "Providers with 20x Class B Certifications SHOULD also include historical metrics in their Security Decision Record, supplying at least the following information for each applicable Key Security Indicator:",
    "timeframe_type": null,
    "timeframe_num": null,
    "timeframe_num_min": null,

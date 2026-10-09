@@ -1477,22 +1477,6 @@
    "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
-  "FRC-CSX-MOT": {
-   "what_it_looks_for": "The rule text below is the requirement; the force keyword (MUST, SHOULD, MAY) sets how binding it is for this class.",
-   "official_notes": [
-    "For initial FedRAMP Certification, providers will need to have mechanisms in place and agree to meet this requirement in the event the cloud service has not been operating with related metrics available for the required period prior to applying for initial certification."
-   ],
-   "evidence_required": [
-    "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
-    "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
-    "Validation that the implementation is in place and working as intended, or that the reason for not implementing is accepted by a senior official.",
-    "Independent verification.",
-    "Independent validation."
-   ],
-   "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
-   "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
-  },
   "FRC-CSX-VVR": {
    "what_it_looks_for": "The rule text below is the requirement; the force keyword (MUST, SHOULD, MAY) sets how binding it is for this class.",
    "official_notes": [
@@ -2705,7 +2689,9 @@
   },
   "SDR-CSX-KMT": {
    "what_it_looks_for": "The rule text below is the requirement; the force keyword (MUST, SHOULD, MAY) sets how binding it is for this class.",
-   "official_notes": [],
+   "official_notes": [
+    "For initial FedRAMP Certification, providers will need to have mechanisms in place and agree to meet this requirement in the event the cloud service has not been operating with related metrics available for the required period prior to applying for initial certification."
+   ],
    "evidence_required": [
     "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
     "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
