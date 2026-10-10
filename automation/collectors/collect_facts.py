@@ -154,6 +154,14 @@ def main():
 
     os.makedirs(FACTS_DIR, exist_ok=True)
     out = os.path.join(FACTS_DIR, f"facts-{region}.json")
+    imported = os.path.join(FACTS_DIR, f"facts-{region}-import.json")
+    if os.path.exists(imported):
+        # One source per region. The appender sums posture facts per route
+        # across files, so a live collection beside an import of the same
+        # region would count that scope twice. The import is now superseded.
+        print(f"WARNING: an export import exists for {region} "
+              f"({os.path.relpath(imported, BASE)}). Remove it; this live collection "
+              "supersedes it, and keeping both double-counts the region's posture.")
     outcome = collection_outcome(facts, posture_facts)
     outcome["status"] = "OK" if outcome["evaluated"] else "FAILED_NO_EVALUATED_OUTCOME"
     # AUD-F37: one id per collection run, derived from when/where/who collected

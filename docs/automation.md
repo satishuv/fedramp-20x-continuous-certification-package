@@ -122,7 +122,25 @@ Each decision is appended to `sdr/reviews/field-review-log.json` with the review
 
 What typing remains: facts that exist nowhere in writing yet (a new offering with no landing zone, no policies, no prior package). Those are said once in the scoping call and typed once. Everything that exists somewhere (the account's posture, the official rule text with its how-to-comply guidance, the offering profile the wizard collected) arrives as a proposal to decide, not a sentence to compose. The template itself ships no example prose: every narrative field is a `TBD` marker plus the official guidance, so nothing the framework authored can be mistaken for a provider's fact.
 
-Also planned: importers for Config rules and Security Hub findings (mapping as data, with a review queue for unmapped rules), the landing-zone configuration, and an OSCAL Rev5 SSP, each producing proposals into the same review step; and annotating infrastructure-as-code modules with the indicators they satisfy.
+### Without account credentials: import the customer's exports
+
+On many engagements the consultant never holds read-only credentials into the customer's account. The customer runs four read-only AWS CLI commands in their own environment and hands over the JSON; `automation/importers/import_findings.py` turns those exports into the same facts store the live collector writes, so prefill, the metric appender, the drafter and the review step consume them through their existing paths with no new routing:
+
+```
+aws configservice describe-compliance-by-config-rule        > config-compliance.json
+aws configservice describe-config-rules                     > config-rules.json
+aws configservice describe-config-rule-evaluation-status    > config-rule-evaluation-status.json
+aws securityhub get-findings --filters '{"RecordState":[{"Value":"ACTIVE","Comparison":"EQUALS"}]}' > securityhub-findings.json
+python automation/importers/import_findings.py --region us-east-1 exports/*.json --write
+```
+
+Each export is detected by its top-level key; any subset works. A deployed Config rule name becomes one of the framework's 34 recognised managed rules through data only, in order: the exact catalog id; Security Hub's service-linked convention (`securityhub-<id>-<suffix>`); the rule's `Source.SourceIdentifier` resolved through the catalog identifiers pinned in `automation/config-rules/known-config-managed-rules.json` (read from the AWS Config Developer Guide, since four identifiers are not a transform of the name: `restricted-ssh` is `INCOMING_SSH_DISABLED`); then the provider's own `automation/importers/config-rule-name-map.json`. A name that matches none is never guessed: it is printed as a review queue and stored under the facts file's `meta.unmapped_config_rules` for the provider to map and re-import. Several instances of one rule aggregate worst-wins.
+
+The import also derives dated, count-only observations for the vulnerability-detection rules the dataset names (`VDR-CSO-DET`, `VDR-CSO-RES`, `VDR-CSO-ADT`, `VDR-TFR-MVX`; each id is checked against the pinned dataset across every applicability branch): how many rules evaluate and how many report `NON_COMPLIANT`, active failed findings by severity and distinct control, workflow states, and how many rules last evaluated within 7 and 3 days of the export. The drafter quotes those into its labelled proposal for each rule, so the proposal names the provider's own findings rather than only the official how-to text. Nothing identifying is kept: no finding titles or ids, no resource ids, no ARNs, no account ids.
+
+Three refusals keep the import honest. The observation time comes from the export itself (latest finding `UpdatedAt` or rule `LastSuccessfulEvaluationTime`); an export with no timestamp needs `--observed-at`, because the importer will not stamp data of unknown age as fresh. An export cut short (a `NextToken` left in the file) yields an `OBSERVED_PARTIAL` fact the metric engine never scores. And one source per region: the import is refused while a live collection for that region exists, and the live collector warns when an import does, because the appender sums posture facts per route across files and two sources for one scope would count it twice. Exit codes match the collector's: 4 when the exports carry no evaluated outcome.
+
+Also planned: importers for the landing-zone configuration and an OSCAL Rev5 SSP, each producing proposals into the same review step; and annotating infrastructure-as-code modules with the indicators they satisfy.
 
 ## What deliberately is not automated
 

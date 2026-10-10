@@ -1,0 +1,8 @@
+{
+ "meta": {
+  "title": "Provider map: deployed AWS Config rule names to framework managed-rule ids",
+  "purpose": "automation/importers/import_findings.py resolves a deployed Config rule name to a framework managed-rule id through, in order: the exact catalog id; Security Hub's service-linked convention securityhub-<id>-<suffix>; the rule's Source.SourceIdentifier from a describe-config-rules export; then this map. A name that matches none of those is never guessed: it is listed in the import's review queue. Add it here when it is a catalog managed rule deployed under another name (a Control Tower or conformance-pack instance, for example). Values must be ids the collector registry routes (automation/collectors/registry.json config_managed_rule targets); the importer refuses any other value.",
+  "example": {"AWSControlTower_AWS-GR_ENCRYPTED_VOLUMES": "encrypted-volumes"}
+ },
+ "names": {}
+}
