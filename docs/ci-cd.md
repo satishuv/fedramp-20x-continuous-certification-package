@@ -83,7 +83,7 @@ Use this when the provider wants approval, publication, evidence storage, and sc
 | Human approval | Amazon SNS emails an approver, who can read the readiness report before signing. Nothing publishes without sign-off | Human-gated statuses |
 | Publish | Deliverables land in a versioned, encrypted Amazon S3 bucket that can back a trust center or package delivery | `FRC-CSO-JSN`, `SDR-CSO-MTD` |
 | Daily drift check | Hash-compares pinned sources against fedramp.gov and alerts on change | Source currency |
-| Daily collector, opt-in | Runs the read-only facts collector into an evidence bucket | `SDR-CSX-KMT` metrics, `FRC-CSX-MOT` persistent validation |
+| Daily collector, opt-in | Runs the read-only facts collector into an evidence bucket | `SDR-CSX-KMT` metrics and persistent-validation status |
 
 ### Deploying
 

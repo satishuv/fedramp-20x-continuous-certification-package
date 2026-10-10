@@ -102,7 +102,7 @@ def main():
     check("RELEASE_MODE build runs the reproducibility gate",
           "cmd_reproducibility" in rel_branch)
 
-    # Class C/D FRC-CSX-MOT readiness turns on the durable metric history, which
+    # Class C/D SDR-CSX-KMT readiness turns on the durable metric history, which
     # is gitignored and lives only in the evidence bucket. The release build MUST
     # restore it BEFORE build/validate/preflight, fail-closed (a confirmed-missing
     # object is allowed as a first run; any other restore error aborts), or a
@@ -134,7 +134,7 @@ def main():
 
     # Class C/D manifest binding: the release manifest must fold the durable
     # metric history into its hashed inputs for Class C/D (it is readiness-
-    # critical for FRC-CSX-MOT yet not a generated artifact), so the human
+    # critical for SDR-CSX-KMT yet not a generated artifact), so the human
     # signoff bound to the manifest hash covers it. Verified against the builder
     # source rather than a live manifest (the repo's active class is B, where the
     # history is correctly NOT bound).

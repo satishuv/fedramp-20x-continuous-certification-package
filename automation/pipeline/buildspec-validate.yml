@@ -23,7 +23,7 @@ phases:
   build:
     commands:
       # RESTORE the durable per-KSI metric history BEFORE build/validate/preflight.
-      # For Class C/D, FRC-CSX-MOT readiness depends on >= 6/18 months of history
+      # For Class C/D, SDR-CSX-KMT readiness depends on the daily metric history
       # that lives ONLY in the evidence bucket (metric-history.json is gitignored,
       # so the CodeConnections full clone does not carry it). Without this restore
       # a legitimate Class C release build sees no history and package-preflight

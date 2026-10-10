@@ -52,7 +52,7 @@ People say so, and it may end up that way, but no rule in CR26 states it. `FRD-C
 
 ## Which class should I pick?
 
-Whatever your federal customers require. Two practical points: a class change is itself a significant change under `FRD-CCC`, so moving later triggers notification obligations, and Class C carries two calendar dependencies you cannot compress at the end, namely six months of accumulated validation history under `FRC-CSX-MOT` and up to a year of daily metric data under `SDR-CSX-KMT`. See [certification classes](certification-classes.md).
+Whatever your federal customers require. Two practical points: a class change is itself a significant change under `FRD-CCC`, so moving later triggers notification obligations, and Class C carries two calendar dependencies you cannot compress at the end, namely the daily metric data, including the status of persistent validation, that `SDR-CSX-KMT` asks for up to the past year (where available; a shorter history needs the recorded initial-certification commitment in the rule's note). See [certification classes](certification-classes.md).
 
 ## Will an AI write my record for me?
 

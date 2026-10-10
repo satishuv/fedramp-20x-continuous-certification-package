@@ -136,7 +136,7 @@ jobs:
 
       - name: Open an issue on failure (AUD-F32)
         # Silence is the failure mode this closes: a collection that fails for
-        # weeks leaves a gap in the FRC-CSX-MOT history that nothing reports
+        # weeks leaves a gap in the SDR-CSX-KMT history that nothing reports
         # until submission. One open issue per failure streak; a repeat failure
         # comments on the existing issue instead of filing a duplicate.
         if: failure()
@@ -145,7 +145,7 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           TITLE="living-sdr-loop failed: KSI metric collection did not complete"
-          BODY="The scheduled collection run failed on $(date -u +%Y-%m-%d). Until it succeeds again, no datapoint is added to the SDR-CSX-KMT history and the FRC-CSX-MOT persistent-validation clock has a gap that grows daily. Run: $RUN_URL"
+          BODY="The scheduled collection run failed on $(date -u +%Y-%m-%d). Until it succeeds again, no datapoint is added to the SDR-CSX-KMT history and the persistent-validation record has a gap that grows daily. Run: $RUN_URL"
           EXISTING=$(gh issue list --state open --search "$TITLE in:title" --json number --jq '.[0].number // empty')
           if [ -n "$EXISTING" ]; then
             gh issue comment "$EXISTING" --body "$BODY"

@@ -1159,7 +1159,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-CSO-PKG": {
@@ -1173,7 +1173,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-CSO-JSN": {
@@ -1191,7 +1191,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-CSO-MRA": {
@@ -1205,7 +1205,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-CSO-POP": {
@@ -1221,7 +1221,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-CLA-ASF": {
@@ -1235,7 +1235,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-CLA-EAM": {
@@ -1249,7 +1249,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-CLA-MFR": {
@@ -1267,7 +1267,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-CLA-RFR": {
@@ -1281,7 +1281,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-CLA-OFR": {
@@ -1295,7 +1295,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-CLA-IVV": {
@@ -1309,7 +1309,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-APP-MLF": {
@@ -1323,7 +1323,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-APP-AFC": {
@@ -1337,7 +1337,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-APP-FCP": {
@@ -1351,7 +1351,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-APP-FIA": {
@@ -1365,7 +1365,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-APP-NTP": {
@@ -1382,7 +1382,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-APP-USA": {
@@ -1396,7 +1396,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-APS-ATO": {
@@ -1410,7 +1410,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-CCL-UCC": {
@@ -1427,7 +1427,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-CCL-DCC": {
@@ -1444,7 +1444,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-CCL-DNP": {
@@ -1460,7 +1460,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-CSX-VVK": {
@@ -1474,7 +1474,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-CSX-VVR": {
@@ -1490,7 +1490,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "FRC-CSX-MAS": {
@@ -1504,7 +1504,7 @@
     "Independent validation."
    ],
    "evidence_source": "FedRAMP default artifact expectations for rules",
-   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+   "how_to_comply_guidance": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the rule statement governs."
   },
   "IEC-FRP-ORV": {

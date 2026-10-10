@@ -85,7 +85,7 @@ The CR26 dataset has five top-level keys.
 
 | Key | Contents | Count |
 |---|---|---|
-| `FRR` | FedRAMP Requirements, the rules | 246 entries; 234 in 20x scope |
+| `FRR` | FedRAMP Requirements, the rules | 245 entries; 233 in 20x scope |
 | `KSI` | Key Security Indicators | 46 |
 | `FRD` | FedRAMP Definitions | 80 |
 | `CTL` | Control guidance, organized by NIST SP 800-53 control identifier | 79 in 14 control families |

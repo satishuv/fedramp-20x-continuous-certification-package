@@ -378,7 +378,7 @@
    "fedramp_basis": [
     "SDR-CSX-KMT"
    ],
-   "requirement": "Class B and Class C providers MUST include a summary of each metric over the past 30 days.",
+   "requirement": "Class C providers MUST, and Class B providers SHOULD (dataset 2026.10.08.01; MUST before), include a summary of each metric over the past 30 days.",
    "risk": "Without recent history an assessor sees a snapshot and cannot tell whether the control has been holding.",
    "remediation": "Record the 30-day summary, ideally written by the collector rather than by hand.",
    "location": "sdr/records/records-store.json -> ksi.<indicator>.historical_metrics.last_30_days",
@@ -393,10 +393,9 @@
    "severity": "high",
    "resource_type": "Key Security Indicator",
    "fedramp_basis": [
-    "SDR-CSX-KMT",
-    "FRC-CSX-MOT"
+    "SDR-CSX-KMT"
    ],
-   "requirement": "Class C providers MUST supply all daily metric data up to the past year, where available.",
+   "requirement": "Class C providers MUST supply all daily metric data, including the status of persistent validation, up to the past year, where available.",
    "risk": "Class C rests on continuous data. Summaries alone do not meet it.",
    "remediation": "Reference the daily metric store, for example the collector's evidence bucket prefix.",
    "location": "sdr/records/records-store.json -> ksi.<indicator>.historical_metrics.daily_data_reference",
@@ -412,7 +411,7 @@
    "fedramp_basis": [
     "SDR-CSX-KMT"
    ],
-   "requirement": "Class B and Class C providers MUST include a summary of the metric up to the past year, where available.",
+   "requirement": "Class C providers MUST, and Class B providers SHOULD, include a summary of the metric up to the past year, where available.",
    "risk": "A year of history is what distinguishes a sustained control from one that was fixed the week before assessment.",
    "remediation": "Record the longer-run summary once that much history exists.",
    "location": "sdr/records/records-store.json -> ksi.<indicator>.historical_metrics.up_to_one_year",

@@ -261,63 +261,71 @@ def test_30_day_window():
     assert hist["ksis"]["KSI-A"]["up_to_one_year"]["days_observed"] == 2
 
 
-def test_mot_window_class_c_short_and_met():
+def test_kmt_window_class_c_short_and_covering():
+    # SDR-CSX-KMT (2026.10.08.01): Class C MUST supply daily data "up to the
+    # past year (where available)". The window MEASURES coverage of that
+    # reference period; it mandates no minimum (FRC-CSX-MOT's 6 months is gone).
     today = date(2026, 9, 6)
-    # A single point today: 0 days covered, Class C requires 183 -> not met.
-    short = am.mot_window([{"date": "2026-09-06", "passing": 1, "total": 1}], "c", today)
+    short = am.kmt_window([{"date": "2026-09-06", "passing": 1, "total": 1}], "c", today)
     assert short["force"] == "MUST"
-    assert short["required_days"] == 183
+    assert short["reference_months"] == 12
     assert short["covered_days"] == 0
-    assert short["meets_window"] is False
-    # A point 200 days ago: covered >= 183 -> met.
-    met = am.mot_window([{"date": "2026-02-18", "passing": 1, "total": 1}], "c", today)
-    assert met["covered_days"] >= 183
-    assert met["meets_window"] is True
+    assert short["covers_reference_period"] is False
+    # A point 400 days ago reaches back past the reference period -> covers.
+    covering = am.kmt_window([{"date": "2025-08-02", "passing": 1, "total": 1}], "c", today)
+    assert covering["covered_days"] >= 365
+    assert covering["covers_reference_period"] is True
+    # No legacy minimum-duration keys survive (a consumer must not read them).
+    assert "meets_window" not in short and "required_days" not in short
 
 
-def test_mot_window_class_d_needs_18_months():
+def test_kmt_window_class_d_same_reference_period():
+    # Class D "MUST significantly supersede" lower classes, specifics pending;
+    # the dataset gives no separate D period (the removed rule's 18 months is
+    # gone), so D is measured against the same reference period as C.
     today = date(2026, 9, 6)
-    w = am.mot_window([{"date": "2025-09-06", "passing": 1, "total": 1}], "d", today)
-    # ~365 days covered is short of the 548-day (18 month) Class D requirement.
-    assert w["required_days"] == 548
-    assert w["meets_window"] is False
+    w = am.kmt_window([{"date": "2025-09-06", "passing": 1, "total": 1}], "d", today)
+    assert w["force"] == "MUST"
+    assert w["reference_months"] == 12
+    assert w["covers_reference_period"] is True
 
 
-def test_mot_window_class_b_is_should_not_gated():
+def test_kmt_window_class_b_is_should_not_gated():
+    # Class B: SHOULD since 2026.10.08.01 (MUST before). The measurement is the
+    # same; the force is what the consumer reads to decide advisory vs blocker.
     today = date(2026, 9, 6)
-    w = am.mot_window([], "b", today)
+    w = am.kmt_window([], "b", today)
     assert w["force"] == "SHOULD"
-    assert w["required_days"] == 0
-    assert w["meets_window"] is True  # no minimum at B
+    assert w["covered_days"] == 0
+    assert w["covers_reference_period"] is False
+    assert am.kmt_window([], "a", today)["force"] == "MAY"
 
 
-def test_mot_window_calendar_month_boundary():
+def test_kmt_window_calendar_month_boundary():
     # Regression for the day-approximation bug: a series whose earliest point is
-    # exactly 6 CALENDAR months before today must MEET the Class C window, even
-    # when that span is fewer than 183 days. 2026-03-16 -> 2026-09-16 is exactly
-    # 6 calendar months but only 184 days; pick a span that a days>=183 rule
-    # would still pass, and a case a day rule would WRONGLY fail.
+    # exactly 12 CALENDAR months before today COVERS the reference period, even
+    # in a 365-day year where a days>=365 rule agrees and a leap-year span
+    # where it would not. 2025-09-16 -> 2026-09-16 is exactly 12 calendar months.
     today = date(2026, 9, 16)
-    # Exactly 6 calendar months back = 2026-03-16 (184 days) -> meets.
-    at_boundary = am.mot_window([{"date": "2026-03-16", "passing": 1, "total": 1}], "c", today)
-    assert at_boundary["meets_window"] is True
-    # The Feb-boundary case that exposes the bug: today 2026-05-31, 6 months
-    # back clamps to 2025-11-30. A point on 2025-11-30 is exactly 6 calendar
-    # months (182 days, SHORT of 183) but must still MEET the window.
-    today2 = date(2026, 5, 31)
-    short_days = am.mot_window([{"date": "2025-11-30", "passing": 1, "total": 1}], "c", today2)
-    assert short_days["covered_days"] < 183  # a day rule would call this short
-    assert short_days["meets_window"] is True  # calendar months: exactly 6 -> met
-    # And a point one day inside the window (later) must FAIL.
-    inside = am.mot_window([{"date": "2025-12-01", "passing": 1, "total": 1}], "c", today2)
-    assert inside["meets_window"] is False
+    at_boundary = am.kmt_window([{"date": "2025-09-16", "passing": 1, "total": 1}], "c", today)
+    assert at_boundary["covers_reference_period"] is True
+    # Month-end clamping: today 2026-02-28, 12 months back is 2025-02-28. A
+    # point on 2025-02-28 covers; a point one day later does not.
+    today2 = date(2026, 2, 28)
+    edge = am.kmt_window([{"date": "2025-02-28", "passing": 1, "total": 1}], "c", today2)
+    assert edge["covers_reference_period"] is True
+    inside = am.kmt_window([{"date": "2025-03-01", "passing": 1, "total": 1}], "c", today2)
+    assert inside["covers_reference_period"] is False
+    # The pre-2026.10.08.01 name still resolves to the same measurement.
+    assert am.mot_window is am.kmt_window
 
 
-def test_append_run_records_mot_window():
+def test_append_run_records_kmt_window():
     hist = {}
     am.append_run(hist, REGISTRY, config("COMPLIANT"), {}, date(2026, 9, 6), cls="c")
     w = hist["ksis"]["KSI-A"]["persistent_validation_window"]
     assert w["class"] == "C" and w["force"] == "MUST"
+    assert w["reference_months"] == 12 and w["covers_reference_period"] is False
 
 
 def test_f05_replayed_stale_fact_is_not_recorded_as_fresh():

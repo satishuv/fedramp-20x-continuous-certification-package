@@ -15,7 +15,7 @@ accredited assessor's and the program's determination.
 The Class B sample (`examples/sample-offering`) fills narrative only and leaves
 status/tests/evidence as template, so it never exercises the Class C readiness
 gates on POPULATED data. Class C adds the hardest gates: >= 2 automated methods
-per KSI (FRC-CSX-VVK), a >= 6-month persistent-validation history (FRC-CSX-MOT),
+per KSI (FRC-CSX-VVK), a persistent-validation history spanning the up-to-one-year reference period (SDR-CSX-KMT),
 evidence linkage for every applicable MUST, a fresh FedRAMP Recognized
 independent assessment (FRC-APP-FIA), availability reporting (CDS-CSO-AVR), a
 structurally complete CPO, and a manifest-bound signoff. Bugs hide precisely
@@ -49,7 +49,8 @@ review had missed:
 
 2. Ready-but-empty metric summaries (the real gap). A Class C package could reach
    "ready" with all 46 KSI historical-metric summaries (SDR-CSX-KMT, a Class C
-   MUST) left as unresolved TBD: the FRC-CSX-MOT duration gate passed via the
+   MUST) left as unresolved TBD: the history-duration gate (then FRC-CSX-MOT, a rule
+   removed from the dataset in 2026.10.08.01) passed via the
    metric history, and the semantic check confirmed the KMT KEYS were present,
    but nothing gated the summary VALUES being empty. Fixed: preflight now treats
    an unresolved KMT summary as an unanswered-requirement blocker at the classes

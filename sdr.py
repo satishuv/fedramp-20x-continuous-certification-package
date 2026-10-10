@@ -330,6 +330,7 @@ TEST_SUITE = [
     "validation/scripts/test_sbom.py",
     "validation/scripts/test_fedramp_time.py",
     "validation/scripts/test_mot_continuity.py",
+    "validation/scripts/test_orphan_records.py",
     "validation/scripts/test_vvk_automated_methods.py",
     "validation/scripts/test_init_wizard.py",
     "validation/scripts/test_profile_traceability.py",
@@ -452,19 +453,32 @@ def load_json(path):
         return None
 
 
-# FRC-CSX-MOT continuity tolerance (AUD-F21). PROJECT POLICY, NOT A FEDRAMP
-# NUMBER: the dataset says Class C MUST provide status "from persistent
-# validation over at least the past 6 months" (18 at D) and mandates no cadence
-# and no maximum gap. This repository turns "persistent" into a checkable bound:
-# no gap between consecutive observations, nor the leading or trailing gap, may
-# exceed MOT_MAX_GAP_DAYS_DEFAULT days. 45 accepts an honest weekly, biweekly or
-# monthly cadence with the occasional miss while rejecting a hollow two-point
-# series and a quarter-long silence. A provider may declare a different
-# tolerance in the offering profile (`mot_max_gap_days`), reviewable by the
-# assessor, bounded above by MOT_MAX_GAP_DAYS_CEILING because a gap of a quarter
-# or more inside a six-month window is not persistence under any reading.
+# Persistent-validation continuity tolerance (AUD-F21). PROJECT POLICY, NOT A
+# FEDRAMP NUMBER. Since dataset 2026.10.08.01 the historical-metric requirement
+# lives in SDR-CSX-KMT alone (FRC-CSX-MOT, "Metrics Over Time", was removed as
+# duplicative): Class C MUST supply "All daily metric data (including status of
+# persistent validation) up to the past year (where available)" for each
+# applicable KSI, and FRD-PER says of persistent activities that "the status
+# of persistent activities will always be known". The dataset mandates no
+# cadence and no maximum gap. This repository turns "status always known" into
+# a checkable bound: no gap between consecutive observations, nor the leading
+# or trailing gap, may exceed MOT_MAX_GAP_DAYS_DEFAULT days. 45 accepts an
+# honest weekly, biweekly or monthly cadence with the occasional miss while
+# rejecting a hollow two-point series and a quarter-long silence. A provider
+# may declare a different tolerance in the offering profile (`mot_max_gap_days`;
+# the field keeps its pre-2026.10.08.01 name so existing profiles keep working),
+# reviewable by the assessor, bounded above by MOT_MAX_GAP_DAYS_CEILING because
+# a gap of a quarter or more is not persistence under any reading.
 MOT_MAX_GAP_DAYS_DEFAULT = 45
 MOT_MAX_GAP_DAYS_CEILING = 90
+
+# SDR-CSX-KMT names the reference period for historical KSI metrics: "up to the
+# past year". There is NO minimum duration in the dataset any more (the removed
+# FRC-CSX-MOT carried "at least the past 6 months" at C and 18 at D); the gate
+# therefore MEASURES coverage of this reference period and reports it, and only
+# requires the initial-certification commitment the rule's note asks for when
+# the offering's metrics have been available for less than it.
+KMT_REFERENCE_MONTHS = 12
 
 # AUD-F33: an EARLY WARNING, distinct from the hard continuity bound above. The
 # bound tolerates up to mot_max_gap_days of silence before it blocks, which is
@@ -480,7 +494,7 @@ def mot_stale_days(dates, today, threshold=MOT_STALE_ADVISORY_DAYS):
     """Days since the NEWEST observation when that exceeds the advisory
     threshold, else None. Independent of the hard continuity bound: this is the
     early warning that a collection has stopped, reported as an advisory long
-    before the gap can become an FRC-CSX-MOT blocker (AUD-F33)."""
+    before the gap can become an SDR-CSX-KMT continuity blocker (AUD-F33)."""
     if not dates:
         return None
     gap = (today - max(dates)).days
@@ -508,10 +522,11 @@ def mot_max_gap_days(offering):
 def mot_continuity(window_dates, today, max_gap_days=MOT_MAX_GAP_DAYS_DEFAULT,
                    window_start=None):
     """Assess whether an in-window metric series shows PERSISTENT validation,
-    not just sufficient age. FRC-CSX-MOT requires "status from persistent
-    validation over at least the past 6 months"; the age check elsewhere only
-    proves the oldest point is old enough, so [6-months-ago, today] passes it
-    while being two lonely points.
+    not just sufficient age. SDR-CSX-KMT (Class C MUST) asks for daily metric
+    data "including status of persistent validation" and FRD-PER says the
+    status of a persistent activity "will always be known"; a coverage check
+    elsewhere only proves the oldest point is old enough, so [a-year-ago,
+    today] passes it while being two lonely points.
 
     The rule does NOT mandate a fixed cadence, so this does not require a daily
     (or any specific) cadence. It flags a series as non-persistent when any gap
@@ -1747,14 +1762,35 @@ def cmd_preflight(args):
     elif cls == "a" and avr_missing:
         warnings.append("Class A: availability_reporting is a SHOULD (CDS-CSO-AVR); not set")
 
-    # FRC-CSX-MOT: historical KSI metrics from persistent validation. Class C
-    # MUST have >= 6 months for all KSIs; Class D >= 18 months; A/B advisory.
-    # Distinct from SDR-CSX-KMT formatting; this is a duration requirement.
-    mot_min_months = {"c": 6, "d": 18}.get(cls)
-    if mot_min_months:
+    # SDR-CSX-KMT: historical KSI metrics "including status of persistent
+    # validation" in the SDR. Since dataset 2026.10.08.01 this rule alone
+    # carries the persistent-validation history requirement (FRC-CSX-MOT was
+    # removed as duplicative). Verbatim, Class C MUST supply for each applicable
+    # KSI "All daily metric data (including status of persistent validation) up
+    # to the past year (where available)"; Class D MUST significantly supersede
+    # lower classes (specifics pending); Class B SHOULD and Class A MAY include
+    # historical metrics (advisory below). The rule's note: "For initial FedRAMP
+    # Certification, providers will need to have mechanisms in place and agree
+    # to meet this requirement in the event the cloud service has not been
+    # operating with related metrics available for the required period prior to
+    # applying for initial certification."
+    #
+    # No minimum duration exists in the dataset any more (the removed rule's
+    # "at least the past 6 months" at C and 18 at D). The gate therefore:
+    #   - measures each KSI's coverage of the up-to-one-year reference period
+    #     and REPORTS shortfalls ("where available" is the provider's factual
+    #     statement, checked by the assessor, not a tool verdict);
+    #   - requires the recorded initial-certification commitment when the
+    #     offering's metrics have been available for less than the reference
+    #     period (the note), with a CURRENT datapoint per KSI proving the
+    #     mechanisms are operating;
+    #   - blocks a KSI wholly absent from the history (no status of persistent
+    #     validation exists to include) and a series whose status was not
+    #     known across the window (continuity, project tolerance, AUD-F21).
+    if cls in ("c", "d"):
         import datetime as _d2
         today = _utc_today()
-        mot_cutoff = _months_before(today, mot_min_months)
+        mot_cutoff = _months_before(today, KMT_REFERENCE_MONTHS)
         # AUD-F21: the continuity tolerance in force. Project policy with a
         # bounded, assessor-reviewable offering override; an invalid declared
         # value is a blocker, never a silent fall-back to the default.
@@ -1765,24 +1801,27 @@ def cmd_preflight(args):
                             f"or remove it to use the project default "
                             f"({MOT_MAX_GAP_DAYS_DEFAULT} days)")
             mot_gap_days, mot_gap_source = MOT_MAX_GAP_DAYS_DEFAULT, "project-default"
-        # FRC-CSX-MOT applies to ALL KSIs. Class C/D resolve all 46.
+        # SDR-CSX-KMT applies to each applicable KSI. Class C/D resolve all 46.
         mot_ksis = {k.get("ksi_id") for k in ksi_profile.get("indicators", [])}
-        # Initial-certification exception: if the service has not operated with
-        # metrics long enough, the provider needs mechanisms in place and a
-        # recorded commitment to meet the requirement going forward.
+        # Initial-certification commitment (the SDR-CSX-KMT note): if the
+        # service has not operated with metrics for the reference period, the
+        # provider needs mechanisms in place and a recorded commitment to meet
+        # the requirement going forward. The profile block keeps its
+        # pre-2026.10.08.01 name (metric_history_exception) so existing
+        # profiles keep working.
         exc = offering.get("metric_history_exception") or {}
-        # FRC-CSX-MOT's initial-certification exception (verbatim note) applies
-        # "in the event the cloud service has not been operating WITH RELATED
-        # METRICS AVAILABLE for the required period." The eligibility date is
+        # The note applies "in the event the cloud service has not been
+        # operating WITH RELATED METRICS AVAILABLE for the required period"
+        # (the "up to the past year" the rule names). The eligibility date is
         # therefore the metrics-available period, NOT the offering launch date:
         # an offering can be years old yet only have persistent KSI metrics for
         # a couple of months. The faithful field is metrics_available_since;
         # operating_since is accepted as a backward-compatible fallback (older
         # profiles) but metrics_available_since wins when both are present.
         # The date must be a REAL ISO date, must NOT be in the future, and the
-        # exception only applies when metrics have been available for LESS than
-        # the required window (a service with >= the window is expected to have
-        # the full history and cannot use the shortcut).
+        # commitment only applies when metrics have been available for LESS than
+        # the reference period (a service with >= a year of metrics is expected
+        # to supply the history itself and cannot use the shortcut).
         import datetime as _dm
         _op_field = ("metrics_available_since"
                      if not _is_tbd(exc.get("metrics_available_since"))
@@ -1796,9 +1835,9 @@ def cmd_preflight(args):
                 _op_date = _dm.date.fromisoformat(str(_op_raw)[:10])
             except (ValueError, TypeError):
                 _op_date = None
-        mot_window_start = _months_before(today, mot_min_months)
+        mot_window_start = mot_cutoff
         # Eligible only when the date parses, is NOT in the future, AND is after
-        # the window start (metrics available for LESS than the required window).
+        # the reference-period start (metrics available for LESS than a year).
         _op_not_future = _op_date is not None and _op_date <= today
         exc_window_eligible = _op_not_future and _op_date > mot_window_start
         exc_valid = (exc.get("mechanisms_in_place") is True
@@ -1807,9 +1846,9 @@ def cmd_preflight(args):
                      and not _is_hollow(exc.get("commitment_reference"))
                      and exc_window_eligible
                      and not _is_hollow(exc.get("responsible_official")))
-        # Distinguish "exception fields present but invalid" from "no exception":
-        # an invalid/future date or an over-long window should tell the provider
-        # WHY the exception did not apply, not silently fall through.
+        # Distinguish "commitment fields present but invalid" from "none
+        # recorded": an invalid/future date or an over-long window should tell
+        # the provider WHY the commitment did not apply, not silently fall through.
         exc_attempted = (exc.get("mechanisms_in_place") is True
                          or exc.get("commitment_to_meet_mot") is True
                          or not _is_tbd(_op_raw))
@@ -1819,21 +1858,22 @@ def cmd_preflight(args):
             if not _is_tbd(_op_raw) and _op_date is None:
                 blockers.append(f"Class {cls.upper()}: initial-certification MOT exception has "
                                 f"an invalid {_op_field} ({_op_raw!r}); it must be a real "
-                                "ISO date (YYYY-MM-DD) for the exception to apply (FRC-CSX-MOT)")
+                                "ISO date (YYYY-MM-DD) for the commitment to apply "
+                                "(SDR-CSX-KMT note)")
             elif _op_date is not None and not _op_not_future:
                 blockers.append(f"Class {cls.upper()}: initial-certification MOT exception has a "
                                 f"FUTURE {_op_field} ({_op_date}); metrics-available date cannot "
-                                "be in the future (FRC-CSX-MOT)")
+                                "be in the future (SDR-CSX-KMT note)")
             elif _op_date is not None and not exc_window_eligible:
                 blockers.append(f"Class {cls.upper()}: initial-certification MOT exception does "
                                 f"not apply - metrics have been available since {_op_date} "
-                                f"({'6' if cls == 'c' else '18'}+ months), so the full "
-                                "persistent-validation history is required, not the exception "
-                                "(FRC-CSX-MOT)")
+                                f"({KMT_REFERENCE_MONTHS}+ months, the full 'up to the past "
+                                "year' reference period), so the history itself is required, "
+                                "not the commitment (SDR-CSX-KMT note)")
         if exc_valid:
-            # Exception path: require mechanisms + CURRENT validation data (a
-            # RECENT datapoint per KSI, not merely any old observation), not the
-            # full 6/18 months. append_metrics stores each KSI as {"series":[...]}.
+            # Commitment path: require mechanisms + CURRENT validation data (a
+            # RECENT datapoint per KSI, not merely any old observation), not a
+            # full year. append_metrics stores each KSI as {"series":[...]}.
             def _series(entry):
                 if isinstance(entry, dict):
                     return entry.get("series") or []
@@ -1859,18 +1899,21 @@ def cmd_preflight(args):
                                 f"validation datapoint (within the last {mot_gap_days} days, "
                                 f"the continuity tolerance from {mot_gap_source}, a project "
                                 "policy rather than a FedRAMP figure); the mechanisms must be "
-                                "operational and producing data now (FRC-CSX-MOT)")
+                                "operational and producing data now (SDR-CSX-KMT note)")
         elif not history:
-            blockers.append(f"Class {cls.upper()}: no KSI metric history found (FRC-CSX-MOT "
-                            f"MUST: {'6' if cls == 'c' else '18'} months for ALL KSIs, OR a "
-                            "recorded initial-certification exception with mechanisms in place "
-                            "and a commitment to meet the requirement)")
+            blockers.append(f"Class {cls.upper()}: no KSI metric history found (SDR-CSX-KMT "
+                            "MUST: daily metric data including status of persistent "
+                            "validation, up to the past year where available, for each "
+                            "applicable KSI; OR a recorded initial-certification commitment "
+                            "with mechanisms in place, per the rule's note)")
         else:
-            # Missing KSIs (in scope but absent from history) are blockers.
+            # Missing KSIs (in scope but absent from history) are blockers: no
+            # status of persistent validation exists to include for them.
             missing = sorted(mot_ksis - set(per))
-            short = []
+            short = []   # history reaches back less than the reference period
             gappy = []
             stale = []  # AUD-F33: newest datapoint older than the advisory threshold
+            earliest_any = None
             for kid in mot_ksis & set(per):
                 dates = []
                 _entry = per.get(kid)
@@ -1883,16 +1926,23 @@ def cmd_preflight(args):
                             dates.append(_d2.date.fromisoformat(str(ds_)[:10]))
                         except ValueError:
                             pass
-                if not dates or min(dates) > mot_cutoff:
-                    short.append(kid)
+                if not dates:
+                    missing.append(kid)
                     continue
-                # Persistence (not just age): FRC-CSX-MOT requires status from
-                # "persistent validation over at least the past 6 months", not
-                # merely one old datapoint plus one recent one. A series of
-                # [6-months-ago, today] passes the age check above but is not
-                # persistent. Prove the validation actually persisted across the
-                # window by bounding the largest gap between consecutive
-                # observations WITHIN the window.
+                if earliest_any is None or min(dates) < earliest_any:
+                    earliest_any = min(dates)
+                covers_reference = min(dates) <= mot_cutoff
+                if not covers_reference:
+                    short.append((kid, (today - min(dates)).days))
+                # Persistence (not just age): SDR-CSX-KMT asks for the "status
+                # of persistent validation" and FRD-PER says that status "will
+                # always be known"; one old datapoint plus one recent one is not
+                # that. Prove the validation actually persisted by bounding the
+                # largest gap between consecutive observations WITHIN the
+                # evaluated window: the reference period when the history
+                # covers it, otherwise the period the history actually spans
+                # (the leading void before the first observation is only a gap
+                # when the history claims to reach further back than it does).
                 #
                 # The rule does NOT mandate a fixed cadence (e.g. daily), so we
                 # do not impose one. What we bound is the largest gap, against
@@ -1902,9 +1952,10 @@ def cmd_preflight(args):
                 # reported in the blocker for context, not used as the bound.
                 # This catches a hollow two-point series while accepting an
                 # honest weekly/monthly cadence with occasional misses.
-                win = sorted(d for d in dates if d >= mot_cutoff)
+                eval_start = mot_cutoff if covers_reference else min(dates)
+                win = sorted(d for d in dates if d >= eval_start)
                 gappy_flag, largest, median, trailing_gap = mot_continuity(
-                    win, today, max_gap_days=mot_gap_days, window_start=mot_cutoff)
+                    win, today, max_gap_days=mot_gap_days, window_start=eval_start)
                 if gappy_flag:
                     gappy.append((kid, largest, median, trailing_gap))
                 # AUD-F33: early warning well inside the hard bound. A KSI whose
@@ -1914,6 +1965,7 @@ def cmd_preflight(args):
                 newest_gap = mot_stale_days(dates, today)
                 if newest_gap is not None:
                     stale.append((kid, newest_gap))
+            missing = sorted(set(missing))
             if stale:
                 stale.sort(key=lambda t: -t[1])
                 ex = stale[0]
@@ -1921,30 +1973,56 @@ def cmd_preflight(args):
                     f"Class {cls.upper()}: {len(stale)} in-scope KSI(s) have no metric "
                     f"datapoint in the last {MOT_STALE_ADVISORY_DAYS} days (e.g. {ex[0]}: "
                     f"newest observation {ex[1]}d old). The collection appears to have "
-                    f"stopped; it becomes an FRC-CSX-MOT continuity blocker once a gap "
+                    f"stopped; it becomes an SDR-CSX-KMT continuity blocker once a gap "
                     f"exceeds {mot_gap_days}d. Check the scheduled collector run and its "
                     "failure notification (advisory; staleness threshold is project policy)")
             if missing:
                 blockers.append(f"Class {cls.upper()}: {len(missing)} in-scope KSI(s) are "
-                                f"entirely absent from the metric history (FRC-CSX-MOT covers "
-                                f"ALL KSIs): {', '.join(missing[:8])}"
+                                f"entirely absent from the metric history, so no status of "
+                                f"persistent validation exists to include for them (SDR-CSX-KMT "
+                                f"MUST, for each applicable KSI): {', '.join(missing[:8])}"
                                 + (" ..." if len(missing) > 8 else ""))
-            if short:
-                blockers.append(f"Class {cls.upper()}: {len(short)} KSI(s) lack "
-                                f"{'6' if cls == 'c' else '18'} months of persistent-validation "
-                                "history (FRC-CSX-MOT; or record an initial-certification exception)")
+            # The SDR-CSX-KMT note: when the OFFERING has not been operating
+            # with metrics available for the reference period, the provider
+            # must have mechanisms in place and record the commitment. The
+            # offering-level availability is the declared metrics_available_since
+            # (or operating_since) when present, else the earliest observation
+            # across its KSIs. With no commitment recorded, a short offering
+            # history is a blocker. Once the offering has had metrics for a year,
+            # a single KSI reaching back less than that is "where available":
+            # reported for the assessor, not a tool verdict.
+            offering_since = _op_date if _op_date is not None else earliest_any
+            offering_short = offering_since is not None and offering_since > mot_cutoff
+            if offering_short and short:
+                blockers.append(
+                    f"Class {cls.upper()}: the offering's KSI metrics have been available "
+                    f"only since {offering_since} (less than the up-to-one-year reference "
+                    f"period SDR-CSX-KMT names); {len(short)} KSI(s) carry a shorter "
+                    "history and no initial-certification commitment is recorded. Record "
+                    "metric_history_exception (mechanisms in place, commitment, responsible "
+                    "official, metrics_available_since) per the rule's note, or supply the "
+                    "history itself (SDR-CSX-KMT)")
+            elif short:
+                short.sort(key=lambda t: t[1])
+                ex = short[0]
+                warnings.append(
+                    f"Class {cls.upper()}: {len(short)} KSI(s) carry less than the "
+                    f"up-to-one-year reference period of daily metric data (e.g. {ex[0]}: "
+                    f"{ex[1]} days). SDR-CSX-KMT asks for the data 'where available'; the "
+                    "shorter span is the provider's factual statement for the assessor, "
+                    "reported here, not a tool verdict (advisory)")
             if gappy:
                 ex = gappy[0]
                 detail = (f"e.g. {ex[0]}: largest gap {ex[1]}d vs ~{ex[2]}d typical"
                           if ex[1] is not None
                           else f"e.g. {ex[0]}: only one observation in the window")
                 blockers.append(
-                    f"Class {cls.upper()}: {len(gappy)} KSI(s) reach back "
-                    f"{'6' if cls == 'c' else '18'} months but the series is not "
-                    f"CONTINUOUS across the window - FRC-CSX-MOT requires status "
-                    f"from persistent validation, not one old datapoint plus a "
-                    f"recent one ({detail}; tolerance {mot_gap_days}d from "
-                    f"{mot_gap_source}, a project policy, not a FedRAMP figure). "
+                    f"Class {cls.upper()}: {len(gappy)} KSI(s) have a metric series that is "
+                    f"not CONTINUOUS across the evaluated window - SDR-CSX-KMT asks for the "
+                    f"status of persistent validation, which FRD-PER says is always known, "
+                    f"not one old datapoint plus a recent one ({detail}; tolerance "
+                    f"{mot_gap_days}d from {mot_gap_source}, "
+                    f"a project policy, not a FedRAMP figure). "
                     f"Fill the gaps, declare a reviewed mot_max_gap_days in the "
                     f"offering profile, or record an initial-certification exception.")
 
@@ -1983,11 +2061,12 @@ def cmd_preflight(args):
                     + ". A stated 30-day/1-year summary must be supported by "
                     "actual metric-history data for that KSI.")
     elif cls in ("a", "b"):
-        # A MAY, B SHOULD - advisory only.
+        # A MAY, B SHOULD (SHOULD since dataset 2026.10.08.01; MUST before) -
+        # advisory only.
         history = load_json(os.path.join(BASE, "automation", "metrics", "metric-history.json"))
         if not history:
             warnings.append(f"Class {cls.upper()}: no KSI metric history yet "
-                            f"(FRC-CSX-MOT is {'MAY' if cls == 'a' else 'SHOULD'} at this class)")
+                            f"(SDR-CSX-KMT is {'MAY' if cls == 'a' else 'SHOULD'} at this class)")
         # Finding 5: a SELECTED Class A SDR-CSX-KMT is fully reviewed - once the
         # provider opts historical KSI metrics into the Class A SDR, real
         # in-window metric content must actually back it, not an empty inclusion.
@@ -2025,6 +2104,20 @@ def cmd_preflight(args):
     # would report TBDs in rules that do not apply (e.g. Class A resolves far
     # fewer rules than the file contains), which is misleading.
     records = load_json(os.path.join(BASE, "sdr", "records", "records-store.json")) or {}
+    # AUD-F42: a record whose rule or KSI the dataset no longer defines is an
+    # orphan left behind by an adoption (FRC-CSX-MOT after 2026.10.08.01). It is
+    # never rendered and never pruned by a build; report it so the review that
+    # adopts the dataset also decides what to do with it. Advisory: authored
+    # content that no longer binds blocks nothing.
+    import build_sdr as _bs
+    _orphan_rules, _orphan_ksis = _bs.orphan_record_ids(records, *_bs.dataset_universe())
+    if _orphan_rules or _orphan_ksis:
+        warnings.append(f"{len(_orphan_rules) + len(_orphan_ksis)} record(s) in "
+                        f"sdr/records/records-store.json name a rule or KSI the dataset "
+                        f"{offering.get('dataset_version')} no longer defines "
+                        f"(orphaned by an adoption, not rendered): "
+                        + ", ".join(_orphan_rules + _orphan_ksis)
+                        + ". Remove or archive them (AUD-F42)")
     # Mirror build_sdr.py's submitted scope: for Class A, unselected FRC-CLA-OFR
     # optional (MAY) rules are not in the submitted SDR, so preflight must not
     # gate their records either (otherwise the readiness gate evaluates a
@@ -2214,7 +2307,7 @@ def cmd_preflight(args):
     # so a package with real daily observations but no external pointer must pass,
     # while one whose durable history has no daily observations for an applicable
     # KSI must block. "(where available)" is honored: a KSI genuinely absent from
-    # history is caught by the FRC-CSX-MOT coverage gate above, not double-blocked
+    # history is caught by the SDR-CSX-KMT coverage gate above, not double-blocked
     # here - this check only fires when the KSI IS in history but has zero
     # in-window daily observations.
     _kmt_hist = load_json(os.path.join(BASE, "automation", "metrics", "metric-history.json")) or {}
@@ -2261,7 +2354,7 @@ def cmd_preflight(args):
                 f"Class {cls.upper()}: metric history INTEGRITY FAILED: {len(_tamper)} chained "
                 f"observation(s) do not verify (e.g. {ex[1]}: {ex[0]}, {ex[2]}). An edited, "
                 "inserted or deleted observation breaks the hash chain; the history is not "
-                "the collector's record (AUD-F37, FRC-CSX-MOT/SDR-CSX-KMT evidence)")
+                "the collector's record (AUD-F37, SDR-CSX-KMT evidence)")
         if _soft:
             ex = _soft[0]
             msg = (f"Class {cls.upper()}: {len(_soft)} metric observation(s) are unchained or "
@@ -2455,13 +2548,23 @@ def cmd_preflight(args):
                 msgs.append(f"{key}: claims {claimed} but history computes {comp}")
         return "; ".join(msgs) if msgs else None
 
+    # SDR-CSX-KMT content shortfalls at Class B. The rule is SHOULD at B since
+    # dataset 2026.10.08.01 (MUST before), so a missing 30-day or up-to-one-year
+    # summary, or a missing per-metric breakdown, is reported as ONE advisory
+    # for the class rather than a per-KSI blocker. At C/D the same items stay in
+    # the blocking gap list (MUST). A summary that CONTRADICTS the durable
+    # history stays a blocker at every class: that is a truthfulness defect,
+    # not a force question.
+    kmt_should_gaps = []
+
     def _ksi_gaps(kid, rec):
         """Missing required SDR-CSX-KSI items for one KSI record (5 items),
         plus SDR-CSX-KMT historical-metric content where it is MUST.
-        SDR-CSX-KMT force by class: A MAY (not gated); B MUST (30-day + yearly
-        summaries); C/D MUST (those PLUS the actual daily metric data up to the
-        past year). Values must be resolved (not TBD) so a Class B/C package
-        cannot be 'ready' with empty metric summaries.
+        SDR-CSX-KMT force by class (dataset 2026.10.08.01): A MAY (not gated);
+        B SHOULD (30-day + yearly summaries, reported as an advisory via
+        kmt_should_gaps); C/D MUST (those PLUS the actual daily metric data up
+        to the past year). Values must be resolved (not TBD) so a Class C
+        package cannot be 'ready' with empty metric summaries.
 
         The first SDR-CSX-KSI item is an OR whose "no measures" branch has TWO
         distinct elements, verbatim: "Explanation of measures (and their
@@ -2484,11 +2587,13 @@ def cmd_preflight(args):
             "automation_verification": ext.get("automation_verification"),
             "validation": rec.get("validation"),
         }
+        kmt_checks = {}
         if cls in ("b", "c", "d"):
             hm = rec.get("historical_metrics", {}) or {}
-            checks["kmt_last_30_days"] = hm.get("last_30_days")
-            checks["kmt_up_to_one_year"] = hm.get("up_to_one_year")
+            kmt_checks["kmt_last_30_days"] = hm.get("last_30_days")
+            kmt_checks["kmt_up_to_one_year"] = hm.get("up_to_one_year")
         gaps = [k for k, v in checks.items() if not _answered(v)]
+        kmt_gaps = [k for k, v in kmt_checks.items() if not _answered(v)]
         # Item 1 (OR).
         if has_measures:
             pass  # measures narrative satisfies item 1
@@ -2515,13 +2620,19 @@ def cmd_preflight(args):
         if cls in ("b", "c", "d"):
             pm_gap = _per_metric_gap_for(kid)
             if pm_gap:
-                gaps.append(pm_gap)
+                kmt_gaps.append(pm_gap)
+        # Force routing: SHOULD at B (advisory), MUST at C/D (blocking).
+        if kmt_gaps:
+            if cls == "b":
+                kmt_should_gaps.append(f"{kid} ({','.join(kmt_gaps)})")
+            else:
+                gaps.extend(kmt_gaps)
         if cls in ("c", "d"):
             # Class C/D MUST supply the actual daily metric data (SDR-CSX-KMT),
             # derived from the durable history. Require a non-empty in-window
             # daily series for a KSI that IS present in history; a KSI wholly
-            # absent from history is left to the FRC-CSX-MOT coverage gate so it
-            # is not double-blocked here ("where available").
+            # absent from history is left to the SDR-CSX-KMT coverage gate above
+            # so it is not double-blocked here ("where available").
             if kid in _kmt_ksis and not _daily_series_for(kid):
                 gaps.append("kmt_daily_data (no in-window daily observations in metric history)")
         # FRC-CSX-VVK method-to-telemetry binding (Class C/D): a KSI that DECLARES
@@ -2534,16 +2645,16 @@ def cmd_preflight(args):
         # binding gate on the single bound one, so a half-implemented KSI reached
         # ready. Requiring the class minimum bound closes that.
         #
-        # The MOT exception does NOT switch this off. FRC-CSX-MOT's initial-
-        # certification exception relaxes the persistent-validation HISTORY
-        # DURATION (6/18 months); it does not remove the separate FRC-CSX-VVK
-        # obligation to actually implement the class-minimum automated methods. So
-        # this gate stays active under exc_valid. "Where available" is still
-        # honored the one honest way: a KSI WHOLLY ABSENT from history (no metrics
-        # map at all) is left to the MOT coverage gate and not double-blocked here
-        # - a brand-new offering may legitimately have no accumulated per-method
-        # history yet. But once a KSI IS in history with a metrics map, the class
-        # minimum of its declared methods must be bound.
+        # The MOT exception does NOT switch this off. The SDR-CSX-KMT initial-
+        # certification commitment relaxes the persistent-validation HISTORY
+        # LENGTH; it does not remove the separate FRC-CSX-VVK obligation to
+        # actually implement the class-minimum automated methods. So this gate
+        # stays active under exc_valid. "Where available" is still honored the
+        # one honest way: a KSI WHOLLY ABSENT from history (no metrics map at
+        # all) is left to the SDR-CSX-KMT coverage gate and not double-blocked
+        # here - a brand-new offering may legitimately have no accumulated
+        # per-method history yet. But once a KSI IS in history with a metrics
+        # map, the class minimum of its declared methods must be bound.
         if cls in ("c", "d"):
             entry = _kmt_ksis.get(kid)
             if isinstance(entry, dict) and isinstance(entry.get("metrics"), dict):
@@ -2657,6 +2768,13 @@ def cmd_preflight(args):
                         f"implementation information (still placeholder/TBD, not an "
                         f"honest Not-Implemented with rationale): {sample}"
                         + (" ..." if len(unanswered) > 8 else ""))
+    if kmt_should_gaps:
+        sample = ", ".join(kmt_should_gaps[:8])
+        warnings.append(f"Class B: {len(kmt_should_gaps)} applicable KSI(s) lack SDR-CSX-KMT "
+                        f"historical-metric content (SHOULD at Class B since dataset "
+                        f"2026.10.08.01; MUST at Class C): {sample}"
+                        + (" ..." if len(kmt_should_gaps) > 8 else "")
+                        + " (advisory)")
 
     # Evidence freshness at submission. FedRAMP guidance: "stale screenshots,
     # expired exports, outdated descriptions, or old evidence can cause

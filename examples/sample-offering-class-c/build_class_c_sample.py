@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Build a fully-worked FICTIONAL Class C sample and drive it to submission
 preflight, so the HARDEST gates are exercised end-to-end: >=2 automated methods
-per KSI (FRC-CSX-VVK), a >=6-month persistent-validation history (FRC-CSX-MOT),
+per KSI (FRC-CSX-VVK), a persistent-validation history spanning the up-to-one-year
+reference period (SDR-CSX-KMT),
 evidence linkage for every applicable MUST, a fresh FedRAMP Recognized
 independent assessment (FRC-APP-FIA), availability reporting (CDS-CSO-AVR), a
 structurally complete CPO, and a manifest-bound human signoff.
@@ -209,8 +210,11 @@ def generate_history(store):
         series = []
         observations = []
         per_method = {f"{kid}-config-rule": [], f"{kid}-api-collector": []}
-        # 200 days back to today, weekly datapoints (well over the 183-day min).
-        d = TODAY - dt.timedelta(days=200)
+        # 400 days back to today, weekly datapoints: past the up-to-one-year
+        # reference period SDR-CSX-KMT names, so the fictional offering needs no
+        # initial-certification commitment and the continuity bound is evaluated
+        # across the whole reference period.
+        d = TODAY - dt.timedelta(days=400)
         while d <= TODAY:
             iso = d.isoformat()
             series.append({"date": iso, "status": "pass"})
