@@ -45,6 +45,7 @@ import hashlib
 import re
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 
 CHANGELOG_URL = "https://raw.githubusercontent.com/FedRAMP/2026-markdown/main/changelog.md"
@@ -77,7 +78,14 @@ def baseline_hash(data: bytes) -> str:
 
 
 def fetch_changelog(url: str = CHANGELOG_URL, timeout: int = 30) -> bytes:
-    with urllib.request.urlopen(url, timeout=timeout) as resp:  # noqa: S310 (https, fixed host)
+    # Bandit B310: restrict to https so a file:/ or custom scheme cannot be
+    # opened (this fetches FedRAMP's public changelog over TLS only; the
+    # workflow path fetches with curl --fail and passes --file instead).
+    scheme = urllib.parse.urlparse(url).scheme.lower()
+    if scheme != "https":
+        raise ValueError(f"refusing to fetch a non-https URL (scheme {scheme!r})")
+    req = urllib.request.Request(url, method="GET")
+    with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310  # nosec B310
         return resp.read()
 
 

@@ -110,6 +110,19 @@ def test_cli_without_version_writes_baseline_unconditionally():
             assert fh.read().strip() == hashlib.sha256(CHANGELOG.encode("utf-8")).hexdigest()
 
 
+def test_fetch_refuses_non_https_schemes_without_opening_them():
+    """The fetch is for FedRAMP's public changelog over TLS only (Bandit B310):
+    a file:/ or http:/ URL is refused before urlopen is reached."""
+    for url in ("file:///etc/hosts", "http://example.invalid/changelog.md", "ftp://x/y"):
+        try:
+            mc.fetch_changelog(url)
+        except ValueError as exc:
+            assert "non-https" in str(exc)
+        else:
+            raise AssertionError(f"{url} was not refused")
+    assert mc.CHANGELOG_URL.startswith("https://raw.githubusercontent.com/FedRAMP/2026-markdown/")
+
+
 def _run_all():
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for t in tests:
