@@ -251,6 +251,57 @@ def test_f43_drift_workflow_hands_review_to_the_issue_and_fails():
     assert "Allow GitHub Actions to create and approve pull requests" in step
 
 
+# ---- AUD-F44: a dataset adoption advances the markdown-changelog baseline ---
+
+def test_f44_adoption_advances_the_markdown_baseline_inside_the_adoption_commit():
+    """The drift check compares FedRAMP's 2026-markdown changelog against
+    .github/.markdown-changelog-baseline. The 2026.10.05.01 and 2026.10.08.01
+    adoptions advanced every dataset pin but not that baseline, so the next
+    scheduled run re-reported the entry the adoption's reviewer had already
+    read (issue #211). The adoption step must fetch the changelog fail-closed,
+    advance the baseline through markdown_changelog.py gated on the entry for
+    the new version, and do so BEFORE `git add -- .` so the baseline rides in
+    the adoption commit rather than in a follow-up nobody is told to make."""
+    step = _drift_regenerate_step()
+    fetch = step.find("FedRAMP/2026-markdown/main/changelog.md")
+    assert fetch > 0, "the adoption step must fetch the FedRAMP changelog"
+    curl = step.rfind("curl", 0, fetch)
+    assert curl > 0 and "--fail" in step[curl:fetch], \
+        "the changelog download must use --fail so an error page is never hashed as content"
+    call = step.find("markdown_changelog.py --file /tmp/changelog.md")
+    assert call > 0, "the baseline must be advanced through the shared helper, not an inline hash"
+    assert '--version "$NEWVER"' in step[call:call + 400], \
+        "the advance must be gated on the entry for the adopted version"
+    assert "--write-baseline .github/.markdown-changelog-baseline" in step[call:call + 400]
+    add = step.find("git add -- .")
+    assert 0 < call < add, "the baseline must be written before the adoption commit stages files"
+
+
+def test_f44_review_body_carries_fedramps_own_changelog_entry():
+    """The reviewer sees FedRAMP's description of the release next to the
+    machine diff, which is what justifies advancing the baseline on their
+    behalf."""
+    step = _drift_regenerate_step()
+    assert "--entry-out /tmp/changelog-entry.txt" in step
+    assert "CHANGELOG_ENTRY=$(cat /tmp/changelog-entry.txt" in step
+    assert "## FedRAMP changelog entry for %s" in step
+    body = step[step.find('BODY="$(printf'):]
+    assert '"$NEWVER" "$CHANGELOG_ENTRY" "$DIFF_SUMMARY" "$IMPACT_SUMMARY"' in body, \
+        "the printf arguments must match the four placeholders in order"
+
+
+def test_f44_markdown_only_drift_issue_names_the_human_rebaseline_path():
+    """A markdown change with no dataset change stays issue-only for a human;
+    the issue must say how to close it with the same helper."""
+    wf = _read(DRIFT_WF)
+    start = wf.find("Open an issue on drift")
+    end = wf.find("Set up Python for regeneration")
+    assert 0 < start < end
+    issue_step = wf[start:end]
+    assert "markdown_changelog.py --fetch --write-baseline .github/.markdown-changelog-baseline" in issue_step
+    assert "FedRAMP/2026-markdown/commits/main/changelog.md" in issue_step
+
+
 def _run_all():
     tests = [v for k, v in sorted(globals().items())
              if k.startswith("test_") and callable(v)]

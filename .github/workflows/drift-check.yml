@@ -124,7 +124,8 @@ jobs:
           TITLE="FedRAMP upstream sources changed: $DRIFT"
           EXISTING=$(gh issue list --state open --search "$TITLE in:title" --json number --jq length)
           if [ "$EXISTING" = "0" ]; then
-            gh issue create --title "$TITLE" --body "Upstream FedRAMP sources changed. Re-pull the changed sources, diff against the pinned copies, re-run the pipeline and validation, and review before relying on the pinned copies. Detected by the scheduled drift-check workflow."
+            ISSUE_BODY="$(printf 'Upstream FedRAMP sources changed. Re-pull the changed sources, diff against the pinned copies, re-run the pipeline and validation, and review before relying on the pinned copies. Detected by the scheduled drift-check workflow.\n\nIf only `2026-markdown-changelog` drifted (no dataset change), read the new entry at https://github.com/FedRAMP/2026-markdown/commits/main/changelog.md, then advance the baseline with `python validation/scripts/markdown_changelog.py --fetch --write-baseline .github/.markdown-changelog-baseline` and commit it. A dataset adoption advances this baseline itself once FedRAMP publishes the entry for the new version.')"
+            gh issue create --title "$TITLE" --body "$ISSUE_BODY"
           fi
       - name: Set up Python for regeneration
         if: failure() && steps.check.outputs.dataset_changed == '1'
@@ -172,6 +173,22 @@ jobs:
           # full validation suite - not a partial script list.
           python sdr.py build
           python sdr.py validate --no-tests
+          # AUD-F44: FedRAMP rebuilds 2026-markdown from fedramp/rules on every
+          # dataset release, so changelog.md gains an entry for $NEWVER. Fetch
+          # it (--fail, so an error page is a download failure, never content),
+          # put FedRAMP's own description of the change in the review body, and
+          # advance the markdown drift baseline ONLY when that entry exists: the
+          # reviewer of this PR reads it, so the next scheduled check must not
+          # re-report it as drift (issue #211 did exactly that after the
+          # 2026.10.08.01 adoption; PR #205 re-set it by hand after 2026.10.05.01).
+          # When the entry is not published yet the baseline is left alone and
+          # the daily check surfaces it when it lands.
+          curl --fail --show-error --silent --location --retry 3 --max-time 30 \
+            "https://raw.githubusercontent.com/FedRAMP/2026-markdown/main/changelog.md" \
+            -o /tmp/changelog.md
+          python validation/scripts/markdown_changelog.py --file /tmp/changelog.md \
+            --version "$NEWVER" --entry-out /tmp/changelog-entry.txt \
+            --write-baseline .github/.markdown-changelog-baseline
           BRANCH="drift/dataset-$NEWVER"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -200,7 +217,8 @@ jobs:
           fi
           DIFF_SUMMARY=$(cat /tmp/dataset-diff.txt 2>/dev/null || echo "(diff unavailable)")
           IMPACT_SUMMARY=$(cat /tmp/change-impact.txt 2>/dev/null || echo "(impact unavailable)")
-          BODY="$(printf 'The pinned CR26 dataset drifted from upstream. This PR validates the new dataset against the official rules schema, updates the source lock (version/hash/upstream commit), and regenerates the COMPLETE package via `python sdr.py build` + `python sdr.py validate`.\n\n## Material rule and KSI changes\n```\n%s\n```\n\n## Downstream impact on this package\n```\n%s\n```\n\nREVIEW the diff and impact before merging. No status was changed and no assessment was written.' "$DIFF_SUMMARY" "$IMPACT_SUMMARY")"
+          CHANGELOG_ENTRY=$(cat /tmp/changelog-entry.txt 2>/dev/null || echo "(changelog entry unavailable)")
+          BODY="$(printf 'The pinned CR26 dataset drifted from upstream. This PR validates the new dataset against the official rules schema, updates the source lock (version/hash/upstream commit), and regenerates the COMPLETE package via `python sdr.py build` + `python sdr.py validate`.\n\n## FedRAMP changelog entry for %s\n\n%s\n\n## Material rule and KSI changes\n```\n%s\n```\n\n## Downstream impact on this package\n```\n%s\n```\n\nREVIEW the diff and impact before merging. No status was changed and no assessment was written.' "$NEWVER" "$CHANGELOG_ENTRY" "$DIFF_SUMMARY" "$IMPACT_SUMMARY")"
           EXISTING_PR=$(gh pr list --head "$BRANCH" --state open --json number --jq 'length')
           if [ "$EXISTING_PR" != "0" ]; then
             echo "a PR for $BRANCH is already open; nothing to create"
