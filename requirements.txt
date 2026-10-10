@@ -8,3 +8,6 @@ python-docx==1.2.0
 # signer (validation/scripts/validate_evidence.py). Well-known, actively
 # maintained; used only to verify, never to sign.
 cryptography==50.0.2
+# YAML reader for the landing-zone configuration importer
+# (automation/importers/import_landing_zone.py); the core build does not need it.
+PyYAML==6.0.3

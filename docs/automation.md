@@ -140,7 +140,29 @@ The import also derives dated, count-only observations for the vulnerability-det
 
 Three refusals keep the import honest. The observation time comes from the export itself (latest finding `UpdatedAt` or rule `LastSuccessfulEvaluationTime`); an export with no timestamp needs `--observed-at`, because the importer will not stamp data of unknown age as fresh. An export cut short (a `NextToken` left in the file) yields an `OBSERVED_PARTIAL` fact the metric engine never scores. And one source per region: the import is refused while a live collection for that region exists, and the live collector warns when an import does, because the appender sums posture facts per route across files and two sources for one scope would count it twice. Exit codes match the collector's: 4 when the exports carry no evaluated outcome.
 
-Also planned: importers for the landing-zone configuration and an OSCAL Rev5 SSP, each producing proposals into the same review step; and annotating infrastructure-as-code modules with the indicators they satisfy.
+### An existing Rev5 SSP: the provider's own narrative, control by control
+
+A provider moving from Rev5 already holds assessed narrative for every NIST SP 800-53 control, in its OSCAL System Security Plan. The dataset lists, for each indicator, the controls it draws on (`KSI.<family>.indicators.<id>.controls`, in OSCAL ids such as `ac-2.2`). `automation/importers/import_oscal_ssp.py` joins the two:
+
+```
+python automation/importers/import_oscal_ssp.py path/to/ssp.json --write
+python automation/ai/draft_narratives.py --write --scope ksi
+python sdr.py review --walk --reviewer "Jane Doe" --role "Compliance lead"
+```
+
+For each KSI, the proposal quotes the SSP's `by-component` implementation descriptions for exactly the controls FedRAMP ties to that indicator, each tagged with the control id, the statement, the component title and what the Rev5 SSP declared (`implemented`, `partial`). Pressing accept makes the provider's own Rev5 words the 20x record; pressing edit trims them. The join key is the dataset's control list and nothing else: an SSP control that no KSI references (`pe-3`, for example) is reported and left alone, and the import prints, per KSI, how many of its dataset controls the SSP implements and which are missing. What never crosses: the SSP's implementation status (quoted as text, never written as `implementation_status`), party names, system ids, inventory. The observation time is the SSP's `metadata.last-modified`.
+
+### The landing-zone configuration: declared, and labelled as such
+
+A Landing Zone Accelerator deployment is described by YAML (`global-config.yaml`, `security-config.yaml`). `automation/importers/import_landing_zone.py` reads those two files (field names verified against the LZA Universal Configuration) and turns what they declare into observations: GuardDuty with its protections and export, Security Hub with its enabled standards, Access Analyzer, the IAM password policy values, S3 Block Public Access, the Config recorder, the organization trail (Control Tower's or the accelerator's), centralized logging and retention, Session Manager logging, Backup vaults, and the declared Config rules. A rule's catalog `identifier` resolves through the same pinned identifiers as the export importer; a declared service reaches exactly the KSIs whose registry `metric_service_keys` route that service, and a declared rule reaches the KSIs that carry it as a check. Two dataset rules receive declared-architecture observations: `VDR-CSO-ADT` (automated detection services) and `VDR-CSO-DFR` (by-default mitigations: default EBS encryption, Block Public Access, SCP change revert, Macie).
+
+```
+python automation/importers/import_landing_zone.py path/to/lza-config/ --observed-at 2026-10-01 --write
+```
+
+Every sentence it emits begins "Landing zone configuration declares", and the facts file carries `collection_outcome.status: DECLARED_ONLY` with empty `facts` and `posture_facts`. A YAML file states intent; it does not observe the account. So the import contributes nothing to any metric or evidence entry, only material for the narrative, and the live collector or an export import is what observes the account afterwards. The files carry no timestamp, so `--observed-at` (the date they were taken from the repository) is required.
+
+Also planned: annotating infrastructure-as-code modules with the indicators they satisfy.
 
 ## What deliberately is not automated
 

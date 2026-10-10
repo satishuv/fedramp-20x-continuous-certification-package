@@ -354,6 +354,8 @@ TEST_SUITE = [
     "automation/collectors/test_evidence_wiring.py",
     "automation/collectors/test_thirdparty_adapters.py",
     "automation/importers/test_import_findings.py",
+    "automation/importers/test_import_oscal_ssp.py",
+    "automation/importers/test_import_landing_zone.py",
     "automation/collectors/test_evidence_lifecycle.py",
     "examples/shift-left/test_run_policy.py",
     "automation/sdrscan/test_checks.py",

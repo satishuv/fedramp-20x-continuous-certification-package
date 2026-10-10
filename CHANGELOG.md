@@ -8,6 +8,42 @@ One project-specific convention: the pinned FedRAMP dataset version is recorded 
 
 Pinned dataset: `2026.10.08.01` (unchanged)
 
+The zero-typing track completes its importer set:
+
+- **An existing Rev5 SSP and a landing-zone configuration become KSI
+  proposals.** New `automation/importers/import_oscal_ssp.py` reads an OSCAL
+  System Security Plan (NIST OSCAL v1.1.x field names) and joins its
+  `by-component` implementation descriptions to the KSIs through the
+  dataset's own control lists (`KSI.<family>.indicators.<id>.controls`,
+  OSCAL ids), so each KSI's proposal quotes the provider's assessed Rev5
+  narrative for exactly the controls FedRAMP ties to that indicator, tagged
+  with control, statement, component and the SSP's declared status as text.
+  The SSP's status is never written as a 20x `implementation_status`; party
+  names, system ids and inventory never cross; a control no KSI lists is
+  reported, not mapped; per-KSI coverage names the dataset controls the SSP
+  does not implement. New `automation/importers/import_landing_zone.py` reads
+  Landing Zone Accelerator `global-config.yaml` and `security-config.yaml`
+  (field names verified against the LZA Universal Configuration) and emits
+  observations that all begin "Landing zone configuration declares", routed
+  to KSIs only through the registry's `metric_service_keys` allowlist and its
+  Config-rule checks (rule identifiers through the pinned catalog
+  identifiers), plus `VDR-CSO-ADT` and `VDR-CSO-DFR`; its facts file carries
+  `DECLARED_ONLY` with empty `facts` and `posture_facts`, so declared intent
+  contributes to no metric or evidence. `draft_narratives.py` now quotes
+  imported KSI observations (bounded: 6 items, 2400 characters) into the KSI
+  proposals, drafts KSIs on imported observations alone, and keeps a
+  provider-written 4-argument drafter working. Fixed alongside: every KSI
+  proposal's "Intended measure" was empty because the drafter read guidance
+  from the collector registry entry, which carries none; it now reads the
+  record's `fill_guidance`. PyYAML 6.0.3 is added to `requirements.txt`,
+  `setup.py` and the hash-locked `requirements.lock` (every PyPI artifact
+  digest; installed in a clean venv with `--require-hashes` and audited).
+  22 offline tests across the two importers plus 2 drafter regressions, all
+  in the CI suite. Exercised end to end on a fictional eleven-control SSP and
+  a fictional landing zone: 14 and 17 KSIs received observations, 46 KSI
+  proposals pending in `sdr.py review --list`, the appender saw zero facts
+  from either file.
+
 The zero-typing track gains its first importer:
 
 - **AWS Config and Security Hub exports become collector facts without
