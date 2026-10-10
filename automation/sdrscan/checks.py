@@ -445,13 +445,25 @@ def ksi_checks(ctx):
             "all evidence uses an official evidenceType value" if not bad_types
             else f"unrecognised evidenceType values: {bad_types}")
 
-        # SDR-CSX-KMT. Class A may include historical metrics; B and C must.
+        # SDR-CSX-KMT. Class A may include historical metrics; Class B SHOULD
+        # (since dataset 2026.10.08.01; MUST before); Class C must.
         hist = ctx.records["ksi"].get(kid, {}).get("historical_metrics") or {}
         if cls == "a":
             add("ksi_metrics_30day_summary", True,
                 "Class A MAY include historical metrics; not required")
             add("ksi_metrics_yearly_summary", True,
                 "Class A MAY include historical metrics; not required")
+        elif cls == "b":
+            # SHOULD: an absent summary is a question for the assessor (MANUAL),
+            # not a scanner failure.
+            add("ksi_metrics_30day_summary",
+                True if stated(hist.get("last_30_days")) else "MANUAL",
+                f"30-day summary: {_why(hist.get('last_30_days'))}; SHOULD at "
+                "Class B (SDR-CSX-KMT, dataset 2026.10.08.01)")
+            add("ksi_metrics_yearly_summary",
+                True if stated(hist.get("up_to_one_year")) else "MANUAL",
+                f"up-to-one-year summary: {_why(hist.get('up_to_one_year'))}; "
+                "SHOULD at Class B, where available")
         else:
             add("ksi_metrics_30day_summary", stated(hist.get("last_30_days")),
                 f"30-day summary: {_why(hist.get('last_30_days'))}")
@@ -811,8 +823,9 @@ METADATA = {m["check_id"]: m for m in [
        "sdr/records/records-store.json -> ksi.<indicator>.evidence[].evidenceType"),
     _m("ksi_metrics_30day_summary", "Indicator carries a 30-day metric summary",
        "high", "Key Security Indicator", ["SDR-CSX-KMT"],
-       "Class B and Class C providers MUST include a summary of each metric "
-       "over the past 30 days.",
+       "Class C providers MUST, and Class B providers SHOULD (dataset "
+       "2026.10.08.01; MUST before), include a summary of each metric over the "
+       "past 30 days.",
        "Without recent history an assessor sees a snapshot and cannot tell "
        "whether the control has been holding.",
        "Record the 30-day summary, ideally written by the collector rather "
@@ -822,8 +835,8 @@ METADATA = {m["check_id"]: m for m in [
     _m("ksi_metrics_yearly_summary",
        "Indicator carries a metric summary up to the past year",
        "medium", "Key Security Indicator", ["SDR-CSX-KMT"],
-       "Class B and Class C providers MUST include a summary of the metric up "
-       "to the past year, where available.",
+       "Class C providers MUST, and Class B providers SHOULD, include a summary "
+       "of the metric up to the past year, where available.",
        "A year of history is what distinguishes a sustained control from one "
        "that was fixed the week before assessment.",
        "Record the longer-run summary once that much history exists.",
@@ -831,9 +844,9 @@ METADATA = {m["check_id"]: m for m in [
        ("b", "c")),
     _m("ksi_metrics_daily_data",
        "Class C indicators reference a year of daily metric data",
-       "high", "Key Security Indicator", ["SDR-CSX-KMT", "FRC-CSX-MOT"],
-       "Class C providers MUST supply all daily metric data up to the past "
-       "year, where available.",
+       "high", "Key Security Indicator", ["SDR-CSX-KMT"],
+       "Class C providers MUST supply all daily metric data, including the "
+       "status of persistent validation, up to the past year, where available.",
        "Class C rests on continuous data. Summaries alone do not meet it.",
        "Reference the daily metric store, for example the collector's evidence "
        "bucket prefix.",

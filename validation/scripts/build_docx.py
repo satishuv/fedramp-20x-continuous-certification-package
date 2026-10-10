@@ -144,8 +144,9 @@ def main():
         "automated verification and validation method(s) per Key Security "
         "Indicator (rule FRC-CSX-VVK)."
         + ("" if cls == "a" else
-           " Class C additionally requires 6 months of historical metrics "
-           "before application (rule FRC-CSX-MOT)." if cls == "c" else ""))
+           " Class C additionally supplies all daily metric data, including the "
+           "status of persistent validation, up to the past year where available "
+           "(rule SDR-CSX-KMT)." if cls == "c" else ""))
 
     doc.add_heading(f"Part 1: FedRAMP rules ({len(rules)} entries)", level=1)
     for r in rules:
@@ -247,7 +248,7 @@ def main():
         "Human-readable and JSON forms were generated from the same record store in the same run.",
     ]
     if cls == "c":
-        checks.append("At least 6 months of daily metrics history exists for every indicator (FRC-CSX-MOT).")
+        checks.append("Daily metric data, including the status of persistent validation, exists for every indicator up to the past year where available, and is continuous while it exists (SDR-CSX-KMT).")
     for c in checks:
         doc.add_paragraph(c, style="List Number")
 

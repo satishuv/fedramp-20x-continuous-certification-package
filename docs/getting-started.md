@@ -46,7 +46,7 @@ The validator prints fourteen checks and one gating line:
 PASS: official_schema_validation | 0 schema errors
 PASS: dataset_version_agreement | pinned dataset info.version 2026.10.05.01 vs profile 2026.10.05.01
 PASS: pinned_schema_version_guard | all 9 pinned schemas match expected $id and version
-PASS: rule_coverage | missing: [] extra: [] (158/158 rules)
+PASS: rule_coverage | missing: [] extra: [] (157/157 rules)
 PASS: ksi_coverage | 46/46 KSIs present
 PASS: ksi_required_fields | all KSIs carry the six schema-required fields
 FAIL: ksi_test_minimums | 43 KSIs below the FRC-CSX-VVK minimum for class B (SHOULD at Class B; advisory)

@@ -100,7 +100,7 @@ def main():
               any(f"{swapped} force mismatch" in x for x in _names(findings)))
     # RULE 7: empty profile must not reconcile.
     findings, n = ro.reconcile_frr(dataset, "b", [])
-    check("empty profile is NOT clean (RULE 7)", bool(findings) and n == 158)
+    check("empty profile is NOT clean (RULE 7)", bool(findings) and n == 157)
     # Class A tamper: drop one enumerated rule.
     findings, _ = ro.reconcile_frr(dataset, "a", profiles["a"][:-1])
     check("class A dropped rule is reported",

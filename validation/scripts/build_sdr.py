@@ -38,6 +38,52 @@ import profile_contract as _pc  # noqa: E402  (offering_title: honest title whil
 
 TBD = "TBD: Information has not been provided."
 
+RULE_CATALOG = os.path.join(BASE, "traceability", "rule-catalog.json")
+KSI_CATALOG = os.path.join(BASE, "traceability", "ksi-catalog.json")
+
+
+def dataset_universe():
+    """Every rule id and KSI id the pinned dataset currently defines, read from
+    the catalogs build_catalog.py derives from it (all applicabilities, all
+    classes). Used to tell an orphaned record from one that merely sits outside
+    the active class."""
+    rules, ksis = set(), set()
+    try:
+        with open(RULE_CATALOG, encoding="utf-8") as f:
+            cat = json.load(f)
+        items = cat.get("rules", cat) if isinstance(cat, dict) else cat
+        if isinstance(items, dict):
+            rules = {k for k in items if isinstance(k, str)}
+        else:
+            rules = {r.get("rule_id") for r in items if isinstance(r, dict) and r.get("rule_id")}
+    except (OSError, ValueError):
+        pass
+    try:
+        with open(KSI_CATALOG, encoding="utf-8") as f:
+            cat = json.load(f)
+        items = cat.get("ksis", cat.get("indicators", cat)) if isinstance(cat, dict) else cat
+        if isinstance(items, dict):
+            ksis = {k for k in items if isinstance(k, str)}
+        else:
+            ksis = {k.get("ksi_id") for k in items if isinstance(k, dict) and k.get("ksi_id")}
+    except (OSError, ValueError):
+        pass
+    return rules, ksis
+
+
+def orphan_record_ids(records, rule_ids, ksi_ids):
+    """Record-store entries whose id the dataset no longer defines (AUD-F42).
+
+    When FedRAMP removes a rule (FRC-CSX-MOT in 2026.10.08.01) the adoption
+    regenerates every derived artifact, but the record store is authored
+    content and is never pruned by a build. The orphan then sits in the store
+    with hollowed guidance ("See rule catalog.") and nothing reports it. This
+    returns the orphans so the build and preflight can say so; removing or
+    archiving them is the adoption reviewer's decision, never the build's."""
+    rules = sorted(r for r in (records.get("frr") or {}) if rule_ids and r not in rule_ids)
+    ksis = sorted(k for k in (records.get("ksi") or {}) if ksi_ids and k not in ksi_ids)
+    return rules, ksis
+
 
 def ksi_statement_for_class(k, cls):
     """Resolve a KSI's security-outcome statement for a certification class.
@@ -888,6 +934,17 @@ def main():
     else:
         records = scaffold_records(rules, ksis)
         print("record store scaffolded:", RECORDS)
+
+    # AUD-F42: say so when the store carries a record for a rule or KSI the
+    # dataset no longer defines. The build never deletes authored content; the
+    # adoption reviewer removes or archives the orphan deliberately.
+    _uni_rules, _uni_ksis = dataset_universe()
+    _orphan_rules, _orphan_ksis = orphan_record_ids(records, _uni_rules, _uni_ksis)
+    if _orphan_rules or _orphan_ksis:
+        print(f"record store: {len(_orphan_rules) + len(_orphan_ksis)} ORPHANED record(s) "
+              f"whose id the dataset {profile.get('dataset_version')} no longer defines: "
+              + ", ".join(_orphan_rules + _orphan_ksis)
+              + " (not rendered; remove or archive them in the adoption review)")
 
     # Backfill guidance into the record store so the file the provider edits
     # carries the instructions next to the fields being filled. Guidance is

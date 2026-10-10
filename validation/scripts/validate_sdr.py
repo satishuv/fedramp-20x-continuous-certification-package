@@ -571,9 +571,12 @@ def main():
         for f in frr_required:
             if f not in sem:
                 sem_problems.append(f"{entry['frrID']}: missing SDR-CSO-FRR item {f}")
-    # SDR-CSX-KMT historical metrics are required in the SDR for Class B and C;
-    # Class A MAY include them. So the historicalMetrics block must be present
-    # for B/C; for A its absence is acceptable.
+    # SDR-CSX-KMT historical metrics: MUST in the Class C SDR, SHOULD at Class B
+    # (dataset 2026.10.08.01; MUST before), MAY at Class A. The generator emits
+    # the historicalMetrics block for B and C, so its presence there is a
+    # generator property this gate still checks (an absent key is a build
+    # defect, not a provider shortfall); whether the B content is filled is the
+    # preflight's advisory. For A its absence is acceptable.
     for entry in sdr["keySecurityIndicators"]:
         sem = entry.get("providerExtensions", {}).get("xFedRampSemantic")
         if sem is None:

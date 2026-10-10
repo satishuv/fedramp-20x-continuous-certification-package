@@ -561,6 +561,19 @@
       "mutation": "MUT-F41: _rule_deltas compares only {force, statement} again (the pre-F41 posture in miniature) so the N0 bullet, the notes and the notification changes vanish from the report; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F42",
+      "severity": "Medium",
+      "requirement": "An adoption must leave the authored record store consistent with the dataset it now tracks, or say where it is not (docs/validation.md: the human reviews what in the package must change). A record for a rule FedRAMP removed is content nothing renders and nothing checks",
+      "component": "validation/scripts/build_sdr.py (record-store scaffold and guidance backfill); sdr.py package-preflight",
+      "description": "CR26 2026.10.08.01 removed FRC-CSX-MOT. The drift workflow's regenerate (c95c7cb) rebuilt every derived artifact from the new dataset, but the record store is authored content the build only ever adds to, so the FRC-CSX-MOT record stayed: its fill_guidance collapsed to what_it_looks_for 'See rule catalog.' and an empty how_to_comply (the diff the bot committed shows exactly that), and no build line, validation check or preflight message said a record had lost its rule. The Acme sample store carried the same orphan. change_impact.py flagged the removal for review, but at the dataset level, not as a record in this store. Found reviewing the drift branch before adopting it.",
+      "root_cause": "The scaffold merges the dataset INTO the store (adds missing records) and never compares the store BACK against the dataset. With no upstream rule ever removed before 2026.10.08.01, the asymmetry had no visible consequence.",
+      "fix_commit": "this PR -- build_sdr.dataset_universe() reads the derived rule and KSI catalogs; orphan_record_ids(records, rules, ksis) returns store entries whose id the dataset no longer defines. The build prints them as ORPHANED record(s) and package-preflight reports them as an advisory naming each id (never a blocker: content that no longer binds blocks nothing; never pruned: removing authored content is the adoption reviewer's decision). The orphaned FRC-CSX-MOT record is removed from the template store and the Acme sample store in the same adoption",
+      "regression_test": "validation/scripts/test_orphan_records.py (universe non-empty and excludes the removed rule; synthetic orphan rule and KSI found, live ids not reported; an unreadable catalog reports nothing rather than everything; the committed store carries no orphan; both reporters present in source)",
+      "mutation": "MUT-F42: orphan_record_ids returns ([], []) unconditionally (the pre-F42 silence); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

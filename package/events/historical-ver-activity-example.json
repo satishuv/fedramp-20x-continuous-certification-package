@@ -1,6 +1,6 @@
 {
  "certificationPackageOverviewUri": "https://example.provider.gov-placeholder/cpo.json",
- "generatedAt": "2026-10-05T00:00:00Z",
+ "generatedAt": "2026-10-08T00:00:00Z",
  "activeVulnerabilities": [],
  "acceptedVulnerabilities": [],
  "_eventNote": "EXAMPLE Historical VER Activity (VER) scaffold. Validated against the official FedRAMP schema. Empty arrays attest none-this-period. Replace EXAMPLE values with real data when an actual event occurs. Not a real filing and not a compliance claim."

@@ -11,8 +11,8 @@
   ],
   "sdr_version": "0.1.0",
   "schema_version": "2026-06-24",
-  "dataset_version": "2026.10.05.01",
-  "generated": "deterministic build from dataset 2026.10.05.01",
+  "dataset_version": "2026.10.08.01",
+  "generated": "deterministic build from dataset 2026.10.08.01",
   "source_of_update": "build_sdr.py generator"
  },
  "frr": {
@@ -1974,7 +1974,7 @@
     "official_notes": [
      "Information resources (including third-party information resources) MAY vary by security category as appropriate to the type of information handled by or impacted by the information resource."
     ],
-    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2012,7 +2012,7 @@
    "guidance": {
     "what_it_looks_for": "Providers seeking a Certification MUST supply a complete FedRAMP Certification Package to FedRAMP for initial certification; the FedRAMP Certification Package MUST include at least the following information:",
     "official_notes": [],
-    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2054,7 +2054,7 @@
      "Public JSON data is intended to be consumed by FedRAMP, agency GRC tools, and more - it should be available in a way that enables standard web-application use following standard web frameworks. Generally, if you can't write a web app to parse this data without configuring a browser to bypass security defaults then there has likely been a problem.",
      "The Schema Validator available at fedramp.gov will not work properly if Cross-Origin Resource Sharing is not properly configured."
     ],
-    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2092,7 +2092,7 @@
    "guidance": {
     "what_it_looks_for": "Providers MUST maintain responsibility and accountability for the accuracy and completeness of all information in the FedRAMP Certification Package, especially when they engage a third party (such as an independent assessor, advisory service, or external tools) to supply information on their behalf.",
     "official_notes": [],
-    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2132,7 +2132,7 @@
     "official_notes": [
      "This rule does not prevent a provider from seeking and maintaining a FedRAMP Rev5 Agency Certification and a FedRAMP 20x Program Certification for the same cloud service offering, however, doing so is strongly discouraged due to the increased complexity and risk of confusion for all parties."
     ],
-    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2170,7 +2170,7 @@
    "guidance": {
     "what_it_looks_for": "Providers MUST be listed in the FedRAMP Marketplace before applying for FedRAMP Certification, including:",
     "official_notes": [],
-    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2208,7 +2208,7 @@
    "guidance": {
     "what_it_looks_for": "Providers MUST complete the FedRAMP Certification Application Form in full to request an initial assessment by FedRAMP.",
     "official_notes": [],
-    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2246,7 +2246,7 @@
    "guidance": {
     "what_it_looks_for": "Providers MUST supply a fresh initial FedRAMP Certification Package that shows the current status of the cloud service offering as verified and validated by the provider within the previous 7 days.",
     "official_notes": [],
-    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2284,7 +2284,7 @@
    "guidance": {
     "what_it_looks_for": "Providers seeking Class C Certification MUST supply a fresh initial FedRAMP independent assessment that was completed by a FedRAMP Recognized independent assessment service within the previous 3 months.",
     "official_notes": [],
-    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2325,7 +2325,7 @@
      "FedRAMP previously allowed independent assessment services to submit applications on behalf of providers, but this caused confusion about who was responsible for the application and the information in it. Providers should apply directly to ensure clear accountability.",
      "Providers may use third parties to help them prepare their application and assessment materials for submission."
     ],
-    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2363,7 +2363,7 @@
    "guidance": {
     "what_it_looks_for": "Providers MAY freshen a stale initial independent verification and validation assessment by having a FedRAMP Recognized independent assessment service review any changes between the original assessment and the current status of the cloud service offering in place of a full re-assessment, UNLESS the stale assessment is more than 9 months old.",
     "official_notes": [],
-    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2401,47 +2401,7 @@
    "guidance": {
     "what_it_looks_for": "Providers seeking 20x Class C Certification MUST implement automated methods to persistently verify and validate the accuracy and completeness of Key Security Indicators with at least 2 automated methods for each Key Security Indicator.",
     "official_notes": [],
-    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
-    "evidence_required": [
-     "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
-     "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
-     "Validation that the implementation is in place and working as intended, or that the reason for not implementing is accepted by a senior official.",
-     "Independent verification.",
-     "Independent validation."
-    ],
-    "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
-   },
-   "owner": "TBD: Information has not been provided.",
-   "verification": "TBD: Information has not been provided.",
-   "validation_frequency": "TBD: Information has not been provided.",
-   "failure_condition": "TBD: Information has not been provided.",
-   "failure_response": "TBD: Information has not been provided.",
-   "evidence_freshness": "TBD: Information has not been provided.",
-   "exception_reference": "None recorded",
-   "customer_risk": "TBD: Information has not been provided.",
-   "responsibility": {
-    "aws": "TBD: Information has not been provided.",
-    "provider": "TBD: Information has not been provided.",
-    "customer": "TBD: Information has not been provided."
-   },
-   "independent_verification": "TBD: Information has not been provided.",
-   "independent_validation": "TBD: Information has not been provided.",
-   "assessor_responses": "None recorded",
-   "rule_artifacts": [],
-   "senior_official_acceptance": "Not required: rule is followed"
-  },
-  "FRC-CSX-MOT": {
-   "name": "Metrics Over Time for Key Security Indicators",
-   "force": "MUST",
-   "family": "FRC",
-   "family_name": "FedRAMP Certification",
-   "guidance": {
-    "what_it_looks_for": "Providers seeking 20x Class C Certification MUST supply historical metrics including status from persistent validation over at least the past 6 months for all Key Security Indicators.",
-    "official_notes": [
-     "For initial FedRAMP Certification, providers will need to have mechanisms in place and agree to meet this requirement in the event the cloud service has not been operating with related metrics available for the required period prior to applying for initial certification."
-    ],
-    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2481,7 +2441,7 @@
     "official_notes": [
      "Different rules will be easy to automate for different providers, depending on the implementation, so FedRAMP generally leaves this implementation up to providers based on what makes the most sense for their own business and approach."
     ],
-    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2519,7 +2479,7 @@
    "guidance": {
     "what_it_looks_for": "Providers SHOULD apply ALL Key Security Indicators to ALL aspects of their cloud service offering that are within the FedRAMP Minimum Assessment Scope.",
     "official_notes": [],
-    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and accumulate the 6-month metrics history (FRC-CSX-MOT) before applying.",
+    "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -4572,7 +4532,9 @@
    "family_name": "Security Decision Record",
    "guidance": {
     "what_it_looks_for": "Providers with 20x Class C Certifications MUST also include historical metrics in their Security Decision Record, supplying at least the following information for each applicable Key Security Indicator:",
-    "official_notes": [],
+    "official_notes": [
+     "For initial FedRAMP Certification, providers will need to have mechanisms in place and agree to meet this requirement in the event the cloud service has not been operating with related metrics available for the required period prior to applying for initial certification."
+    ],
     "how_to_comply": "Maintain the Security Decision Record in both human-readable and JSON form, schema-valid, with an entry for every applicable rule and KSI, metadata (version, last updated, update source), and the per-class historical metrics.",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",

@@ -421,20 +421,25 @@ def summarize(points):
     return {"days_observed": len(points), "avg_passing_fraction": avg}
 
 
-# FRC-CSX-MOT persistent-validation window, per class, verified verbatim
-# against the pinned dataset: Class A MAY, Class B SHOULD, Class C MUST supply
-# status from persistent validation over at least the past 6 months, Class D
-# MUST over at least the past 18 months.
-MOT_MIN_MONTHS = {"a": 0, "b": 0, "c": 6, "d": 18}
-MOT_MIN_DAYS = {"a": 0, "b": 0, "c": 183, "d": 548}  # informative approximation only
-MOT_FORCE = {"a": "MAY", "b": "SHOULD", "c": "MUST", "d": "MUST"}
+# SDR-CSX-KMT historical-metric reference period, per class, verified verbatim
+# against the pinned dataset (2026.10.08.01): Class A MAY include historical
+# metrics; Class B SHOULD (MUST before 2026.10.08.01); Class C MUST supply "All
+# daily metric data (including status of persistent validation) up to the past
+# year (where available)"; Class D MUST significantly supersede lower classes,
+# specifics pending. FRC-CSX-MOT, which carried a 6/18-month minimum, was
+# removed from the dataset in 2026.10.08.01 as duplicative; no minimum duration
+# remains, so the window below MEASURES coverage of the up-to-one-year reference
+# period and reports it. It is not a pass/fail verdict.
+KMT_REFERENCE_MONTHS = 12
+KMT_REFERENCE_DAYS = 365  # informative approximation only
+KMT_FORCE = {"a": "MAY", "b": "SHOULD", "c": "MUST", "d": "MUST"}
 
 
 def _months_before(ref, n):
     """The date exactly n CALENDAR months before ref, clamping to month-end.
 
-    FedRAMP states the MOT window in calendar months ("at least the past 6/18
-    months"), not fixed days; a day approximation is wrong at month boundaries.
+    FedRAMP states the reference period in calendar terms ("up to the past
+    year"), not fixed days; a day approximation is wrong at month boundaries.
     """
     y = ref.year + (ref.month - 1 - n) // 12
     m = (ref.month - 1 - n) % 12 + 1
@@ -445,39 +450,44 @@ def _months_before(ref, n):
     return datetime(y, m, min(ref.day, last)).date()
 
 
-def mot_window(series, cls, today):
-    """Assess the FRC-CSX-MOT persistent-validation window for one KSI.
+def kmt_window(series, cls, today):
+    """Measure one KSI's coverage of the SDR-CSX-KMT reference period.
 
-    Reports the span the observed series actually covers and whether it meets
-    the class minimum. This is a coverage measurement, not a determination: a
-    covered window says validation status exists over that period, not that the
-    control passed. An empty series reports covered=0 and meets=False for C/D.
-    The window is measured in CALENDAR MONTHS (the dataset's unit); covered_days
-    is reported for information only.
+    Reports the span the observed series actually covers and whether it reaches
+    back the full "up to the past year". This is a coverage measurement, not a
+    determination: a covered period says validation status exists over that
+    period, not that the control passed, and a shorter span is the provider's
+    "where available" statement for the assessor, not a shortfall the appender
+    judges. An empty series reports covered=0. The period is measured in
+    CALENDAR MONTHS (the dataset's unit); covered_days is informative.
     """
     cls = cls.lower()
-    required_months = MOT_MIN_MONTHS.get(cls, 0)
-    required = MOT_MIN_DAYS.get(cls, 0)
-    force = MOT_FORCE.get(cls, "SHOULD")
+    force = KMT_FORCE.get(cls, "SHOULD")
     if series:
         earliest = min(datetime.fromisoformat(p["date"]).date() for p in series)
         covered = (today - earliest).days
-        meets = True if not required_months else earliest <= _months_before(today, required_months)
+        covers = earliest <= _months_before(today, KMT_REFERENCE_MONTHS)
     else:
         earliest = None
         covered = 0
-        meets = not required_months
+        covers = False
     return {
         "class": cls.upper(),
         "force": force,
-        "required_months": required_months,
-        "required_days": required,
+        "reference_months": KMT_REFERENCE_MONTHS,
+        "reference_days": KMT_REFERENCE_DAYS,
         "covered_days": covered,
-        "meets_window": meets,
-        "note": ("Coverage of the persistent-validation window, not a pass/fail "
-                 "verdict. Measured in calendar months. MUST at Class C "
-                 "(>=6 months) and Class D (>=18 months); SHOULD at B; MAY at A."),
+        "covers_reference_period": covers,
+        "note": ("Coverage of the SDR-CSX-KMT reference period (up to the past "
+                 "year), not a pass/fail verdict. Measured in calendar months. "
+                 "No minimum duration is mandated: the data is supplied 'where "
+                 "available'. MUST at Class C and D; SHOULD at B; MAY at A."),
     }
+
+
+# Pre-2026.10.08.01 name, kept so a deployed caller that imported it keeps
+# working; the measurement is the same function.
+mot_window = kmt_window
 
 
 def prune(series, today):
@@ -655,8 +665,8 @@ def append_run(history, registry, config_by_rule, posture_by_service, today,
         year_start = _months_before(today, 12).isoformat()
         last_year = [p for p in entry["series"] if p["date"] >= year_start]
         entry["up_to_one_year"] = summarize(last_year)
-        # FRC-CSX-MOT persistent-validation window coverage for this class.
-        entry["persistent_validation_window"] = mot_window(entry["series"], cls, today)
+        # SDR-CSX-KMT reference-period coverage for this class (measurement).
+        entry["persistent_validation_window"] = kmt_window(entry["series"], cls, today)
         # Per-metric identity (finding 3): FedRAMP asks for a summary of EACH
         # metric, so accumulate a per-metric daily series ALONGSIDE the KSI
         # aggregate above (never replacing it). Each metric keeps its own
@@ -788,7 +798,8 @@ def main():
               "fix or restore it before appending (aborting to prevent data loss, "
               "finding F07).")
         return 1
-    # Class drives the FRC-CSX-MOT window requirement (6 months at C, 18 at D).
+    # Class drives the SDR-CSX-KMT force (MAY A, SHOULD B, MUST C/D) recorded
+    # with each KSI's reference-period coverage.
     offering = load(os.path.join(BASE, "profiles", "common", "offering-profile.json"), {})
     cls = (offering.get("certification_class") or "b").lower()
     # AUD-F17: an offering may TIGHTEN the evaluated-coverage policy, never
@@ -810,7 +821,8 @@ def main():
     if appended == 0:
         # AUD-F30: the attempt is recorded (meta.last_attempt) but the run is a
         # FAILURE: no KSI received a datapoint, so this day adds nothing to the
-        # SDR-CSX-KMT history or the FRC-CSX-MOT clock. Returning 0 here let
+        # SDR-CSX-KMT history (daily data and the status of persistent
+        # validation). Returning 0 here let
         # the scheduled loops report success on an empty day.
         print(f"FAIL. Appended {today.isoformat()} datapoint for 0 KSI(s): no fact "
               "produced an evaluated, fresh outcome (collection failed, stale facts, "

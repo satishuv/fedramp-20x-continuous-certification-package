@@ -155,7 +155,7 @@ def build(cls):
         "sdr/records/records-store.json",
     ]
     # For Class C/D, the durable per-KSI metric history is a readiness-CRITICAL
-    # input: FRC-CSX-MOT READY/NOT-READY turns on it, yet it is not a generated
+    # input: SDR-CSX-KMT READY/NOT-READY turns on it, yet it is not a generated
     # artifact. A signoff bound only to generated outputs + profile/records would
     # miss a post-signoff change to the history, so fold it into the manifest
     # hash the human signoff binds to. It is gitignored (derived from a real

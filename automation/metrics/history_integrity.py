@@ -1,7 +1,7 @@
 """Metric-history integrity: hash-chained, run-attested observations (AUD-F37).
 
 The metric history is the evidence behind SDR-CSX-KMT (daily data, 30-day and
-1-year summaries) and FRC-CSX-MOT (persistent validation over 6/18 months). It
+1-year summaries, the status of persistent validation up to the past year). It
 is a JSON file. Before this module, nothing distinguished a datapoint the
 collector produced on the day from one typed into the file afterwards, and the
 FRC-CSX-VVK binding gate accepted a method as "working" because its series key

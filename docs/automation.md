@@ -64,7 +64,7 @@ The FRC-CSX-VVK binding gate counts a declared automated method as working only 
 
 What 20x specifies (verified against the pinned CR26 dataset `2026.09.13.02`):
 
-- KSI metric history (`SDR-CSX-KMT` with `FRC-CSX-MOT`): Class B keeps a 30-day summary and an up-to-one-year summary per indicator; Class C keeps those plus all daily metric data up to the past year; Class D must significantly supersede the lower classes, with specifics set during the 20x Phase 4 Pilot. The governing window is **up to one year**, which is why the appender retains about a year.
+- KSI metric history (`SDR-CSX-KMT`): Class B (SHOULD) keeps a 30-day summary and an up-to-one-year summary per indicator; Class C (MUST) keeps those plus all daily metric data, including the status of persistent validation, up to the past year; Class D must significantly supersede the lower classes, with specifics set during the 20x Phase 4 Pilot. The governing window is **up to one year**, which is why the appender retains about a year.
 - Significant Change Notifications (`SCN-CSO-HIS`): 12 months of history.
 - Trust-center access-log summaries (`CDS-TRC-ACL`): at least 6 months.
 - Historical Certification Data snapshots (`CDS-CSO-HAD`): kept for the duration of the certification, aligned to the Ongoing Certification Reports.

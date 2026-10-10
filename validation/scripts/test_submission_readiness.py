@@ -245,7 +245,10 @@ def _fill_records(root):
             recs["ksi"][kid] = answer(recs["ksi"][kid], kid, True)
     json.dump(recs, open(rp, "w", encoding="utf-8", newline="\n"), indent=1)
 
-    # FRC-CSX-MOT: Class C needs >= 6 months of persistent-validation history.
+    # SDR-CSX-KMT (dataset 2026.10.08.01): Class C supplies daily metric data
+    # "up to the past year (where available)". Build a history that reaches past
+    # the reference period so the filled package needs no initial-certification
+    # commitment; the commitment path is exercised separately below.
     import datetime as _d
     today = _d.date.today()
     hist = {"ksis": {}}
@@ -264,7 +267,7 @@ def _fill_records(root):
         m1 = f"{kid}-config"
         m2 = f"{kid}-collector"
         s1, s2 = [], []
-        for m in range(0, 8):  # ~8 months of monthly datapoints
+        for m in range(0, 14):  # ~13 months of monthly datapoints
             d = (today - _d.timedelta(days=30 * m)).isoformat()
             pts.append({"date": d, "status": "pass", "passing": 2, "total": 2})
             s1.append({"date": d, "status": "pass", "passing": 1, "total": 1})
@@ -1053,9 +1056,10 @@ def main():
         json.dump(pa, open(profile_a, "w", encoding="utf-8", newline="\n"), indent=1)
         _build(root_a); _resign_a("finding-6 probes done")
 
-        # FRC-CSX-MOT initial-certification EXCEPTION: a new Class C offering with
-        # no long metric history but a valid metric_history_exception (both flags
-        # true + descriptions + a current datapoint per KSI) must reach ready.
+        # SDR-CSX-KMT initial-certification COMMITMENT (the note that moved here
+        # from the removed FRC-CSX-MOT): a new Class C offering with no long metric
+        # history but a valid metric_history_exception (both flags true +
+        # descriptions + a current datapoint per KSI) must reach ready.
         root_m = os.path.join(tmp, "repo-mot")
         shutil.copytree(BASE, root_m, ignore=shutil.ignore_patterns(
             ".git", "__pycache__", "*.log", ".tmp"))
@@ -1074,11 +1078,15 @@ def main():
         json.dump(hist_m, open(os.path.join(root_m, "automation", "metrics", "metric-history.json"),
                                "w", encoding="utf-8", newline="\n"), indent=1)
         pm = json.load(open(profile_m, encoding="utf-8"))
-        # Without the exception, one datapoint is NOT 6 months -> must block.
+        # Without the commitment, one datapoint is less than the reference period
+        # -> must block, citing the rule that now carries the requirement.
         _build(root_m)
         rmot0 = _preflight(root_m)
-        check("Class C with only current datapoints (no exception) is blocked on MOT",
-              "FRC-CSX-MOT" in rmot0.stdout and rmot0.returncode == 1)
+        check("Class C with only current datapoints (no commitment) is blocked (SDR-CSX-KMT note)",
+              "SDR-CSX-KMT" in rmot0.stdout
+              and "no initial-certification commitment is recorded" in rmot0.stdout
+              and "FRC-CSX-MOT" not in rmot0.stdout
+              and rmot0.returncode == 1)
         # Activate the exception with the explicit contract.
         pm["metric_history_exception"] = {
             "mechanisms_in_place": True,
@@ -1100,15 +1108,15 @@ def main():
         }
         json.dump(reg_m, open(register_m, "w", encoding="utf-8", newline="\n"), indent=1)
         rmot1 = _preflight(root_m)
-        check("Class C reaches ready via the FRC-CSX-MOT initial-certification exception",
+        check("Class C reaches ready via the SDR-CSX-KMT initial-certification commitment",
               rmot1.returncode == 0)
-        # Booleans-only (no descriptions) must NOT activate the exception.
+        # Booleans-only (no descriptions) must NOT activate the commitment.
         pm["metric_history_exception"]["mechanisms_description"] = "TBD"
         json.dump(pm, open(profile_m, "w", encoding="utf-8", newline="\n"), indent=1)
         _build(root_m)
         rmot2 = _preflight(root_m)
         check("MOT exception with a missing description does not activate",
-              "FRC-CSX-MOT" in rmot2.stdout and rmot2.returncode == 1)
+              "SDR-CSX-KMT" in rmot2.stdout and rmot2.returncode == 1)
 
         # --- from PR #110, hardened to an affirmative boolean ---
         # FRC-APP-NTP (MUST NOT third-party applicant): the gate is now an
@@ -1300,14 +1308,14 @@ def main():
         r_badop = _preflight(root_m)
         check("MOT exception with an invalid operating_since is rejected",
               "invalid operating_since" in r_badop.stdout and r_badop.returncode == 1)
-        # An operating window LONGER than the required 6 months disqualifies the
-        # exception (the full history is expected instead).
+        # Metrics available LONGER than the reference period disqualify the
+        # commitment (the history itself is expected instead).
         pm_h["metric_history_exception"]["operating_since"] = (
             now.date() - datetime.timedelta(days=400)).isoformat()
         json.dump(pm_h, open(profile_m, "w", encoding="utf-8", newline="\n"), indent=1)
         _resign_m()
         r_longop = _preflight(root_m)
-        check("MOT exception does not apply when the service operated 6+ months",
+        check("MOT exception does not apply when metrics have been available 12+ months",
               "does not apply" in r_longop.stdout and r_longop.returncode == 1)
         # Valid short window, but the ONLY datapoint is stale (>45 days): the
         # exception path must still block on the missing CURRENT datapoint.
@@ -1329,7 +1337,7 @@ def main():
         _resign_m()
         r_curdp = _preflight(root_m)
         check("MOT exception clears with a valid short window and a current datapoint",
-              "FRC-CSX-MOT" not in r_curdp.stdout or r_curdp.returncode == 0)
+              "no initial-certification commitment" not in r_curdp.stdout or r_curdp.returncode == 0)
 
         # --- finding 6: future dates and metrics_available_since ---
         # (a) metrics_available_since is the PREFERRED eligibility field and a
@@ -1342,7 +1350,7 @@ def main():
         _resign_m()
         r_mas = _preflight(root_m)
         check("MOT exception clears on a valid short metrics_available_since window",
-              "FRC-CSX-MOT" not in r_mas.stdout or r_mas.returncode == 0)
+              "no initial-certification commitment" not in r_mas.stdout or r_mas.returncode == 0)
         # (b) a FUTURE metrics_available_since must block (cannot be in future).
         pm_h["metric_history_exception"]["metrics_available_since"] = (
             now.date() + datetime.timedelta(days=30)).isoformat()

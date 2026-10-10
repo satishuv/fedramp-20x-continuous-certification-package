@@ -1,8 +1,8 @@
 {
  "meta": {
   "derived_from": "rule-catalog.json / ksi-catalog.json",
-  "dataset_version": "2026.10.05.01",
-  "generated": "deterministic build from dataset 2026.10.05.01",
+  "dataset_version": "2026.10.08.01",
+  "generated": "deterministic build from dataset 2026.10.08.01",
   "path": "FedRAMP 20x Program Certification",
   "filter": "rules whose affects includes Providers"
  },
@@ -170,26 +170,6 @@
     }
    },
    {
-    "rule_id": "FRC-CSX-MOT",
-    "name": "Metrics Over Time for Key Security Indicators",
-    "class_b": {
-     "force": "SHOULD",
-     "statement": "Providers seeking 20x Class B Certification SHOULD supply historical metrics for Key Security Indicators.",
-     "timeframe_num": null,
-     "timeframe_type": null,
-     "timeframe_num_min": null,
-     "timeframe_num_max": null
-    },
-    "class_c": {
-     "force": "MUST",
-     "statement": "Providers seeking 20x Class C Certification MUST supply historical metrics including status from persistent validation over at least the past 6 months for all Key Security Indicators.",
-     "timeframe_num": null,
-     "timeframe_type": null,
-     "timeframe_num_min": null,
-     "timeframe_num_max": null
-    }
-   },
-   {
     "rule_id": "FRC-CSX-VVR",
     "name": "Automated Verification and Validation of FedRAMP Rules",
     "class_b": {
@@ -313,8 +293,8 @@
     "rule_id": "SDR-CSX-KMT",
     "name": "Key Security Indicator Metrics",
     "class_b": {
-     "force": "MUST",
-     "statement": "Providers with 20x Class B Certifications MUST also include historical metrics in their Security Decision Record, supplying at least the following information for each applicable Key Security Indicator:",
+     "force": "SHOULD",
+     "statement": "Providers with 20x Class B Certifications SHOULD also include historical metrics in their Security Decision Record, supplying at least the following information for each applicable Key Security Indicator:",
      "timeframe_num": null,
      "timeframe_type": null,
      "timeframe_num_min": null,

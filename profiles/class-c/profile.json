@@ -1,12 +1,12 @@
 {
  "meta": {
   "derived_from": "rule-catalog.json / ksi-catalog.json",
-  "dataset_version": "2026.10.05.01",
-  "generated": "deterministic build from dataset 2026.10.05.01",
+  "dataset_version": "2026.10.08.01",
+  "generated": "deterministic build from dataset 2026.10.08.01",
   "path": "FedRAMP 20x Program Certification",
   "filter": "rules whose affects includes Providers"
  },
- "count": 158,
+ "count": 157,
  "rules": [
   {
    "rule_id": "AFC-CSO-INB",
@@ -979,21 +979,6 @@
    "name": "Automated Verification and Validation of Key Security Indicators",
    "force": "MUST",
    "statement": "Providers seeking 20x Class C Certification MUST implement automated methods to persistently verify and validate the accuracy and completeness of Key Security Indicators with at least 2 automated methods for each Key Security Indicator.",
-   "timeframe_type": null,
-   "timeframe_num": null,
-   "timeframe_num_min": null,
-   "timeframe_num_max": null,
-   "resolution": "class_variant",
-   "schema": null
-  },
-  {
-   "rule_id": "FRC-CSX-MOT",
-   "family": "FRC",
-   "family_name": "FedRAMP Certification",
-   "subset": "CSX",
-   "name": "Metrics Over Time for Key Security Indicators",
-   "force": "MUST",
-   "statement": "Providers seeking 20x Class C Certification MUST supply historical metrics including status from persistent validation over at least the past 6 months for all Key Security Indicators.",
    "timeframe_type": null,
    "timeframe_num": null,
    "timeframe_num_min": null,

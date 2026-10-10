@@ -1,14 +1,14 @@
 {
  "coverage_note": "Coverage metrics, NOT a compliance percentage. 'evidence coverage' and 'verification coverage' describe completeness of the record, not whether the provider meets a requirement. A human assessor determines compliance. Lifecycle counts describe evidence freshness state; stale/expired/missing evidence is a readiness signal, never an automatic compliance failure.",
  "certification_class": "B",
- "rules_total": 158,
+ "rules_total": 157,
  "rules_with_evidence": 0,
- "rules_template_tbd": 158,
+ "rules_template_tbd": 157,
  "ksis_total": 41,
  "ksis_with_evidence": 0,
  "ksis_meeting_verification_minimum": 0,
  "ksis_template_tbd": 41,
- "nodes_pending_review": 199,
+ "nodes_pending_review": 198,
  "evidence_total": 0,
  "evidence_lifecycle": {
   "current": 0,

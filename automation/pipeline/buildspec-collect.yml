@@ -2,7 +2,7 @@
 # facts collector against this account and uploads the timestamped facts
 # store to the evidence bucket under facts/. Facts are telemetry, never
 # statuses; the daily cadence feeds the SDR-CSX-KMT historical metrics and
-# the FRC-CSX-MOT persistent-validation clock.
+# the SDR-CSX-KMT persistent-validation record.
 version: 0.2
 
 phases:
@@ -23,7 +23,7 @@ phases:
         LATEST=$(ls -t automation/facts/*.json | head -1)
         aws s3 cp "$LATEST" "s3://$EVIDENCE_BUCKET/facts/$(basename "$LATEST")"
       # 2. RESTORE the prior metric history so the longitudinal SDR-CSX-KMT /
-      #    FRC-CSX-MOT history accumulates across ephemeral runs, remembering the
+      #    SDR-CSX-KMT history accumulates across ephemeral runs, remembering the
       #    object's ETag for the conditional publish in step 4.
       #    FAIL-CLOSED: a genuine "object does not exist" (first run) is allowed,
       #    but ANY other restore error (AccessDenied, KMS, throttling, outage)
