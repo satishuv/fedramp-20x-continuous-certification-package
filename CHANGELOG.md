@@ -8,7 +8,24 @@ One project-specific convention: the pinned FedRAMP dataset version is recorded 
 
 Pinned dataset: `2026.10.08.01` (unchanged)
 
-No unreleased changes.
+The drift workflow's second pin follows the first (`AUD-F44`, Medium, with a killed mutation):
+
+- **A dataset adoption advances the markdown-changelog baseline (AUD-F44).** The
+  daily check compares FedRAMP's `2026-markdown` changelog against a committed
+  hash. The `2026.10.05.01` and `2026.10.08.01` adoptions advanced every
+  dataset pin but not that hash, so the scheduled run after each one failed
+  and re-reported, as new drift, the entry the adoption's reviewer had already
+  read (run 38051982680 on `95649fb` opened issue #211 for the entry PR #207
+  adopted). New `validation/scripts/markdown_changelog.py` extracts FedRAMP's
+  changelog entry for a dataset version and advances the baseline; the
+  adoption step fetches the changelog fail-closed, puts that entry in the
+  review body above the machine diff, and writes the baseline in the adoption
+  commit, only when the entry exists, so an entry FedRAMP has not published
+  yet still surfaces through the daily check. For a markdown-only change the
+  drift issue names the one-command human path. The committed baseline was
+  advanced to the 2026-10-08 changelog after reading it, and #211 closed with
+  the trail. Three workflow tests beside the `AUD-F43` ones (red on `95649fb`'s
+  workflow, green after), seven offline helper tests, `MUT-F44` killed.
 
 ## 1.6.0, 2026-10-10
 

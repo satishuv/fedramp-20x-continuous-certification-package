@@ -327,6 +327,14 @@ MUTATIONS = [
      '          if gh pr create --title "CR26 dataset update: adopt $NEWVER" --body "$BODY"; then\n            exit 0\n          fi\n',
      '          gh pr create --title "CR26 dataset update: adopt $NEWVER" --body "$BODY" || echo "PR may already exist for this dataset version."  # MUTATION fail-open hand-off\n          exit 0\n',
      "automation/collectors/test_collection_fail_closed.py"),
+    # AUD-F44: a dataset adoption advances the markdown-changelog baseline in
+    # the adoption commit; the 2026.10.08.01 adoption left it behind and the
+    # next scheduled run (38051982680) re-reported the entry as drift (#211).
+    ("MUT-F44",
+     ".github/workflows/drift-check.yml",
+     '          python validation/scripts/markdown_changelog.py --file /tmp/changelog.md \\\n            --version "$NEWVER" --entry-out /tmp/changelog-entry.txt \\\n            --write-baseline .github/.markdown-changelog-baseline\n',
+     '          echo "(changelog entry unavailable)" > /tmp/changelog-entry.txt  # MUTATION adoption forgets the markdown baseline\n',
+     "automation/collectors/test_collection_fail_closed.py"),
 ]
 
 
