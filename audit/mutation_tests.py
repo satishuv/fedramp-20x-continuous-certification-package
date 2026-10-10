@@ -313,6 +313,13 @@ MUTATIONS = [
      '    keys = (set(old_rule) | set(new_rule)) - {HISTORY_KEY}',
      '    keys = {"force", "statement"}  # MUTATION compare the pre-F41 field list only',
      "validation/scripts/test_dataset_diff.py"),
+    # AUD-F43: the drift workflow's PR hand-off is fail-visible; the 2026-10-09
+    # run swallowed GitHub's refusal as "PR may already exist" and exited 0.
+    ("MUT-F43",
+     ".github/workflows/drift-check.yml",
+     '          if gh pr create --title "CR26 dataset update: adopt $NEWVER" --body "$BODY"; then\n            exit 0\n          fi\n',
+     '          gh pr create --title "CR26 dataset update: adopt $NEWVER" --body "$BODY" || echo "PR may already exist for this dataset version."  # MUTATION fail-open hand-off\n          exit 0\n',
+     "automation/collectors/test_collection_fail_closed.py"),
 ]
 
 

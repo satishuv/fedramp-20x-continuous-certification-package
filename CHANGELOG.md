@@ -6,6 +6,24 @@ One project-specific convention: the pinned FedRAMP dataset version is recorded 
 
 ## Unreleased
 
+The drift workflow's review hand-off is fail-visible (`AUD-F43`, High, with a killed mutation):
+
+- **A refused PR creation is reported, not swallowed (AUD-F43).** The
+  2026-10-09 scheduled run detected CR26 `2026.10.08.01`, regenerated and
+  validated the package and pushed `drift/dataset-2026.10.08.01`, then GitHub
+  refused `gh pr create` ("GitHub Actions is not permitted to create or approve
+  pull requests") and the step printed "PR may already exist for this dataset
+  version." and exited 0. The branch push had the same `|| exit 0` shape. Both
+  hand-offs now check their one benign cause instead of assuming it (the branch
+  already on the remote via `git ls-remote`; an open PR for the branch via
+  `gh pr list --head`); any other failure fails the step. When the PR cannot be
+  opened, the branch, commit, compare link and the full review body are posted
+  on the open drift issue (or filed as a new issue), an `::error::` annotation
+  names the repository setting that usually causes the refusal, and the step
+  exits 1. Enabling "Allow GitHub Actions to create and approve pull requests"
+  in the repository settings makes the PR open directly; that setting is the
+  owner's decision and is not changed by this repository.
+
 Pinned dataset: `2026.10.05.01` (adopted 2026-10-08 from `2026.09.13.02`)
 
 CR26 dataset `2026.10.05.01` adopted:

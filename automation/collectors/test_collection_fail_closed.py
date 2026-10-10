@@ -10,6 +10,9 @@ Offline, no account. Covers:
            issue, the AWS template notifies on a failed collector/drift build.
   AUD-F34  the single release-gate definition audits the hash-locked closure
            for known vulnerabilities (pip-audit), on every gate path.
+  AUD-F43  drift-check.yml: the adoption hand-off is fail-visible. A refused
+           push is an error; a refused PR creation posts the branch, compare
+           link and review body on the drift issue and exits non-zero.
 
 Run: python automation/collectors/test_collection_fail_closed.py
 """
@@ -202,6 +205,50 @@ def test_f34_pip_audit_is_a_hard_security_step_on_every_path():
     pin = rg.SECURITY_TOOL_PINS["pip-audit"]
     for path in (VALIDATE_WF, BUILDSPEC_VALIDATE):
         assert f"pip-audit=={pin}" in _read(path), path
+
+
+# ---- AUD-F43: the drift workflow's review hand-off is fail-visible ---------
+
+DRIFT_WF = os.path.join(BASE, ".github", "workflows", "drift-check.yml")
+
+
+def _drift_regenerate_step():
+    wf = _read(DRIFT_WF)
+    start = wf.find("Regenerate from the new dataset and open a review PR")
+    assert start > 0
+    return wf[start:]
+
+
+def test_f43_drift_workflow_has_no_fail_open_handoff():
+    """The 2026-10-09 run pushed the adoption branch, GitHub refused the PR
+    ("GitHub Actions is not permitted to create or approve pull requests"),
+    and the step printed "PR may already exist" and exited 0. Neither the push
+    nor the PR creation may swallow a failure as benign any more."""
+    step = _drift_regenerate_step()
+    assert "PR may already exist" not in step
+    assert "branch may already exist" not in step
+    for line in step.splitlines():
+        if "gh pr create" in line or "git push" in line:
+            assert "|| echo" not in line and "|| true" not in line and "exit 0; }" not in line, line
+
+
+def test_f43_drift_workflow_hands_review_to_the_issue_and_fails():
+    """When the PR cannot be opened the branch is already on the remote, so the
+    review path must still exist: the compare link and the full review body go
+    on the drift issue (or a new issue), the step records an error annotation,
+    and exits non-zero. An already-open PR for the branch is the one benign
+    case and is checked for explicitly, not assumed."""
+    step = _drift_regenerate_step()
+    assert 'gh pr list --head "$BRANCH"' in step, "an existing PR must be detected, not assumed"
+    assert "git ls-remote --exit-code --heads origin" in step, "an existing branch must be detected, not assumed"
+    assert "compare/main...${BRANCH}" in step
+    assert "gh issue comment" in step and "gh issue create" in step
+    assert "::error::PR creation refused" in step
+    # The refusal path ends in exit 1, after the hand-off.
+    tail = step[step.find("PR creation refused"):]
+    assert "exit 1" in tail
+    # The setting the refusal usually comes from is named for the operator.
+    assert "Allow GitHub Actions to create and approve pull requests" in step
 
 
 def _run_all():

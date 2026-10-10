@@ -561,6 +561,19 @@
       "mutation": "MUT-F41: _rule_deltas compares only {force, statement} again (the pre-F41 posture in miniature) so the N0 bullet, the notes and the notification changes vanish from the report; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F43",
+      "severity": "High",
+      "requirement": "The drift workflow's promise (docs/validation.md; .github/workflows/drift-check.yml): detect an upstream CR26 release, regenerate, validate, and hand the result to a human for review. A hand-off that fails silently leaves a validated adoption on a branch nobody is told about",
+      "component": ".github/workflows/drift-check.yml (regenerate step: push and PR creation)",
+      "description": "The 2026-10-09 scheduled run (actions/runs/37935122018) detected CR26 2026.10.08.01, opened issue #206, regenerated and validated the package (21 build steps, 0 hard failures) and pushed drift/dataset-2026.10.08.01 at c95c7cb. `gh pr create` was refused: 'GitHub Actions is not permitted to create or approve pull requests' (the repository setting that allows it is off). The step's `|| echo \"PR may already exist for this dataset version.\"` printed exactly that and exited 0, the job's only failure signal was the drift detection itself, and no PR existed. The push had the same shape: `git push ... || { echo \"branch may already exist\"; exit 0; }` would have reported a refused or failed push as benign. Found by the 2026-10-09 external audit and confirmed against the run log and `gh pr list --head`.",
+      "root_cause": "Both hand-offs guessed the benign cause of a failure instead of checking it. 'Already exists' is checkable (git ls-remote for the branch, gh pr list --head for the PR); every other failure is an error that needs a human.",
+      "fix_commit": "this PR -- the push runs only when the branch is not already on the remote (checked, not assumed) and a failed push fails the step; an open PR for the branch is detected with gh pr list --head and is the one benign case; when gh pr create is refused, the branch name, commit, compare link and the full review body are posted on the open drift issue (or filed as a new issue when none is open), the step records an ::error:: annotation naming the repository setting, and exits 1. The repository setting itself is the owner's decision and is documented in the PR",
+      "regression_test": "automation/collectors/test_collection_fail_closed.py::test_f43_drift_workflow_has_no_fail_open_handoff and ::test_f43_drift_workflow_hands_review_to_the_issue_and_fails (verified RED against main's workflow text before the fix, GREEN after)",
+      "mutation": "MUT-F43: the PR creation is restored to `gh pr create ... || echo \"PR may already exist\"` followed by exit 0 (the 2026-10-09 shape); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

@@ -182,9 +182,44 @@ jobs:
           # here made every adoption PR fail that gate (AUD-F40).
           git add -- .
           git commit -m "chore: adopt CR26 dataset $NEWVER (lock + full regenerate)"
-          git push -u origin "$BRANCH" || { echo "branch may already exist"; exit 0; }
+          # AUD-F43: every hand-off below is fail-VISIBLE. The 2026-10-09 run
+          # (37935122018) regenerated, validated and pushed the adoption branch,
+          # then GitHub refused the PR ("GitHub Actions is not permitted to
+          # create or approve pull requests") and this step said "PR may already
+          # exist" and exited 0: the review path was never established and
+          # nothing reported it. Now: a push that fails for any reason other
+          # than the branch already being on the remote is an error; when the
+          # PR cannot be opened, the branch, the compare link and the full
+          # review body are posted on the drift issue so a human can open the
+          # PR in one click, and the step exits non-zero so the log says why.
+          REPO="${GITHUB_REPOSITORY}"
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            echo "branch $BRANCH already exists on the remote; leaving it as is"
+          else
+            git push -u origin "$BRANCH"
+          fi
           DIFF_SUMMARY=$(cat /tmp/dataset-diff.txt 2>/dev/null || echo "(diff unavailable)")
           IMPACT_SUMMARY=$(cat /tmp/change-impact.txt 2>/dev/null || echo "(impact unavailable)")
-          gh pr create --title "CR26 dataset update: adopt $NEWVER" \
-            --body "$(printf 'The pinned CR26 dataset drifted from upstream. This PR validates the new dataset against the official rules schema, updates the source lock (version/hash/upstream commit), and regenerates the COMPLETE package via `python sdr.py build` + `python sdr.py validate`.\n\n## Material rule and KSI changes\n```\n%s\n```\n\n## Downstream impact on this package\n```\n%s\n```\n\nREVIEW the diff and impact before merging. No status was changed and no assessment was written.' "$DIFF_SUMMARY" "$IMPACT_SUMMARY")" \
-            || echo "PR may already exist for this dataset version."
+          BODY="$(printf 'The pinned CR26 dataset drifted from upstream. This PR validates the new dataset against the official rules schema, updates the source lock (version/hash/upstream commit), and regenerates the COMPLETE package via `python sdr.py build` + `python sdr.py validate`.\n\n## Material rule and KSI changes\n```\n%s\n```\n\n## Downstream impact on this package\n```\n%s\n```\n\nREVIEW the diff and impact before merging. No status was changed and no assessment was written.' "$DIFF_SUMMARY" "$IMPACT_SUMMARY")"
+          EXISTING_PR=$(gh pr list --head "$BRANCH" --state open --json number --jq 'length')
+          if [ "$EXISTING_PR" != "0" ]; then
+            echo "a PR for $BRANCH is already open; nothing to create"
+            exit 0
+          fi
+          if gh pr create --title "CR26 dataset update: adopt $NEWVER" --body "$BODY"; then
+            exit 0
+          fi
+          # PR creation refused (most likely the repository setting "Allow GitHub
+          # Actions to create and approve pull requests" is off). Hand the review
+          # to a human through the drift issue, then fail loudly.
+          COMPARE_URL="https://github.com/${REPO}/compare/main...${BRANCH}?expand=1"
+          ISSUE=$(gh issue list --state open --search "FedRAMP upstream sources changed in:title" --json number --jq '.[0].number // empty')
+          NOTE="$(printf 'The drift workflow regenerated and validated the package against CR26 dataset %s and pushed branch `%s` (commit %s), but could not open the review PR: GitHub refused the request (usually because the repository setting "Allow GitHub Actions to create and approve pull requests" is off). Open the PR here: %s\n\nThe PR body it would have used follows.\n\n---\n\n%s' "$NEWVER" "$BRANCH" "$(git rev-parse --short HEAD)" "$COMPARE_URL" "$BODY")"
+          if [ -n "$ISSUE" ]; then
+            gh issue comment "$ISSUE" --body "$NOTE"
+            echo "::error::PR creation refused; review hand-off posted on issue #$ISSUE ($COMPARE_URL)"
+          else
+            gh issue create --title "Adoption PR for CR26 dataset $NEWVER could not be opened" --body "$NOTE"
+            echo "::error::PR creation refused; review hand-off filed as a new issue ($COMPARE_URL)"
+          fi
+          exit 1
