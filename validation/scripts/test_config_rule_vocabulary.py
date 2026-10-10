@@ -46,6 +46,25 @@ def main():
           not off_list)
     check("aurora is not a rule target in the registry", "aurora" not in targets)
 
+    # The pinned catalog identifiers (Source.SourceIdentifier of each managed
+    # rule, read from the AWS Config Developer Guide) stay aligned with the id
+    # list: one identifier per id, no extras, no duplicates. The export
+    # importer resolves deployed rules through this map rather than guessing
+    # an identifier from the name (restricted-ssh is INCOMING_SSH_DISABLED).
+    vocab = json.load(open(os.path.join(BASE, "automation", "config-rules",
+                                        "known-config-managed-rules.json"),
+                           encoding="utf-8"))
+    idents = vocab.get("config_managed_rule_identifiers") or {}
+    check("every allowlisted id has exactly one pinned catalog identifier",
+          set(idents) == set(vocab["config_managed_rule_ids"]) == known)
+    check("catalog identifiers are unique", len(set(idents.values())) == len(idents))
+    check("the four irregular identifiers are pinned as documented",
+          idents.get("restricted-ssh") == "INCOMING_SSH_DISABLED"
+          and idents.get("restricted-common-ports") == "RESTRICTED_INCOMING_TRAFFIC"
+          and idents.get("cloudtrail-enabled") == "CLOUD_TRAIL_ENABLED"
+          and idents.get("multi-region-cloudtrail-enabled") == "MULTI_REGION_CLOUD_TRAIL_ENABLED")
+    check("meta.count matches the id list", vocab["meta"]["count"] == len(known))
+
     print(f"\n{'PASS' if not _fail else 'FAIL'}: config-rule vocabulary "
           f"({_fail} failures)")
     return 1 if _fail else 0

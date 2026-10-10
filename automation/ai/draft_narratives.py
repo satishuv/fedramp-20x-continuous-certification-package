@@ -124,6 +124,29 @@ def load_all_posture_facts():
     return by_service
 
 
+def load_rule_observations():
+    """Dated, count-only observations per FRR rule id that an export import
+    (automation/importers/import_findings.py) derived from the provider's own
+    AWS Config and Security Hub exports. Keyed by rule id; identical texts from
+    several files are kept once. Read-only; empty when nothing was imported."""
+    by_rule = {}
+    seen = set()
+    if not os.path.isdir(FACTS_DIR):
+        return by_rule
+    for fn in sorted(os.listdir(FACTS_DIR)):
+        if not (fn.startswith("facts-") and fn.endswith(".json")):
+            continue
+        store = load(os.path.join(FACTS_DIR, fn), {})
+        for rid, items in (store.get("rule_observations") or {}).items():
+            for o in items or []:
+                text = o.get("text") if isinstance(o, dict) else None
+                if not text or (rid, text) in seen:
+                    continue
+                seen.add((rid, text))
+                by_rule.setdefault(rid, []).append(o)
+    return by_rule
+
+
 # ---- Pluggable drafter interface -------------------------------------------
 #
 # A drafter takes (ksi_id, ksi_guidance, facts) and returns a short prose draft
@@ -257,14 +280,22 @@ def _assert_boundary(before_record, after_record, kid):
 
 # ---- Rule (FRR) drafting -----------------------------------------------------
 #
-# The 168 FRR entries are process rules (security inbox, notifications, trust
+# The FRR entries are process rules (security inbox, notifications, trust
 # center, change reporting, ...). No collector observes them, so a rule draft
-# is built from (a) the curated reference-architecture example the template
-# already carries for that field, when present, else (b) the CR26-derived
+# is built from (a) the curated reference-architecture example a fork may
+# still carry for that field, when present, else (b) the CR26-derived
 # fill_guidance (what_it_looks_for / how_to_comply / evidence_required), with
-# the offering profile's REAL values named where they belong. Either way the
-# text is a labelled proposal: the readiness predicates treat it as unanswered
-# until a named human accepts it in `sdr.py review`.
+# the offering profile's REAL values named where they belong, and (c) when the
+# provider imported AWS Config / Security Hub exports, the dated count-only
+# observations the importer derived for the vulnerability-detection rules, so
+# the proposal names the provider's own findings rather than only the official
+# how-to text. Either way the text is a labelled proposal: the readiness
+# predicates treat it as unanswered until a named human accepts it in
+# `sdr.py review`.
+
+# At most this many observations are quoted into one proposal.
+MAX_OBSERVATIONS = 4
+
 
 def _clip(s, n):
     s = (s or "").strip()
@@ -282,9 +313,25 @@ def _existing_example(value):
     return None
 
 
-def draft_rule_text(kind, rule_id, record, guidance, context):
+def _observations_sentence(observations):
+    """One sentence quoting the provider's own dated observations, or ''."""
+    parts = []
+    for o in (observations or [])[:MAX_OBSERVATIONS]:
+        if not isinstance(o, dict) or not o.get("text"):
+            continue
+        when = str(o.get("observed_at") or "")[:10]
+        src = o.get("source") or "export"
+        parts.append(f"[{src}, {when}] {_clip(o['text'], 300)}")
+    if not parts:
+        return ""
+    return (" Observed from the provider's own exports (counts and dates only, "
+            "telemetry not a verdict): " + " ".join(parts))
+
+
+def draft_rule_text(kind, rule_id, record, guidance, context, observations=None):
     """Deterministic, offline proposal for one rule field. Returns the labelled
-    DRAFT string, or None when the guidance carries nothing to draft from."""
+    DRAFT string, or None when the guidance carries nothing to draft from.
+    `observations` are the importer's dated texts for this rule, if any."""
     example = _existing_example(record.get(kind))
     if example:
         return EXAMPLE_LABEL + example
@@ -314,12 +361,13 @@ def draft_rule_text(kind, rule_id, record, guidance, context):
                 f"edited by {who}. Validation approach: produce and retain {_clip(ev, 300)} "
                 f"on the cadence stated in the implementation, review it against the "
                 f"requirement ({_clip(looks, 200)}), and record each check and any miss.")
+    body += _observations_sentence(observations)
     body += (" A proposal is not a compliance conclusion; the provider must confirm "
              "accuracy and completeness before relying on this text.")
     return DRAFT_LABEL + body
 
 
-def draft_rule(rule_id, record, context):
+def draft_rule(rule_id, record, context, observations=None):
     """Draft implementation/validation prose into unanswered rule fields only
     (TBD, or a labelled Example / DRAFT proposal). Returns (changed, notes).
     Mutates the record on the proposed copy only; the boundary is enforced by
@@ -331,12 +379,17 @@ def draft_rule(rule_id, record, context):
         current = record.get(field, "")
         if not is_tbd(current):
             continue  # never overwrite author-written prose
-        text = draft_rule_text(field, rule_id, record, guidance, context)
+        text = draft_rule_text(field, rule_id, record, guidance, context, observations)
         if not text:
             continue
         record[field] = [text] if isinstance(current, list) else text
         changed = True
-        source = "example" if text.startswith(EXAMPLE_LABEL) else "guidance"
+        if text.startswith(EXAMPLE_LABEL):
+            source = "example"
+        elif observations:
+            source = "guidance + imported observations"
+        else:
+            source = "guidance"
         notes.append(f"{rule_id}: drafted {field} ({source})")
     return changed, notes
 
@@ -410,9 +463,14 @@ def main():
     rules_drafted = 0
     if want_rules:
         context = load_profile_context()
+        observations = load_rule_observations()
+        if observations:
+            print(f"Imported observations found for {len(observations)} rule(s); "
+                  "those proposals quote the provider's own export counts.")
         for rule_id, record in sorted(proposed.get("frr", {}).items()):
             before = copy.deepcopy(record)
-            changed, notes = draft_rule(rule_id, record, context)
+            changed, notes = draft_rule(rule_id, record, context,
+                                        observations.get(rule_id))
             _assert_boundary(before, record, rule_id)  # same boundary for rules
             if changed:
                 rules_drafted += 1

@@ -3,7 +3,8 @@
   "title": "Pinned allowlist of AWS Config managed rule IDs referenced by this framework",
   "purpose": "The registry generator extracts backtick-quoted AWS Config managed rule identifiers from the guidance prose in traceability/aws-service-ksi-map.json. Prose is not a safe source of executable rule identities: a shorthand or an 'or X equivalents' aside can leak a token that is not a real AWS Config managed rule (e.g. 'aurora', which is not a managed rule - AWS has specific rules such as rds-cluster-multi-az-enabled). This allowlist pins the exact set of real managed-rule IDs the framework references. build_collector_registry.py rejects any extracted token that is not on this list, so a bogus identifier fails the build instead of becoming a config_managed_rule check target.",
   "source": "Curated from the AWS Config managed-rules catalog; every id here is a real AWS Config managed rule. Add an id here ONLY after confirming it against the current AWS Config managed-rules documentation.",
-  "count": 34
+  "count": 34,
+  "catalog_identifiers": "Each rule name paired with its AWS Config catalog identifier (the Source.SourceIdentifier a deployed managed rule carries), read from the per-rule page of the AWS Config Developer Guide. The identifier is NOT a transform of the name: four differ (restricted-ssh is INCOMING_SSH_DISABLED, restricted-common-ports is RESTRICTED_INCOMING_TRAFFIC, cloudtrail-enabled is CLOUD_TRAIL_ENABLED, multi-region-cloudtrail-enabled is MULTI_REGION_CLOUD_TRAIL_ENABLED). automation/importers/import_findings.py resolves a deployed rule by this identifier from a describe-config-rules export; the vocabulary test asserts the two lists stay aligned."
  },
  "config_managed_rule_ids": [
   "access-keys-rotated",
@@ -40,5 +41,41 @@
   "vpc-default-security-group-closed",
   "vpc-flow-logs-enabled",
   "vpc-sg-open-only-to-authorized-ports"
- ]
+ ],
+ "config_managed_rule_identifiers": {
+  "access-keys-rotated": "ACCESS_KEYS_ROTATED",
+  "acm-certificate-expiration-check": "ACM_CERTIFICATE_EXPIRATION_CHECK",
+  "alb-http-to-https-redirection-check": "ALB_HTTP_TO_HTTPS_REDIRECTION_CHECK",
+  "backup-plan-min-frequency-and-min-retention-check": "BACKUP_PLAN_MIN_FREQUENCY_AND_MIN_RETENTION_CHECK",
+  "cloud-trail-log-file-validation-enabled": "CLOUD_TRAIL_LOG_FILE_VALIDATION_ENABLED",
+  "cloudtrail-enabled": "CLOUD_TRAIL_ENABLED",
+  "cloudwatch-log-group-encrypted": "CLOUDWATCH_LOG_GROUP_ENCRYPTED",
+  "db-instance-backup-enabled": "DB_INSTANCE_BACKUP_ENABLED",
+  "ecs-task-definition-user-for-host-mode-check": "ECS_TASK_DEFINITION_USER_FOR_HOST_MODE_CHECK",
+  "elb-cross-zone-load-balancing-enabled": "ELB_CROSS_ZONE_LOAD_BALANCING_ENABLED",
+  "elb-tls-https-listeners-only": "ELB_TLS_HTTPS_LISTENERS_ONLY",
+  "encrypted-volumes": "ENCRYPTED_VOLUMES",
+  "iam-password-policy": "IAM_PASSWORD_POLICY",
+  "iam-policy-no-statements-with-admin-access": "IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS",
+  "iam-policy-no-statements-with-full-access": "IAM_POLICY_NO_STATEMENTS_WITH_FULL_ACCESS",
+  "iam-user-no-policies-check": "IAM_USER_NO_POLICIES_CHECK",
+  "iam-user-unused-credentials-check": "IAM_USER_UNUSED_CREDENTIALS_CHECK",
+  "mfa-enabled-for-iam-console-access": "MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS",
+  "multi-region-cloudtrail-enabled": "MULTI_REGION_CLOUD_TRAIL_ENABLED",
+  "rds-multi-az-support": "RDS_MULTI_AZ_SUPPORT",
+  "rds-storage-encrypted": "RDS_STORAGE_ENCRYPTED",
+  "required-tags": "REQUIRED_TAGS",
+  "restricted-common-ports": "RESTRICTED_INCOMING_TRAFFIC",
+  "restricted-ssh": "INCOMING_SSH_DISABLED",
+  "root-account-mfa-enabled": "ROOT_ACCOUNT_MFA_ENABLED",
+  "s3-bucket-public-read-prohibited": "S3_BUCKET_PUBLIC_READ_PROHIBITED",
+  "s3-bucket-server-side-encryption-enabled": "S3_BUCKET_SERVER_SIDE_ENCRYPTION_ENABLED",
+  "s3-bucket-ssl-requests-only": "S3_BUCKET_SSL_REQUESTS_ONLY",
+  "s3-bucket-versioning-enabled": "S3_BUCKET_VERSIONING_ENABLED",
+  "secretsmanager-rotation-enabled-check": "SECRETSMANAGER_ROTATION_ENABLED_CHECK",
+  "secretsmanager-scheduled-rotation-success-check": "SECRETSMANAGER_SCHEDULED_ROTATION_SUCCESS_CHECK",
+  "vpc-default-security-group-closed": "VPC_DEFAULT_SECURITY_GROUP_CLOSED",
+  "vpc-flow-logs-enabled": "VPC_FLOW_LOGS_ENABLED",
+  "vpc-sg-open-only-to-authorized-ports": "VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS"
+ }
 }

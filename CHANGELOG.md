@@ -8,6 +8,45 @@ One project-specific convention: the pinned FedRAMP dataset version is recorded 
 
 Pinned dataset: `2026.10.08.01` (unchanged)
 
+The zero-typing track gains its first importer:
+
+- **AWS Config and Security Hub exports become collector facts without
+  credentials.** New `automation/importers/import_findings.py` reads the JSON
+  a customer produces with four read-only AWS CLI commands
+  (`describe-compliance-by-config-rule`, `describe-config-rules`,
+  `describe-config-rule-evaluation-status`, `securityhub get-findings`),
+  detected by top-level key, and writes the same facts-store shape the live
+  collector writes, so prefill, the metric appender, the drafter and the
+  review step consume it through their existing paths. Mapping is data only:
+  exact catalog id, Security Hub's service-linked `securityhub-<id>-<suffix>`
+  convention, the rule's `Source.SourceIdentifier` through catalog
+  identifiers now pinned in `known-config-managed-rules.json` (read from the
+  AWS Config Developer Guide; `restricted-ssh` is `INCOMING_SSH_DISABLED`,
+  `restricted-common-ports` is `RESTRICTED_INCOMING_TRAFFIC`,
+  `cloudtrail-enabled` is `CLOUD_TRAIL_ENABLED`,
+  `multi-region-cloudtrail-enabled` is `MULTI_REGION_CLOUD_TRAIL_ENABLED`),
+  then the provider's own `config-rule-name-map.json`. An unmatched name is
+  never guessed; it is printed as a review queue and stored in the facts
+  file's meta. Several instances of one rule aggregate worst-wins. The
+  import derives dated, count-only observations for `VDR-CSO-DET`,
+  `VDR-CSO-RES`, `VDR-CSO-ADT` and `VDR-TFR-MVX` (ids checked against the
+  pinned dataset across every applicability branch), and
+  `draft_narratives.py` quotes them into those rules' labelled proposals so
+  the proposal names the provider's own findings rather than only the
+  official how-to text. No finding titles, ids, resource ids, ARNs or account
+  ids are kept. Refusals: no observation time in the export needs
+  `--observed-at` (exit 2); an export cut short yields an unscorable
+  `OBSERVED_PARTIAL` fact; one source per region (the import is refused while
+  a live collection for the region exists, and the live collector warns when
+  an import does), since the appender sums posture facts per route across
+  files; exit 4 when nothing was evaluated, as the collector does. 27 offline
+  tests in `automation/importers/test_import_findings.py`, in the CI suite;
+  the vocabulary gate asserts the pinned identifiers stay aligned with the id
+  list. Exercised end to end on a fictional nine-rule, nine-finding export:
+  8 rules mapped (a Control Tower instance resolved through its identifier),
+  one custom Lambda rule queued, 18 prefill and 8 observation-bearing rule
+  proposals pending in `sdr.py review --list`.
+
 The drift workflow's second pin follows the first (`AUD-F44`, Medium, with a killed mutation):
 
 - **A dataset adoption advances the markdown-changelog baseline (AUD-F44).** The

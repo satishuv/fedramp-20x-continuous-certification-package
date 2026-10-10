@@ -151,6 +151,7 @@ The core is deterministic and offline. Everything below is off by default and en
 | Feature | How to turn it on | What it adds |
 |---|---|---|
 | AWS evidence collectors | Run `automation/collectors/collect_facts.py` with read-only AWS credentials | Collects posture telemetry into evidence, no status set |
+| AWS Config and Security Hub exports | Have the customer run four read-only AWS CLI commands, then `python automation/importers/import_findings.py --region <r> exports/*.json --write` | Same facts as the live collector without credentials; dated count-only observations quoted into the vulnerability-detection rule proposals; unmapped rule names go to a review queue |
 | CrowdStrike Falcon evidence | Set `evidence_sources.crowdstrike-falcon.enabled: true` in the offering profile, point `export_path` at a Falcon export, run `automation/collectors/apply_third_party_evidence.py` | Attaches endpoint-detection evidence to `KSI-MLA-OSM/RVL/LET`, `KSI-INR-RIR` |
 | Wiz evidence | Set `evidence_sources.wiz.enabled: true`, point `export_path` at a Wiz export, run the same driver | Attaches posture and vulnerability evidence to `KSI-MLA-EVC/OSM`, `KSI-SCR-MON` |
 | AI-assist drafting | Opt-in modules under `automation/ai/` | Drafts and explains text for a human to verify; never sets a status |
