@@ -1998,37 +1998,6 @@
    }
   },
   {
-   "frrID": "FRC-CSX-MOT",
-   "frrImplementationStatus": "Not Implemented",
-   "frrImplementation": [
-    "TBD: Information has not been provided."
-   ],
-   "frrValidation": [
-    "TBD: Information has not been provided."
-   ],
-   "frrAssessment": [
-    "TBD: Independent assessment has not been performed."
-   ],
-   "providerExtensions": {
-    "ruleName": "Metrics Over Time for Key Security Indicators",
-    "family": "FRC",
-    "familyName": "FedRAMP Certification",
-    "xFedRampSemantic": {
-     "implementationRisk": "TBD: Information has not been provided.",
-     "nonimplementationReason": "Not applicable: rule is followed",
-     "verification": "TBD: Information has not been provided.",
-     "validationFrequency": "TBD: Information has not been provided.",
-     "independentVerification": "TBD: Information has not been provided.",
-     "independentValidation": "TBD: Information has not been provided.",
-     "assessorResponses": "None recorded",
-     "ruleArtifacts": [],
-     "seniorOfficialAcceptance": "Not required: rule is followed",
-     "owner": "TBD: Information has not been provided."
-    },
-    "xAuthoringStatus": "Not Implemented"
-   }
-  },
-  {
    "frrID": "FRC-CSX-VVR",
    "frrImplementationStatus": "Not Implemented",
    "frrImplementation": [
