@@ -191,6 +191,8 @@ When drift is reported: re-pin the changed source, rebuild everything, and read 
 5. `python sdr.py build` then `python sdr.py validate`. The build regenerates the release manifest's schema fingerprints; the validator's `pinned_schema_version_guard`, `sources_lock_consistency` and the CPO/OCR schema checks prove the adoption is coherent.
 6. Record the adoption in `CHANGELOG.md` under Unreleased, and re-run the drift workflow (`workflow_dispatch`) on the merged main to confirm it is green again.
 
+The `2026-markdown` changelog is compared against a committed hash in `.github/.markdown-changelog-baseline`, not a pinned file. FedRAMP rebuilds that markdown on every dataset release, so the dataset adoption advances the baseline itself: the workflow fetches the live changelog, places FedRAMP's own entry for the new version in the review PR body, and writes the baseline in the adoption commit, but only when that entry exists (if FedRAMP has not published it yet, the baseline is left alone and the daily check surfaces the entry when it lands). For a changelog change with no dataset change, read the new entry at [FedRAMP/2026-markdown](https://github.com/FedRAMP/2026-markdown/commits/main/changelog.md), then run `python validation/scripts/markdown_changelog.py --fetch --write-baseline .github/.markdown-changelog-baseline` and commit the result.
+
 ## Continuous integration
 
 Both implementations enforce the same four gates: regenerate everything, fail on any hand-edited output, validate with zero hard failures, attach a readiness report. See [continuous integration](ci-cd.md).
