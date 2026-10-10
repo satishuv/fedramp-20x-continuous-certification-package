@@ -320,6 +320,13 @@ MUTATIONS = [
      '    rules = sorted(r for r in (records.get("frr") or {}) if rule_ids and r not in rule_ids)',
      '    return [], []  # MUTATION orphaned records are never reported\n    rules = sorted(r for r in (records.get("frr") or {}) if rule_ids and r not in rule_ids)',
      "validation/scripts/test_orphan_records.py"),
+    # AUD-F43: the drift workflow's PR hand-off is fail-visible; the 2026-10-09
+    # run swallowed GitHub's refusal as "PR may already exist" and exited 0.
+    ("MUT-F43",
+     ".github/workflows/drift-check.yml",
+     '          if gh pr create --title "CR26 dataset update: adopt $NEWVER" --body "$BODY"; then\n            exit 0\n          fi\n',
+     '          gh pr create --title "CR26 dataset update: adopt $NEWVER" --body "$BODY" || echo "PR may already exist for this dataset version."  # MUTATION fail-open hand-off\n          exit 0\n',
+     "automation/collectors/test_collection_fail_closed.py"),
 ]
 
 
