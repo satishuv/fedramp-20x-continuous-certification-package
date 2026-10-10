@@ -6,6 +6,33 @@ One project-specific convention: the pinned FedRAMP dataset version is recorded 
 
 ## Unreleased
 
+Pinned dataset: `2026.10.08.01` (unchanged)
+
+No unreleased changes.
+
+## 1.6.0, 2026-10-10
+
+Pinned dataset: `2026.10.08.01` (adopted 2026-10-10 from `2026.10.05.01`; `2026.10.05.01` adopted 2026-10-08 from `2026.09.13.02`)
+
+From typing to deciding, inputs traced to FedRAMP, and the first two dataset
+adoptions carried by the drift workflow. Since `1.5.0`: machine proposals are
+unanswered until a named human accepts them, and `sdr.py review --walk` replaces
+hand-editing JSON (`AUD-F38`); the offering profile is a contract in which every
+required field names its Certification Package Overview schema property or CR26
+rule, `sdr.py init` asks every one of them, and the template ships no prose this
+project wrote (`AUD-F39`); CR26 `2026.10.05.01` and then `2026.10.08.01` were
+detected by the daily drift check, regenerated and validated by the workflow,
+and adopted by review, the second removing `FRC-CSX-MOT` and making
+`SDR-CSX-KMT` a SHOULD at Class B, so the persistent-validation gate is
+re-grounded on the rule that now carries it, with no minimum history duration
+because the dataset has none (`AUD-F42`); and the adoption path itself was
+repaired where those two releases exposed it: curated pins that did not advance
+(`AUD-F40`), a change summary that under-counted (`AUD-F41`), and a PR hand-off
+that swallowed GitHub's refusal (`AUD-F43`). Six findings closed, each with a
+killed mutation; the independent oracle reconciles clean at 41 / 157 / 157.
+Release tag: `v1.6.0-cr26-2026.10.08.01`. Entries are newest first within each
+sub-lead.
+
 The drift workflow's review hand-off is fail-visible (`AUD-F43`, High, with a killed mutation):
 
 - **A refused PR creation is reported, not swallowed (AUD-F43).** The
@@ -24,7 +51,6 @@ The drift workflow's review hand-off is fail-visible (`AUD-F43`, High, with a ki
   in the repository settings makes the PR open directly; that setting is the
   owner's decision and is not changed by this repository.
 
-Pinned dataset: `2026.10.08.01` (adopted 2026-10-10 from `2026.10.05.01`; before that `2026.10.05.01` adopted 2026-10-08 from `2026.09.13.02`)
 
 CR26 dataset `2026.10.08.01` adopted:
 
@@ -87,7 +113,13 @@ CR26 dataset `2026.10.08.01` adopted:
   sample store here. `test_orphan_records.py`; `MUT-F42` killed.
 - The Class C sample's fictional history spans 400 days (past the reference
   period) and the readiness fixture 13 months, so neither needs the commitment.
-  The release manifest's `release_tag` now reads `v1.5.0-cr26-2026.10.08.01`.
+  At adoption the release manifest's `release_tag` read
+  `v1.5.0-cr26-2026.10.08.01`; this release bumps it to
+  `v1.6.0-cr26-2026.10.08.01`.
+- The committed Acme sample outputs are regenerated for `2026.10.08.01` by the
+  sample builder as documented (gate PASS, live tree restored): the sample SDR
+  no longer carries the removed rule's section and the 24 FRC-family
+  `how_to_comply` strings cite `SDR-CSX-KMT` instead of `FRC-CSX-MOT`.
 
 Pinned dataset before this adoption: `2026.10.05.01` (adopted 2026-10-08 from `2026.09.13.02`)
 
