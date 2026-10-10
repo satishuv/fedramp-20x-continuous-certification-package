@@ -10,7 +10,7 @@ Website: https://example.provider.gov-placeholder/tbd
 Service properties
 Service type: PaaS
 Deployment model: Public Cloud
-Next Ongoing Certification Report date: 2027-01-05
+Next Ongoing Certification Report date: 2027-01-08
 Trust center: https://example.provider.gov-placeholder/tbd
 Secure Configuration Guidance: https://example.provider.gov-placeholder/tbd
 

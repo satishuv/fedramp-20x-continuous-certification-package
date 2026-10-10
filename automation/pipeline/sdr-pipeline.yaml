@@ -367,7 +367,7 @@ Resources:
                 Resource: !Sub "${EvidenceBucket.Arn}/facts/*"
               - Effect: Allow
                 # Restore (Get) the prior metric history and persist (Put) the
-                # updated one, so SDR-CSX-KMT / FRC-CSX-MOT history accumulates
+                # updated one, so SDR-CSX-KMT history accumulates
                 # across ephemeral collector runs.
                 Action:
                   - s3:GetObject
@@ -483,7 +483,7 @@ Resources:
             Value: "true"
           # Name of the evidence bucket holding the durable per-KSI metric
           # history (metrics/metric-history.json). The release build restores it
-          # before package-preflight so Class C/D FRC-CSX-MOT readiness is
+          # before package-preflight so Class C/D SDR-CSX-KMT readiness is
           # evaluated against real accumulated history, not an empty tree.
           - Name: EVIDENCE_BUCKET
             Type: PLAINTEXT
@@ -727,7 +727,7 @@ Resources:
   # directly by the schedule rules above, so a failed collection never produces
   # a CodePipeline state change and the rule above never fires for it. Without
   # this rule the collector can fail for weeks (expired role, denied API,
-  # wrong region) while the FRC-CSX-MOT history silently stops accumulating.
+  # wrong region) while the SDR-CSX-KMT history silently stops accumulating.
   ScheduledBuildFailureNotification:
     Type: AWS::Events::Rule
     Properties:

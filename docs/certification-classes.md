@@ -8,16 +8,16 @@ A note on impact levels. FedRAMP's current public 20x guidance maps the classes 
 
 | | Class A | Class B | Class C | Class D |
 |---|---|---|---|---|
-| Provider rules resolved | 41 | 158 | 158 plus overlay | 157 in readiness register |
+| Provider rules resolved | 41 | 157 | 157 plus overlay | 156 in readiness register |
 | Indicators in scope | 7 mandatory | all 46 | all 46 | all 46 |
 | Automated methods per indicator (`FRC-CSX-VVK`) | none required | at least 1 | at least 2 | at least 4 |
 | Metrics in the record (`SDR-CSX-KMT`) | `MAY` include | `MUST`: 30-day summary, plus a summary up to the past year where available | the same, plus all daily metric data up to the past year | `MUST` significantly supersede lower classes, specifics set in the Phase 4 Pilot |
-| Persistent validation history (`FRC-CSX-MOT`) | `MAY` supply | `SHOULD` supply | `MUST`: at least the past 6 months for all indicators | `MUST`: at least the past 18 months |
+| Historical KSI metrics including persistent-validation status (`SDR-CSX-KMT`) | `MAY` include | `SHOULD` include 30-day and one-year summaries | `MUST`: summaries plus all daily data up to the past year, where available | `MUST` significantly supersede lower classes (specifics pending) |
 | Support in this repository | full | full | full | register only |
 
 Read the last two rows before you pick a class. They are the only requirements in the framework that you cannot satisfy by working harder later.
 
-Six months of persistent validation history at Class C is a calendar dependency. If you start collecting the week before assessment you cannot compress it, and the 18 months at Class D makes the point louder. `FRC-CSX-MOT` does soften this for a first certification: providers "will need to have mechanisms in place and agree to meet this requirement" if the service has not been running long enough. That is an agreement to start the clock, not a waiver.
+The daily metric history at Class C is a calendar dependency: `SDR-CSX-KMT` asks for all daily data, including the status of persistent validation, up to the past year, and if you start collecting the week before assessment you cannot compress it. The dataset mandates no minimum duration since `2026.10.08.01` (the removed `FRC-CSX-MOT` carried six months); the data is supplied "where available", and for a first certification the rule's note has providers "have mechanisms in place and agree to meet this requirement" when metrics have not been available for the period. That is an agreement to start the clock, not a waiver.
 
 All daily metric data up to the past year at Class C is a storage sizing decision, and it belongs in your pipeline design from the start rather than in a migration later.
 
@@ -43,7 +43,7 @@ Names below are the dataset's own, not paraphrases.
 | `KSI-INR-RIR` | Incident Response | Reviewing Incident Response Procedures |
 | `KSI-SVC-SIN` | Service Configuration | Securing Information |
 
-If you are treating Class A as a starting point on the way to Class B, know that the jump is large: 41 rules to 158, and 7 indicators to 46. Plan it as a separate project rather than an increment.
+If you are treating Class A as a starting point on the way to Class B, know that the jump is large: 41 rules to 157, and 7 indicators to 46. Plan it as a separate project rather than an increment.
 
 ## Choosing
 

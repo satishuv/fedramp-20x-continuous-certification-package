@@ -313,6 +313,13 @@ MUTATIONS = [
      '    keys = (set(old_rule) | set(new_rule)) - {HISTORY_KEY}',
      '    keys = {"force", "statement"}  # MUTATION compare the pre-F41 field list only',
      "validation/scripts/test_dataset_diff.py"),
+    # AUD-F42: a store record whose rule or KSI the dataset no longer defines is
+    # reported; the 2026.10.08.01 adoption left FRC-CSX-MOT behind in silence.
+    ("MUT-F42",
+     "validation/scripts/build_sdr.py",
+     '    rules = sorted(r for r in (records.get("frr") or {}) if rule_ids and r not in rule_ids)',
+     '    return [], []  # MUTATION orphaned records are never reported\n    rules = sorted(r for r in (records.get("frr") or {}) if rule_ids and r not in rule_ids)',
+     "validation/scripts/test_orphan_records.py"),
     # AUD-F43: the drift workflow's PR hand-off is fail-visible; the 2026-10-09
     # run swallowed GitHub's refusal as "PR may already exist" and exited 0.
     ("MUT-F43",

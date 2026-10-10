@@ -1,9 +1,9 @@
 {
  "assessment-results": {
-  "uuid": "0f441fef-3247-5eb2-aa5d-273e8eb5792c",
+  "uuid": "9908403e-f086-54e9-bf2e-c171fc6f6a1e",
   "metadata": {
    "title": "Security Decision Record (OSCAL export)",
-   "last-modified": "2026-10-05T00:00:00+00:00",
+   "last-modified": "2026-10-08T00:00:00+00:00",
    "version": "0.1.0",
    "oscal-version": "1.1.2",
    "props": [
@@ -20,10 +20,10 @@
   },
   "results": [
    {
-    "uuid": "1f7f99f8-b9dd-501a-a084-4e0451311876",
+    "uuid": "b2b052f9-723f-523d-ba34-e41bd9978a32",
     "title": "Security Decision Record - assessment results view",
     "description": "OSCAL Assessment Results view derived from the FedRAMP Security Decision Record. Findings and statuses are passed through from the SDR verbatim; this view adds no new determinations.",
-    "start": "2026-10-05T00:00:00+00:00",
+    "start": "2026-10-08T00:00:00+00:00",
     "findings": [
      {
       "uuid": "b57bf3f2-e8c6-51e6-beb5-073aa445defa",
@@ -1876,35 +1876,6 @@
       "target": {
        "type": "objective-id",
        "target-id": "FRC-CSX-VVK",
-       "status": {
-        "state": "not-satisfied"
-       }
-      }
-     },
-     {
-      "uuid": "acbb6939-3b8d-56e8-967a-20c013c00b03",
-      "title": "FRC-CSX-MOT: Metrics Over Time for Key Security Indicators",
-      "description": "TBD: Information has not been provided.",
-      "props": [
-       {
-        "name": "sdr-implementation-status",
-        "ns": "https://fedramp.gov/ns/sdr",
-        "value": "Not Implemented"
-       },
-       {
-        "name": "sdr-id",
-        "ns": "https://fedramp.gov/ns/sdr",
-        "value": "FRC-CSX-MOT"
-       },
-       {
-        "name": "sdr-kind",
-        "ns": "https://fedramp.gov/ns/sdr",
-        "value": "requirement"
-       }
-      ],
-      "target": {
-       "type": "objective-id",
-       "target-id": "FRC-CSX-MOT",
        "status": {
         "state": "not-satisfied"
        }

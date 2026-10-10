@@ -76,12 +76,12 @@
   "public_key_fingerprint": "TBD: optional sha256:<hex> of the DER SubjectPublicKeyInfo, a second independent pin checked before verification"
  },
  "metric_history_exception": {
-  "note": "FRC-CSX-MOT initial-certification exception: only for a NEW offering that cannot yet show the normal metric-of-time history. Set both booleans to true AND provide the descriptions/references; when valid, MOT preflight requires a CURRENT datapoint per in-scope KSI instead of the full history window. Omit or leave the booleans false once real history exists. Eligibility is measured from metrics_available_since (the date persistent KSI metrics first became available), NOT the offering launch date - the exception applies when metrics have been available for less than the required window (6 months at C, 18 at D). The date must not be in the future.",
+  "note": "SDR-CSX-KMT initial-certification commitment (the rule's note, moved here from FRC-CSX-MOT when that rule was removed in dataset 2026.10.08.01; the field names keep their earlier form so existing profiles keep working): only for an offering whose KSI metrics have been available for less than the up-to-one-year reference period SDR-CSX-KMT names. Set both booleans to true AND provide the descriptions/references; when valid, preflight requires a CURRENT datapoint per in-scope KSI instead of a year of history. Omit or leave the booleans false once a year of history exists. Eligibility is measured from metrics_available_since (the date persistent KSI metrics first became available), NOT the offering launch date; the date must not be in the future.",
   "mechanisms_in_place": false,
   "mechanisms_description": "TBD: description of the mechanisms in place to produce the required KSI metrics going forward (required when mechanisms_in_place is true)",
   "commitment_to_meet_mot": false,
   "commitment_reference": "TBD: reference to the provider's recorded commitment to meet the metric-of-time requirement (required when commitment_to_meet_mot is true)",
-  "metrics_available_since": "TBD: YYYY-MM-DD the date persistent KSI metrics first became available (the FRC-CSX-MOT eligibility date; must not be in the future)",
+  "metrics_available_since": "TBD: YYYY-MM-DD the date persistent KSI metrics first became available (the SDR-CSX-KMT commitment eligibility date; must not be in the future)",
   "operating_since": "TBD: YYYY-MM-DD (deprecated fallback for metrics_available_since; the offering launch date is NOT the metrics-available date - prefer metrics_available_since)",
   "responsible_official": "TBD: name, title, and contact of the official accountable for the commitment"
  },
@@ -111,7 +111,7 @@
  },
  "sdr_version": "0.1.0",
  "schema_version": "2026-06-24",
- "dataset_version": "2026.10.05.01",
+ "dataset_version": "2026.10.08.01",
  "evidence_freshness_policy_days": 90,
  "evidence_sources": {
   "note": "Optional third-party evidence sources, opt-in per customer. Off by default. Set enabled=true and point export_path at a customer-produced export (produced in the customer's own environment; this repository holds no API client or credentials). See automation/collectors/thirdparty_adapters.py.",

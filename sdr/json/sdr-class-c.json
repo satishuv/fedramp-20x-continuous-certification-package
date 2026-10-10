@@ -2,7 +2,7 @@
  "certificationPackageOverviewUri": "https://example.provider.gov-placeholder/cpo.json",
  "metadata": {
   "version": "0.1.0",
-  "lastUpdated": "2026-10-05T00:00:00+00:00",
+  "lastUpdated": "2026-10-08T00:00:00+00:00",
   "updateSource": "build_sdr.py generator",
   "xIndependentAssessmentSummary": {
    "assessorName": "TBD: name of the FedRAMP Recognized independent assessment service",
@@ -1980,37 +1980,6 @@
    ],
    "providerExtensions": {
     "ruleName": "Automated Verification and Validation of Key Security Indicators",
-    "family": "FRC",
-    "familyName": "FedRAMP Certification",
-    "xFedRampSemantic": {
-     "implementationRisk": "TBD: Information has not been provided.",
-     "nonimplementationReason": "Not applicable: rule is followed",
-     "verification": "TBD: Information has not been provided.",
-     "validationFrequency": "TBD: Information has not been provided.",
-     "independentVerification": "TBD: Information has not been provided.",
-     "independentValidation": "TBD: Information has not been provided.",
-     "assessorResponses": "None recorded",
-     "ruleArtifacts": [],
-     "seniorOfficialAcceptance": "Not required: rule is followed",
-     "owner": "TBD: Information has not been provided."
-    },
-    "xAuthoringStatus": "Not Implemented"
-   }
-  },
-  {
-   "frrID": "FRC-CSX-MOT",
-   "frrImplementationStatus": "Not Implemented",
-   "frrImplementation": [
-    "TBD: Information has not been provided."
-   ],
-   "frrValidation": [
-    "TBD: Information has not been provided."
-   ],
-   "frrAssessment": [
-    "TBD: Independent assessment has not been performed."
-   ],
-   "providerExtensions": {
-    "ruleName": "Metrics Over Time for Key Security Indicators",
     "family": "FRC",
     "familyName": "FedRAMP Certification",
     "xFedRampSemantic": {

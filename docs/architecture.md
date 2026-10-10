@@ -181,7 +181,7 @@ The other three sections each use a different shape:
 
 | Section | Shape | Count |
 |---|---|---|
-| `FRR` | `[family]["data"][applicability][subset][id]` | 246 entries; 234 in 20x scope, 12 rev5-only |
+| `FRR` | `[family]["data"][applicability][subset][id]` | 245 entries; 233 in 20x scope, 12 rev5-only |
 | `KSI` | `[family]["indicators"][id]`, no applicability layer | 46 indicators in 10 families |
 | `CTL` | `[family][control-id]`, no applicability layer, holds `guidance` rather than `statement` | 79 entries in 14 control families |
 | `FRD` | `["data"]["all"][id]`, keyed on `term` and `definition` | 80 definitions |

@@ -14,7 +14,7 @@ not an aspiration. Legend: implemented, partial, not applicable.
 | Authoritative rules source | source of truth (JSON) | renders rules | renders rules (Markdown) | consumes pinned JSON | Pinned to `2026.09.13.02`, hash-locked in `sources.lock.json`, drift-checked daily |
 | Machine-readable input | JSON, schema-validated | HTML | Markdown | consumes JSON, never HTML | Aligns with FedRAMP guidance to use the machine-readable source |
 | Class A/B/C applicability | encoded (`varies_by_class`) | narrative | Markdown | implemented | `build_profiles.py` resolves per-class; the validator independently re-derives every statement from the dataset (`content_fidelity_against_dataset`) |
-| Per-class force and dates | in JSON | timelines | changelog | implemented | Per-class force resolved from the dataset; FRC-CSX-MOT window computed per class (6 months C, 18 months D) |
+| Per-class force and dates | in JSON | timelines | changelog | implemented | Per-class force resolved from the dataset; SDR-CSX-KMT reference-period coverage (up to the past year) measured per KSI |
 | MUST / SHOULD / MAY semantics | keywords in rules | not semantic | in text | implemented, force-aware | Class B SHOULD is advisory; Class C/D MUST shortfalls are hard build failures (`ksi_test_minimums`, `evidence_linkage_for_populated_musts`) |
 | Official JSON schemas | provided | n/a | n/a | 9 pinned, version-guarded | SDR, common, CPO, OCR, incident, SCN, accepted-vuln, VDR, historical-VER; guarded by `pinned_schema_version_guard` |
 | Generate a CSP SDR | no | no | no | implemented | The core differentiator |

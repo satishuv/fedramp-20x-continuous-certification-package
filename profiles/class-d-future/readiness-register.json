@@ -1,14 +1,14 @@
 {
  "meta": {
   "derived_from": "rule-catalog.json / ksi-catalog.json",
-  "dataset_version": "2026.10.05.01",
-  "generated": "deterministic build from dataset 2026.10.05.01",
+  "dataset_version": "2026.10.08.01",
+  "generated": "deterministic build from dataset 2026.10.08.01",
   "path": "FedRAMP 20x Program Certification",
   "filter": "rules whose affects includes Providers",
   "status": "FedRAMP pending",
   "class_d_note": "Future readiness register only. The 20x Program path for Class D is listed by FedRAMP as coming in 2027 and Class D specifics are set during the 20x Phase 4 Pilot. This register never claims Class D compliance; it shows the rules that would apply, resolved with the class d variants already present in the canonical dataset, and the delta against Class C so a Class C provider can see what tightens. Known anchors: FRC-CSX-VVK requires at least 4 automated verification and validation methods per KSI at Class D; VDR-TFR-PSD sample detection within 1 day; SDR-CSX-KMT historical metrics must significantly supersede lower classes, specifics pending."
  },
- "count": 157,
+ "count": 156,
  "delta_from_class_c": [
   {
    "rule_id": "CCM-QTR-MTG",
@@ -129,21 +129,6 @@
     null
    ],
    "statement_d": "Providers seeking 20x Class D Certification MUST implement automated methods to persistently verify and validate the accuracy and completeness of Key Security Indicators with at least 4 automated methods for each Key Security Indicator."
-  },
-  {
-   "rule_id": "FRC-CSX-MOT",
-   "change": "differs_from_c",
-   "force_c": "MUST",
-   "force_d": "MUST",
-   "timeframe_c": [
-    null,
-    null
-   ],
-   "timeframe_d": [
-    null,
-    null
-   ],
-   "statement_d": "Providers seeking 20x Class D Certification MUST provide historical metrics including status from persistent validation over at least the past 18 months for all Key Security Indicators."
   },
   {
    "rule_id": "FRC-CSX-VVR",
@@ -1348,21 +1333,6 @@
    "name": "Automated Verification and Validation of Key Security Indicators",
    "force": "MUST",
    "statement": "Providers seeking 20x Class D Certification MUST implement automated methods to persistently verify and validate the accuracy and completeness of Key Security Indicators with at least 4 automated methods for each Key Security Indicator.",
-   "timeframe_type": null,
-   "timeframe_num": null,
-   "timeframe_num_min": null,
-   "timeframe_num_max": null,
-   "resolution": "class_variant",
-   "schema": null
-  },
-  {
-   "rule_id": "FRC-CSX-MOT",
-   "family": "FRC",
-   "family_name": "FedRAMP Certification",
-   "subset": "CSX",
-   "name": "Metrics Over Time for Key Security Indicators",
-   "force": "MUST",
-   "statement": "Providers seeking 20x Class D Certification MUST provide historical metrics including status from persistent validation over at least the past 18 months for all Key Security Indicators.",
    "timeframe_type": null,
    "timeframe_num": null,
    "timeframe_num_min": null,

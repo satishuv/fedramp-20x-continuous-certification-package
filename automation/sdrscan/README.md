@@ -157,7 +157,7 @@ Class applicability is enforced per check rather than bolted on afterwards, so t
 | Summary of each metric over the past 30 days (SDR-CSX-KMT) | MAY, not checked | MUST | MUST |
 | Summary of metric up to the past year (SDR-CSX-KMT) | MAY, not checked | MUST | MUST |
 | All daily metric data up to the past year (SDR-CSX-KMT) | not required | not required | MUST |
-| Historical metrics from persistent validation (FRC-CSX-MOT) | MAY | SHOULD | MUST, at least 6 months |
+| Historical metrics including the status of persistent validation (SDR-CSX-KMT) | MAY | SHOULD | MUST, all daily data up to the past year where available |
 
 ## The four statuses
 

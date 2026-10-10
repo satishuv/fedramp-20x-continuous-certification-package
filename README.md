@@ -8,7 +8,7 @@
 <p align="center">
   <a href="https://github.com/satishuv/fedramp-20x-continuous-certification-package/actions/workflows/validate.yml"><img alt="Validate" src="https://github.com/satishuv/fedramp-20x-continuous-certification-package/actions/workflows/validate.yml/badge.svg"></a>
   <a href="https://github.com/satishuv/fedramp-20x-continuous-certification-package/actions/workflows/drift-check.yml"><img alt="Upstream drift" src="https://github.com/satishuv/fedramp-20x-continuous-certification-package/actions/workflows/drift-check.yml/badge.svg"></a>
-  <img alt="CR26 dataset" src="https://img.shields.io/badge/CR26%20dataset-2026.10.05.01-0b7285">
+  <img alt="CR26 dataset" src="https://img.shields.io/badge/CR26%20dataset-2026.10.08.01-0b7285">
   <img alt="Classes" src="https://img.shields.io/badge/classes-A%20%7C%20B%20%7C%20C-1864ab">
   <img alt="Python" src="https://img.shields.io/badge/python-3.10%2B-3776ab">
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Permissive%20(AWS%20SAS)-2f9e44"></a>
@@ -23,7 +23,7 @@
 </p>
 
 <p align="center">
-  <sub>Pinned to CR26 dataset <code>2026.10.05.01</code>. A scheduled <a href="https://github.com/satishuv/fedramp-20x-continuous-certification-package/actions/workflows/drift-check.yml">drift check</a> hash-compares the pinned dataset and schemas against <a href="https://github.com/FedRAMP/rules">github.com/FedRAMP/rules</a> daily and opens an issue on any change. Green drift badge above means the pin still matches upstream.</sub>
+  <sub>Pinned to CR26 dataset <code>2026.10.08.01</code>. A scheduled <a href="https://github.com/satishuv/fedramp-20x-continuous-certification-package/actions/workflows/drift-check.yml">drift check</a> hash-compares the pinned dataset and schemas against <a href="https://github.com/FedRAMP/rules">github.com/FedRAMP/rules</a> daily and opens an issue on any change. Green drift badge above means the pin still matches upstream.</sub>
 </p>
 
 ---
@@ -78,7 +78,7 @@ Every requirement below is drawn from the pinned CR26 dataset. For each one, thi
 | A complete Certification Package, not a document stack (`FRC-CSO-PKG`), with applicable machine-readable JSON validated against FedRAMP schemas (`FRC-CSO-JSN`) | Generates the whole package (SDR, CPO, OCR, SCG, event artifacts) from two provider-owned fact files; every JSON artifact is validated against its official FedRAMP schema on each build | Built |
 | A Security Decision Record that replaces the SSP and is persistently maintained, verified, and validated (`FRD-SDR`) | Derives the SDR in JSON, plain text, and Word from the record store; an independent validator re-derives every statement from the CR26 dataset and fails the build on any mismatch | Built |
 | Automated methods to persistently verify and validate each KSI, rising by class: MAY at A, SHOULD at B, MUST at C/D (`FRC-CSX-VVK`) | Maps each KSI to automated methods and preflight-gates the per-class minimum (0 at A, 1 at B, 2 at C, 4 at D); read-only collectors attach hashed posture evidence | Built (methods gated); provider deploys the account-side checks |
-| Persistent KSI metric history: a 30-day and a one-year summary at B, plus daily data over at least the past 6 months at C (`SDR-CSX-KMT`, `FRC-CSX-MOT`) | Appends one dated datapoint per KSI per run to a retained history store and derives the exact-window summaries from it, not from hand-authored fields; the 6-month (C) and 18-month (D) windows are measured in calendar months and gated | Built (accumulates once deployed on a schedule) |
+| Persistent KSI metric history: a 30-day and a one-year summary (SHOULD at B), plus all daily data including the status of persistent validation up to the past year at C (`SDR-CSX-KMT`) | Appends one dated datapoint per KSI per run to a retained history store and derives the exact-window summaries from it, not from hand-authored fields; coverage of the up-to-one-year reference period is measured in calendar months and reported, continuity across it is gated, and a shorter history needs the recorded initial-certification commitment the rule's note asks for | Built (accumulates once deployed on a schedule) |
 | A Certification Package Overview, the concise offering overview replacing the base SSP (`CPO-CSO-OVR`) | Generates the CPO in JSON and Markdown, validated against the official CPO schema, with honest TBD placeholders until you fill values | Built |
 | An Ongoing Certification Report on a recurring cadence (`CCM-OCR-AVL`) | Generates a schema-valid OCR example; you swap in real summaries on the required 3-month cadence | Example built; you supply real content |
 | A Secure Configuration Guide telling customers how to configure the service securely (`SCG-CSO-RSC`, `SCG-CSO-AUP`) | Generates the SCG Markdown with all required sections as a scaffold (FedRAMP publishes no JSON schema for the SCG) | Scaffold; you write the guidance |
@@ -91,7 +91,7 @@ The consistent boundary across every row: the framework collects evidence and au
 ## Feature highlights
 
 - One command builds everything. `python sdr.py all` regenerates the full package for the active class, runs the validation gate, and prints a readiness summary, offline, with no cloud account.
-- Single source of truth. You edit two files (`offering-profile.json`, `records-store.json`); 158 rule statements and 46 KSI entries re-derive from the pinned dataset, so a fact is never hand-copied across JSON, text, docx, CPO, and crosswalk.
+- Single source of truth. You edit two files (`offering-profile.json`, `records-store.json`); 157 rule statements and 46 KSI entries re-derive from the pinned dataset, so a fact is never hand-copied across JSON, text, docx, CPO, and crosswalk.
 - Deterministic and reproducible. CI regenerates every deliverable and fails if a committed file differs, plus a double-build byte-identical check, so the machine-readable and human-readable outputs, the Word document included, cannot silently drift.
 - Full-chain traceability. A 204-node assurance graph joins every rule and KSI to its evidence, so "which evidence backs this KSI" is a lookup, not a reconstruction; a Rev5-to-20x crosswalk relates each indicator to NIST SP 800-53 Rev. 5 controls.
 - Fail-closed validation. A 14-check validator gates the build on one exit code; a readiness scanner (`sdrscan`) emits one severity-ranked finding per rule and per indicator to tell you what to fix next.
@@ -163,13 +163,13 @@ Both third-party evidence sources read a file the customer exports in their own 
 | Class | Rules resolved | Indicators | Automated methods per indicator | State |
 |---|---|---|---|---|
 | A | 41 | 7 mandatory | 0 required | Supported |
-| B | 158 | 46 | 1 expected (SHOULD) | Supported |
-| C | 158 plus overlay | 46 | 2 required (MUST) | Supported |
+| B | 157 | 46 | 1 expected (SHOULD) | Supported |
+| C | 157 plus overlay | 46 | 2 required (MUST) | Supported |
 | D | 157 | 46 | 4 required (MUST) | Readiness register only. FedRAMP 20x Class D (High) is in Phase 4 development ([RFC-0033](https://www.fedramp.gov/rfcs/0033/)), pilot estimated FY27 Q1-Q2 |
 
 `FRD-CCL` describes the classes as assurance categories "increasing from minimal assurance at Class A to significant assurance at Class D." FedRAMP's current 20x guidance maps them to impact levels: Class A (Pilot), Class B (Low), Class C (Moderate), and the planned Class D (High), per the [FedRAMP 20x page](https://www.fedramp.gov/20x/). Those labels do not make the 20x indicator profile a renamed NIST SP 800-53B baseline, so this framework tracks the class but does not infer baseline equivalence.
 
-Derived from the CR26 dataset at version `2026.10.05.01`: 234 rules in 20x scope out of 246 total entries, the remaining 12 being rev5-only, plus 46 Key Security Indicators across 10 families.
+Derived from the CR26 dataset at version `2026.10.08.01`: 233 rules in 20x scope out of 245 total entries, the remaining 12 being rev5-only, plus 46 Key Security Indicators across 10 families.
 
 ## What this is not
 

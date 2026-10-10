@@ -1,8 +1,8 @@
 {
  "meta": {
   "derived_from": "rule-catalog.json / ksi-catalog.json",
-  "dataset_version": "2026.10.05.01",
-  "generated": "deterministic build from dataset 2026.10.05.01",
+  "dataset_version": "2026.10.08.01",
+  "generated": "deterministic build from dataset 2026.10.08.01",
   "path": "FedRAMP 20x Program Certification",
   "filter": "rules whose affects includes Providers",
   "class_a_note": "Class A applicability is enumerated by FRC-CLA-MFR (mandatory), FRC-CLA-RFR (recommended), and FRC-CLA-OFR (optional), parsed directly from the canonical dataset. It is NOT blanket provider-rule applicability. On-ramp: SOC 2 Type II, Rev5, or GovRAMP completed within the past 12 months (FRC-CLA-ASF). Agencies are limited to 12 months of use unless the provider actively pursues Class B, C, or D (AGU-USE-CLA).",
