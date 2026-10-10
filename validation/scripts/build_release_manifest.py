@@ -30,7 +30,7 @@ OFFERING = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 LOCK = os.path.join(BASE, "references", "sources.lock.json")
 OUT = os.path.join(BASE, "artifacts", "release-manifest.json")
 
-FRAMEWORK_VERSION = "1.5.0"
+FRAMEWORK_VERSION = "1.6.0"
 
 
 def _sha256_file(path):
