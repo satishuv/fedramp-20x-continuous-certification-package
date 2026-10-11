@@ -305,6 +305,47 @@ def test_wizard_never_asks_what_the_tool_may_not_decide():
                         "incident_contact"}))
 
 
+def test_f45_set_accepts_the_gap_reports_own_keys_and_refuses_unknown_ones():
+    """AUD-F45. The gap report prints `cpo_metadata.cpo_version  [CPO-CSO-MTD]`
+    but the wizard consumed only the bare `cpo_version`; the dotted form, and
+    any other key that is not a question, was silently ignored (nothing written,
+    nothing reported). Exercising the consultant flow on a fictional Class B
+    offering left all four CPO-CSO-MTD answers unwritten and preflight blocking."""
+    p = _tmp_profile()
+    rc, text = _capture(lambda: _run_with_profile(p, _args(set=[
+        "cpo_metadata.cpo_responsible_official=Jane Roe, CISO, ciso@x.example",
+        "cpo_metadata.cpo_version=1.0",
+        "cpo_metadata.cpo_last_updated=2026-10-10T14:00:00Z",
+        "cpo_metadata.cpo_source_of_update=Compliance engineering",
+        "provider_verified_at=2026-10-10T14:00:00Z"])))
+    prof = json.load(open(p, encoding="utf-8"))
+    check("the dotted CPO-CSO-MTD keys the gap report prints are written", rc == 0
+          and prof["cpo_responsible_official"] == "Jane Roe, CISO, ciso@x.example"
+          and prof["cpo_version"] == "1.0"
+          and prof["cpo_source_of_update"] == "Compliance engineering")
+    check("the gap report no longer lists CPO-CSO-MTD", "CPO-CSO-MTD" not in text)
+    rc2 = _run_with_profile(p, _args(set=["cpo_version=2.0"]))
+    check("the bare key still works too", rc2 == 0
+          and json.load(open(p, encoding="utf-8"))["cpo_version"] == "2.0")
+
+    before = json.load(open(p, encoding="utf-8"))
+    rc3, text3 = _capture(lambda: _run_with_profile(p, _args(set=[
+        "organization_name=Contoso Federal", "offering_nmae=Typo Cloud"])))
+    after = json.load(open(p, encoding="utf-8"))
+    check("an unknown --set key is refused by name and NOTHING is written",
+          rc3 == 1 and "offering_nmae" in text3 and "not a profile question" in text3
+          and after == before)
+    rc4, text4 = _capture(lambda: _run_with_profile(p, _args(set=[
+        "external_assessment.framework=SOC 2 Type II"])))
+    check("a key for another class is refused naming that class (Class A key on a Class B profile)",
+          rc4 == 1 and "external_assessment.framework" in text4 and "Class A only" in text4
+          and json.load(open(p, encoding="utf-8")) == before)
+    rc5, text5 = _capture(lambda: _run_with_profile(p, _args(set=["offering_name"])))
+    check("a malformed --set (no '=') is refused and nothing is written",
+          rc5 == 1 and "expected key=value" in text5
+          and json.load(open(p, encoding="utf-8")) == before)
+
+
 def main():
     for t in (test_set_writes_fields, test_invalid_class_rejected_no_write,
               test_result_profile_is_valid_json,
@@ -316,7 +357,8 @@ def main():
               test_contacts_are_structured_and_nested_blocks_keep_their_notes,
               test_class_decides_which_blocks_are_required,
               test_fully_answered_profile_has_no_contract_gaps,
-              test_wizard_never_asks_what_the_tool_may_not_decide):
+              test_wizard_never_asks_what_the_tool_may_not_decide,
+              test_f45_set_accepts_the_gap_reports_own_keys_and_refuses_unknown_ones):
         print(t.__name__)
         t()
     print(f"\n{'PASS' if _fail == 0 else 'FAIL'}: init wizard ({_fail} failures)")

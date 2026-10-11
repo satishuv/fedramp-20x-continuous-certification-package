@@ -763,6 +763,40 @@ def classify_evidence_freshness(observed_at, now, policy_days=DEFAULT_EVIDENCE_F
 # Fields whose answer is a contact: asked as three sub-prompts and stored as
 # {name, email, phone} (the CPO schema's contactInfo members).
 _CONTACT_FIELDS = ("security_contact", "sales_contact")
+# Class-conditional blocks whose answers live as top-level profile keys rather
+# than under profile[block]. Their --set key is accepted bare (cpo_version) or
+# dotted (cpo_metadata.cpo_version), which is how the gap report prints it.
+_FLAT_BLOCKS = ("provider_verified_at", "overall_assessment_summary", "cpo_metadata")
+
+
+def _init_known_set_keys():
+    """Every --set key the wizard answers, mapped to the classes it applies to
+    (None when it applies at every class). Built from the contract, so a new
+    question is accepted the day it is added (AUD-F45)."""
+    known = {}
+    for key, _src, _q in _pc.REQUIRED_FIELDS:
+        known[key] = None
+        if key in _CONTACT_FIELDS:
+            for sub in ("name", "email", "phone"):
+                known[f"{key}.{sub}"] = None
+    for block, _src, classes, questions in _pc.CLASS_CONDITIONAL:
+        for sub, _q in questions:
+            known[f"{block}.{sub}"] = classes
+            if block in _FLAT_BLOCKS:
+                known[sub] = classes
+    return known
+
+
+def _init_unknown_key_message(key, cls):
+    known = _init_known_set_keys()
+    if key in known and known[key] is not None:
+        return (f"--set {key}: this question applies to Class "
+                f"{', '.join(c.upper() for c in known[key])} only, not the chosen Class "
+                f"{cls.upper()}; nothing was written for it")
+    return (f"--set {key}: not a profile question (see `python sdr.py init --help` and "
+            "the keys the gap report prints); nothing was written for it")
+
+
 # Fields whose answer must be an http(s) URL.
 _URL_FIELDS = {"offering_website", "offering_logo_uri", "certification_package_overview_uri",
                "trust_center_uri", "secure_config_guide_uri", "assessment_report_uri",
@@ -846,15 +880,19 @@ def _init_prompt(prompt, current):
         return ""
 
 
-def _init_ask_contact(key, prompt, current, interactive, overrides):
+def _init_ask_contact(key, prompt, current, interactive, overrides, consumed=None):
     """A contact is three sub-answers. Overrides accept either `key=Name <email>`
     (kept as a string, the CPO builder understands it) or the dotted form
-    `key.name=`, `key.email=`, `key.phone=`."""
+    `key.name=`, `key.email=`, `key.phone=`. Keys taken from `overrides` are
+    added to `consumed` (AUD-F45)."""
+    consumed = consumed if consumed is not None else set()
     if key in overrides:
+        consumed.add(key)
         return overrides[key]
     dotted = {sub: overrides[f"{key}.{sub}"] for sub in ("name", "email", "phone")
               if f"{key}.{sub}" in overrides}
     if dotted:
+        consumed.update(f"{key}.{sub}" for sub in dotted)
         base = dict(current) if isinstance(current, dict) else {}
         base.update(dotted)
         return base
@@ -890,16 +928,19 @@ def cmd_init(args):
         return 1
 
     overrides = {}
+    malformed = []
     for item in (getattr(args, "set", None) or []):
         if "=" not in item:
-            out(f"Ignoring malformed --set '{item}' (expected key=value).")
+            malformed.append(item)
             continue
         k, _, v = item.partition("=")
         overrides[k.strip()] = v.strip()
 
-    interactive = not overrides and not getattr(args, "non_interactive", False)
+    interactive = (not overrides and not malformed
+                   and not getattr(args, "non_interactive", False))
     answers = {}
-    errors = []
+    errors = [f"--set '{m}': expected key=value; nothing was written for it" for m in malformed]
+    consumed = set()  # AUD-F45: every --set key must be consumed by a question
 
     if interactive:
         out(f"Offering profile: {os.path.relpath(path, BASE)}")
@@ -912,7 +953,8 @@ def cmd_init(args):
     for key, src, question in _pc.REQUIRED_FIELDS:
         current = profile.get(key)
         if key in _CONTACT_FIELDS:
-            val = _init_ask_contact(key, f"{question}  [{src}]", current, interactive, overrides)
+            val = _init_ask_contact(key, f"{question}  [{src}]", current, interactive,
+                                    overrides, consumed)
             if val is not None:
                 if isinstance(val, dict) and val.get("phone"):
                     phone = _pc.normalize_phone(val["phone"])
@@ -925,6 +967,7 @@ def cmd_init(args):
             continue
         if key in overrides:
             resp = overrides[key]
+            consumed.add(key)
         elif interactive:
             resp = _init_prompt(f"{question}  [{src}]", current)
             while key == "business_category" and resp.strip().lower() == "list":
@@ -951,17 +994,22 @@ def cmd_init(args):
     for block, src, classes, questions in _pc.CLASS_CONDITIONAL:
         if cls not in classes:
             continue
-        flat = block in ("provider_verified_at", "overall_assessment_summary", "cpo_metadata")
+        flat = block in _FLAT_BLOCKS
         node = profile.get(block) if not flat else None
         node = dict(node) if isinstance(node, dict) else {}
         block_answers = {}
         for sub, question in questions:
             # Flat blocks store each answer as a top-level profile key; nested
-            # blocks store them under profile[block][sub].
+            # blocks store them under profile[block][sub]. AUD-F45: a flat
+            # block's answer is accepted under BOTH the bare key and the dotted
+            # key the gap report prints (cpo_metadata.cpo_version), so the
+            # report's own text is a valid --set.
             target_key = sub if flat else f"{block}.{sub}"
             current = profile.get(sub) if flat else node.get(sub)
-            if target_key in overrides:
-                resp = overrides[target_key]
+            given = [k for k in (target_key, f"{block}.{sub}") if k in overrides]
+            if given:
+                resp = overrides[given[0]]
+                consumed.update(given)
             elif interactive:
                 resp = _init_prompt(f"{question}  [{src}, Class {cls.upper()}]", current)
             else:
@@ -978,6 +1026,12 @@ def cmd_init(args):
         if block_answers:
             node.update(block_answers)
             answers[block] = node
+
+    # AUD-F45: a --set key the wizard did not consume was silently ignored, so
+    # a typo, or a Class A key on a Class B profile, wrote nothing and reported
+    # nothing. Refuse it, name the key, and write nothing.
+    for key in sorted(set(overrides) - consumed):
+        errors.append(_init_unknown_key_message(key, cls))
 
     if errors:
         out("Nothing was written. Fix these answers and run `python sdr.py init` again:")
@@ -3288,7 +3342,9 @@ def build_parser():
     init_p.add_argument("--set", action="append", metavar="KEY=VALUE",
                         help="set a profile field non-interactively (repeatable); nested "
                              "answers use dots, e.g. security_contact.email=..., "
-                             "fedramp_independent_assessment.completed_at=2026-09-01")
+                             "fedramp_independent_assessment.completed_at=2026-09-01, "
+                             "cpo_metadata.cpo_version=1.0 (the keys the gap report "
+                             "prints); a key that is not a question is refused")
 
     sub.add_parser("build", help="regenerate every deliverable from the record store")
     val_p = sub.add_parser("validate", help="run the full gate + offline test suite (CI parity)")
@@ -3334,6 +3390,9 @@ def build_parser():
                           help="restrict to proposals from one source")
     review_p.add_argument("--only", metavar="PREFIX",
                           help="restrict to field keys starting with PREFIX, e.g. frr/AFC-")
+    review_p.add_argument("--all", action="store_true",
+                          help="include proposals a named human already decided (by default "
+                               "a decided proposal is not re-asked; see field-review-log.json)")
     review_p.add_argument("--reviewer", help="the named human making the decisions")
     review_p.add_argument("--role", help="that person's role")
     rel_p = sub.add_parser("release", help="build, run the full gate + reproducibility, print the tag")

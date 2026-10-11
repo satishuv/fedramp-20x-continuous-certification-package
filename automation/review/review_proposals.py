@@ -115,6 +115,28 @@ def _strip(value):
     return strip_label(value) if isinstance(value, str) else value
 
 
+def _is_draft(value):
+    """True when ``value`` is drafter output: a string, or a list of strings,
+    carrying the DRAFT label (not an Example or a TBD, which the drafter never
+    writes)."""
+    if isinstance(value, (list, tuple)):
+        strings = [v for v in value if isinstance(v, str)]
+        return bool(strings) and len(strings) == len(value) and all(_is_draft(v) for v in strings)
+    return isinstance(value, str) and value.strip().startswith("DRAFT (")
+
+
+def _authored_by(src_name, path, prop):
+    """Does this sidecar's producer author this field? prefill writes the
+    structured tests/evidence only (prefill_from_facts.py); the drafter writes
+    DRAFT-labelled narrative prose only (draft_narratives.py DRAFTABLE_FIELDS).
+    Anything else in a sidecar is the snapshot it was copied from."""
+    if src_name == "prefill":
+        return path[0] in STRUCTURED_FIELDS
+    if src_name == "ai-draft":
+        return path[0] in NARRATIVE_FIELDS and _is_draft(prop)
+    return False
+
+
 # ---- Proposal discovery ------------------------------------------------------
 
 def _reviewable_paths(section, record):
@@ -161,11 +183,18 @@ def proposals(store, prefill=None, ai_draft=None):
                 for path in _reviewable_paths(section, record):
                     if path in seen:
                         continue
-                    if src_name == "ai-draft" and path[0] in STRUCTURED_FIELDS:
-                        continue  # prose drafter may not propose tests/evidence
                     prop = _get(cand, path)
                     cur = _get(record, path)
                     if prop is None or prop == cur:
+                        continue
+                    if not _authored_by(src_name, path, prop):
+                        # AUD-F46: a sidecar is a snapshot of the whole store
+                        # taken when its producer ran. A field a human decided
+                        # AFTER that differs from the snapshot, and the stale
+                        # value read as a proposal to put it back; prefill's
+                        # precedence then let `--accept-all prefill` revert an
+                        # accepted narrative to TBD. Only what the producer
+                        # authors is a proposal from it.
                         continue
                     seen.add(path)
                     out.append({
@@ -188,6 +217,32 @@ def proposals(store, prefill=None, ai_draft=None):
                         "provenance": {"note": "labelled example shipped in the template"},
                     })
     return out, violations
+
+
+def split_decided(items, log):
+    """Partition proposals into (pending, decided) against the field-review log.
+
+    AUD-F46: a proposal is DECIDED when the latest logged decision on its field
+    was taken on this very proposal (same ``proposed_sha256``), whatever the
+    decision was. An accepted prose proposal leaves the store holding the
+    label-stripped text, which never equals the labelled sidecar value, and a
+    rejected one leaves the store untouched, so without the log both read as
+    pending forever: ``--list`` never shrank for prose and ``--walk`` re-asked
+    every decided field. A sidecar that later proposes different text (a new
+    drafter run on new facts) hashes differently and is pending again.
+    """
+    latest = {}
+    for entry in ((log or {}).get("reviews") or []):
+        if isinstance(entry, dict) and entry.get("field"):
+            latest[entry["field"]] = entry  # append-only log: last wins
+    pending, decided = [], []
+    for it in items:
+        prior = latest.get(it["key"])
+        if prior and prior.get("proposed_sha256") == _sha256(it["proposed"]):
+            decided.append(it)
+        else:
+            pending.append(it)
+    return pending, decided
 
 
 def _provenance(src_name, sidecar, section, record_id, path):
@@ -268,6 +323,15 @@ def apply_decisions(store, items, decisions, reviewer, role, log=None, now=None)
             entry["applied_sha256"] = _sha256(value)
             applied += 1
         elif decision == "edited":
+            if path[0] in STRUCTURED_FIELDS:
+                # AUD-F47: tests and evidence are lists of schema objects (an
+                # SDR ksiEvidence item must be an object; FRC-CSX-VVK counts a
+                # plain-string test as zero automated methods). Wrapping the
+                # reviewer's prose into that list produced a record the gate
+                # rejects. Collected facts are accepted or rejected as collected.
+                raise ReviewError(
+                    f"{key}: structured {path[0]} are accepted or rejected as collected; "
+                    "prose cannot replace them (re-run the collector or import to change them)")
             text = d.get("text")
             if not isinstance(text, str) or len(text.strip()) < 3:
                 raise ReviewError(f"{key}: an edit needs the reviewer's text")
@@ -327,18 +391,26 @@ def walk(items, reviewer, role, prompt=input, out=print):
     decisions = {}
     total = len(items)
     for i, it in enumerate(items, 1):
+        structured = it["path"][0] in STRUCTURED_FIELDS
         out("")
         out(f"[{i}/{total}] {it['key']}   source: {it['source']}")
         out(f"  current : {_fmt(it['current'])}")
         if it["source"] != "template-example":
             out(f"  proposed: {_fmt(it['proposed'])}")
         out(f"  on accept: {_fmt(_strip(it['proposed']), 300)}")
+        keys = ("  [a]ccept  [r]eject  [s]kip  [q]uit > " if structured
+                else "  [a]ccept  [e]dit  [r]eject  [s]kip  [q]uit > ")
         while True:
-            ans = (prompt("  [a]ccept  [e]dit  [r]eject  [s]kip  [q]uit > ") or "").strip().lower()
+            ans = (prompt(keys) or "").strip().lower()
             if ans in ("a", "accept"):
                 decisions[it["key"]] = {"decision": "accepted"}
                 break
             if ans in ("e", "edit"):
+                if structured:
+                    # AUD-F47: collected tests/evidence are objects, not prose.
+                    out(f"  {it['path'][0]} are accepted or rejected as collected; "
+                        "prose cannot replace them")
+                    continue
                 text = prompt("  your text > ").strip()
                 if len(text) < 3 or is_unreviewed(text):
                     out("  need real text (not a label); try again")
@@ -366,6 +438,7 @@ def run(args, out=print, prompt=input):
         return 2
     prefill = _load(PREFILL_SIDECAR)
     ai_draft = _load(AI_SIDECAR)
+    log = _load(FIELD_REVIEW_LOG)
     items, violations = proposals(store, prefill, ai_draft)
     for v in violations:
         out(f"WARNING: {v}")
@@ -373,8 +446,17 @@ def run(args, out=print, prompt=input):
         items = [it for it in items if it["source"] == args.source]
     if getattr(args, "only", None):
         items = [it for it in items if it["key"].startswith(args.only)]
+    # AUD-F46: a proposal already decided by a named human is not pending.
+    items, decided = split_decided(items, log)
+    if getattr(args, "all", False):
+        items = items + decided
+        decided = []
 
     if not items:
+        if decided:
+            out(f"No pending proposals: {len(decided)} already decided "
+                "(sdr/reviews/field-review-log.json); `--all` re-asks them.")
+            return 0
         out("No pending proposals. Run the collector + prefill, or the drafter "
             "(python automation/ai/draft_narratives.py --write), to create some.")
         return 0
@@ -391,6 +473,9 @@ def run(args, out=print, prompt=input):
             out(f"  {it['key']}  [{it['source']}]")
         if len(items) > 200:
             out(f"  ... {len(items) - 200} more")
+        if decided:
+            out(f"Decided earlier and not re-asked: {len(decided)} "
+                "(sdr/reviews/field-review-log.json; `--all` includes them)")
         out("")
         out("Decide with: python sdr.py review --walk --reviewer \"<name>\" --role \"<role>\"")
         return 0
@@ -424,7 +509,6 @@ def run(args, out=print, prompt=input):
             out("No decisions made; nothing written.")
             return 0
 
-    log = _load(FIELD_REVIEW_LOG)
     try:
         new_store, new_log, applied = apply_decisions(
             store, items, decisions, reviewer, role, log=log)

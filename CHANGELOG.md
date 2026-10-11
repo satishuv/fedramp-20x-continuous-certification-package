@@ -8,6 +8,50 @@ One project-specific convention: the pinned FedRAMP dataset version is recorded 
 
 Pinned dataset: `2026.10.08.01` (unchanged)
 
+The documented consultant flow, run end to end on a fictional Class B offering
+(`init` with every answer scripted, the three importers, prefill, the drafter,
+`review --list`, `--walk`, `--accept-all prefill`, `build`, `preflight`),
+found five defects in the review path that no committed sample exercised.
+All five are closed with a regression test and a killed mutation
+(`AUD-F45` to `AUD-F49`):
+
+- **A sidecar proposes only what its producer authors, and a decision stands
+  (AUD-F46, High).** Both sidecars are full snapshots of the record store.
+  After one narrative was accepted, the prefill snapshot's `TBD` for that
+  field read as a prefill proposal to put it back, prefill outranks the
+  drafter, and `review --accept-all prefill` silently reverted the accepted
+  narrative to `TBD` ("Applied 28 field(s)"). Separately, a decided prose
+  proposal never equals its labelled sidecar value, so `--list` never shrank
+  for prose and `--walk` re-asked every decided field. `review_proposals.py`
+  now applies an authorship guard (prefill: structured tests/evidence only;
+  the drafter: `DRAFT`-labelled implementation/validation prose only;
+  anything else in a sidecar is the snapshot) and partitions out proposals
+  whose hash the field-review log already records a decision for; `--list`
+  prints the decided count and `review --all` includes them. A changed
+  proposal is pending again.
+- **`init --set` accepts the keys its own gap report prints and refuses the
+  rest (AUD-F45).** `cpo_metadata.cpo_version` and the other three
+  CPO-CSO-MTD keys were printed as required but silently ignored by `--set`
+  (the block is flat; only the bare key was consumed), and any unknown key
+  was ignored the same way. Both forms now work; an unknown key, a key for
+  another class, or a malformed item is refused by name and nothing is
+  written.
+- **Structured tests and evidence cannot be edited into prose (AUD-F47).**
+  `[e]dit` on a prefill item wrapped the reviewer's sentence into the list
+  of schema objects (schema-invalid; zero automated methods to FRC-CSX-VVK).
+  The walk offers accept/reject/skip/quit on a structured item and
+  `apply_decisions` refuses an edit there by name.
+- **Prefilled text carries no markdown (AUD-F48).** The method and evidence
+  templates wrapped the rule name in backticks; once accepted, the
+  human-readable SDR failed the gate's `no_markdown_in_human_readable` check
+  for every class. Plain text now; the regression runs the gate's own
+  patterns over prefilled output and the drafter's.
+- **The drafter sees the indicator's own Config-rule facts (AUD-F49).** A
+  KSI proposal said "no automated facts collected for this indicator yet"
+  one review item after prefill had proposed that indicator's Config-rule
+  evaluation as its test. The drafter now reads Config-rule facts the way
+  prefill does and names them first in the observed-posture line.
+
 The zero-typing track completes its importer set:
 
 - **An existing Rev5 SSP and a landing-zone configuration become KSI

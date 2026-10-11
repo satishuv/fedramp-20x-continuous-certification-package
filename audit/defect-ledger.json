@@ -600,6 +600,71 @@
       "mutation": "MUT-F44: the helper call is replaced by a stub that writes '(changelog entry unavailable)' and never touches the baseline (the pre-fix adoption shape); expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F45",
+      "severity": "Medium",
+      "requirement": "docs/getting-started.md and docs/automation.md: `sdr.py init` asks every FedRAMP-required profile question and `--set key=value` scripts an answer; its gap report names what is still required so a provider can answer it. A key the report prints must be a key the wizard accepts, and a key the wizard does not know must be refused, not dropped",
+      "component": "sdr.py (cmd_init, _init_ask_contact, _init_known_set_keys, _init_unknown_key_message)",
+      "description": "Found by running the documented consultant flow end to end on a fictional Class B offering (2026-10-11). The gap report prints the four CPO-CSO-MTD answers as `cpo_metadata.cpo_responsible_official`, `cpo_metadata.cpo_version`, `cpo_metadata.cpo_last_updated`, `cpo_metadata.cpo_source_of_update`, and the --set help describes dotted keys, but cpo_metadata is a flat block whose answers are top-level profile keys and the wizard consumed only the bare `cpo_version` form. All four `--set cpo_metadata.*=...` values were silently ignored: the wizard wrote 24 of 28 fields, reported the same four as still required, and preflight blocked on 'CPO metadata unresolved (CPO-CSO-MTD)'. Any other unknown key (a typo, a Class A key on a Class B profile) was ignored the same way, writing nothing and reporting nothing.",
+      "root_cause": "Flat class-conditional blocks were addressed by their bare sub-key in the override lookup while every report and help text used the dotted form; and the wizard never checked that each --set key was consumed by some question.",
+      "fix_commit": "this PR -- a flat block's answer is accepted under the bare key and the dotted key (the report's own text is a valid --set); the wizard tracks consumed keys and refuses the rest by name, distinguishing 'not a profile question' from 'applies to Class A only, not the chosen Class B', and a malformed item (no '=') is refused the same way; nothing is written when any key is refused",
+      "regression_test": "validation/scripts/test_init_wizard.py::test_f45_set_accepts_the_gap_reports_own_keys_and_refuses_unknown_ones (dotted CPO-CSO-MTD keys written and the gap cleared; bare key still accepted; unknown key, other-class key and malformed item each refused with the profile byte-identical)",
+      "mutation": "MUT-F45: the override lookup consumes the bare key only and marks every --set key consumed (the pre-fix silent-ignore shape); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F46",
+      "severity": "High",
+      "requirement": "docs/automation.md Layer 3: a proposal becomes the provider's record only through a named human's decision; `review --list` shows what is pending and `--accept-all prefill` bulk-accepts the deterministic collector facts (structured tests and evidence, not prose). A decision, once recorded, must stand: the review step may not propose undoing it, and must not ask it again",
+      "component": "automation/review/review_proposals.py (proposals, _authored_by, split_decided, run); sdr.py (review --all)",
+      "description": "Found by running the consultant flow end to end (2026-10-11). Both sidecars are full snapshots of the record store taken when prefill and the drafter ran. (1) A decided prose field never equals its labelled sidecar value (accept strips the label; reject writes nothing), so after accepting one rule narrative and rejecting one KSI narrative `review --list` still counted 426 ai-draft proposals pending and `--walk` re-asked both. (2) Worse: the accepted narrative now differed from the prefill snapshot's TBD, and proposals() read every sidecar/store difference as a proposal from that sidecar with prefill taking precedence over ai-draft, so `review --accept-all prefill` (the documented next step) applied 28 'prefill' decisions of which one reverted the human-accepted VDR-CSO-DET implementation to TBD and one overwrote a human edit; the store examined afterwards held TBD where the log recorded an acceptance. The data loss was silent: the command reported 'Applied 28 field(s)'.",
+      "root_cause": "Proposal discovery was 'sidecar differs from store' with no notion of who authored the difference (only the ai-draft/structured direction was guarded) and no memory of what a human had already decided.",
+      "fix_commit": "this PR -- (a) an authorship guard: a sidecar proposes only what its producer writes (prefill: tests/evidence objects; the drafter: DRAFT-labelled implementation/validation prose); any other difference is the snapshot it was copied from and is not a proposal. (b) split_decided(): a proposal whose sha256 equals the latest logged decision's proposed_sha256 for that field is decided and not re-asked, whatever the decision was; a changed proposal (a new drafter run on new facts) hashes differently and is pending again; `--list` prints the decided count and `--all` includes them",
+      "regression_test": "automation/review/test_review_proposals.py::test_f46_decided_proposals_are_not_re_asked_until_the_proposal_changes (unit: partition, re-pending on a changed proposal, no-log case, authorship guard on a stale prefill prose value, a stale drafter extension value and unlabelled drafter text) and ::test_f46_run_list_and_walk_skip_decided_unless_all (through run(): the pending count drops 5 to 3 after two decisions, the stale prefill snapshot is not a proposal, `--accept-all prefill` applies exactly the one structured field and leaves the accepted narrative intact, `--all` re-includes the decided two, the walk sees only undecided fields)",
+      "mutation": "MUT-F46: the authorship guard is disabled so any snapshot difference is a proposal from that sidecar (the pre-fix shape, which reverted the accepted narrative); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F47",
+      "severity": "Medium",
+      "requirement": "The official SDR schema requires ksiEvidence items to be objects with an evidenceType from a fixed enum, and FRC-CSX-VVK counts only structured test entries with automated:true and a method_id (AUD-F18: plain strings count as zero automated methods). The review step must not create a record the gate rejects",
+      "component": "automation/review/review_proposals.py (apply_decisions, walk)",
+      "description": "Found by running the consultant flow end to end (2026-10-11). The walk offered [e]dit on every item, including the prefill's structured tests and evidence, and apply_decisions wrapped the reviewer's sentence into the list: `evidence` became a one-string list in place of the evidence objects, schema-invalid and worth zero automated methods. In the exercise the defect was masked because a later `--accept-all prefill` overwrote the edited list again (the AUD-F46 revert), so the gate saw the object; without that second accident the build would have failed on the record the review step itself wrote.",
+      "root_cause": "The edit path was written for prose and applied to every reviewable path; collected tests and evidence are objects a person cannot author as a sentence.",
+      "fix_commit": "this PR -- apply_decisions refuses 'edited' on tests/evidence by name ('accepted or rejected as collected; prose cannot replace them'); the walk offers [a]ccept [r]eject [s]kip [q]uit on a structured item and explains an 'e'; prose items keep [e]dit",
+      "regression_test": "automation/review/test_review_proposals.py::test_f47_structured_tests_and_evidence_cannot_be_edited_into_prose (refusal by name; accept and reject still apply; the walk prompt carries no [e]dit for a structured item and explains an 'e'; a prose item still offers it)",
+      "mutation": "MUT-F47: the refusal is disabled so an edit again wraps prose into the structured list; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F48",
+      "severity": "Medium",
+      "requirement": "validate_sdr.py no_markdown_in_human_readable: the human-readable SDR carries no markdown (headings, bold, bullets, backticks, tables); the gate fails on a hit. Text the framework itself authors into the record must satisfy its own gate",
+      "component": "automation/prefill/prefill_from_facts.py (tests[].method, evidence[].evidenceDescription templates)",
+      "description": "Found by running the consultant flow end to end (2026-10-11). The prefill templates wrapped the Config rule name in backticks ('AWS Config rule `access-keys-rotated` evaluated continuously'). After `review --accept-all prefill` and `sdr.py build`, the human-readable SDR for every class carried those backticks and `sdr.py validate` failed with 'FAIL: no_markdown_in_human_readable | hits: [backticks]' for Class A, B and C; preflight reported it only as 'the validation gate does not pass'. No committed sample exercised this path: the Acme and Class C samples hand-author their tests and evidence, and the AUD-F18 binding test checked method_id binding, not the hygiene gate.",
+      "root_cause": "A markdown habit in two f-strings, never rendered through the gate because no test accepted prefill output into a store and validated the rendered record.",
+      "fix_commit": "this PR -- plain text in both templates (the rule is still named); the regression runs the gate's own MD_PATTERNS over prefilled tests and evidence",
+      "regression_test": "automation/prefill/test_prefill.py::test_f48_prefilled_text_carries_no_markdown (config and posture facts prefilled, every MD_PATTERN of validate_sdr.py searched over the rendered tests and evidence, zero hits, rule name still present); automation/ai/test_draft_narratives.py::test_f49_... also runs MD_PATTERNS over the drafter's KSI output",
+      "mutation": "MUT-F48: the backticks are restored around the rule name in the method template; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F49",
+      "severity": "Low",
+      "requirement": "docs/automation.md Layer 2: the drafter turns collected facts and the official rule text into a first draft a person confirms or corrects; a proposal must not contradict the facts shown beside it",
+      "component": "automation/ai/draft_narratives.py (load_all_config_facts, config_facts_for_ksi, draft_ksi, main)",
+      "description": "Found by running the consultant flow end to end (2026-10-11). The walk for KSI-IAM-AAM showed, as item 1 of 4, the prefill's proposed test 'AWS Config rule access-keys-rotated ... last observed NON_COMPLIANT on 2026-10-10' and, as item 3 of 4, the drafter's proposal stating 'Observed automated posture that may support how the offering implements this: no automated facts collected for this indicator yet'. The drafter read posture facts only (service-wide checks routed by service name); the per-rule Config facts that prefill reads through the registry's config_managed_rule checks were invisible to it, so for the most common kind of collected fact the proposal denied the fact.",
+      "root_cause": "Two readers of the same facts store: prefill reads `facts` (Config rules) and `posture_facts`; the drafter read `posture_facts` only.",
+      "fix_commit": "this PR -- the drafter loads Config-rule facts the way prefill does, matches them to the indicator through the same registry checks (real evaluated outcomes only), renders them first in the observed-posture line as config.<rule>=<status> (AWS Config rule <rule>, region, last evaluated <date>), and counts them as facts found",
+      "regression_test": "automation/ai/test_draft_narratives.py::test_f49_ksi_proposal_names_the_indicators_own_config_rule_facts (the proposal names config.access-keys-rotated=NON_COMPLIANT and the last-evaluated date, omits a RULE_NOT_DEPLOYED rule, no longer claims no facts; unchanged wording without config facts; the helper mirrors prefill's filter; drafter output carries no markdown)",
+      "mutation": "MUT-F49: draft_ksi passes posture facts only to the drafter (the pre-fix shape); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }
