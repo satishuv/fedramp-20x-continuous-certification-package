@@ -101,6 +101,51 @@ def test_offline_stub_needs_no_network_or_model():
     print("PASS: test_offline_stub_needs_no_network_or_model")
 
 
+def test_measure_comes_from_the_record_guidance_when_registry_has_none():
+    # The collector registry entry carries no fill_guidance (only services,
+    # routes and checks); the record store does. Reading only the registry
+    # left "Intended measure:" empty in every KSI proposal.
+    rec = blank_ksi_record()
+    rec["fill_guidance"] = {"what_it_looks_for": "Accounts are managed using automation."}
+    registry_entry = {"services": ["Amazon GuardDuty"], "metric_service_keys": [], "checks": []}
+    dn.draft_ksi("KSI-IAM-AAM", rec, registry_entry, posture(), dn.TemplateDrafter(), SERVICE_MAP)
+    assert "Intended measure: Accounts are managed using automation." in rec["implementation"][0]
+    print("PASS: test_measure_comes_from_the_record_guidance_when_registry_has_none")
+
+
+def test_imported_observations_are_quoted_and_bounded():
+    rec = blank_ksi_record()
+    obs = [{"observed_at": "2026-08-15T14:02:00+00:00", "source": "rev5-oscal-ssp",
+            "text": "ac-2.2 (Identity Service): temporary accounts expire after 24 hours."}]
+    changed, notes = dn.draft_ksi("KSI-IAM-AAM", rec, ksi_entry(), posture(),
+                                  dn.TemplateDrafter(), SERVICE_MAP, obs)
+    assert changed and notes == [
+        "KSI-IAM-AAM: drafted implementation (template + imported observations)",
+        "KSI-IAM-AAM: drafted validation (template + imported observations)"]
+    text = rec["implementation"][0]
+    assert "[rev5-oscal-ssp, 2026-08-15] ac-2.2 (Identity Service)" in text
+    assert "not a 20x status" in text
+    assert text.endswith("before relying on this text.")
+    # Without observations the proposal is unchanged from the plain form.
+    plain = blank_ksi_record()
+    dn.draft_ksi("KSI-IAM-AAM", plain, ksi_entry(), posture(), dn.TemplateDrafter(), SERVICE_MAP)
+    assert "imported sources" not in plain["implementation"][0]
+    assert dn._ksi_observations_block([]) == "" and dn._ksi_observations_block(None) == ""
+
+    # A provider's drafter on the older 4-argument interface still gets the
+    # quoted imports appended rather than losing them.
+    class Legacy:
+        name = "legacy"
+
+        def draft(self, kind, ksi_id, guidance, facts):
+            return "DRAFT (legacy): body."
+    rec2 = blank_ksi_record()
+    dn.draft_ksi("KSI-IAM-AAM", rec2, ksi_entry(), posture(), Legacy(), SERVICE_MAP, obs)
+    assert rec2["implementation"][0].startswith("DRAFT (legacy): body.")
+    assert "[rev5-oscal-ssp, 2026-08-15]" in rec2["implementation"][0]
+    print("PASS: test_imported_observations_are_quoted_and_bounded")
+
+
 def _run_all():
     tests = [v for k, v in sorted(globals().items())
              if k.startswith("test_") and callable(v)]

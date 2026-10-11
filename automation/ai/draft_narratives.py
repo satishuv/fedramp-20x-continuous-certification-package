@@ -32,6 +32,7 @@ Usage:
 import argparse
 import copy
 import difflib
+import inspect
 import json
 import os
 import sys
@@ -124,43 +125,92 @@ def load_all_posture_facts():
     return by_service
 
 
-def load_rule_observations():
-    """Dated, count-only observations per FRR rule id that an export import
-    (automation/importers/import_findings.py) derived from the provider's own
-    AWS Config and Security Hub exports. Keyed by rule id; identical texts from
-    several files are kept once. Read-only; empty when nothing was imported."""
-    by_rule = {}
+def _load_observations(key):
+    """Dated observations per id from every facts-*.json under `key`
+    (`rule_observations` or `ksi_observations`), as written by the importers
+    in automation/importers/. Identical texts from several files are kept
+    once. Read-only; empty when nothing was imported."""
+    by_id = {}
     seen = set()
     if not os.path.isdir(FACTS_DIR):
-        return by_rule
+        return by_id
     for fn in sorted(os.listdir(FACTS_DIR)):
         if not (fn.startswith("facts-") and fn.endswith(".json")):
             continue
         store = load(os.path.join(FACTS_DIR, fn), {})
-        for rid, items in (store.get("rule_observations") or {}).items():
+        for rid, items in (store.get(key) or {}).items():
             for o in items or []:
                 text = o.get("text") if isinstance(o, dict) else None
                 if not text or (rid, text) in seen:
                     continue
                 seen.add((rid, text))
-                by_rule.setdefault(rid, []).append(o)
-    return by_rule
+                by_id.setdefault(rid, []).append(o)
+    return by_id
+
+
+def load_rule_observations():
+    """Count-only observations per FRR rule id derived by an export import
+    (automation/importers/import_findings.py, import_landing_zone.py)."""
+    return _load_observations("rule_observations")
+
+
+def load_ksi_observations():
+    """Observations per KSI id: the provider's own Rev5 SSP narrative for the
+    controls the dataset ties to the indicator (import_oscal_ssp.py) and the
+    landing zone's declared configuration (import_landing_zone.py)."""
+    return _load_observations("ksi_observations")
 
 
 # ---- Pluggable drafter interface -------------------------------------------
 #
-# A drafter takes (ksi_id, ksi_guidance, facts) and returns a short prose draft
-# string, or None to decline. It MUST NOT perform any AWS calls or make a
-# compliance claim; it drafts descriptive prose for a human to verify.
+# A drafter takes (kind, ksi_id, ksi_guidance, facts, observations) and returns
+# a short prose draft string, or None to decline. It MUST NOT perform any AWS
+# calls or make a compliance claim; it drafts descriptive prose for a human to
+# verify. `observations` are the imported texts for this KSI (the provider's
+# own Rev5 SSP narrative, the landing zone's declared configuration), or None.
+
+# Quoted imported observations per KSI proposal: at most this many items and
+# this many characters in total. The reviewer edits from here; the full source
+# document stays the provider's reference.
+MAX_KSI_OBSERVATIONS = 6
+MAX_KSI_OBSERVATION_CHARS = 2400
+
+
+def _ksi_observations_block(observations):
+    """The provider's own imported texts for one KSI, quoted with source and
+    date, bounded, or '' when there are none."""
+    items = [o for o in (observations or []) if isinstance(o, dict) and o.get("text")]
+    if not items:
+        return ""
+    parts = []
+    used = 0
+    for o in items[:MAX_KSI_OBSERVATIONS]:
+        when = str(o.get("observed_at") or "")[:10]
+        src = o.get("source") or "import"
+        piece = f"[{src}, {when}] {str(o['text']).strip()}"
+        if used + len(piece) > MAX_KSI_OBSERVATION_CHARS and parts:
+            break
+        if len(piece) > MAX_KSI_OBSERVATION_CHARS:
+            piece = piece[:MAX_KSI_OBSERVATION_CHARS].rsplit(" ", 1)[0] + "..."
+        parts.append(piece)
+        used += len(piece)
+    omitted = len(items) - len(parts)
+    return (" From the provider's own imported sources, quoted for review (a declared "
+            "configuration or a Rev5 narrative is material for the record, not a 20x "
+            "status): " + " | ".join(parts)
+            + (f" ({omitted} more imported statement(s) not quoted; see the facts store.)"
+               if omitted > 0 else ""))
+
 
 class TemplateDrafter:
     """Default offline drafter: deterministic, no model, no network. Produces a
-    plainly-labeled DRAFT that stitches the KSI guidance and the observed facts
-    into review-ready prose. It never asserts the control is met."""
+    plainly-labeled DRAFT that stitches the KSI guidance, the observed facts and
+    any imported observations into review-ready prose. It never asserts the
+    control is met."""
 
     name = "template"
 
-    def draft(self, kind, ksi_id, guidance, facts):
+    def draft(self, kind, ksi_id, guidance, facts, observations=None):
         looks = guidance.get("what_it_looks_for") or guidance.get("aws_implementation") or ""
         observed = "; ".join(
             f"{f['service']}.{f['check']}={f['status']} ({f['detail']})"
@@ -177,7 +227,9 @@ class TemplateDrafter:
             f"proposed {kind} narrative for {ksi_id}, to be confirmed and edited "
             f"by the provider. Intended measure: {_clip(looks, 280)} "
             f"Observed automated posture that may support how the offering {verb} "
-            f"this: {_clip(observed, 280)}. A passing observation is telemetry, "
+            f"this: {_clip(observed, 280)}."
+            + _ksi_observations_block(observations)
+            + " A passing observation is telemetry, "
             f"not a compliance conclusion; the provider must confirm accuracy and "
             f"completeness before relying on this text."
         )
@@ -198,13 +250,17 @@ class BedrockDrafter:
         self._client = boto3.client("bedrock-runtime", region_name=region)
         self._model_id = model_id
 
-    def draft(self, kind, ksi_id, guidance, facts):
+    def draft(self, kind, ksi_id, guidance, facts, observations=None):
         import json as _json
         looks = guidance.get("what_it_looks_for") or guidance.get("aws_implementation") or ""
         observed = "; ".join(
             f"{f['service']}.{f['check']}={f['status']} ({f['detail']})"
             for f in facts[:6]
         )
+        imported = "\n".join(
+            f"- [{o.get('source')}, {str(o.get('observed_at') or '')[:10]}] {o.get('text')}"
+            for o in (observations or [])[:MAX_KSI_OBSERVATIONS]
+            if isinstance(o, dict) and o.get("text"))
         prompt = (
             "You are drafting a FedRAMP SDR narrative for a human to review and "
             "edit. Draft ONLY a descriptive " + kind + " narrative. Do NOT claim "
@@ -213,6 +269,8 @@ class BedrockDrafter:
             "unverified):'.\n\n"
             f"KSI: {ksi_id}\nIntended measure: {looks}\n"
             f"Observed automated posture: {observed or 'none collected'}\n"
+            + (f"Provider's own imported statements (quote or paraphrase, never "
+               f"extend):\n{imported}\n" if imported else "")
         )
         body = _json.dumps({
             "anthropic_version": "bedrock-2023-05-31",
@@ -251,21 +309,46 @@ def posture_facts_for_ksi(ksi_entry, posture_by_service, service_map):
     return out
 
 
-def draft_ksi(kid, record, ksi_entry, posture_by_service, drafter, service_map):
+def _accepts_observations(drafter):
+    """True when the drafter's draft() takes the observations argument. A
+    provider-written drafter on the older 4-argument interface keeps working;
+    the caller then appends the quoted imports itself (deterministic text, not
+    model output), so an import is never silently dropped."""
+    try:
+        params = inspect.signature(drafter.draft).parameters
+    except (TypeError, ValueError):
+        return False
+    return len(params) >= 5 or any(
+        p.kind == inspect.Parameter.VAR_POSITIONAL for p in params.values())
+
+
+def draft_ksi(kid, record, ksi_entry, posture_by_service, drafter, service_map,
+              observations=None):
     """Draft implementation/validation prose into TBD fields only. Returns
-    (changed, notes). Mutates the record on the proposed copy only."""
+    (changed, notes). Mutates the record on the proposed copy only.
+    `observations` are the imported texts for this KSI, if any."""
     facts = posture_facts_for_ksi(ksi_entry, posture_by_service, service_map)
-    guidance = ksi_entry.get("fill_guidance", {}) or ksi_entry
+    # The record carries the dataset-derived guidance (what_it_looks_for is the
+    # KSI statement); the collector registry entry does not, so reading only
+    # the registry left every proposal's "Intended measure" empty.
+    guidance = (record.get("fill_guidance") or ksi_entry.get("fill_guidance") or ksi_entry)
     notes = []
     changed = False
+    takes_obs = _accepts_observations(drafter)
     for field in DRAFTABLE_FIELDS:
         if not is_tbd(record.get(field, "")):
             continue  # never overwrite author-written prose
-        text = drafter.draft(field, kid, guidance, facts)
+        if takes_obs:
+            text = drafter.draft(field, kid, guidance, facts, observations)
+        else:
+            text = drafter.draft(field, kid, guidance, facts)
+            if text and observations:
+                text = text.rstrip() + _ksi_observations_block(observations)
         if text:
             record[field] = [text] if isinstance(record.get(field), list) else text
             changed = True
-            notes.append(f"{kid}: drafted {field} ({drafter.name})")
+            source = drafter.name + (" + imported observations" if observations else "")
+            notes.append(f"{kid}: drafted {field} ({source})")
     return changed, notes
 
 
@@ -418,14 +501,20 @@ def main():
     want_rules = args.scope in ("all", "rules")
 
     posture_by_service = load_all_posture_facts()
-    if want_ksi and not posture_by_service:
+    ksi_observations = load_ksi_observations() if want_ksi else {}
+    if want_ksi and not posture_by_service and not ksi_observations:
         if args.scope == "ksi":
             print("No facts found in automation/facts/. Run the collector first "
-                  "(read-only): python automation/collectors/collect_facts.py --profile <ReadOnly>")
+                  "(read-only): python automation/collectors/collect_facts.py --profile <ReadOnly>, "
+                  "or import the provider's Rev5 SSP / landing-zone configuration "
+                  "(automation/importers/).")
             return 1
         print("No facts found in automation/facts/; KSI narratives are skipped "
-              "(run the read-only collector first). Rule narratives are drafted.")
+              "(run the read-only collector or an importer first). Rule narratives are drafted.")
         want_ksi = False
+    if want_ksi and ksi_observations:
+        print(f"Imported observations found for {len(ksi_observations)} KSI(s); those "
+              "proposals quote the provider's own sources.")
 
     try:
         drafter = get_drafter(args.drafter)
@@ -454,7 +543,7 @@ def main():
                 continue
             before = copy.deepcopy(record)
             changed, notes = draft_ksi(kid, record, ksi_entry, posture_by_service,
-                                       drafter, service_map)
+                                       drafter, service_map, ksi_observations.get(kid))
             _assert_boundary(before, record, kid)  # enforce the boundary per KSI
             if changed:
                 drafted += 1

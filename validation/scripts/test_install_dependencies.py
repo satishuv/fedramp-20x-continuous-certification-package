@@ -13,7 +13,7 @@ import sys
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Distribution name -> import module name where they differ.
-IMPORT_NAME = {"python-docx": "docx"}
+IMPORT_NAME = {"python-docx": "docx", "PyYAML": "yaml"}
 
 
 def _requirements_pins():

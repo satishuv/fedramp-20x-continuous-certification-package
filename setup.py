@@ -34,7 +34,7 @@ import sys
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 OFFERING = os.path.join(BASE, "profiles", "common", "offering-profile.json")
-DEPS = ["jsonschema", "referencing", "python-docx", "cryptography"]
+DEPS = ["jsonschema", "referencing", "python-docx", "cryptography", "PyYAML"]
 VALID_CLASSES = {"A", "B", "C"}
 
 
@@ -56,7 +56,7 @@ def install_deps():
         out(f"  FAIL: Python 3.10+ required; this is {sys.version.split()[0]}.")
         return False
     missing = []
-    for mod in ("jsonschema", "referencing", "docx", "cryptography"):
+    for mod in ("jsonschema", "referencing", "docx", "cryptography", "yaml"):
         try:
             __import__(mod)
         except ImportError:
