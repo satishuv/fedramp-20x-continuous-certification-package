@@ -335,6 +335,52 @@ MUTATIONS = [
      '          python validation/scripts/markdown_changelog.py --file /tmp/changelog.md \\\n            --version "$NEWVER" --entry-out /tmp/changelog-entry.txt \\\n            --write-baseline .github/.markdown-changelog-baseline\n',
      '          echo "(changelog entry unavailable)" > /tmp/changelog-entry.txt  # MUTATION adoption forgets the markdown baseline\n',
      "automation/collectors/test_collection_fail_closed.py"),
+    # AUD-F45: `init --set` accepts the dotted key its own gap report prints for
+    # a flat block and refuses a key that is not a question; the consultant-flow
+    # exercise lost all four CPO-CSO-MTD answers to a silent ignore.
+    ("MUT-F45",
+     "sdr.py",
+     '            given = [k for k in (target_key, f"{block}.{sub}") if k in overrides]\n            if given:\n                resp = overrides[given[0]]\n                consumed.update(given)\n',
+     '            given = [k for k in (target_key,) if k in overrides]\n            if given:\n                resp = overrides[given[0]]\n                consumed.update(set(overrides))  # MUTATION bare key only; unknown keys silently ignored\n',
+     "validation/scripts/test_init_wizard.py"),
+    # AUD-F46: a sidecar proposes only what its producer authors; the stale
+    # snapshot it was copied from is not a proposal. The exercise's
+    # `--accept-all prefill` reverted an accepted narrative to TBD.
+    ("MUT-F46",
+     "automation/review/review_proposals.py",
+     '                    if not _authored_by(src_name, path, prop):\n',
+     '                    if False:  # MUTATION any snapshot difference is a proposal from that sidecar\n',
+     "automation/review/test_review_proposals.py"),
+    # AUD-F47: structured tests/evidence are accepted or rejected as collected;
+    # an edit wrapped prose into the list of schema objects.
+    ("MUT-F47",
+     "automation/review/review_proposals.py",
+     '            if path[0] in STRUCTURED_FIELDS:\n                # AUD-F47: tests and evidence are lists of schema objects',
+     '            if False:  # MUTATION prose may replace structured tests/evidence\n                # AUD-F47: tests and evidence are lists of schema objects',
+     "automation/review/test_review_proposals.py"),
+    # AUD-F48: prefilled text carries no markdown; backticks around the rule
+    # name failed the human-readable hygiene gate once the facts were accepted.
+    ("MUT-F48",
+     "automation/prefill/prefill_from_facts.py",
+     '                "method": (f"Automated (collector): AWS Config rule {check[\'target\']} "\n',
+     '                "method": (f"Automated (collector): AWS Config rule `{check[\'target\']}` "  # MUTATION markdown in human-readable text\n',
+     "automation/prefill/test_prefill.py"),
+    # AUD-F49: the drafter's observed posture includes the indicator's own
+    # Config-rule facts; it claimed none were collected one item after prefill
+    # proposed them as the indicator's tests.
+    ("MUT-F49",
+     "automation/ai/draft_narratives.py",
+     '    facts = (config_facts_for_ksi(ksi_entry, config_by_rule)\n             + posture_facts_for_ksi(ksi_entry, posture_by_service, service_map))\n',
+     '    facts = posture_facts_for_ksi(ksi_entry, posture_by_service, service_map)  # MUTATION config-rule facts invisible to the drafter\n',
+     "automation/ai/test_draft_narratives.py"),
+    # AUD-F50: the CPO-CSO-OVR list's CPO-CSO-MTD item derives from the four
+    # profile fields the wizard asks; it read only a separate pointer, so a
+    # wizard-complete profile still blocked preflight on CPO-CSO-MTD.
+    ("MUT-F50",
+     "validation/scripts/build_cpo.py",
+     '        elif rid == "CPO-CSO-MTD":\n            # Same principle (AUD-F50)',
+     '        elif False:  # MUTATION CPO-CSO-MTD read only from the cpo_required_information pointer\n            # Same principle (AUD-F50)',
+     "validation/scripts/test_profile_traceability.py"),
 ]
 
 

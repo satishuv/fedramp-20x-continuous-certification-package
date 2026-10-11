@@ -167,6 +167,37 @@ def test_error_and_not_deployed_facts_do_not_prefill():
     assert rec["tests"] == []
 
 
+def test_f48_prefilled_text_carries_no_markdown():
+    """AUD-F48. The method and evidenceDescription templates wrapped the rule
+    name in backticks. Accepting the deterministic facts (the documented
+    `review --accept-all prefill`) put them in the human-readable SDR, and the
+    gate's no_markdown_in_human_readable check failed on 'backticks' for every
+    class. The patterns are the gate's own (validate_sdr.MD_PATTERNS)."""
+    import json
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__)))), "validation", "scripts"))
+    import validate_sdr  # noqa: E402
+    ksi_entry = {
+        "services": ["AWS Config", "Amazon GuardDuty"],
+        "metric_service_keys": ["guardduty:detector"],
+        "checks": [{"type": "config_managed_rule", "target": "cloudtrail-enabled",
+                    "source": "verify", "check_id": "KSI-CMT-LMC:verify:config:cloudtrail-enabled"}],
+    }
+    config_by_rule = {"cloudtrail-enabled": {
+        "rule": "cloudtrail-enabled", "compliance_type": "COMPLIANT",
+        "collected_at": "2026-10-10T06:20:11+00:00", "region": "us-east-1"}}
+    posture = {"guardduty": [{"service": "guardduty", "check": "detector", "status": "ENABLED",
+                              "detail": "Detector status ENABLED", "region": "us-east-1",
+                              "collected_at": "2026-10-10T06:20:11+00:00"}]}
+    rec = blank_ksi_record()
+    changed, _ = pf.prefill_ksi("KSI-CMT-LMC", rec, ksi_entry, config_by_rule, posture)
+    assert changed and len(rec["tests"]) == 2 and len(rec["evidence"]) == 2
+    rendered = "\n".join(json.dumps(x) for x in rec["tests"] + rec["evidence"])
+    hits = [label for pattern, label in validate_sdr.MD_PATTERNS if pattern.search(rendered)]
+    assert not hits, (hits, rendered)
+    assert "cloudtrail-enabled" in rec["tests"][0]["method"]  # the rule is still named
+
+
 def _run_all():
     tests = [v for k, v in sorted(globals().items())
              if k.startswith("test_") and callable(v)]

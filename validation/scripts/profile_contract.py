@@ -355,6 +355,36 @@ def derive_public_information(profile):
     return out
 
 
+# CPO-CSO-MTD: the four items the rule lists, each the profile field the wizard
+# asks for it (CLASS_CONDITIONAL "cpo_metadata").
+CPO_METADATA_SOURCES = {
+    "responsible_official": "cpo_responsible_official",
+    "version": "cpo_version",
+    "last_updated": "cpo_last_updated",
+    "source_of_update": "cpo_source_of_update",
+}
+
+
+def derive_cpo_metadata(profile):
+    """The CPO-CSO-MTD content for the CPO-CSO-OVR required-information list,
+    derived from the four profile fields (AUD-F50: the same four already render
+    the CPO's metadata block, yet this list item read only a separate
+    cpo_required_information["CPO-CSO-MTD"] pointer, so a wizard-complete
+    profile still blocked preflight until the facts were typed a second time).
+    A provider-supplied value under that pointer wins when it is real. Returns
+    the TBD marker while any of the four is unanswered."""
+    supplied = (profile.get("cpo_required_information") or {}).get("CPO-CSO-MTD")
+    if not is_hollow(supplied):
+        return supplied
+    out = {}
+    for key, field in CPO_METADATA_SOURCES.items():
+        val = profile.get(field)
+        if is_hollow(val):
+            return TBD
+        out[key] = str(val)
+    return out
+
+
 PLACEHOLDER_CPO_URI = "https://example.provider.gov-placeholder/cpo.json"
 
 

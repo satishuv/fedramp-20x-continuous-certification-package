@@ -183,7 +183,9 @@ def prefill_ksi(kid, record, ksi_entry, config_by_rule, posture_by_service):
         for check, fact in cfg:
             new_tests.append({
                 "method_id": config_method_id(check),
-                "method": (f"Automated (collector): AWS Config rule `{check['target']}` "
+                # AUD-F48: plain text. A backtick here reached the human-readable
+                # SDR on accept and failed the no_markdown_in_human_readable gate.
+                "method": (f"Automated (collector): AWS Config rule {check['target']} "
                            f"evaluated continuously ({check['source']} method); last "
                            f"observed {fact['compliance_type']} on {fact['collected_at']}."),
                 "automated": True,
@@ -222,7 +224,7 @@ def prefill_ksi(kid, record, ksi_entry, config_by_rule, posture_by_service):
             new_ev.append({
                 "evidenceType": "Configuration",
                 "evidenceDescription": (
-                    f"AWS Config rule `{check['target']}` compliance, collected "
+                    f"AWS Config rule {check['target']} compliance, collected "
                     f"read-only by the SDR collector ({check['check_id']})."),
                 "evidenceText": (
                     f"{check['target']} = {fact['compliance_type']} "

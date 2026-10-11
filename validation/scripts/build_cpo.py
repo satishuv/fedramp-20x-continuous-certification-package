@@ -120,6 +120,11 @@ def _required_information_map(profile):
             # trust-center links, next OCR date, assessor); a provider-supplied
             # value under cpo_required_information["CDS-CSO-PUB"] wins when real.
             content = _pc.derive_public_information(profile)
+        elif rid == "CPO-CSO-MTD":
+            # Same principle (AUD-F50): the four metadata items are the profile
+            # fields the wizard asks; this item must not require typing them
+            # again under cpo_required_information.
+            content = _pc.derive_cpo_metadata(profile)
         else:
             content = val(provider.get(rid))
         out["items"].append({

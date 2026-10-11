@@ -125,6 +125,50 @@ def load_all_posture_facts():
     return by_service
 
 
+def load_all_config_facts():
+    """Config-rule facts from every facts-*.json, keyed by framework rule name,
+    the same way prefill reads them. Read-only. AUD-F49: the drafter read only
+    posture facts, so a KSI whose only collected facts were Config-rule
+    evaluations was told 'no automated facts collected for this indicator yet'
+    one screen after prefill had proposed those very evaluations as its tests."""
+    by_rule = {}
+    if not os.path.isdir(FACTS_DIR):
+        return by_rule
+    for fn in sorted(os.listdir(FACTS_DIR)):
+        if not (fn.startswith("facts-") and fn.endswith(".json")):
+            continue
+        store = load(os.path.join(FACTS_DIR, fn), {})
+        for fact in store.get("facts", []):
+            if fact.get("rule"):
+                by_rule[fact["rule"]] = fact
+    return by_rule
+
+
+def config_facts_for_ksi(ksi_entry, config_by_rule):
+    """This KSI's Config-rule facts (registry checks of type config_managed_rule
+    with a real evaluated outcome), rendered in the posture-fact shape the
+    drafters already format: service.check=status (detail)."""
+    out = []
+    for check in ksi_entry.get("checks", []):
+        if check.get("type") != "config_managed_rule":
+            continue
+        fact = (config_by_rule or {}).get(check.get("target"))
+        if not fact:
+            continue
+        ct = str(fact.get("compliance_type", ""))
+        if ct.startswith("ERROR") or ct in ("RULE_NOT_DEPLOYED", "UNKNOWN", ""):
+            continue
+        when = fact.get("last_evaluated_at") or fact.get("collected_at") or ""
+        out.append({
+            "service": "config",
+            "check": check.get("target"),
+            "status": ct,
+            "detail": f"AWS Config rule {check.get('target')}, region {fact.get('region')}, "
+                      f"last evaluated {str(when)[:10]}",
+        })
+    return out
+
+
 def _load_observations(key):
     """Dated observations per id from every facts-*.json under `key`
     (`rule_observations` or `ksi_observations`), as written by the importers
@@ -323,11 +367,14 @@ def _accepts_observations(drafter):
 
 
 def draft_ksi(kid, record, ksi_entry, posture_by_service, drafter, service_map,
-              observations=None):
+              observations=None, config_by_rule=None):
     """Draft implementation/validation prose into TBD fields only. Returns
     (changed, notes). Mutates the record on the proposed copy only.
-    `observations` are the imported texts for this KSI, if any."""
-    facts = posture_facts_for_ksi(ksi_entry, posture_by_service, service_map)
+    `observations` are the imported texts for this KSI, if any; `config_by_rule`
+    the collected Config-rule facts (AUD-F49), rendered first because they are
+    this indicator's own checks rather than service-wide posture."""
+    facts = (config_facts_for_ksi(ksi_entry, config_by_rule)
+             + posture_facts_for_ksi(ksi_entry, posture_by_service, service_map))
     # The record carries the dataset-derived guidance (what_it_looks_for is the
     # KSI statement); the collector registry entry does not, so reading only
     # the registry left every proposal's "Intended measure" empty.
@@ -501,8 +548,9 @@ def main():
     want_rules = args.scope in ("all", "rules")
 
     posture_by_service = load_all_posture_facts()
+    config_by_rule = load_all_config_facts()
     ksi_observations = load_ksi_observations() if want_ksi else {}
-    if want_ksi and not posture_by_service and not ksi_observations:
+    if want_ksi and not posture_by_service and not config_by_rule and not ksi_observations:
         if args.scope == "ksi":
             print("No facts found in automation/facts/. Run the collector first "
                   "(read-only): python automation/collectors/collect_facts.py --profile <ReadOnly>, "
@@ -543,7 +591,8 @@ def main():
                 continue
             before = copy.deepcopy(record)
             changed, notes = draft_ksi(kid, record, ksi_entry, posture_by_service,
-                                       drafter, service_map, ksi_observations.get(kid))
+                                       drafter, service_map, ksi_observations.get(kid),
+                                       config_by_rule)
             _assert_boundary(before, record, kid)  # enforce the boundary per KSI
             if changed:
                 drafted += 1

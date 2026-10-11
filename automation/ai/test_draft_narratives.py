@@ -146,6 +146,56 @@ def test_imported_observations_are_quoted_and_bounded():
     print("PASS: test_imported_observations_are_quoted_and_bounded")
 
 
+def test_f49_ksi_proposal_names_the_indicators_own_config_rule_facts():
+    """AUD-F49. The drafter read posture facts only. A KSI whose collected facts
+    were Config-rule evaluations (the common case: prefill had just proposed
+    them as that KSI's tests) was told 'no automated facts collected for this
+    indicator yet' in the very next review item. Config facts are matched the
+    way prefill matches them: the registry's config_managed_rule checks."""
+    entry = {
+        "services": ["AWS IAM"],
+        "fill_guidance": {"what_it_looks_for": "Account lifecycle is automated."},
+        "checks": [{"type": "config_managed_rule", "target": "access-keys-rotated",
+                    "source": "verify", "check_id": "KSI-IAM-AAM:verify:config:access-keys-rotated"},
+                   {"type": "config_managed_rule", "target": "iam-user-unused-credentials-check",
+                    "source": "verify", "check_id": "KSI-IAM-AAM:verify:config:iam-user-unused-credentials-check"}],
+    }
+    config_by_rule = {
+        "access-keys-rotated": {"rule": "access-keys-rotated", "compliance_type": "NON_COMPLIANT",
+                                "collected_at": "2026-10-10T06:20:11+00:00", "region": "us-east-1",
+                                "last_evaluated_at": "2026-09-27T05:58:10+00:00"},
+        "iam-user-unused-credentials-check": {"rule": "iam-user-unused-credentials-check",
+                                              "compliance_type": "RULE_NOT_DEPLOYED",
+                                              "collected_at": "2026-10-10T06:20:11+00:00",
+                                              "region": "us-east-1"},
+    }
+    rec = blank_ksi_record()
+    changed, _ = dn.draft_ksi("KSI-IAM-AAM", rec, entry, {}, dn.TemplateDrafter(), {},
+                              None, config_by_rule)
+    assert changed
+    text = rec["implementation"][0]
+    assert "no automated facts collected" not in text, text
+    assert "config.access-keys-rotated=NON_COMPLIANT" in text, text
+    assert "last evaluated 2026-09-27" in text, text
+    assert "iam-user-unused-credentials-check" not in text  # not deployed: no fact to quote
+    # Without config facts the old behaviour is unchanged.
+    rec2 = blank_ksi_record()
+    dn.draft_ksi("KSI-IAM-AAM", rec2, entry, {}, dn.TemplateDrafter(), {}, None, {})
+    assert "no automated facts collected" in rec2["implementation"][0]
+    # The matching helper mirrors prefill's: only real evaluated outcomes.
+    facts = dn.config_facts_for_ksi(entry, config_by_rule)
+    assert [f["check"] for f in facts] == ["access-keys-rotated"]
+    assert facts[0]["service"] == "config" and facts[0]["status"] == "NON_COMPLIANT"
+    # And the proposal carries no markdown the human-readable gate forbids (AUD-F48).
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__)))), "validation", "scripts"))
+    import validate_sdr  # noqa: E402
+    for field in ("implementation", "validation"):
+        hits = [label for pattern, label in validate_sdr.MD_PATTERNS
+                if pattern.search(rec[field][0])]
+        assert not hits, (field, hits)
+
+
 def _run_all():
     tests = [v for k, v in sorted(globals().items())
              if k.startswith("test_") and callable(v)]
