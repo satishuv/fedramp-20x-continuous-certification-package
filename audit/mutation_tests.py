@@ -373,6 +373,14 @@ MUTATIONS = [
      '    facts = (config_facts_for_ksi(ksi_entry, config_by_rule)\n             + posture_facts_for_ksi(ksi_entry, posture_by_service, service_map))\n',
      '    facts = posture_facts_for_ksi(ksi_entry, posture_by_service, service_map)  # MUTATION config-rule facts invisible to the drafter\n',
      "automation/ai/test_draft_narratives.py"),
+    # AUD-F50: the CPO-CSO-OVR list's CPO-CSO-MTD item derives from the four
+    # profile fields the wizard asks; it read only a separate pointer, so a
+    # wizard-complete profile still blocked preflight on CPO-CSO-MTD.
+    ("MUT-F50",
+     "validation/scripts/build_cpo.py",
+     '        elif rid == "CPO-CSO-MTD":\n            # Same principle (AUD-F50)',
+     '        elif False:  # MUTATION CPO-CSO-MTD read only from the cpo_required_information pointer\n            # Same principle (AUD-F50)',
+     "validation/scripts/test_profile_traceability.py"),
 ]
 
 

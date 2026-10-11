@@ -11,9 +11,9 @@ Pinned dataset: `2026.10.08.01` (unchanged)
 The documented consultant flow, run end to end on a fictional Class B offering
 (`init` with every answer scripted, the three importers, prefill, the drafter,
 `review --list`, `--walk`, `--accept-all prefill`, `build`, `preflight`),
-found five defects in the review path that no committed sample exercised.
-All five are closed with a regression test and a killed mutation
-(`AUD-F45` to `AUD-F49`):
+found six defects in the review and profile path that no committed sample
+exercised. All six are closed with a regression test and a killed mutation
+(`AUD-F45` to `AUD-F50`):
 
 - **A sidecar proposes only what its producer authors, and a decision stands
   (AUD-F46, High).** Both sidecars are full snapshots of the record store.
@@ -36,6 +36,13 @@ All five are closed with a regression test and a killed mutation
   was ignored the same way. Both forms now work; an unknown key, a key for
   another class, or a malformed item is refused by name and nothing is
   written.
+- **CPO-CSO-MTD is answered once (AUD-F50).** With the four metadata
+  answers written, preflight still blocked "CPO required information
+  unresolved (CPO-CSO-OVR): CPO-CSO-MTD" because that list item read only a
+  separate `cpo_required_information` pointer; the same facts had to be
+  typed again by hand in JSON. The item now derives from the four profile
+  fields the wizard asks, as CDS-CSO-PUB already did; a real pointer still
+  wins.
 - **Structured tests and evidence cannot be edited into prose (AUD-F47).**
   `[e]dit` on a prefill item wrapped the reviewer's sentence into the list
   of schema objects (schema-invalid; zero automated methods to FRC-CSX-VVK).

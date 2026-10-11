@@ -170,6 +170,37 @@ def main():
         check(f"derivation {key} reads a profile field the contract knows ({src_field})",
               src_field in known)
 
+    print("CPO-CSO-MTD required information derives from the wizard's four fields (AUD-F50)")
+    mtd_profile = {"certification_class": "b",
+                   "cpo_responsible_official": "Jane Roe, CISO, ciso@x.example",
+                   "cpo_version": "1.0", "cpo_last_updated": "2026-10-10T14:00:00Z",
+                   "cpo_source_of_update": "Compliance engineering"}
+    derived = pc.derive_cpo_metadata(mtd_profile)
+    check("all four answered -> a structured object keyed by the rule's four items",
+          derived == {"responsible_official": "Jane Roe, CISO, ciso@x.example", "version": "1.0",
+                      "last_updated": "2026-10-10T14:00:00Z", "source_of_update": "Compliance engineering"},
+          str(derived))
+    check("the four keys are the wizard's cpo_metadata questions",
+          set(pc.CPO_METADATA_SOURCES.values())
+          == {s for s, _q in dict((b, q) for b, _s, _c, q in pc.CLASS_CONDITIONAL)["cpo_metadata"]})
+    partial = dict(mtd_profile, cpo_version=pc.TBD)
+    check("one unanswered -> TBD (not a half-filled object)", derived is not None
+          and pc.derive_cpo_metadata(partial) == pc.TBD)
+    pointed = dict(partial, cpo_required_information={"CPO-CSO-MTD": "See package metadata sheet v3."})
+    check("a real provider pointer under cpo_required_information still wins",
+          pc.derive_cpo_metadata(pointed) == "See package metadata sheet v3.")
+    try:
+        import build_cpo as _bc  # noqa: E402
+        items = {i["rule"]: i["provider_content"]
+                 for i in _bc._required_information_map(mtd_profile).get("items", [])}
+        check("build_cpo's CPO-CSO-OVR list carries the derived CPO-CSO-MTD content",
+              items.get("CPO-CSO-MTD") == derived, str(items.get("CPO-CSO-MTD"))[:120])
+        check("and TBD when a field is unanswered",
+              {i["rule"]: i["provider_content"]
+               for i in _bc._required_information_map(partial).get("items", [])}.get("CPO-CSO-MTD") == pc.TBD)
+    except ImportError as e:  # the builder lives beside this test; a missing import is a failure
+        check("build_cpo importable for the CPO-CSO-MTD derivation check", False, str(e))
+
     print("schema constraints the contract enforces are the schema's own")
     enum = pc.business_category_enum()
     schema_enum = tuple(((schema.get("properties") or {}).get("serviceProperties") or {})

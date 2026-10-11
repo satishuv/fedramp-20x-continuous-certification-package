@@ -665,6 +665,19 @@
       "mutation": "MUT-F49: draft_ksi passes posture facts only to the drafter (the pre-fix shape); expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F50",
+      "severity": "Medium",
+      "requirement": "CPO-CSO-OVR (MUST): the Certification Package Overview includes the information required by the referenced rules, among them CPO-CSO-MTD (responsible official, version, last updated, source of update). docs/getting-started.md: `sdr.py init` asks every FedRAMP-required question once; what it reports complete must not reappear as a preflight blocker that only hand-editing JSON clears",
+      "component": "validation/scripts/profile_contract.py (derive_cpo_metadata, CPO_METADATA_SOURCES); validation/scripts/build_cpo.py (_required_information_map)",
+      "description": "Found by running the consultant flow end to end after AUD-F45 (2026-10-11). With all four CPO-CSO-MTD answers written, the wizard reported only the package id and the assessor summary outstanding and the CPO's metadata block (xCpoMetadata) rendered them, yet preflight still listed 'CPO required information unresolved (CPO-CSO-OVR): CPO-CSO-MTD, ...'. The CPO-CSO-OVR required-information list read that item only from a separate cpo_required_information['CPO-CSO-MTD'] pointer in the profile, so the same four facts had to be typed a second time, by hand in JSON, to clear it. CDS-CSO-PUB had been moved to one-place-per-fact derivation in PR #199; CPO-CSO-MTD had not.",
+      "root_cause": "Two readers of one fact: the metadata block derived from the four profile fields, the required-information list from a provider pointer.",
+      "fix_commit": "this PR -- profile_contract.derive_cpo_metadata() builds the CPO-CSO-MTD content from the four fields the wizard asks (a structured object when all four are answered, TBD while any is not; a real provider pointer still wins), and build_cpo's required-information map uses it, as it already does for CDS-CSO-PUB",
+      "regression_test": "validation/scripts/test_profile_traceability.py (AUD-F50 section: derived object for a complete profile, TBD for a partial one, pointer precedence, the four keys equal the wizard's cpo_metadata questions, and build_cpo's CPO-CSO-OVR list carries the derived content / TBD)",
+      "mutation": "MUT-F50: the CPO-CSO-MTD branch of the required-information map is disabled so the item reads only the pointer (the pre-fix shape); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }
