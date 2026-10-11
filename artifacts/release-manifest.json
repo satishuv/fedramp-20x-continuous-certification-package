@@ -51,7 +51,7 @@
   "sdr/records/records-store.json": "sha256:1b9b271c245634068375fa50b0ab25916771d08f777ca78355ed653fe4e85822"
  },
  "artifacts": {
-  "artifacts/sbom.cdx.json": "sha256:d9c871f6134c58165d1bab268f3b741b1e1acb1ed11484a7093459e0d342034b",
+  "artifacts/sbom.cdx.json": "sha256:09c8695590b1aab455002d367f2319ac5683df0be489620b57a9a8d1ddf1e31d",
   "package/certification-package-manifest.json": "sha256:9cae6d6ee3216e60c35fcdc427b1e485d5033c1eeb79f234b83e55ea6b6e1a0d",
   "package/cpo/cpo.json": "sha256:8b92c953c5d66ed60057b87ff20c34ec17bf81000c724cf88c026473bda3722b",
   "package/cpo/cpo.md": "sha256:1f1bf1fe377b74a88d14e3983f57f0b3e42e7f7358c501eef0bfb6539598f530",
@@ -77,7 +77,7 @@
  "artifact_count": 22,
  "release_tag": "v1.6.0-cr26-2026.10.08.01",
  "source_provenance": {
-  "requirements_sha256": "sha256:657e8270cb76f7fb07e95078bd68c17a1b0d4664a605e0f55d1b50c1368dd42f",
+  "requirements_sha256": "sha256:375627a835a23624ffd3374004a247067032028ce152d30c0379a9d9018e839b",
   "requirements_ci_sha256": "sha256:dc19795e881cd4de90e07c3c3ec5bd86fd4329261acf3bc6786c07ec43237491",
   "source_commit": null,
   "source_tree": null,
