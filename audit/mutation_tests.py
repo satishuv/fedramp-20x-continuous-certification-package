@@ -429,6 +429,31 @@ MUTATIONS = [
      "                    if refs and not missing:\n                        cell[\"status\"] = \"demonstrated\"",
      "                    if refs:  # MUTATION any reference counts as coverage\n                        cell[\"status\"] = \"demonstrated\"",
      "validation/scripts/test_mas_coverage.py"),
+    # AUD-F57: under a signing-required signer a hashless entry is a HARD
+    # downgrade (hash + signature deleted). The mutation restores the old
+    # behaviour: the hashless soft return is taken before the signer is consulted.
+    ("MUT-F57",
+     "validation/scripts/validate_evidence.py",
+     "    if not h:\n        if signer_required:",
+     "    if not h:  # MUTATION hashless is always soft\n        if False:",
+     "validation/scripts/test_evidence_integrity.py"),
+    # AUD-F58: prefill proposes evidence through the canonical factory so the
+    # entry carries a recomputable digest. The mutation strips the digest from
+    # every proposed entry (the pre-F58 hand-built shape).
+    ("MUT-F58",
+     "automation/prefill/prefill_from_facts.py",
+     "            ev = fact_to_evidence(cf, location_base, scope_key=scope_key)",
+     "            ev = fact_to_evidence(cf, location_base, scope_key=scope_key)\n"
+     "            ev and ev.pop(\"xEvidenceContentHash\", None)  # MUTATION hashless proposal",
+     "automation/prefill/test_prefill.py"),
+    # AUD-F59: under production-assurance an evidence entry counts toward
+    # linkage only when VERIFIED. The mutation lets findings (hashless,
+    # unresolvable, placeholder) count, listing only hard failures.
+    ("MUT-F59",
+     "sdr.py",
+     "            if outcome != \"verified\":",
+     "            if outcome == \"hard\":  # MUTATION findings count as linkage",
+     "validation/scripts/test_production_evidence_linkage.py"),
 ]
 
 

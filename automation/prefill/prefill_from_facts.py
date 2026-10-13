@@ -65,6 +65,17 @@ except Exception as exc:  # fail loud: silent unrouted telemetry is the failure
 # the VVK binding gate compares. Prefill writes it as each test's method_id.
 sys.path.insert(0, os.path.join(BASE, "automation", "metrics"))
 from method_ids import config_method_id, posture_method_id, parse_service_key  # noqa: E402
+# AUD-F58: proposed evidence objects are built by the ONE canonical evidence
+# factory the collector path uses (bound displayed fields + sanitized source
+# fact + recomputable xEvidenceContentHash), never hand-assembled here. A
+# hand-built object has no digest for the integrity gate to recompute and no
+# source fact for a reviewer to trace, so once a human accepted it the record
+# carried evidence the gate could never verify.
+from evidence_wiring import fact_to_evidence  # noqa: E402
+
+# Env names shared with the collector path (collect_multi_account.py).
+SCOPE_KEY_ENV = "SDR_EVIDENCE_SCOPE_KEY"
+LOCATION_BASE_ENV = "SDR_EVIDENCE_LOCATION_BASE"
 
 
 def load(path, default=None):
@@ -159,9 +170,40 @@ def posture_facts_for_ksi(ksi_entry, posture_by_service):
     return out
 
 
-def prefill_ksi(kid, record, ksi_entry, config_by_rule, posture_by_service):
+def config_fact_as_collector_fact(check, fact):
+    """Render one Config-rule fact in the collector fact shape evidence_wiring
+    binds (service / check / status / detail / region / observation time), so
+    the proposed evidence object is derived by the same factory as every other
+    collector observation. The scope identity fields the multi-account
+    collector stamps (account, scope, run_id) are carried through untouched:
+    the factory derives the opaque scope and refuses an account-tagged fact
+    that cannot be scoped (AUD-F27); the raw account never enters the object."""
+    out = {
+        "service": "config",
+        "check": check.get("target"),
+        "status": fact.get("compliance_type"),
+        "detail": (f"AWS Config rule {check.get('target')} evaluated "
+                   f"{fact.get('compliance_type')}; collected read-only by the SDR "
+                   f"collector (check {check.get('check_id')})"),
+        "region": fact.get("region") or "unknown",
+    }
+    for key in ("collected_at", "observed_at", "timestamp", "account", "scope", "run_id"):
+        if fact.get(key) is not None:
+            out[key] = fact[key]
+    return out
+
+
+def prefill_ksi(kid, record, ksi_entry, config_by_rule, posture_by_service,
+                location_base=None, scope_key=None):
     """Return (changed, notes). Mutates `record` in place on the proposed copy.
-    Only fills fields that are still in TBD/empty template state."""
+    Only fills fields that are still in TBD/empty template state.
+
+    location_base: the provider's evidence-store base URI; proposed evidence
+    pointers are concrete URLs under it. Without it the pointer is an explicit
+    sdr://placeholder/ pseudo-URI that preflight refuses, and because the
+    pointer is a bound (hashed) field the entry must be RE-DERIVED with the real
+    base rather than edited by hand. scope_key: deployment-private key for
+    account-tagged facts (AUD-F27)."""
     notes = []
     cfg = config_facts_for_ksi(ksi_entry, config_by_rule)
     posture = posture_facts_for_ksi(ksi_entry, posture_by_service)
@@ -212,40 +254,21 @@ def prefill_ksi(kid, record, ksi_entry, config_by_rule, posture_by_service):
             notes.append(f"{kid}: filled {len(new_tests)} structured automated "
                          "method(s) from facts")
 
-    # evidence: append schema-valid evidence OBJECTS, only if still empty. The
-    # official SDR schema requires ksiEvidence items to be objects with an
-    # evidenceType from a fixed enum, not plain strings, so the SDR that
-    # renders from these validates and is publishable. A collector observation
-    # is Configuration/Audit Record evidence carried as evidenceText, with a
-    # date. It is still telemetry: it does not assert the KSI is met.
+    # evidence: append evidence OBJECTS, only if still empty, derived by the
+    # canonical factory (AUD-F58). The official SDR schema requires ksiEvidence
+    # items to be objects with an evidenceType from a fixed enum; the factory
+    # emits that shape plus the bound sanitized source fact and the
+    # recomputable xEvidenceContentHash the live integrity gate verifies. It is
+    # still telemetry: it does not assert the KSI is met. A fact the factory
+    # refuses (account-tagged with no scope) raises; it is never skipped silently.
     if is_tbd(record.get("evidence", [])):
+        collector_facts = [config_fact_as_collector_fact(check, fact) for check, fact in cfg]
+        collector_facts.extend(dict(pf) for pf in posture)
         new_ev = []
-        for check, fact in cfg:
-            new_ev.append({
-                "evidenceType": "Configuration",
-                "evidenceDescription": (
-                    f"AWS Config rule {check['target']} compliance, collected "
-                    f"read-only by the SDR collector ({check['check_id']})."),
-                "evidenceText": (
-                    f"{check['target']} = {fact['compliance_type']} "
-                    f"(region {fact.get('region')})"),
-                "lastUpdated": (fact.get("collected_at") or "")[:10],
-            })
-        for pf in posture:
-            # Log-style services (GuardDuty, CloudTrail) are Audit Record; the
-            # configuration-posture services are Configuration evidence.
-            etype = ("Audit Record"
-                     if pf["service"] in ("guardduty", "cloudtrail", "securityhub")
-                     else "Configuration")
-            new_ev.append({
-                "evidenceType": etype,
-                "evidenceDescription": (
-                    f"{pf['service']} {pf['check']} posture, collected read-only "
-                    f"by the SDR collector in region {pf.get('region')}."),
-                "evidenceText": f"{pf['service']}.{pf['check']} = {pf['status']}. "
-                                f"{pf['detail']}",
-                "lastUpdated": (pf.get("collected_at") or "")[:10],
-            })
+        for cf in collector_facts:
+            ev = fact_to_evidence(cf, location_base, scope_key=scope_key)
+            if ev is not None:
+                new_ev.append(ev)
         if new_ev:
             record["evidence"] = new_ev
             changed = True
@@ -271,7 +294,13 @@ def main():
         description="Deterministic fact-to-field pre-fill (reviewable diff).")
     ap.add_argument("--write", action="store_true",
                     help="write the proposed record store to the sidecar file")
+    ap.add_argument("--location-base", default=os.environ.get(LOCATION_BASE_ENV),
+                    help="evidence-store base URI for proposed evidence pointers "
+                         f"(default: ${LOCATION_BASE_ENV}); without it pointers are "
+                         "sdr://placeholder/ pseudo-URIs that preflight refuses")
     args = ap.parse_args()
+    scope_key = os.environ.get(SCOPE_KEY_ENV) or None
+    location_base = args.location_base or None
 
     registry = load(REGISTRY)
     store = load(RECORD_STORE)
@@ -294,7 +323,8 @@ def main():
         if record is None:
             continue
         changed, notes = prefill_ksi(kid, record, ksi_entry,
-                                     config_by_rule, posture_by_service)
+                                     config_by_rule, posture_by_service,
+                                     location_base=location_base, scope_key=scope_key)
         if changed:
             filled += 1
         all_notes.extend(notes)

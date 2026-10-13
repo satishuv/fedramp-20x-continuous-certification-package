@@ -379,6 +379,72 @@ def test_f01_unresolvable_source_without_required_signer_stays_finding():
           outcome == "finding")
 
 
+def _required_signer(pem):
+    return {"public_key": pem, "key_arn": _TEST_ARN,
+            "public_key_fingerprint": None, "required": True}
+
+
+def _hashless_entry():
+    # Schema-valid evidence object with no digest, no signature, no source:
+    # exactly what an editor is left with after deleting xEvidenceContentHash
+    # and xEvidenceSignature, and exactly what the pre-F58 prefill proposed.
+    return {"evidenceType": "Configuration",
+            "evidenceDescription": "valid-looking evidence",
+            "evidenceText": "collector assertion",
+            "lastUpdated": "2026-10-13"}
+
+
+def test_f57_hashless_entry_under_required_signer_is_hard():
+    # AUD-F57: the hashless soft return used to sit BEFORE the required-signer
+    # determination, so a required signer never saw a hashless entry. Under a
+    # pinned signing-required signer a missing digest is a downgrade (nothing
+    # for the required signature to bind) and must be HARD.
+    _, pem = _make_keypair()
+    outcome, msg = ve.classify_entry(_hashless_entry(), hash_fn=evidence_hash,
+                                     trusted_signer=_required_signer(pem))
+    check("hashless entry under REQUIRED signer -> hard (F57 downgrade closed)",
+          outcome == "hard" and "NO CONTENT HASH" in msg)
+
+
+def test_f57_full_downgrade_of_a_signed_entry_is_hard():
+    # The attack as it is carried out: start from an entry that VERIFIES under
+    # the required signer, delete the digest together with the signature.
+    priv, pem = _make_keypair()
+    signer = _required_signer(pem)
+    e, _ = _signed_entry(priv)
+    before, _ = ve.classify_entry(e, hash_fn=evidence_hash, trusted_signer=signer)
+    check("baseline signed+hashed entry verifies under the required signer",
+          before == "verified")
+    e.pop("xEvidenceContentHash")
+    e.pop("xEvidenceSignature")
+    after, msg = ve.classify_entry(e, hash_fn=evidence_hash, trusted_signer=signer)
+    check("deleting digest + signature under REQUIRED signer -> hard, not finding",
+          after == "hard" and "AUD-F57" in msg)
+
+
+def test_f57_signature_without_hash_is_hard():
+    # A signature with no digest cannot be checked against content: fail closed
+    # even without a required signer (mirrors the F01 signed-but-unresolvable case).
+    e = _hashless_entry()
+    e["xEvidenceSignature"] = {"algorithm": "ECDSA_SHA_256", "keyId": _TEST_ARN,
+                               "signedHash": "sha256:" + "a" * 64, "signature": "QUJD"}
+    outcome, msg = ve.classify_entry(e, hash_fn=evidence_hash, trusted_signer=None)
+    check("signature present but no content hash -> hard",
+          outcome == "hard" and "WITHOUT A CONTENT HASH" in msg)
+
+
+def test_f57_hashless_entry_without_required_signer_stays_finding():
+    # No over-block: with no pinned signer, or a signer explicitly pinned with
+    # signing_required=false, a hashless entry remains a readiness finding.
+    _, pem = _make_keypair()
+    optional = dict(_required_signer(pem), required=False)
+    o_none, _ = ve.classify_entry(_hashless_entry(), hash_fn=evidence_hash, trusted_signer=None)
+    o_opt, _ = ve.classify_entry(_hashless_entry(), hash_fn=evidence_hash, trusted_signer=optional)
+    check("hashless entry, no signer -> finding (not over-blocked)", o_none == "finding")
+    check("hashless entry, signer pinned with signing_required=false -> finding",
+          o_opt == "finding")
+
+
 def main():
     for t in (test_wrong_hash_over_resolvable_source_is_hard_fail,
               test_matching_hash_passes, test_missing_hash_helper_is_hard_fail_not_finding,
@@ -400,7 +466,11 @@ def main():
               test_malformed_signature_block_is_hard,
               test_f01_unresolvable_source_under_required_signer_is_hard,
               test_f01_signed_but_unresolvable_source_is_hard,
-              test_f01_unresolvable_source_without_required_signer_stays_finding):
+              test_f01_unresolvable_source_without_required_signer_stays_finding,
+              test_f57_hashless_entry_under_required_signer_is_hard,
+              test_f57_full_downgrade_of_a_signed_entry_is_hard,
+              test_f57_signature_without_hash_is_hard,
+              test_f57_hashless_entry_without_required_signer_stays_finding):
         print(t.__name__); t()
     print(f"\n{PASS}/{PASS + FAIL} passed")
     return 0 if FAIL == 0 else 1

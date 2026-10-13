@@ -717,6 +717,62 @@ def attack():
     probe("declared method whose series went stale 60 days ago blocks (vvk binding freshness)",
           _stale_method)
 
+    # Production-assurance probes. A throwaway EC key stands in for the separate
+    # signer's KMS key; its public key is pinned the way a verifier would, which
+    # makes evidence signing REQUIRED (the default once a key is pinned).
+    sys.path.insert(0, os.path.join(BASE, "automation", "collectors"))
+    import evidence_wiring as _ew
+
+    def _pin_signer_and_sign_history(pr, hi_):
+        import base64
+        from cryptography.hazmat.primitives import hashes, serialization
+        from cryptography.hazmat.primitives.asymmetric import ec
+        key = ec.generate_private_key(ec.SECP256R1())
+        pub_pem = key.public_key().public_bytes(
+            serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo).decode("ascii")
+        digest = _hint.record_heads(hi_)
+        sig = key.sign(digest.encode("utf-8"), ec.ECDSA(hashes.SHA256()))
+        key_arn = "arn:aws:kms:us-east-1:000000000000:key/SAMPLE-fictional-signer"
+        hi_["meta"]["history_signature"] = {"algorithm": "ECDSA_SHA_256", "keyId": key_arn,
+                                            "signedHash": digest,
+                                            "signature": base64.b64encode(sig).decode("ascii")}
+        pr["evidence_store_profile"] = "production-assurance"
+        pr["expected_evidence_signer"] = {"key_arn": key_arn, "public_key_pem": pub_pem}
+        return key, key_arn
+
+    def _bind_sample_evidence(st, sign_with=None):
+        """Replace the sample's hand-written (hashless) evidence with entries
+        derived by the canonical factory, so the integrity gate can recompute
+        each digest from the entry's own bound fields; optionally sign each
+        digest with the probe's key the way sign_evidence.py would."""
+        import base64
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.asymmetric import ec
+        observed = f"{TODAY.isoformat()}T00:00:00+00:00"
+        base = "https://evidence.bfc-demo.invalid/store"
+
+        def one(service, check, what):
+            ev = _ew.fact_to_evidence(
+                {"service": service, "check": check, "status": "PASS", "region": "us-east-1",
+                 "detail": f"{FICT} {what} evaluation history", "collected_at": observed},
+                location_base=base)
+            if sign_with is not None:
+                key, key_arn = sign_with
+                h = ev["xEvidenceContentHash"]
+                sig = key.sign(h.encode("ascii"), ec.ECDSA(hashes.SHA256()))
+                ev["xEvidenceSignature"] = {"algorithm": "ECDSA_SHA_256", "keyId": key_arn,
+                                            "signedHash": h,
+                                            "signature": base64.b64encode(sig).decode("ascii")}
+            return ev
+
+        for kid, rec in st["ksi"].items():
+            if rec.get("evidence"):
+                rec["evidence"] = [one("securityhub", f"{kid.lower()}-latest", kid)]
+        for rid, rec in st["frr"].items():
+            ext = rec.get("extension") or {}
+            if ext.get("rule_artifacts"):
+                ext["rule_artifacts"] = [one("config", f"frr-{rid.lower()}", rid)]
+
     def _production_unsigned(st, pr, hi_):
         pr["evidence_store_profile"] = "production-assurance"
     probe("production-assurance profile with an UNSIGNED history digest blocks", _production_unsigned)
@@ -736,26 +792,39 @@ def attack():
         pr["evidence_store_profile"] = "prod"
     probe("unknown evidence_store_profile value blocks (no silent default)", _unknown_profile)
 
-    # NEGATIVE: production-assurance IS satisfiable. Sign the digest with a
-    # throwaway EC key (standing in for the separate signer's KMS key), pin its
-    # public key the way a verifier would, and the package is READY.
+    # AUD-F57 / AUD-F59 end to end. With a signer pinned (signing required) the
+    # sample's own hand-written evidence has no digest and no signature: that is
+    # exactly the shape an editor leaves behind after deleting both, and it used
+    # to reach READY (a soft "no content hash yet" finding before the
+    # required-signer check, and a presence-only linkage gate).
+    def _production_hashless_evidence(st, pr, hi_):
+        _pin_signer_and_sign_history(pr, hi_)  # evidence left hashless
+    probe("production-assurance + pinned signer with HASHLESS evidence blocks (AUD-F57/F59)",
+          _production_hashless_evidence)
+
+    def _production_hashed_unsigned_evidence(st, pr, hi_):
+        _pin_signer_and_sign_history(pr, hi_)
+        _bind_sample_evidence(st)  # digests recompute, but no entry is signed
+    probe("production-assurance + pinned signer with hashed but UNSIGNED evidence blocks (finding 8)",
+          _production_hashed_unsigned_evidence)
+
+    def _production_signed_evidence_one_digest_deleted(st, pr, hi_):
+        key, key_arn = _pin_signer_and_sign_history(pr, hi_)
+        _bind_sample_evidence(st, sign_with=(key, key_arn))
+        kid = sorted(st["ksi"])[0]
+        e = st["ksi"][kid]["evidence"][0]
+        e.pop("xEvidenceContentHash")
+        e.pop("xEvidenceSignature")  # the AUD-F57 downgrade on ONE entry
+    probe("production-assurance: deleting ONE entry's digest + signature blocks (AUD-F57)",
+          _production_signed_evidence_one_digest_deleted)
+
+    # NEGATIVE: production-assurance IS satisfiable. Signed history digest,
+    # pinned signer, and every evidence entry bound, hashed and signed.
     def _production_signed(st, pr, hi_):
-        import base64
-        from cryptography.hazmat.primitives import hashes, serialization
-        from cryptography.hazmat.primitives.asymmetric import ec
-        key = ec.generate_private_key(ec.SECP256R1())
-        pub_pem = key.public_key().public_bytes(
-            serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo).decode("ascii")
-        digest = _hint.record_heads(hi_)
-        sig = key.sign(digest.encode("utf-8"), ec.ECDSA(hashes.SHA256()))
-        key_arn = "arn:aws:kms:us-east-1:000000000000:key/SAMPLE-fictional-signer"
-        hi_["meta"]["history_signature"] = {"algorithm": "ECDSA_SHA_256", "keyId": key_arn,
-                                            "signedHash": digest,
-                                            "signature": base64.b64encode(sig).decode("ascii")}
-        pr["evidence_store_profile"] = "production-assurance"
-        pr["expected_evidence_signer"] = {"key_arn": key_arn, "public_key_pem": pub_pem}
-    _probe_ready("production-assurance with a VALID signed digest and pinned signer stays READY",
-                 _production_signed)
+        key, key_arn = _pin_signer_and_sign_history(pr, hi_)
+        _bind_sample_evidence(st, sign_with=(key, key_arn))
+    _probe_ready("production-assurance with a VALID signed digest, pinned signer and signed "
+                 "evidence stays READY", _production_signed)
 
     print(f"\n{passed}/{passed + failed} assessor-attack probes passed "
           "(each tamper must be BLOCKED; baseline + justified-narrative combo must be READY)")
