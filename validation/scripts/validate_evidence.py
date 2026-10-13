@@ -33,11 +33,17 @@ over the artifact bytes) attest the artifact itself, which is the evidence.
 
 Readiness FINDINGS (never automatic compliance failures, per the trust
 boundary): no stored hash yet, placeholder location, unresolvable source,
-legacy unbound digest.
+legacy unbound digest. EXCEPT under a trusted signer pinned in signing-required
+mode (offering-profile.expected_evidence_signer, the default once a key is
+pinned): there every entry MUST carry a signed, recomputable digest, so a
+missing hash (AUD-F57), an unresolvable source (F01), a legacy unbound digest
+(AUD-F26) and a missing or invalid signature (finding 8) are all HARD. Each is
+the downgrade an actor with write access to the record would use.
 
     python validation/scripts/validate_evidence.py
 
-Exit 1 only on a HARD failure (malformed or mismatched digest).
+Exit 1 only on a HARD failure (malformed or mismatched digest, or any of the
+signing-required downgrades above).
 """
 
 import json
@@ -58,8 +64,14 @@ except Exception:
 
 try:
     from sign_evidence import verify_signature_offline as _sig_verify
+    from sign_evidence import key_reference as _key_reference
 except Exception:
     _sig_verify = None
+
+    def _key_reference(value):
+        # Without the signing module nothing can be verified anyway (the
+        # _sig_verify None path is HARD); compare references verbatim.
+        return str(value or "").strip()
 
 HASH_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 
@@ -76,12 +88,13 @@ def load_trusted_signer():
     value is treated as 'not pinned'.
 
     `required` (finding 8 downgrade): when the signer sets signing_required=true,
-    every hashed evidence entry MUST carry a valid signature - a MISSING
-    signature is then a HARD failure, closing the downgrade path where an actor
-    who can edit a record simply deletes xEvidenceSignature and falls back to
-    hash-only verification. Default: required is true whenever a signer is
-    pinned (pinning a signer is the intent to require signing) unless explicitly
-    set false."""
+    every evidence entry MUST carry a recomputable digest AND a valid signature
+    over it - a MISSING signature (finding 8), a MISSING digest (AUD-F57) or an
+    unresolvable source (F01) is then a HARD failure, closing the downgrade path
+    where an actor who can edit a record simply deletes xEvidenceSignature (and
+    xEvidenceContentHash) and falls back to weaker verification. Default:
+    required is true whenever a signer is pinned (pinning a signer is the intent
+    to require signing) unless explicitly set false."""
     prof = load(PROFILE, {}) or {}
     signer = prof.get("expected_evidence_signer") or {}
     if not isinstance(signer, dict):
@@ -168,7 +181,35 @@ def classify_entry(e, hash_fn=None, trusted_signer=None):
     without disk I/O; main() calls it for every entry."""
     loc = e.get("evidenceLocation", "") or e.get("artifact_uri", "")
     h = e.get("xEvidenceContentHash") or e.get("stored_sha256")
+    # AUD-F57: the signing policy is determined BEFORE any soft return. Finding
+    # F01 moved it ahead of the unresolvable-source return; the hashless return
+    # above it had the same shape of hole: an actor who can edit the record
+    # deletes xEvidenceContentHash together with xEvidenceSignature and the
+    # entry is classified a soft "no content hash yet" finding before the
+    # required-signer check is ever reached. Under a required signer a missing
+    # digest is a downgrade (there is nothing for the required signature to
+    # bind), so it is HARD. Without a required signer it stays a readiness
+    # finding (opt-in signing; a collection gap is not a control failure).
+    signer_required = bool(trusted_signer and trusted_signer.get("public_key")
+                           and trusted_signer.get("required"))
+    sig_present = e.get("xEvidenceSignature") is not None
     if not h:
+        if signer_required:
+            return ("hard", "SIGNATURE REQUIRED BUT EVIDENCE HAS NO CONTENT HASH - a "
+                            "trusted evidence signer is pinned in signing-required "
+                            "mode (offering-profile.expected_evidence_signer), so "
+                            "every entry MUST carry a signed, recomputable digest; "
+                            "an entry with no digest has nothing for the required "
+                            "signature to bind (AUD-F57, hash deletion is a "
+                            "downgrade). Re-derive the entry with "
+                            "evidence_wiring.fact_to_evidence and sign it, or set "
+                            "expected_evidence_signer.signing_required=false.")
+        if sig_present:
+            # A signature with no digest cannot be checked against content.
+            return ("hard", "SIGNED EVIDENCE WITHOUT A CONTENT HASH - the entry "
+                            "carries xEvidenceSignature but no xEvidenceContentHash, "
+                            "so the signature cannot be verified against any content "
+                            "(AUD-F57, fail-closed).")
         return ("finding", "no content hash yet")
     if not HASH_RE.match(str(h)):
         return ("hard", f"malformed content hash {h!r} (expected 'sha256:<64 hex>')")
@@ -185,17 +226,14 @@ def classify_entry(e, hash_fn=None, trusted_signer=None):
                         "implementation (evidence_wiring.evidence_hash) could not "
                         "be imported; refusing to pass evidence integrity without "
                         "the ability to recompute the digest")
-    # Finding F01: determine signing-required FIRST. If a trusted signer is
-    # pinned in signing-required mode, an entry whose source cannot be resolved
-    # (or whose signature is absent) must NOT degrade to a soft "unverifiable"
-    # finding - that is the exact bypass: delete source_fact + xEvidenceSignature
-    # and the required-signature gate below is never reached. Under a required
-    # signer, an unresolvable source is a HARD failure (we can verify neither the
-    # digest nor the signature), which is strictly worse than the unsigned-but-
-    # hashed downgrade already caught later.
-    signer_required = bool(trusted_signer and trusted_signer.get("public_key")
-                           and trusted_signer.get("required"))
-    sig_present = e.get("xEvidenceSignature") is not None
+    # Finding F01: signing-required was determined FIRST (above). If a trusted
+    # signer is pinned in signing-required mode, an entry whose source cannot be
+    # resolved (or whose signature is absent) must NOT degrade to a soft
+    # "unverifiable" finding - that is the exact bypass: delete source_fact +
+    # xEvidenceSignature and the required-signature gate below is never reached.
+    # Under a required signer, an unresolvable source is a HARD failure (we can
+    # verify neither the digest nor the signature), which is strictly worse than
+    # the unsigned-but-hashed downgrade already caught later.
     source, kind = _resolve_source(e)
     if source is None:
         if signer_required:
@@ -285,7 +323,10 @@ def classify_entry(e, hash_fn=None, trusted_signer=None):
                             "a public_key_pem); refusing to trust a signature whose "
                             "signer is not independently pinned (findings 7/8)")
         pinned_arn = trusted_signer.get("key_arn")
-        if pinned_arn and sig.get("keyId") != pinned_arn:
+        # AUD-F60: the block records key_reference(key id) (never the ARN, which
+        # carries the signer's account id into the scanned package); the pinned
+        # value may be the ARN. Compare the two in reference form.
+        if pinned_arn and _key_reference(sig.get("keyId")) != _key_reference(pinned_arn):
             return ("hard", f"SIGNER NOT TRUSTED - evidence keyId {str(sig.get('keyId'))[:40]} "
                             f"is not the pinned trusted signer {str(pinned_arn)[:40]} "
                             "(a signature by an unpinned key is not trusted)")
@@ -338,9 +379,11 @@ def main():
               "not well-formed. Fix the record store and rebuild.")
         return 1
     print("PASS: every resolvable evidence digest was recomputed and matches, "
-          "and every stored digest is well-formed. Unresolvable-source, "
-          "placeholder, or hashless evidence is a readiness finding, never an "
-          "automatic compliance failure (collection failure is not control failure).")
+          "and every stored digest is well-formed. Without a signing-required "
+          "signer, unresolvable-source, placeholder, or hashless evidence is a "
+          "readiness finding, never an automatic compliance failure (collection "
+          "failure is not control failure); under a signing-required signer each "
+          "of those is a hard downgrade and would have failed above.")
     return 0
 
 

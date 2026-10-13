@@ -90,6 +90,74 @@ closed, each with a regression test and a killed mutation (`AUD-F51` to
 That closes every item of the audit except the `sdr.py` decomposition it
 rated P2 and asked not to combine with the policy fixes.
 
+A fresh audit of main `3e41c24` (2026-10-13) confirmed the six closures above
+and found one concrete evidence-integrity defect while reviewing the proposed
+provenance-mutation family; driving its fix end to end found two more.
+Confirmed by reading and by execution; closed, each with a regression test
+proven red on the old code and a killed mutation (`AUD-F57` to `AUD-F60`):
+
+- **Deleting an evidence entry's digest no longer bypasses a required signer
+  (AUD-F57, High).** `classify_entry` returned the soft finding "no content
+  hash yet" before `signer_required` was computed, so an actor who deleted
+  `xEvidenceContentHash` together with `xEvidenceSignature` left an entry the
+  required-signer gate never saw; the absent-signature (finding 8) and
+  unresolvable-source (F01) downgrades beside it were hard, and the gate exits
+  0 on findings. Reproduced end to end: the Class C sample with a pinned
+  signer and its hand-written hashless evidence reached READY. The signing
+  policy is now determined first; under a required signer a hashless entry is
+  HARD, a hashless entry carrying a signature is HARD regardless of signer,
+  and without a required signer it stays a finding (opt-in signing is
+  unchanged). The sample now proves the downgrade blocks on a single entry.
+- **Prefill proposes evidence through the canonical factory (AUD-F58).**
+  `prefill_from_facts.py` hand-assembled evidence objects with no location,
+  no source fact and no digest, so an accepted proposal entered the record
+  store as evidence the integrity gate could never verify (and a hard failure
+  under a required signer after AUD-F57). Every proposed entry, config and
+  posture alike, is now derived by `evidence_wiring.fact_to_evidence`: bound
+  displayed fields, sanitized source fact, recomputable digest, opaque scope
+  for account-tagged facts, refusal (never a silent skip) when a fact cannot
+  be scoped. `--location-base` (default `$SDR_EVIDENCE_LOCATION_BASE`) gives
+  concrete pointers; without it the pointer is the explicit `sdr://placeholder/`
+  pseudo-URI preflight refuses, and because the pointer is a bound field the
+  entry is re-derived rather than edited.
+- **Under production-assurance, evidence counts toward linkage only when
+  verified (AUD-F59).** The SDR linkage gate tests presence (a non-empty
+  evidence array) and the integrity gate exits 0 on findings, so an
+  unverifiable entry satisfied Class C/D linkage while proving nothing.
+  Preflight, under `evidence_store_profile` production-assurance only, runs
+  every entry behind each populated applicable record (KSI evidence and FRR
+  rule artifacts) through the live classifier with the pinned signer and
+  blocks when any outcome is not `verified`, grouped by outcome. The
+  development profile is unchanged: a finding stays a finding, collection
+  failure is not control failure, and template records never count. The
+  Class C sample's production-assurance READY probe now carries bound, hashed
+  and signed evidence, proving the profile remains satisfiable.
+- **A signed evidence entry no longer publishes the signer's account id, and
+  can pass the package gate (AUD-F60, High).** Found by driving that READY
+  probe end to end: `sign_hash` recorded the KMS key ARN verbatim as the block
+  `keyId`, the ARN is the documented pin form, and a signed entry is rendered
+  into the SDR and the record store, both scanned by `no_sensitive_patterns`.
+  Every correctly signed production package therefore failed its own
+  validation gate, with the audit account id in the package. The block now
+  records `key_reference(key id)` (a key ARN reduces to its key id, an alias
+  ARN to `alias/<name>`), KMS is still called with the full key id, and the
+  verifier compares the block and the pinned `key_arn` in reference form, so
+  existing ARN pins keep working and a different key is still refused.
+- Two Class C attack probes had quietly stopped testing anything: they
+  hollowed the `cpo_required_information["CDS-CSO-PUB"]` override, which the
+  AUD-F39 one-place-per-fact derivation ignores in favour of the profile
+  fields (so the package was correctly READY, and both probes reported a
+  false "reached READY despite tamper"). They now hollow the derived source
+  fields (verified to block with three blockers each), and a new probe proves
+  the ignored override keeps the package READY. The attack suite is still a
+  manual run (`--attack`, 43 probes), which is why this went unnoticed.
+
+The audit's remaining items are open by decision, not oversight: an explicit
+single Class D support state (`SUPPORTED` / `FUTURE` / `INVALID`) across every
+resolver, orthogonal provenance mutations that recompute the digest after a
+semantic tamper, machine-readable per-gate results with a reverse
+rule-to-test map, and the `sdr.py` decomposition after those are locked.
+
 The documented consultant flow, run end to end on a fictional Class B offering
 (`init` with every answer scripted, the three importers, prefill, the drafter,
 `review --list`, `--walk`, `--accept-all prefill`, `build`, `preflight`),

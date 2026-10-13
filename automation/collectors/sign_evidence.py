@@ -40,7 +40,7 @@ Offline by construction: pass any object exposing `.sign(...)` / `.verify(...)`
 Storage shape added to an evidence entry (extension namespace, schema-clean):
     xEvidenceSignature: {
         "algorithm": "ECDSA_SHA_256",
-        "keyId": "<kms key arn or id used>",
+        "keyId": "<key_reference(key id): KMS key id or alias, never the ARN>",
         "signedHash": "sha256:<hex>",   # the exact message that was signed
         "signature": "<base64 DER signature>",
         "signedAt": "<ISO8601 date>",
@@ -49,6 +49,7 @@ Storage shape added to an evidence entry (extension namespace, schema-clean):
 
 import base64
 import datetime
+import re
 
 
 SIGNING_ALGORITHM = "ECDSA_SHA_256"
@@ -63,12 +64,36 @@ def _today_iso():
     return datetime.date.today().isoformat()
 
 
+_KMS_ARN_RE = re.compile(r"^arn:aws[a-z-]*:kms:[^:]*:\d{12}:(key/|alias/)(.+)$")
+
+
+def key_reference(key_id):
+    """The NON-IDENTIFYING reference to a signing key that is recorded in a
+    signature block and compared against the pinned signer (AUD-F60).
+
+    A KMS key ARN carries the signer's 12-digit account id, and a signed
+    evidence entry is rendered into the SDR and the record store, which the
+    package gate scans for account ids and ARNs (validate_sdr
+    no_sensitive_patterns). Recording the ARN verbatim therefore made every
+    correctly signed production package fail its own gate. The ARN form
+    `arn:aws:kms:<region>:<account>:key/<id>` reduces to `<id>`; an alias ARN
+    reduces to `alias/<name>`; anything else (a bare key id, an alias, a test
+    label) is returned unchanged. The KMS call itself still uses the full
+    key_id the operator supplied."""
+    s = str(key_id or "").strip()
+    m = _KMS_ARN_RE.match(s)
+    if m:
+        return (m.group(2) if m.group(1) == "key/" else m.group(1) + m.group(2))
+    return s
+
+
 def sign_hash(kms_client, key_id, content_hash, *, when=None):
     """Sign a canonical evidence hash string with a KMS asymmetric key.
 
     kms_client   : object exposing sign(KeyId, Message, MessageType,
                    SigningAlgorithm) -> {"Signature": bytes, ...}
-    key_id       : the signing key ARN/id (held by the SEPARATE signer principal)
+    key_id       : the signing key ARN/id (held by the SEPARATE signer principal);
+                   the block records key_reference(key_id), never the ARN
     content_hash : the 'sha256:<64 hex>' string from evidence_wiring.evidence_hash
 
     Returns the xEvidenceSignature dict. Raises SigningError on any failure -
@@ -96,7 +121,7 @@ def sign_hash(kms_client, key_id, content_hash, *, when=None):
             "record an empty signature")
     return {
         "algorithm": SIGNING_ALGORITHM,
-        "keyId": key_id,
+        "keyId": key_reference(key_id),
         "signedHash": content_hash,
         "signature": base64.b64encode(sig).decode("ascii"),
         "signedAt": when or _today_iso(),

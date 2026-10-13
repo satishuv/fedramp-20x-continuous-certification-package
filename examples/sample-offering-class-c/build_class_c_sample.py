@@ -385,6 +385,8 @@ def attack():
     tamper at a time, and assert preflight BLOCKS each. A tamper that still
     reaches 'ready' is a framework gap."""
     import copy
+    sys.path.insert(0, os.path.join(BASE, "validation", "scripts"))
+    import profile_contract as _pc  # the CDS-CSO-PUB source map (AUD-F39)
     base_store = generate_store()
     base_profile = generate_profile()
     base_history = generate_history(base_store)
@@ -503,15 +505,31 @@ def attack():
                     for k in list(rec.keys()):
                         rec[k] = value
 
-    # 12. CDS-CSO-PUB object with every required member set to a bare "N/A"
-    #     (structurally complete, semantically empty) -> must block.
-    probe("CPO CDS-CSO-PUB members all bare 'N/A' block (hollow but structured)",
-          lambda st, pr, hi: _fill_cpo(st, pr, hi, "CDS-CSO-PUB", "N/A"))
+    # Since AUD-F39 (#199) the published CDS-CSO-PUB object is DERIVED from the
+    # profile fields that already carry each item (profile_contract.
+    # PUBLIC_INFORMATION_SOURCES); a provider override under
+    # cpo_required_information["CDS-CSO-PUB"] wins only when it is real, so a
+    # hollow override is ignored and the derived real values are published.
+    # Probes 12/13 therefore hollow the SOURCE fields (the earlier form hollowed
+    # the ignored override and had quietly stopped testing anything).
+    def _hollow_public_sources(pr, value):
+        for path in _pc.PUBLIC_INFORMATION_SOURCES.values():
+            if path[0] == "cpo_required_information":
+                _fill_cpo(None, pr, None, path[1], value)
+            else:
+                for field in path:
+                    if field in pr:
+                        pr[field] = value
 
-    # 13. CDS-CSO-PUB members set to a single "." -> a one-char non-answer that
-    #     is neither empty nor a TBD marker must not pass as resolved.
-    probe("CPO CDS-CSO-PUB members all '.' block (single-char non-answer)",
-          lambda st, pr, hi: _fill_cpo(st, pr, hi, "CDS-CSO-PUB", "."))
+    # 12. Every CDS-CSO-PUB source field set to a bare "N/A" (structurally
+    #     complete, semantically empty) -> must block.
+    probe("CPO CDS-CSO-PUB sources all bare 'N/A' block (hollow but structured)",
+          lambda st, pr, hi: _hollow_public_sources(pr, "N/A"))
+
+    # 13. The same sources set to a single "." -> a one-char non-answer that is
+    #     neither empty nor a TBD marker must not pass as resolved.
+    probe("CPO CDS-CSO-PUB sources all '.' block (single-char non-answer)",
+          lambda st, pr, hi: _hollow_public_sources(pr, "."))
 
     # 14. Array-rule (CDS-CSO-IRP) record fields all "N/A" -> the per-record
     #     fields are present but content-free; must block.
@@ -647,6 +665,12 @@ def attack():
     _probe_ready("[combo] justified 'N/A: <reason>' on NARRATIVE fields stays READY",
                  _justified_combo)
 
+    # A hollow CDS-CSO-PUB OVERRIDE is ignored in favour of the derived real
+    # values (AUD-F39 one-place-per-fact): the package stays READY. Pairs with
+    # probes 12/13, which hollow the sources themselves.
+    _probe_ready("hollow CDS-CSO-PUB override is ignored; derived real values keep the package READY",
+                 lambda st, pr, hi: _fill_cpo(st, pr, hi, "CDS-CSO-PUB", "N/A"))
+
     # ---- Mandatory-identity probes: a JUSTIFIED 'N/A: <reason>' must still BLOCK
     #      for fields that MUST name a real entity. This is the false-ready edge
     #      the hollow-value hardening opened (justified N/A accepted for an
@@ -717,6 +741,67 @@ def attack():
     probe("declared method whose series went stale 60 days ago blocks (vvk binding freshness)",
           _stale_method)
 
+    # Production-assurance probes. A throwaway EC key stands in for the separate
+    # signer's KMS key; its public key is pinned the way a verifier would, which
+    # makes evidence signing REQUIRED (the default once a key is pinned).
+    sys.path.insert(0, os.path.join(BASE, "automation", "collectors"))
+    import evidence_wiring as _ew
+    import sign_evidence as _se
+
+    def _pin_signer_and_sign_history(pr, hi_):
+        import base64
+        from cryptography.hazmat.primitives import hashes, serialization
+        from cryptography.hazmat.primitives.asymmetric import ec
+        key = ec.generate_private_key(ec.SECP256R1())
+        pub_pem = key.public_key().public_bytes(
+            serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo).decode("ascii")
+        digest = _hint.record_heads(hi_)
+        sig = key.sign(digest.encode("utf-8"), ec.ECDSA(hashes.SHA256()))
+        key_arn = "arn:aws:kms:us-east-1:000000000000:key/SAMPLE-fictional-signer"
+        hi_["meta"]["history_signature"] = {"algorithm": "ECDSA_SHA_256", "keyId": key_arn,
+                                            "signedHash": digest,
+                                            "signature": base64.b64encode(sig).decode("ascii")}
+        pr["evidence_store_profile"] = "production-assurance"
+        pr["expected_evidence_signer"] = {"key_arn": key_arn, "public_key_pem": pub_pem}
+        return key, key_arn
+
+    def _bind_sample_evidence(st, sign_with=None):
+        """Replace the sample's hand-written (hashless) evidence with entries
+        derived by the canonical factory, so the integrity gate can recompute
+        each digest from the entry's own bound fields; optionally sign each
+        digest with the probe's key the way sign_evidence.py would."""
+        import base64
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.asymmetric import ec
+        observed = f"{TODAY.isoformat()}T00:00:00+00:00"
+        base = "https://evidence.bfc-demo.invalid/store"
+
+        def one(service, check, what):
+            ev = _ew.fact_to_evidence(
+                {"service": service, "check": check, "status": "PASS", "region": "us-east-1",
+                 "detail": f"{FICT} {what} evaluation history", "collected_at": observed},
+                location_base=base)
+            if sign_with is not None:
+                key, key_arn = sign_with
+                h = ev["xEvidenceContentHash"]
+                sig = key.sign(h.encode("ascii"), ec.ECDSA(hashes.SHA256()))
+                # As sign_evidence.sign_hash records it: the key REFERENCE, never
+                # the ARN (which would carry the account id into the scanned
+                # package, AUD-F60); the profile pins the ARN.
+                ev["xEvidenceSignature"] = {"algorithm": "ECDSA_SHA_256",
+                                            "keyId": _se.key_reference(key_arn),
+                                            "signedHash": h,
+                                            "signature": base64.b64encode(sig).decode("ascii")}
+            return ev
+
+        for kid, rec in st["ksi"].items():
+            if rec.get("evidence"):
+                rec["evidence"] = [one("securityhub", f"{kid.lower()}-latest", kid)]
+        for rid, rec in st["frr"].items():
+            ext = rec.get("extension") or {}
+            if ext.get("rule_artifacts"):
+                ext["rule_artifacts"] = [one("config", f"frr-{rid.lower()}", rid)]
+
     def _production_unsigned(st, pr, hi_):
         pr["evidence_store_profile"] = "production-assurance"
     probe("production-assurance profile with an UNSIGNED history digest blocks", _production_unsigned)
@@ -736,26 +821,39 @@ def attack():
         pr["evidence_store_profile"] = "prod"
     probe("unknown evidence_store_profile value blocks (no silent default)", _unknown_profile)
 
-    # NEGATIVE: production-assurance IS satisfiable. Sign the digest with a
-    # throwaway EC key (standing in for the separate signer's KMS key), pin its
-    # public key the way a verifier would, and the package is READY.
+    # AUD-F57 / AUD-F59 end to end. With a signer pinned (signing required) the
+    # sample's own hand-written evidence has no digest and no signature: that is
+    # exactly the shape an editor leaves behind after deleting both, and it used
+    # to reach READY (a soft "no content hash yet" finding before the
+    # required-signer check, and a presence-only linkage gate).
+    def _production_hashless_evidence(st, pr, hi_):
+        _pin_signer_and_sign_history(pr, hi_)  # evidence left hashless
+    probe("production-assurance + pinned signer with HASHLESS evidence blocks (AUD-F57/F59)",
+          _production_hashless_evidence)
+
+    def _production_hashed_unsigned_evidence(st, pr, hi_):
+        _pin_signer_and_sign_history(pr, hi_)
+        _bind_sample_evidence(st)  # digests recompute, but no entry is signed
+    probe("production-assurance + pinned signer with hashed but UNSIGNED evidence blocks (finding 8)",
+          _production_hashed_unsigned_evidence)
+
+    def _production_signed_evidence_one_digest_deleted(st, pr, hi_):
+        key, key_arn = _pin_signer_and_sign_history(pr, hi_)
+        _bind_sample_evidence(st, sign_with=(key, key_arn))
+        kid = sorted(st["ksi"])[0]
+        e = st["ksi"][kid]["evidence"][0]
+        e.pop("xEvidenceContentHash")
+        e.pop("xEvidenceSignature")  # the AUD-F57 downgrade on ONE entry
+    probe("production-assurance: deleting ONE entry's digest + signature blocks (AUD-F57)",
+          _production_signed_evidence_one_digest_deleted)
+
+    # NEGATIVE: production-assurance IS satisfiable. Signed history digest,
+    # pinned signer, and every evidence entry bound, hashed and signed.
     def _production_signed(st, pr, hi_):
-        import base64
-        from cryptography.hazmat.primitives import hashes, serialization
-        from cryptography.hazmat.primitives.asymmetric import ec
-        key = ec.generate_private_key(ec.SECP256R1())
-        pub_pem = key.public_key().public_bytes(
-            serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo).decode("ascii")
-        digest = _hint.record_heads(hi_)
-        sig = key.sign(digest.encode("utf-8"), ec.ECDSA(hashes.SHA256()))
-        key_arn = "arn:aws:kms:us-east-1:000000000000:key/SAMPLE-fictional-signer"
-        hi_["meta"]["history_signature"] = {"algorithm": "ECDSA_SHA_256", "keyId": key_arn,
-                                            "signedHash": digest,
-                                            "signature": base64.b64encode(sig).decode("ascii")}
-        pr["evidence_store_profile"] = "production-assurance"
-        pr["expected_evidence_signer"] = {"key_arn": key_arn, "public_key_pem": pub_pem}
-    _probe_ready("production-assurance with a VALID signed digest and pinned signer stays READY",
-                 _production_signed)
+        key, key_arn = _pin_signer_and_sign_history(pr, hi_)
+        _bind_sample_evidence(st, sign_with=(key, key_arn))
+    _probe_ready("production-assurance with a VALID signed digest, pinned signer and signed "
+                 "evidence stays READY", _production_signed)
 
     print(f"\n{passed}/{passed + failed} assessor-attack probes passed "
           "(each tamper must be BLOCKED; baseline + justified-narrative combo must be READY)")

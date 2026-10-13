@@ -198,6 +198,109 @@ def test_f48_prefilled_text_carries_no_markdown():
     assert "cloudtrail-enabled" in rec["tests"][0]["method"]  # the rule is still named
 
 
+def _f58_inputs():
+    ksi_entry = {
+        "services": ["AWS Config", "Amazon GuardDuty"],
+        "metric_service_keys": ["guardduty:detector"],
+        "checks": [{"type": "config_managed_rule", "target": "cloudtrail-enabled",
+                    "source": "verify", "check_id": "KSI-CMT-LMC:verify:config:cloudtrail-enabled"}],
+    }
+    config_by_rule = {"cloudtrail-enabled": {
+        "rule": "cloudtrail-enabled", "compliance_type": "COMPLIANT",
+        "collected_at": "2026-10-10T06:20:11+00:00", "region": "us-east-1"}}
+    posture = {"guardduty": [{"service": "guardduty", "check": "detector", "status": "ENABLED",
+                              "detail": "Detector status ENABLED", "region": "us-east-1",
+                              "collected_at": "2026-10-10T06:20:11+00:00"}]}
+    return ksi_entry, config_by_rule, posture
+
+
+def _integrity_modules():
+    base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    sys.path.insert(0, os.path.join(base, "validation", "scripts"))
+    sys.path.insert(0, os.path.join(base, "automation", "collectors"))
+    import validate_evidence  # noqa: E402
+    import evidence_wiring  # noqa: E402
+    return validate_evidence, evidence_wiring
+
+
+def test_f58_prefilled_evidence_is_bound_hashed_and_verifies_under_the_live_gate():
+    """AUD-F58. Prefill hand-assembled evidence objects (type, description, text,
+    date) with no evidenceLocation, no xSourceFact and no xEvidenceContentHash,
+    while the collector path derived every entry through
+    evidence_wiring.fact_to_evidence. Once a human accepted a proposal the record
+    carried evidence the live integrity gate could never verify (a permanent
+    "no content hash yet" finding, HARD under a required signer after AUD-F57).
+    Proposed evidence must now be the canonical bound shape: the gate recomputes
+    the digest from the entry's own fields and classifies it verified."""
+    ve, ew = _integrity_modules()
+    ksi_entry, config_by_rule, posture = _f58_inputs()
+    rec = blank_ksi_record()
+    changed, _ = pf.prefill_ksi("KSI-CMT-LMC", rec, ksi_entry, config_by_rule, posture,
+                                location_base="https://evidence.example.gov/store")
+    assert changed and len(rec["evidence"]) == 2, rec["evidence"]
+    for e in rec["evidence"]:
+        assert e.get("evidenceLocation", "").startswith("https://evidence.example.gov/store/"), e
+        assert isinstance(e.get("xSourceFact"), dict) and e["xSourceFact"].get("check"), e
+        assert e.get("xEvidenceContentHash") == ew.evidence_hash(ew.canonical_payload(e)), e
+        assert e.get("lastUpdated") == "2026-10-10", e
+        outcome, msg = ve.classify_entry(e, hash_fn=ew.evidence_hash, trusted_signer=None)
+        assert outcome == "verified", (outcome, msg, e)
+    # The config fact is rendered as a config-service observation (one factory,
+    # one evidenceType mapping) and still names the rule.
+    cfg = [e for e in rec["evidence"] if e["xSourceFact"].get("service") == "config"]
+    assert len(cfg) == 1 and cfg[0]["xSourceFact"]["check"] == "cloudtrail-enabled", cfg
+    assert cfg[0]["evidenceType"] == "Configuration" and "cloudtrail-enabled" in cfg[0]["evidenceText"]
+
+
+def test_f58_prefilled_evidence_without_location_base_is_an_explicit_placeholder():
+    # No base URI: the pointer is the explicit sdr://placeholder/ pseudo-URI the
+    # preflight refuses, never a fabricated https link, and it is still hashed
+    # so a hand edit of the pointer is detected (the entry must be re-derived).
+    ve, ew = _integrity_modules()
+    ksi_entry, config_by_rule, posture = _f58_inputs()
+    rec = blank_ksi_record()
+    pf.prefill_ksi("KSI-CMT-LMC", rec, ksi_entry, config_by_rule, posture)
+    for e in rec["evidence"]:
+        assert e["evidenceLocation"].startswith("sdr://placeholder/"), e
+        assert e.get("xEvidenceContentHash") == ew.evidence_hash(ew.canonical_payload(e))
+        outcome, msg = ve.classify_entry(e, hash_fn=ew.evidence_hash, trusted_signer=None)
+        assert outcome == "finding" and "placeholder" in msg, (outcome, msg)
+        e["evidenceLocation"] = "https://evidence.example.gov/edited-by-hand.json"
+        outcome, _ = ve.classify_entry(e, hash_fn=ew.evidence_hash, trusted_signer=None)
+        assert outcome == "hard", "a hand-edited bound pointer must fail the digest recompute"
+
+
+def test_f58_account_tagged_facts_are_scoped_never_leaked_and_refused_without_a_key():
+    # AUD-F27 carried through prefill: a multi-account fact carrying a raw
+    # account is exported with an opaque scope (given a scope key) and the
+    # account id never appears anywhere in the proposed object; without a scope
+    # key the factory refuses and prefill does not swallow the refusal.
+    import json
+    _, ew = _integrity_modules()
+    ksi_entry, config_by_rule, posture = _f58_inputs()
+    account = "123456789012"
+    config_by_rule["cloudtrail-enabled"]["account"] = account
+    config_by_rule["cloudtrail-enabled"]["run_id"] = "run-20261010-0620"
+    posture["guardduty"][0]["account"] = account
+    rec = blank_ksi_record()
+    pf.prefill_ksi("KSI-CMT-LMC", rec, ksi_entry, config_by_rule, posture,
+                   location_base="https://evidence.example.gov/store", scope_key="unit-test-key")
+    assert len(rec["evidence"]) == 2
+    for e in rec["evidence"]:
+        assert account not in json.dumps(e), e
+        assert e["xSourceFact"].get("scope") == ew.scope_id(account, "unit-test-key"), e
+        assert e["xSourceFact"]["scope"] in e["evidenceLocation"], e
+    rec2 = blank_ksi_record()
+    try:
+        pf.prefill_ksi("KSI-CMT-LMC", rec2, ksi_entry, config_by_rule, posture,
+                       location_base="https://evidence.example.gov/store")
+    except ew.EvidenceExportError:
+        pass
+    else:
+        raise AssertionError("an account-tagged fact with no scope key must be refused, not exported")
+    assert rec2["evidence"] == [], "a refused fact must not leave a partial proposal"
+
+
 def _run_all():
     tests = [v for k, v in sorted(globals().items())
              if k.startswith("test_") and callable(v)]

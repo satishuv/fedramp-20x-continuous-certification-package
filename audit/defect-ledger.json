@@ -756,6 +756,58 @@
       "mutation": "MUT-F56: a demonstrated_by reference counts as coverage without resolving into the KSI record; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F57",
+      "severity": "High",
+      "requirement": "Repository evidence-integrity contract (validate_evidence.py, offering-profile.expected_evidence_signer): with a signer pinned in signing-required mode, every evidence entry MUST carry a verifiable signed digest; deleting the signature is a downgrade that must fail HARD (finding 8, F01). Supports AU-09(02/03/04) / AU-10 non-repudiation of the verified and validated KSI record (SDR-CSX-* verification content). FedRAMP does not mandate this mechanism; the repository declares it.",
+      "component": "validation/scripts/validate_evidence.py (classify_entry ordering, module and load_trusted_signer docstrings, PASS message)",
+      "description": "Raised by the 2026-10-13 fresh audit and confirmed by reading: classify_entry returned the soft finding 'no content hash yet' for an entry with no xEvidenceContentHash BEFORE signer_required was computed, so an actor who deleted xEvidenceContentHash together with xEvidenceSignature produced an entry the required-signer gate never saw. The finding-8 (absent signature) and F01 (unresolvable source) downgrades were hard; the hash-deletion downgrade beside them was soft, and validate_evidence.py exits 0 on findings. Reproduced end to end in the Class C sample: production-assurance with a pinned signer and the sample's hand-written hashless evidence reached READY.",
+      "root_cause": "The F01 fix moved the signing-policy determination ahead of the unresolvable-source return but left the hashless return above it; the contract was documented as covering 'every hashed evidence entry', which exempted the unhashed shape by wording.",
+      "fix_commit": "this PR -- signer_required and sig_present are determined first; a hashless entry under a required signer is HARD (nothing for the required signature to bind), a hashless entry carrying a signature is HARD regardless of signer (the signature cannot be checked against content), and a hashless entry with no signer or an explicitly optional signer stays a finding; docstrings and the PASS message now state the required-signer rule",
+      "regression_test": "validation/scripts/test_evidence_integrity.py (test_f57_hashless_entry_under_required_signer_is_hard; test_f57_full_downgrade_of_a_signed_entry_is_hard, which starts from an entry that VERIFIES and deletes digest + signature; test_f57_signature_without_hash_is_hard; test_f57_hashless_entry_without_required_signer_stays_finding for no-over-block) -- the three hard cases were run RED against the pre-fix validator; examples/sample-offering-class-c/build_class_c_sample.py probes 'HASHLESS evidence blocks (AUD-F57/F59)' and 'deleting ONE entry's digest + signature blocks' end to end",
+      "mutation": "MUT-F57: the hashless soft return is taken before the signer is consulted (old ordering); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F58",
+      "severity": "Medium",
+      "requirement": "Repository evidence contract AUD-F26/AUD-F27 (one canonical evidence shape: bound displayed fields + sanitized source fact + recomputable xEvidenceContentHash, opaque scope, never the raw account); SDR schema ksiEvidence object shape.",
+      "component": "automation/prefill/prefill_from_facts.py (evidence proposals, config_fact_as_collector_fact, --location-base, SDR_EVIDENCE_SCOPE_KEY)",
+      "description": "The deterministic prefill hand-assembled KSI evidence objects (evidenceType, evidenceDescription, evidenceText, lastUpdated) with no evidenceLocation, no xSourceFact and no xEvidenceContentHash, while the collector path derives every entry through evidence_wiring.fact_to_evidence. The review flow accepts structured evidence as collected (AUD-F47), so an accepted proposal entered the record store as evidence the live integrity gate could never verify: a permanent 'no content hash yet' finding under the development profile and, after AUD-F57, a HARD failure under a required signer. It also chose its own evidenceType mapping (GuardDuty as Audit Record) that disagreed with the canonical _SERVICE_EVIDENCE map.",
+      "root_cause": "Two construction paths for one object: prefill predated the canonical factory and was never routed through it; no test asserted that a proposed entry verifies under the gate.",
+      "fix_commit": "this PR -- prefill renders each Config-rule fact in the collector fact shape (config_fact_as_collector_fact, carrying account/scope/run_id through) and derives every proposed entry, config and posture alike, with fact_to_evidence; --location-base (default $SDR_EVIDENCE_LOCATION_BASE) gives concrete pointers, otherwise the explicit sdr://placeholder/ pseudo-URI preflight refuses; SDR_EVIDENCE_SCOPE_KEY is passed through and an account-tagged fact with no scope is REFUSED (EvidenceExportError propagates), never exported or silently skipped",
+      "regression_test": "automation/prefill/test_prefill.py (test_f58_prefilled_evidence_is_bound_hashed_and_verifies_under_the_live_gate: every proposed entry recomputes and classify_entry returns verified; test_f58_prefilled_evidence_without_location_base_is_an_explicit_placeholder: placeholder pointer, still hashed, a hand edit of the pointer fails the recompute; test_f58_account_tagged_facts_are_scoped_never_leaked_and_refused_without_a_key)",
+      "mutation": "MUT-F58: the digest is stripped from every proposed entry (the pre-F58 hand-built shape); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F59",
+      "severity": "Medium",
+      "requirement": "FRC-CSX-VVK (MUST at Class C/D): verification and validation evidence for every applicable KSI; repository evidence_store_profile production-assurance contract (AUD-F37): the provider declares a tamper-evident evidence store.",
+      "component": "sdr.py (unverified_evidence_under_production, _record_is_populated, cmd_preflight production-assurance block)",
+      "description": "Raised by the 2026-10-13 fresh audit: the SDR linkage gate (validate_sdr check 9) asks only whether a populated KSI has a NON-EMPTY ksiEvidence array, and validate_evidence.py exits 0 on findings, so a hashless, placeholder-free, unresolvable entry satisfied Class C/D evidence linkage while the integrity gate could verify nothing about it. Under production-assurance that contradicts the provider's own declaration.",
+      "root_cause": "Linkage and integrity were two gates with no join: presence was tested in one place, verifiability in another, and only HARD integrity outcomes fed the exit code.",
+      "fix_commit": "this PR -- preflight, under evidence_store_profile production-assurance only, runs every evidence entry (KSI evidence and FRR rule_artifacts) behind each POPULATED applicable record through the live classifier with the pinned signer and BLOCKS when any outcome is not verified, grouped by outcome with examples; the development profile is unchanged (a finding stays a finding; collection failure is not control failure); template (TBD) records never count",
+      "regression_test": "validation/scripts/test_production_evidence_linkage.py (real classifier, never a stub: bound entry not listed; hashless, unresolvable and non-object entries listed; TBD records never listed; FRR rule_artifacts scanned; under a required signer a signed entry passes and each downgrade is listed hard; mixed records list only the unverifiable index; optional signer still lists findings); examples/sample-offering-class-c/build_class_c_sample.py: 'hashed but UNSIGNED evidence blocks (finding 8)' and the READY probe now carries bound, hashed and signed evidence (production-assurance remains satisfiable)",
+      "mutation": "MUT-F59: findings count toward linkage (only hard outcomes listed); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F60",
+      "severity": "High",
+      "requirement": "CDS-CSO-* sensitivity guidance and the package gate's own no_sensitive_patterns check (validate_sdr.py: no AWS account ids or ARNs in generated artifacts) together with the repository signing contract (sign_evidence.py, AU-10 non-repudiation).",
+      "component": "automation/collectors/sign_evidence.py (key_reference, sign_hash); validation/scripts/validate_evidence.py (pinned-signer comparison); examples/sample-offering-class-c/build_class_c_sample.py (signed-evidence probes)",
+      "description": "Found by driving the production-assurance READY probe end to end after AUD-F57: sign_hash recorded the operator's KMS key id verbatim as the block keyId, and the documented pin form is the key ARN (offering-profile expected_evidence_signer.key_arn 'arn:aws:kms:<region>:<audit-account>:key/...'). A signed evidence entry is rendered into the SDR and lives in the record store, both scanned by no_sensitive_patterns, so every correctly signed production package failed its own validation gate on 'possible AWS account ID' and 'AWS resource ARN' hits, with the signer's account id published in the package. No fixture had ever carried a signed evidence entry through the full validate gate (the signature tests call classify_entry directly; the metric-history signature lives in an unscanned file).",
+      "root_cause": "The signing contract and the sensitivity gate were designed separately and never exercised together on a populated package.",
+      "fix_commit": "this PR -- sign_evidence.key_reference reduces a KMS key ARN to its key id (an alias ARN to alias/<name>; anything else unchanged) and sign_hash records that reference while still calling KMS with the full key id; classify_entry compares the block keyId and the pinned key_arn in reference form, so a pinned ARN matches a key-id block and a different key is still refused; the Class C sample signs its evidence the same way and its production-assurance READY probe passes the sensitivity gate",
+      "regression_test": "automation/collectors/test_sign_evidence.py (test_f60_signature_block_never_carries_the_key_arn_or_account: block trips none of validate_sdr.SENSITIVE_PATTERNS, KMS still receives the full key id, alias and bare-id forms, reference equality and inequality); validation/scripts/test_evidence_integrity.py (test_f60_key_id_block_verifies_under_a_signer_pinned_by_arn, different key id still hard); examples/sample-offering-class-c/build_class_c_sample.py READY probe with signed evidence",
+      "mutation": "MUT-F60: the block records the ARN verbatim; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

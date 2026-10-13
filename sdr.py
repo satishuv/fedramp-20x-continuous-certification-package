@@ -391,6 +391,7 @@ TEST_SUITE = [
     "validation/scripts/test_dataset_version_consistency.py",
     "validation/scripts/test_evidence_freshness.py",
     "validation/scripts/test_evidence_integrity.py",
+    "validation/scripts/test_production_evidence_linkage.py",
     "automation/collectors/test_sign_evidence.py",    "validation/scripts/test_applicability.py",
     "automation/exporters/test_oscal_export.py",
     "automation/collectors/test_evidence_wiring.py",
@@ -785,6 +786,49 @@ def classify_evidence_freshness(observed_at, now, policy_days=DEFAULT_EVIDENCE_F
     if now <= hard_expiry:
         return "stale"
     return "expired"
+
+
+def _record_is_populated(rec):
+    """A record is populated when its implementation narrative is real content
+    (not a TBD/placeholder/empty template), the same predicate the preflight
+    freshness and linkage scans use."""
+    impl = (rec or {}).get("implementation")
+    items = impl if isinstance(impl, list) else [impl]
+    if not any(str(x or "").strip() and not str(x).strip().startswith("TBD")
+               and "has not been provided" not in str(x) for x in items):
+        return False
+    return not any("TBD" in str(x) for x in items)
+
+
+def unverified_evidence_under_production(records_with_ids, trusted_signer, classify, hash_fn):
+    """AUD-F59. For every POPULATED record in records_with_ids (an iterable of
+    (record_id, record)), run each evidence entry (KSI `evidence` and FRR
+    `extension.rule_artifacts`) through the LIVE integrity classifier and return
+    the entries whose outcome is not 'verified', as
+    (record_id, index, outcome, message).
+
+    Why: the SDR linkage gate asks only whether a populated KSI has a non-empty
+    evidence array, and the integrity gate exits 0 on findings, so a hashless or
+    unresolvable entry satisfied linkage while proving nothing about the
+    evidence. Under evidence_store_profile production-assurance (the provider's
+    declaration that the evidence store is tamper-evident) an entry the gate
+    cannot verify contradicts the declaration, so preflight blocks on it. The
+    development profile is untouched: a finding stays a finding (collection
+    failure is not control failure). Pure: no I/O, classifier injected."""
+    out = []
+    for rid, rec in records_with_ids:
+        if not isinstance(rec, dict) or not _record_is_populated(rec):
+            continue
+        ext = rec.get("extension", {}) or {}
+        items = list(rec.get("evidence") or []) + list(ext.get("rule_artifacts") or [])
+        for idx, ev in enumerate(items):
+            if not isinstance(ev, dict):
+                out.append((rid, idx, "hard", "evidence entry is not an object"))
+                continue
+            outcome, msg = classify(ev, hash_fn, trusted_signer)
+            if outcome != "verified":
+                out.append((rid, idx, outcome, msg))
+    return out
 
 
 # Plain-English offering-profile wizard. The offering profile is the single
@@ -3014,6 +3058,33 @@ def cmd_preflight(args):
             f"(older than {policy_days} days but not yet expired): "
             f"{', '.join(sorted(set(stale_ev))[:8])}"
             + (" ..." if len(set(stale_ev)) > 8 else ""))
+
+    # AUD-F59: under production-assurance, evidence behind a populated applicable
+    # record must be VERIFIED by the live integrity classifier, not merely
+    # present (see unverified_evidence_under_production). Same classifier and
+    # same pinned signer the validation gate uses, applied at the submission
+    # gate to the records the SDR actually submits.
+    if _production:
+        import validate_evidence as _ve
+        _applicable_records = (
+            [(rid, rec) for rid, rec in (records.get("frr", {}) or {}).items() if rid in applicable_frr]
+            + [(kid, rec) for kid, rec in (records.get("ksi", {}) or {}).items() if kid in applicable_ksi])
+        _unverified = unverified_evidence_under_production(
+            _applicable_records, _ve.load_trusted_signer(), _ve.classify_entry, _ve._evidence_hash)
+        if _unverified:
+            _by_outcome = {}
+            for _rid, _idx, _outcome, _msg in _unverified:
+                _by_outcome.setdefault(_outcome, []).append(f"{_rid}[{_idx}]")
+            _summary = "; ".join(
+                f"{len(v)} {k} (e.g. {v[0]})" for k, v in sorted(_by_outcome.items()))
+            blockers.append(
+                f"evidence_store_profile is production-assurance but {len(_unverified)} evidence "
+                f"entr{'y' if len(_unverified) == 1 else 'ies'} behind populated applicable records "
+                f"cannot be VERIFIED by the integrity gate ({_summary}). Under production-assurance "
+                "an evidence entry counts toward linkage only when its digest recomputes from its "
+                "own bound fields (and its signature verifies under the pinned signer when one is "
+                "required); re-derive each entry with evidence_wiring.fact_to_evidence and sign it, "
+                "or declare the development profile (AUD-F59)")
 
     # Scan the GENERATED submission artifacts, not merely the input profile. A
     # generated CPO carrying template markers, placeholder IDs/URLs, or recorded
