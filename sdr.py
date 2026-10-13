@@ -335,6 +335,7 @@ TEST_SUITE = [
     "validation/scripts/test_vvk_automated_methods.py",
     "validation/scripts/test_init_wizard.py",
     "validation/scripts/test_profile_traceability.py",
+    "validation/scripts/test_profile_contract_classes.py",
     "validation/scripts/test_customer_config_rules.py",
     "validation/scripts/test_assurance_graph_method_count.py",
     "validation/scripts/test_validate_class_matrix.py",
@@ -969,12 +970,20 @@ def cmd_init(args):
             resp = overrides[key]
             consumed.add(key)
         elif interactive:
-            resp = _init_prompt(f"{question}  [{src}]", current)
+            # AUD-F51: the class answered above decides whether this question is
+            # required (FIELD_CLASS_EXEMPT); an exempt one is asked as optional.
+            so_far = dict(profile)
+            so_far.update(answers)
+            label = f"{question}  [{src}]"
+            if not _pc.field_required_at(key, so_far):
+                label = (f"{question}  [{src}; not required at Class "
+                         f"{_pc.profile_class(so_far).upper()}, Enter to skip]")
+            resp = _init_prompt(label, current)
             while key == "business_category" and resp.strip().lower() == "list":
                 out("FedRAMP business categories (CPO serviceProperties.businessCategory):")
                 for cat in _pc.business_category_enum():
                     out(f"  - {cat}")
-                resp = _init_prompt(f"{question}  [{src}]", current)
+                resp = _init_prompt(label, current)
         else:
             continue  # non-interactive with no override: leave the profile as-is
         if not resp:
@@ -1448,6 +1457,20 @@ def cmd_release(args):
     return 0
 
 
+def manifest_component_required(req, cls):
+    """Whether a package component's `required_for_initial_package` value makes
+    it required at class `cls`. The manifest states class scope as prose
+    ("Class B and C", "Class A") or True for every class. Class LETTERS are
+    matched as whole tokens (AUD-F53): a substring test found "A" inside
+    "CLASS" and "AND", so "Class B and C" read as required at Class A and the
+    Secure Configuration Guide scaffold blocked every Class A package."""
+    if req is True:
+        return True
+    if not isinstance(req, str):
+        return False
+    return str(cls).upper() in set(re.findall(r"\b([A-D])\b", req.upper()))
+
+
 def cmd_preflight(args):
     """FedRAMP submission preflight: check for submission BLOCKERS.
     Structural validity (the build gate) is necessary but not sufficient to
@@ -1571,10 +1594,12 @@ def cmd_preflight(args):
     # Required offering-profile fields: the ONE definition is
     # validation/scripts/profile_contract.py, where every required field names
     # the FedRAMP source that requires it (an official CPO schema property or a
-    # CR26 rule). A field with no FedRAMP source is never a blocker. Identity /
-    # contact / URL fields must name a real entity (even a justified N/A is
-    # missing); CDS-CSO-PUB's "available and applicable" items (UEI, business
-    # category, documentation overview) accept a justified 'N/A: <reason>'.
+    # CR26 rule). A field with no FedRAMP source is never a blocker, nor is one
+    # FedRAMP does not require at this class (FIELD_CLASS_EXEMPT: at Class A the
+    # SCG and the FedRAMP Recognized assessor, unless FRC-APP-FIA is selected).
+    # Identity / contact / URL fields must name a real entity (even a justified
+    # N/A is missing); CDS-CSO-PUB's "available and applicable" items (UEI,
+    # business category, documentation overview) accept a justified 'N/A: <reason>'.
     unresolved_required = _pc.required_gaps(offering)
     if unresolved_required:
         blockers.append(f"{len(unresolved_required)} required offering-profile "
@@ -3067,7 +3092,7 @@ def cmd_preflight(args):
                                           "certification-package-manifest.json")) or {}
     for name, comp in (manifest_pkg.get("certification_package", {}) or {}).items():
         req = comp.get("required_for_initial_package")
-        required_here = req is True or (isinstance(req, str) and cls.upper() in req.upper())
+        required_here = manifest_component_required(req, cls)
         if not required_here:
             continue
         status = comp.get("status")

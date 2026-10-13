@@ -145,6 +145,90 @@ IDENTITY_REQUIRED = {
     "trust_center_uri", "secure_config_guide_uri",
 }
 
+# ---- Class scope: REQUIRED_FIELDS entries FedRAMP does not require at every class ----
+# A REQUIRED_FIELDS entry is required at every class unless the class is listed
+# here as exempt (AUD-F51). Exemption is fail-closed: an unknown class is never
+# exempt. Each exemption is a dataset fact, not a judgement:
+#  - secure_config_guide_uri: SCG-CSO-RSC is not in the Class A rule set.
+#    FRC-CLA-MFR enumerates the Class A rules and names no SCG rule, and the
+#    engine's profiles/class-a/profile.json carries none (the package manifest
+#    already marks the Secure Configuration Guide "Class B and C"). CDS-CSO-PUB's
+#    "Link to Secure Configuration Guidance" is one of the items it qualifies as
+#    "available and applicable", so at Class A the published item states that
+#    the rule does not apply unless the provider supplies a guide anyway.
+#  - assessor / assessor_id: CDS-CSO-PUB's "Current FedRAMP Recognized
+#    independent assessment service" exists only where such an assessment
+#    exists. FRC-APP-FIA is MUST at Class B/C (and D) and MAY at Class A, and
+#    IVV-CSX-AIA at Class A relies on the alternative security framework, not on
+#    a FedRAMP Recognized service. The official CPO schema's top-level `assessor`
+#    object is optional (its required members are serviceIdentification,
+#    serviceProperties and contactInformation). So at Class A the two fields are
+#    required only when the provider selects FRC-APP-FIA, exactly as preflight
+#    gates the FIA block.
+FIELD_CLASS_EXEMPT = {
+    "secure_config_guide_uri": ("a",),
+    "assessor": ("a",),
+    "assessor_id": ("a",),
+}
+# The exempt fields a selected FRC-APP-FIA brings back at Class A.
+FIA_SELECTED_FIELDS = ("assessor", "assessor_id")
+
+# For each REQUIRED_FIELDS entry sourced from CDS-CSO-PUB and still identity-
+# required somewhere, the applicable MUST requirement that guarantees the item
+# exists (AUD-F52). CDS-CSO-PUB itself qualifies all 16 items as "available and
+# applicable", so listing there never makes a field unconditional on its own;
+# test_profile_contract_classes.py verifies each backing against the dataset.
+#   field -> (backing rule id, which part of the rule)
+CDS_CSO_PUB_BACKING = {
+    # The URL where CDS-CSO-PUB's own machine-readable data is published: the
+    # rule's unconditional artifact "URL to the machine-readable data."
+    "certification_package_overview_uri": ("CDS-CSO-PUB", "artifact"),
+    # The assessment service exists where FRC-APP-FIA is MUST (B/C) or selected.
+    "assessor": ("FRC-APP-FIA", "force"),
+}
+
+
+def profile_class(profile):
+    """The certification class a profile declares, lower-case; template default b."""
+    return str(profile.get("certification_class") or "b").strip().lower()
+
+
+def fia_selected(profile):
+    """Whether a Class A profile opted into FRC-APP-FIA (selected_optional_rules)."""
+    return "FRC-APP-FIA" in set(profile.get("selected_optional_rules") or [])
+
+
+def field_required_at(field, profile):
+    """Whether a REQUIRED_FIELDS entry is required for this profile's class.
+    Every field is required unless FIELD_CLASS_EXEMPT names the class; the
+    FIA-backed fields come back at Class A once FRC-APP-FIA is selected."""
+    cls = profile_class(profile)
+    if cls not in FIELD_CLASS_EXEMPT.get(field, ()):
+        return True
+    return field in FIA_SELECTED_FIELDS and fia_selected(profile)
+
+
+def not_applicable_statement(field, profile):
+    """The dataset-derived statement published for a CDS-CSO-PUB item whose
+    requirement does not apply at this class (None when it applies). Not
+    hollow by construction, so the structured public-information check reads an
+    explicit, truthful item instead of a TBD it would block on."""
+    if field_required_at(field, profile):
+        return None
+    cls = profile_class(profile).upper()
+    if field == "secure_config_guide_uri":
+        return (f"Not applicable at Class {cls}: SCG-CSO-RSC (Recommended Secure "
+                "Configuration) is not in the Class A rule set enumerated by FRC-CLA-MFR; "
+                "no Secure Configuration Guide is required for this certification")
+    if field in FIA_SELECTED_FIELDS:
+        fw = (profile.get("external_assessment") or {}).get("framework")
+        via = (f"; certification relies on the alternative security framework "
+               f"{fw} under FRC-CLA-ASF") if not is_hollow(fw) else ""
+        return (f"Not applicable at Class {cls}: no FedRAMP Recognized independent "
+                "assessment service; FRC-APP-FIA is MAY at Class A and was not "
+                f"selected{via}")
+    return None
+
 # ---- Required by class: nested blocks (field, FedRAMP source, classes, questions) ----
 CLASS_CONDITIONAL = [
     ("provider_verified_at", "FRC-APP-FCP", ("a", "b", "c"),
@@ -297,8 +381,11 @@ def field_missing(field, value):
 
 
 def required_gaps(profile):
-    """[(field, source)] for every REQUIRED field still unanswered."""
-    return [(f, src) for f, src, _q in REQUIRED_FIELDS if field_missing(f, profile.get(f))]
+    """[(field, source)] for every REQUIRED field still unanswered at this
+    profile's class (AUD-F51: a field FedRAMP does not require at the class,
+    see FIELD_CLASS_EXEMPT, is never a gap)."""
+    return [(f, src) for f, src, _q in REQUIRED_FIELDS
+            if field_required_at(f, profile) and field_missing(f, profile.get(f))]
 
 
 def class_gaps(profile):
@@ -336,8 +423,16 @@ def derive_public_information(profile):
             val = (profile.get("cpo_required_information") or {}).get(path[1])
         elif key == "current_fedramp_recognized_independent_assessment_service":
             name, aid = profile.get("assessor"), profile.get("assessor_id")
-            val = None if is_hollow(name) else (
-                f"{name} (FedRAMP assessor ID {aid})" if not is_hollow(aid) else str(name))
+            if is_hollow(name):
+                # AUD-F51: where no FedRAMP Recognized assessment is required
+                # (Class A, FRC-APP-FIA not selected) the item states so.
+                val = not_applicable_statement("assessor", profile)
+            else:
+                val = (f"{name} (FedRAMP assessor ID {aid})" if not is_hollow(aid) else str(name))
+        elif key == "link_to_secure_configuration_guidance":
+            val = profile.get("secure_config_guide_uri")
+            if is_hollow(val):
+                val = not_applicable_statement("secure_config_guide_uri", profile)
         else:
             val = profile.get(path[0])
         if isinstance(val, dict):

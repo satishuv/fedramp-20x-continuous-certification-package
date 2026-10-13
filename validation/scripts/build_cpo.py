@@ -235,6 +235,30 @@ def build_cpo(profile):
     website = profile.get("offering_website")
     logo = profile.get("offering_logo_uri")
     pkg_id = profile.get("fedramp_package_id")
+    # secureConfigurationGuidance and assessor are OPTIONAL schema members
+    # (serviceProperties requires serviceType and deploymentModel; the top level
+    # requires serviceIdentification, serviceProperties, contactInformation).
+    # AUD-F51: where the underlying requirement applies (SCG-CSO-RSC at B/C;
+    # FRC-APP-FIA MUST at B/C or selected at A) the member is emitted, with the
+    # TBD placeholder preflight blocks on while the profile is unanswered. Where
+    # it does not apply (Class A) and the provider supplied nothing, the member
+    # is omitted rather than filled with a placeholder that would travel in a
+    # ready package; a value the provider did supply is still published.
+    scg_uri = profile.get("secure_config_guide_uri")
+    emit_scg = _pc.field_required_at("secure_config_guide_uri", profile) or not _pc.is_hollow(scg_uri)
+    emit_assessor = (_pc.field_required_at("assessor", profile)
+                     or not _pc.is_hollow(profile.get("assessor")))
+    service_properties = {
+        "serviceType": [stype],
+        "deploymentModel": deploy,
+        "trustCenter": _repository(
+            "FedRAMP-compatible trust center for Certification Data (CDS-CSO-UTC).",
+            profile.get("trust_center_uri")),
+    }
+    if emit_scg:
+        service_properties["secureConfigurationGuidance"] = _repository(
+            "Secure Configuration Guide (SCG-CSO-RSC).", scg_uri)
+    service_properties["nextOngoingCertificationReportDate"] = next_ocr
     doc = {
         "serviceIdentification": {
             "fedRampPackageId": "TBD-PACKAGE-ID" if _unset(pkg_id) else pkg_id,
@@ -248,28 +272,19 @@ def build_cpo(profile):
             "logo": ("https://example.provider.gov-placeholder/logo.png"
                      if _unset(logo) else logo),
         },
-        "serviceProperties": {
-            "serviceType": [stype],
-            "deploymentModel": deploy,
-            "trustCenter": _repository(
-                "FedRAMP-compatible trust center for Certification Data (CDS-CSO-UTC).",
-                profile.get("trust_center_uri")),
-            "secureConfigurationGuidance": _repository(
-                "Secure Configuration Guide (SCG-CSO-RSC).",
-                profile.get("secure_config_guide_uri")),
-            "nextOngoingCertificationReportDate": next_ocr,
-        },
+        "serviceProperties": service_properties,
         # contactInformation must contain at least a Security and a Sales
         # contact (CDS-CSO-PUB). A contact may be a string or {name, email, phone}.
         "contactInformation": [
             _contact("Security", profile.get("security_contact")),
             _contact("Sales", profile.get("sales_contact")),
         ],
-        "assessor": {
+    }
+    if emit_assessor:
+        doc["assessor"] = {
             "name": val(profile.get("assessor")),
             "assessorID": aid,
-        },
-    }
+        }
     # CDS-CSO-PUB items the schema models as optional members: emitted only when
     # the provider supplied a real value (a justified 'N/A: <reason>' is kept out
     # of the schema member and lives in the derived public-information object).
@@ -338,10 +353,17 @@ def render_md(profile, doc):
     a(f"Deployment model: {sp['deploymentModel']}")
     a(f"Next Ongoing Certification Report date: {sp['nextOngoingCertificationReportDate']}")
     a(f"Trust center: {sp['trustCenter']['url']}")
-    a(f"Secure Configuration Guidance: {sp['secureConfigurationGuidance']['url']}")
+    if "secureConfigurationGuidance" in sp:
+        a(f"Secure Configuration Guidance: {sp['secureConfigurationGuidance']['url']}")
+    else:
+        a("Secure Configuration Guidance: "
+          + (_pc.not_applicable_statement("secure_config_guide_uri", profile) or "not supplied"))
     a("")
     a("Assessor")
-    a(f"Name: {doc['assessor']['name']}")
+    if "assessor" in doc:
+        a(f"Name: {doc['assessor']['name']}")
+    else:
+        a(_pc.not_applicable_statement("assessor", profile) or "Not supplied")
     a("")
     mtd = doc.get("xCpoMetadata", {})
     a("Certification Package Overview metadata (CPO-CSO-MTD)")
