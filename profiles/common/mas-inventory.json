@@ -1,0 +1,5 @@
+{
+ "schema": "sdr-mas-inventory/v1",
+ "note": "Optional, provider-authored. List every information resource inside the FedRAMP Minimum Assessment Scope (MAS-CSO-IIR) and, per submitted KSI, either the test method id or evidence location in that KSI's record that demonstrates the indicator against this resource, or the reason the indicator does not apply to it. A resource outside the MAS needs an exclusion_reason. build_mas_coverage.py renders artifacts/mas-ksi-coverage-class-*.json from this file for FRC-CSX-MAS (SHOULD); preflight reports gaps as an advisory, never a blocker. See the module docstring of validation/scripts/build_mas_coverage.py for the shape.",
+ "resources": []
+}

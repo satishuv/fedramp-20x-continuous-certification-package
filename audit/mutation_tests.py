@@ -421,6 +421,14 @@ MUTATIONS = [
      "| `MAY` include | `SHOULD` include 30-day and one-year summaries |",
      "| `MAY` include | `MUST` include 30-day and one-year summaries |",
      "validation/scripts/test_docs_class_table.py"),
+    # AUD-F56: a MAS-by-KSI cell is demonstrated only when the provider's
+    # reference resolves into the KSI record; a reference that resolves to
+    # nothing must read as unresolved, never as coverage.
+    ("MUT-F56",
+     "validation/scripts/build_mas_coverage.py",
+     "                    if refs and not missing:\n                        cell[\"status\"] = \"demonstrated\"",
+     "                    if refs:  # MUTATION any reference counts as coverage\n                        cell[\"status\"] = \"demonstrated\"",
+     "validation/scripts/test_mas_coverage.py"),
 ]
 
 

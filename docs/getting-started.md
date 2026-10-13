@@ -144,6 +144,8 @@ Fields you leave blank keep their `TBD` marker, and the wizard ends by listing e
 
 The AWS partition, regions and IaC technology are operational inputs the generators print; they are not FedRAMP requirements and are never blockers.
 
+One optional input sits beside the profile: `profiles/common/mas-inventory.json`, the list of information resources inside your Minimum Assessment Scope with, per submitted KSI, the test or evidence in that KSI's record that covers the resource (or why the indicator does not apply to it). It feeds the MAS-by-KSI coverage report for `FRC-CSX-MAS` (a SHOULD, so preflight only warns); see [validation](validation.md).
+
 Set `sdr_last_updated` when your content genuinely changes. It is manual on purpose: generated files carry no automatic timestamps, so that two builds of unchanged inputs stay byte-identical.
 
 ## Then what

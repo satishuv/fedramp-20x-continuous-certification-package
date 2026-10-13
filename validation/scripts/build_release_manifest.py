@@ -89,6 +89,9 @@ ARTIFACT_GLOBS = [
     "traceability/assurance-graph.json",
     "traceability/applicability-decisions.json",
     "traceability/rev5-to-20x-crosswalk.csv",
+    # FRC-CSX-MAS coverage surface for the active class (advisory; AUD-F56).
+    "artifacts/mas-ksi-coverage-class-{c}.json",
+    "artifacts/mas-ksi-coverage-class-{c}.md",
     "artifacts/sbom.cdx.json",
 ]
 

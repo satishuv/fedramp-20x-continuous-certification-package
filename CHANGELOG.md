@@ -12,7 +12,7 @@ An external audit of main `80db0a6` (2026-10-12) rated the Class A path
 NO-GO: the readiness contract imposed requirements FedRAMP does not impose on
 the normal Class A alternative-framework path. Confirmed by execution and
 closed, each with a regression test and a killed mutation (`AUD-F51` to
-`AUD-F55`):
+`AUD-F56`):
 
 - **Class A is no longer over-blocked on a FedRAMP Recognized assessor or a
   Secure Configuration Guide (AUD-F51, High).** `required_gaps()` evaluated
@@ -72,8 +72,23 @@ closed, each with a regression test and a killed mutation (`AUD-F51` to
   `SDR-CSX-KMT` forces (`--check` / `--write`), and
   `test_docs_class_table.py` in the CI suite fails on a hand edit of the
   table or of any count-bearing sentence.
+- **A MAS-by-KSI coverage report for `FRC-CSX-MAS` (AUD-F56, new
+  surface).** The package could show evidence for each KSI but not that no
+  information resource inside the Minimum Assessment Scope had been
+  forgotten. An optional provider-authored inventory
+  (`profiles/common/mas-inventory.json`: the resources inside the MAS, each
+  excluded one with a reason) is joined with the KSI set the package submits
+  at each class into `artifacts/mas-ksi-coverage-class-<x>.json` and `.md`:
+  one cell per resource and KSI, demonstrated only when the provider's
+  reference resolves to a test method id or evidence location in that KSI's
+  record, not applicable only with a reason, otherwise unresolved or a gap.
+  Nothing is inferred and no status is set. All three classes render every
+  build, the active class's files are fingerprinted in the release manifest,
+  and preflight reports gaps as one advisory, never a blocker (the rule is
+  SHOULD); with no inventory it says so.
 
-Still open from that audit: a MAS-by-KSI coverage report for `FRC-CSX-MAS`.
+That closes every item of the audit except the `sdr.py` decomposition it
+rated P2 and asked not to combine with the policy fixes.
 
 The documented consultant flow, run end to end on a fictional Class B offering
 (`init` with every answer scripted, the three importers, prefill, the drafter,

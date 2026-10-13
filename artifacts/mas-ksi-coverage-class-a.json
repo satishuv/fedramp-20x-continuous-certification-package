@@ -1,0 +1,28 @@
+{
+ "meta": {
+  "title": "MAS-by-KSI coverage",
+  "rule": "FRC-CSX-MAS",
+  "force": "SHOULD",
+  "statement": "Providers SHOULD apply ALL Key Security Indicators to ALL aspects of their cloud service offering that are within the FedRAMP Minimum Assessment Scope.",
+  "certification_class": "A",
+  "dataset_version": "2026.10.08.01",
+  "generated": "deterministic build from dataset 2026.10.08.01",
+  "inventory_declared": false,
+  "note": "Advisory surface for FRC-CSX-MAS (SHOULD). A cell is demonstrated only because the provider named a test method or evidence in the KSI record that covers this resource and it resolves; nothing is inferred. This report sets no status and is not a compliance determination."
+ },
+ "summary": {
+  "demonstrated": 0,
+  "not_applicable": 0,
+  "unresolved": 0,
+  "gap": 0,
+  "cells": 0,
+  "by_default": 0,
+  "resources_in_mas": 0,
+  "resources_excluded": 0,
+  "ksis_applicable": 7
+ },
+ "resources_in_mas": [],
+ "resources_excluded": [],
+ "problems": [],
+ "cells": []
+}

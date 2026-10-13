@@ -51,6 +51,8 @@
   "sdr/records/records-store.json": "sha256:1b9b271c245634068375fa50b0ab25916771d08f777ca78355ed653fe4e85822"
  },
  "artifacts": {
+  "artifacts/mas-ksi-coverage-class-b.json": "sha256:34ce770f3606ec8e4b796c3fff3170787a69f9beede89524628affd2403c0bbc",
+  "artifacts/mas-ksi-coverage-class-b.md": "sha256:fee992e702f18e8c46b92a642f06d044375a6c81ba43aaa3ff1a0638dc3a2dd8",
   "artifacts/sbom.cdx.json": "sha256:09c8695590b1aab455002d367f2319ac5683df0be489620b57a9a8d1ddf1e31d",
   "package/certification-package-manifest.json": "sha256:9cae6d6ee3216e60c35fcdc427b1e485d5033c1eeb79f234b83e55ea6b6e1a0d",
   "package/cpo/cpo.json": "sha256:8b92c953c5d66ed60057b87ff20c34ec17bf81000c724cf88c026473bda3722b",
@@ -74,7 +76,7 @@
   "traceability/assurance-graph.json": "sha256:912aca0ba55bec88a1dfb1209c33e9ab9c62a54dd8aff186cdd647f433bc0b61",
   "traceability/rev5-to-20x-crosswalk.csv": "sha256:54abb349fbf14d1d8ec15da7fe2de5615f132f14309dc3957a81563e5575db43"
  },
- "artifact_count": 22,
+ "artifact_count": 24,
  "release_tag": "v1.6.0-cr26-2026.10.08.01",
  "source_provenance": {
   "requirements_sha256": "sha256:375627a835a23624ffd3374004a247067032028ce152d30c0379a9d9018e839b",

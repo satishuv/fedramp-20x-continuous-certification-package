@@ -743,6 +743,19 @@
       "mutation": "MUT-F55: the stale 'Class B KMT is MUST' wording restored in the doc's table; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F56",
+      "severity": "Medium",
+      "requirement": "FRC-CSX-MAS (SHOULD): 'Providers SHOULD apply ALL Key Security Indicators to ALL aspects of their cloud service offering that are within the FedRAMP Minimum Assessment Scope.' MAS-CSO-IIR (MUST): providers identify the information resources to assess",
+      "component": "validation/scripts/build_mas_coverage.py (new); profiles/common/mas-inventory.json (new, optional input); sdr.py (BUILD_STEPS, mas_coverage_advisory, preflight advisory); validation/scripts/build_release_manifest.py (ARTIFACT_GLOBS)",
+      "description": "Raised by the 2026-10-12 external audit as a missing assurance surface rather than a false-ready defect: the package could show that evidence exists for each KSI but not that no information resource inside the MAS had been forgotten, which is the question FRC-CSX-MAS asks and an assessor probes. No artifact answered 'for every resource in the MAS, is each applicable KSI demonstrated against it or explained'.",
+      "root_cause": "Coverage was modelled per KSI only; the MAS inventory had no structured representation and nothing joined the two.",
+      "fix_commit": "this PR -- a provider-authored MAS inventory (resources inside the MAS; excluded ones with a reason) is joined with the submitted KSI set per class (resolved exactly as build_sdr and preflight resolve it) into artifacts/mas-ksi-coverage-class-{a,b,c}.json and .md; a cell is demonstrated only when the provider's reference resolves to a tests[].method_id or evidence[].evidenceLocation of that KSI's record, not applicable only with a reason, otherwise unresolved or a gap; nothing is inferred and no status is set; all three classes are rendered every build so the committed files cannot drift; the active class's two files are fingerprinted in the release manifest; preflight reports gaps, unresolved cells and inventory problems as one advisory (never a blocker, the rule is SHOULD) and says so when no inventory is declared",
+      "regression_test": "validation/scripts/test_mas_coverage.py (resolving vs non-resolving references, reasoned vs reason-less exclusions, undeclared cells, unknown KSI keys, out-of-scope resources with and without a reason, the '*' default counted separately, determinism, empty inventory, the advisory in every state and absent only when fully covered, built artifacts resolving 7 / 41 / 46 KSIs, Class A and Class B KSI sets equal to the engine's)",
+      "mutation": "MUT-F56: a demonstrated_by reference counts as coverage without resolving into the KSI record; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

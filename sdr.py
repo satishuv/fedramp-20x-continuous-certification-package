@@ -298,6 +298,7 @@ BUILD_STEPS = [
     ("build_crosswalk.py", "NIST SP 800-53 Revision 5 to 20x crosswalk"),
     ("build_applicability_decisions.py", "applicability decision ledger (included and excluded, with reasons)"),
     ("build_assurance_graph.py", "unified assurance graph joining all artifacts"),
+    ("build_mas_coverage.py", "MAS-by-KSI coverage report per class (FRC-CSX-MAS, advisory)"),
     ("build_sbom.py", "CycloneDX SBOM of the framework's own pinned dependencies"),
     ("build_release_manifest.py", "cryptographic release manifest of the package"),
     ("validate_package_consistency.py", "cross-artifact consistency check"),
@@ -375,6 +376,7 @@ TEST_SUITE = [
     "validation/scripts/test_profile_contract_classes.py",
     "validation/scripts/test_artifact_obligations.py",
     "validation/scripts/test_docs_class_table.py",
+    "validation/scripts/test_mas_coverage.py",
     "validation/scripts/test_customer_config_rules.py",
     "validation/scripts/test_assurance_graph_method_count.py",
     "validation/scripts/test_validate_class_matrix.py",
@@ -1508,6 +1510,38 @@ def manifest_component_required(req, cls):
     if not isinstance(req, str):
         return False
     return str(cls).upper() in set(re.findall(r"\b([A-D])\b", req.upper()))
+
+
+def mas_coverage_advisory(report, cls):
+    """The FRC-CSX-MAS advisory line for preflight, or None when the coverage
+    report shows every MAS resource covered for every submitted KSI. FRC-CSX-MAS
+    is SHOULD, so this is a warning in every case, never a blocker (AUD-F56)."""
+    if not report:
+        return (f"FRC-CSX-MAS (SHOULD): no MAS-by-KSI coverage report for Class "
+                f"{str(cls).upper()} (run `python sdr.py build`) (advisory)")
+    meta = report.get("meta") or {}
+    s = report.get("summary") or {}
+    if not meta.get("inventory_declared"):
+        return ("FRC-CSX-MAS (SHOULD): no MAS inventory declared "
+                "(profiles/common/mas-inventory.json has no resources), so coverage of "
+                "every KSI against every information resource in the Minimum Assessment "
+                "Scope cannot be shown; list the MAS resources to produce the "
+                "MAS-by-KSI coverage report (advisory)")
+    problems = report.get("problems") or []
+    gaps = int(s.get("gap") or 0)
+    unresolved = int(s.get("unresolved") or 0)
+    if not gaps and not unresolved and not problems:
+        return None
+    sample = [f"{c['resource']}/{c['ksi']}" for c in (report.get("cells") or [])
+              if c.get("status") in ("gap", "unresolved")][:8]
+    return (f"FRC-CSX-MAS (SHOULD): MAS-by-KSI coverage has {gaps} gap(s) and "
+            f"{unresolved} unresolved declaration(s) across {s.get('resources_in_mas', 0)} "
+            f"MAS resource(s) x {s.get('ksis_applicable', 0)} KSI(s)"
+            + (f"; {len(problems)} inventory problem(s)" if problems else "")
+            + (": " + ", ".join(sample) if sample else "")
+            + (" ..." if (gaps + unresolved) > 8 else "")
+            + " (see artifacts/mas-ksi-coverage-class-" + str(cls).lower()
+            + ".md; advisory)")
 
 
 def cmd_preflight(args):
@@ -2897,6 +2931,15 @@ def cmd_preflight(args):
                         f"2026.10.08.01; MUST at Class C): {sample}"
                         + (" ..." if len(kmt_should_gaps) > 8 else "")
                         + " (advisory)")
+
+    # FRC-CSX-MAS (SHOULD): apply ALL KSIs to ALL aspects of the offering within
+    # the MAS. The per-class coverage report (build_mas_coverage.py) shows, per
+    # declared MAS information resource and submitted KSI, what the provider
+    # demonstrated or excluded with a reason. Advisory only (AUD-F56).
+    mas_report = load_json(os.path.join(BASE, "artifacts", f"mas-ksi-coverage-class-{cls}.json"))
+    mas_advisory = mas_coverage_advisory(mas_report, cls)
+    if mas_advisory:
+        warnings.append(mas_advisory)
 
     # Evidence freshness at submission. FedRAMP guidance: "stale screenshots,
     # expired exports, outdated descriptions, or old evidence can cause
