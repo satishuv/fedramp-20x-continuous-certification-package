@@ -374,6 +374,7 @@ TEST_SUITE = [
     "validation/scripts/test_profile_traceability.py",
     "validation/scripts/test_profile_contract_classes.py",
     "validation/scripts/test_artifact_obligations.py",
+    "validation/scripts/test_docs_class_table.py",
     "validation/scripts/test_customer_config_rules.py",
     "validation/scripts/test_assurance_graph_method_count.py",
     "validation/scripts/test_validate_class_matrix.py",

@@ -730,6 +730,19 @@
       "mutation": "MUT-F54: the joined-string rule-level classification restored; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F55",
+      "severity": "Medium",
+      "requirement": "SDR-CSX-KMT is MAY at Class A, SHOULD at Class B (since dataset 2026.10.08.01), MUST at Class C and D. The KSI profile derived from the dataset has 46 indicators, 7 mandatory at Class A and 5 optional at Class B (41 baseline). The Class D readiness register resolves 156 rules at 2026.10.08.01",
+      "component": "docs/certification-classes.md; validation/scripts/class_table.py; validation/scripts/test_docs_class_table.py",
+      "description": "Found by the 2026-10-12 external audit: the hand-maintained class comparison table disagreed with the canonical data in three places. A stale 'Metrics in the record' row still said Class B SDR-CSX-KMT is MUST while the row beneath it said SHOULD (the 2026.10.08.01 adoption updated one row and left the other); 'Indicators in scope' said 'all 46' for Class B although the KSI profile has 41 in the default Class B scope and 5 optional; the Class D section said the register holds 157 rules while the register holds 156. The executable model had absorbed every change; the prose had not, and nothing checked it.",
+      "root_cause": "Numbers and forces typed into Markdown by hand with no gate against the files they describe.",
+      "fix_commit": "this PR -- class_table.py renders the table from profiles/class-*/profile.json, the Class D register, ksi-profile.json and the dataset's SDR-CSX-KMT forces (--check / --write); the doc carries the rendered table and a do-not-edit note; test_docs_class_table.py (CI suite) fails when the table or any count-bearing prose anchor disagrees with the canonical data",
+      "regression_test": "validation/scripts/test_docs_class_table.py (table equals the rendered one; anchors 41/157/157/156, 46/7/5, MAY/SHOULD/MUST/MUST; the four prose anchors; exactly one KMT row saying SHOULD at B; no 'Class B ... all 46'); red on the pre-fix doc with 5 failures naming exactly the audit's defects",
+      "mutation": "MUT-F55: the stale 'Class B KMT is MUST' wording restored in the doc's table; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

@@ -12,7 +12,7 @@ An external audit of main `80db0a6` (2026-10-12) rated the Class A path
 NO-GO: the readiness contract imposed requirements FedRAMP does not impose on
 the normal Class A alternative-framework path. Confirmed by execution and
 closed, each with a regression test and a killed mutation (`AUD-F51` to
-`AUD-F54`):
+`AUD-F55`):
 
 - **Class A is no longer over-blocked on a FedRAMP Recognized assessor or a
   Secure Configuration Guide (AUD-F51, High).** `required_gaps()` evaluated
@@ -61,10 +61,19 @@ closed, each with a regression test and a killed mutation (`AUD-F51` to
   any obligation demands an artifact; the gated set gains exactly CDS-CSO-SVC
   at every class, and the readiness suite proves a followed CDS-CSO-SVC with
   its artifact removed is blocked.
+- **The class comparison table is rendered from the canonical data
+  (AUD-F55).** `docs/certification-classes.md` disagreed with the files it
+  describes in three places: a stale row still said Class B `SDR-CSX-KMT` is
+  `MUST` beside the row saying `SHOULD`; "Indicators in scope" said "all 46"
+  for Class B where the KSI profile has 41 baseline plus 5 optional; the
+  Class D section said 157 register rules where the register holds 156.
+  `validation/scripts/class_table.py` now renders the table from the class
+  profiles, the Class D register, the KSI profile and the dataset's
+  `SDR-CSX-KMT` forces (`--check` / `--write`), and
+  `test_docs_class_table.py` in the CI suite fails on a hand edit of the
+  table or of any count-bearing sentence.
 
-Still open from that audit, in this order: the hand-maintained class table in
-`docs/certification-classes.md`, and a MAS-by-KSI coverage report for
-`FRC-CSX-MAS`.
+Still open from that audit: a MAS-by-KSI coverage report for `FRC-CSX-MAS`.
 
 The documented consultant flow, run end to end on a fictional Class B offering
 (`init` with every answer scripted, the three importers, prefill, the drafter,

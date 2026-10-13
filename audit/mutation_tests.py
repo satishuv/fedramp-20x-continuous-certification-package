@@ -413,6 +413,14 @@ MUTATIONS = [
      '    kinds = [k for _t, k in artifact_obligations(strs)]\n    if not kinds:\n        return None\n',
      '    kinds = [_classify_artifact_text(" ".join(strs))] if strs else []  # MUTATION rule-level joined classification\n    if not kinds:\n        return None\n',
      "validation/scripts/test_artifact_obligations.py"),
+    # AUD-F55: the class table in docs/certification-classes.md is rendered from
+    # the canonical data; a hand edit that restores the stale "Class B KMT is
+    # MUST" statement must fail the docs gate.
+    ("MUT-F55",
+     "docs/certification-classes.md",
+     "| `MAY` include | `SHOULD` include 30-day and one-year summaries |",
+     "| `MAY` include | `MUST` include 30-day and one-year summaries |",
+     "validation/scripts/test_docs_class_table.py"),
 ]
 
 
