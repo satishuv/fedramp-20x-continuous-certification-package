@@ -44,7 +44,7 @@ Every entry under `frr` carries the same shape. The `fill_guidance` field is gen
 | `extension.independent_verification` | How a third party could confirm this without your help | Pointing at an internal-only system |
 | `extension.independent_validation` | How a third party could confirm it keeps working | Same |
 | `extension.customer_risk` | What the customer carries if this fails | Leaving blank because it feels like admitting weakness |
-| `extension.rule_artifacts` | The artifact this rule requires, and where it lives. Often a URL on your trust center | Naming a document with no location |
+| `extension.rule_artifacts` | The artifact this rule requires, and where it lives. Often a URL on your trust center. Preflight reads the dataset's artifact list per item: a rule is blocked without one as soon as any listed artifact is mandatory or a mandatory one-of (for example CDS-CSO-SVC's human-readable URL beside its "if applicable" machine-readable one); only a rule whose every artifact is conditional stays advisory | Naming a document with no location |
 | `extension.exception_reference` | The deviation record, if you are not meeting this | Silently marking `Not Applicable` with no justification |
 | `extension.senior_official_acceptance` | Who accepted the residual risk, by role | Leaving it blank on a rule where you have taken an exception |
 | `extension.assessor_responses` | Answers to questions an assessor raised | Using it as a scratchpad |

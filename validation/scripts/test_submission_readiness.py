@@ -701,20 +701,26 @@ def main():
         # artifact must actually carry a rule_artifact when followed. Stripping
         # rule_artifacts from one such applicable, Implemented rule must block on
         # the rule-artifact gap; restoring it must clear.
-        rp2 = os.path.join(root, "sdr", "records", "records-store.json")
-        recs2 = json.load(open(rp2, encoding="utf-8"))
         # AFC-CSO-INB is an unconditional-MUST artifact rule in every class
         # profile ("Email address to receive messages from FedRAMP").
-        art_rid = "AFC-CSO-INB"
-        saved_arts = None
-        if art_rid in recs2.get("frr", {}):
+        # AUD-F54: CDS-CSO-SVC mixes a mandatory artifact ("URL to the
+        # human-readable data.") with an "if applicable" one; before the
+        # per-artifact classification the whole rule read as conditional and
+        # removing its artifact never blocked. Removing A must always fail.
+        for art_rid, label in (("AFC-CSO-INB", "unconditional-MUST-artifact"),
+                               ("CDS-CSO-SVC", "mixed mandatory + if-applicable artifact")):
+            rp2 = os.path.join(root, "sdr", "records", "records-store.json")
+            recs2 = json.load(open(rp2, encoding="utf-8"))
+            if art_rid not in recs2.get("frr", {}):
+                check(f"{art_rid} is in the Class C record store", False)
+                continue
             ext_a = recs2["frr"][art_rid].setdefault("extension", {})
             saved_arts = ext_a.get("rule_artifacts")
             ext_a["rule_artifacts"] = []
             json.dump(recs2, open(rp2, "w", encoding="utf-8", newline="\n"), indent=1)
             _build(root)
             rart = _preflight(root)
-            check("Class C blocks a followed unconditional-MUST-artifact rule with no rule_artifact",
+            check(f"Class C blocks a followed {label} rule ({art_rid}) with no rule_artifact",
                   rart.returncode == 1 and "rule-artifact" in rart.stdout
                   and art_rid in rart.stdout)
             recs3 = json.load(open(rp2, encoding="utf-8"))

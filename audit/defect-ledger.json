@@ -717,6 +717,19 @@
       "mutation": "MUT-F53: the substring class match restored in manifest_component_required; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F54",
+      "severity": "Medium",
+      "requirement": "CR26 rules list their required artifacts as separate items (rule.artifacts.<applicability>[]). CDS-CSO-SVC (MUST, every class): 'URL to the human-readable data.' and 'URL to the machine-readable data (if applicable).' SDR-CSO-FRR: rule-specific artifacts are supplied for each applicable rule",
+      "component": "sdr.py (_classify_artifact, artifact_obligations, artifact_required_rule_ids)",
+      "description": "Found by the 2026-10-12 external audit (rated Medium, latent) and confirmed against the dataset: _classify_artifact joined all of a rule's artifact items into one string and returned CONDITIONAL as soon as any conditional marker appeared anywhere, so a mandatory artifact beside an 'if applicable' one was never hard-gated. The dataset has exactly one such rule today, CDS-CSO-SVC: its mandatory human-readable service-list URL was advisory at every class, and a provider could reach Submission ready without it. The other 14 rules whose items classify differently were REQUIRED beside REQUIRED_ONE_OF, both gated, so no behaviour changed for them.",
+      "root_cause": "Classification at the rule level over concatenated prose rather than per obligation.",
+      "fix_commit": "this PR -- artifact_obligations() classifies each listed item on its own (an item beginning 'or ' continues the previous one, the dataset's split 'X; or an explanation why' form); _classify_artifact() gates the rule when ANY obligation is REQUIRED or REQUIRED_ONE_OF and is CONDITIONAL only when every obligation has a no-artifact branch; the gated set gains exactly CDS-CSO-SVC at every class",
+      "regression_test": "validation/scripts/test_artifact_obligations.py (the synthetic mixed rule 'Provide A' + 'Provide B if applicable' gates in either order; all-conditional stays advisory; the 'or ...' continuation; CDS-CSO-SVC in the hard-gated set at A/B/C/D; whole-dataset agreement between verdict and obligations) and validation/scripts/test_submission_readiness.py (a followed Class C CDS-CSO-SVC with its rule_artifacts removed is blocked, restored clears)",
+      "mutation": "MUT-F54: the joined-string rule-level classification restored; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

@@ -406,6 +406,13 @@ MUTATIONS = [
      '    "assessor_id": ("a",),\n}',
      '}  # MUTATION assessor_id unconditional at every class',
      "validation/scripts/test_profile_contract_classes.py"),
+    # AUD-F54: a rule's artifacts are classified per obligation; the joined
+    # string let one "if applicable" item make a mandatory sibling advisory.
+    ("MUT-F54",
+     "sdr.py",
+     '    kinds = [k for _t, k in artifact_obligations(strs)]\n    if not kinds:\n        return None\n',
+     '    kinds = [_classify_artifact_text(" ".join(strs))] if strs else []  # MUTATION rule-level joined classification\n    if not kinds:\n        return None\n',
+     "validation/scripts/test_artifact_obligations.py"),
 ]
 
 

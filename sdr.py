@@ -131,20 +131,57 @@ _ARTIFACT_ONE_OF_MARKERS = (
 _ARTIFACT_REQUIRED_RULES_CACHE = {}
 
 
-def _classify_artifact(strs):
-    """Classify a rule's artifact wording as REQUIRED, REQUIRED_ONE_OF, or
-    CONDITIONAL. CONDITIONAL wins when a genuine no-artifact branch exists;
-    otherwise ONE_OF when an alternative-deliverable phrasing is present;
-    otherwise REQUIRED. Both REQUIRED and REQUIRED_ONE_OF are hard-gated for a
-    non-empty artifact; CONDITIONAL is advisory."""
-    if not strs:
-        return None
-    joined = " ".join(strs).lower()
-    if any(m in joined for m in _ARTIFACT_CONDITIONAL_MARKERS):
+def _classify_artifact_text(text):
+    """Classify ONE artifact obligation's wording: CONDITIONAL when it has a
+    legitimate no-artifact branch, REQUIRED_ONE_OF when it names alternative
+    deliverables, otherwise REQUIRED."""
+    low = str(text).lower()
+    if any(m in low for m in _ARTIFACT_CONDITIONAL_MARKERS):
         return "CONDITIONAL"
-    if any(m in joined for m in _ARTIFACT_ONE_OF_MARKERS):
+    if any(m in low for m in _ARTIFACT_ONE_OF_MARKERS):
         return "REQUIRED_ONE_OF"
     return "REQUIRED"
+
+
+def artifact_obligations(strs):
+    """Per-artifact obligations for a rule's artifact wording: [(text, kind)].
+
+    AUD-F54: the dataset lists a rule's artifacts as separate items, and one
+    rule can mix a mandatory item with an "if applicable" one (CDS-CSO-SVC:
+    "URL to the human-readable data." + "URL to the machine-readable data (if
+    applicable)."). Each item is classified on its own. An item beginning with
+    "or " continues the previous item (the dataset splits "X; or an explanation
+    why ..." across two list entries, e.g. SCG-CSO-PUB, VER-TFR-MRH) and is
+    merged before classification, so one deliverable-with-alternative is one
+    obligation."""
+    merged = []
+    for s in strs or []:
+        t = str(s).strip()
+        if not t:
+            continue
+        if merged and t.lower().startswith("or "):
+            merged[-1] = merged[-1] + " " + t
+        else:
+            merged.append(t)
+    return [(t, _classify_artifact_text(t)) for t in merged]
+
+
+def _classify_artifact(strs):
+    """Rule-level verdict from the per-artifact obligations: the rule is
+    hard-gated (REQUIRED, or REQUIRED_ONE_OF when no item is unconditional) as
+    soon as ANY obligation demands an artifact; it is CONDITIONAL only when
+    EVERY obligation has a legitimate no-artifact branch. Before AUD-F54 the
+    items were joined into one string and a single conditional marker anywhere
+    made the whole rule advisory, so a mandatory artifact beside an "if
+    applicable" one was never gated."""
+    kinds = [k for _t, k in artifact_obligations(strs)]
+    if not kinds:
+        return None
+    if "REQUIRED" in kinds:
+        return "REQUIRED"
+    if "REQUIRED_ONE_OF" in kinds:
+        return "REQUIRED_ONE_OF"
+    return "CONDITIONAL"
 
 
 def artifact_required_rule_ids(cls=None, forces=("MUST",)):
@@ -336,6 +373,7 @@ TEST_SUITE = [
     "validation/scripts/test_init_wizard.py",
     "validation/scripts/test_profile_traceability.py",
     "validation/scripts/test_profile_contract_classes.py",
+    "validation/scripts/test_artifact_obligations.py",
     "validation/scripts/test_customer_config_rules.py",
     "validation/scripts/test_assurance_graph_method_count.py",
     "validation/scripts/test_validate_class_matrix.py",

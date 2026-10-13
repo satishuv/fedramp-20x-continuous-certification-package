@@ -12,7 +12,7 @@ An external audit of main `80db0a6` (2026-10-12) rated the Class A path
 NO-GO: the readiness contract imposed requirements FedRAMP does not impose on
 the normal Class A alternative-framework path. Confirmed by execution and
 closed, each with a regression test and a killed mutation (`AUD-F51` to
-`AUD-F53`):
+`AUD-F54`):
 
 - **Class A is no longer over-blocked on a FedRAMP Recognized assessor or a
   Secure Configuration Guide (AUD-F51, High).** `required_gaps()` evaluated
@@ -49,10 +49,20 @@ closed, each with a regression test and a killed mutation (`AUD-F51` to
   Class A package. Found by the AUD-F51 end-to-end probe once the contract was
   fixed. `manifest_component_required()` matches the class letters as whole
   tokens.
+- **Artifact requirements are classified per obligation (AUD-F54).** A
+  rule's artifacts are separate items in the dataset, and
+  `_classify_artifact` joined them into one string: one "if applicable"
+  anywhere made the whole rule advisory, so a mandatory artifact beside a
+  conditional one was never gated. The dataset has exactly one such rule
+  today, CDS-CSO-SVC (MUST): its mandatory human-readable service-list URL was
+  advisory at every class. `artifact_obligations()` classifies each item on
+  its own (an item beginning "or " continues the previous one, the dataset's
+  split "X; or an explanation why" form) and a rule is hard-gated as soon as
+  any obligation demands an artifact; the gated set gains exactly CDS-CSO-SVC
+  at every class, and the readiness suite proves a followed CDS-CSO-SVC with
+  its artifact removed is blocked.
 
-Still open from that audit, in this order: per-artifact obligation
-classification (a rule mixing a mandatory and an "if applicable" artifact
-currently reads as conditional), the hand-maintained class table in
+Still open from that audit, in this order: the hand-maintained class table in
 `docs/certification-classes.md`, and a MAS-by-KSI coverage report for
 `FRC-CSX-MAS`.
 
