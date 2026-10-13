@@ -131,20 +131,57 @@ _ARTIFACT_ONE_OF_MARKERS = (
 _ARTIFACT_REQUIRED_RULES_CACHE = {}
 
 
-def _classify_artifact(strs):
-    """Classify a rule's artifact wording as REQUIRED, REQUIRED_ONE_OF, or
-    CONDITIONAL. CONDITIONAL wins when a genuine no-artifact branch exists;
-    otherwise ONE_OF when an alternative-deliverable phrasing is present;
-    otherwise REQUIRED. Both REQUIRED and REQUIRED_ONE_OF are hard-gated for a
-    non-empty artifact; CONDITIONAL is advisory."""
-    if not strs:
-        return None
-    joined = " ".join(strs).lower()
-    if any(m in joined for m in _ARTIFACT_CONDITIONAL_MARKERS):
+def _classify_artifact_text(text):
+    """Classify ONE artifact obligation's wording: CONDITIONAL when it has a
+    legitimate no-artifact branch, REQUIRED_ONE_OF when it names alternative
+    deliverables, otherwise REQUIRED."""
+    low = str(text).lower()
+    if any(m in low for m in _ARTIFACT_CONDITIONAL_MARKERS):
         return "CONDITIONAL"
-    if any(m in joined for m in _ARTIFACT_ONE_OF_MARKERS):
+    if any(m in low for m in _ARTIFACT_ONE_OF_MARKERS):
         return "REQUIRED_ONE_OF"
     return "REQUIRED"
+
+
+def artifact_obligations(strs):
+    """Per-artifact obligations for a rule's artifact wording: [(text, kind)].
+
+    AUD-F54: the dataset lists a rule's artifacts as separate items, and one
+    rule can mix a mandatory item with an "if applicable" one (CDS-CSO-SVC:
+    "URL to the human-readable data." + "URL to the machine-readable data (if
+    applicable)."). Each item is classified on its own. An item beginning with
+    "or " continues the previous item (the dataset splits "X; or an explanation
+    why ..." across two list entries, e.g. SCG-CSO-PUB, VER-TFR-MRH) and is
+    merged before classification, so one deliverable-with-alternative is one
+    obligation."""
+    merged = []
+    for s in strs or []:
+        t = str(s).strip()
+        if not t:
+            continue
+        if merged and t.lower().startswith("or "):
+            merged[-1] = merged[-1] + " " + t
+        else:
+            merged.append(t)
+    return [(t, _classify_artifact_text(t)) for t in merged]
+
+
+def _classify_artifact(strs):
+    """Rule-level verdict from the per-artifact obligations: the rule is
+    hard-gated (REQUIRED, or REQUIRED_ONE_OF when no item is unconditional) as
+    soon as ANY obligation demands an artifact; it is CONDITIONAL only when
+    EVERY obligation has a legitimate no-artifact branch. Before AUD-F54 the
+    items were joined into one string and a single conditional marker anywhere
+    made the whole rule advisory, so a mandatory artifact beside an "if
+    applicable" one was never gated."""
+    kinds = [k for _t, k in artifact_obligations(strs)]
+    if not kinds:
+        return None
+    if "REQUIRED" in kinds:
+        return "REQUIRED"
+    if "REQUIRED_ONE_OF" in kinds:
+        return "REQUIRED_ONE_OF"
+    return "CONDITIONAL"
 
 
 def artifact_required_rule_ids(cls=None, forces=("MUST",)):
@@ -261,6 +298,7 @@ BUILD_STEPS = [
     ("build_crosswalk.py", "NIST SP 800-53 Revision 5 to 20x crosswalk"),
     ("build_applicability_decisions.py", "applicability decision ledger (included and excluded, with reasons)"),
     ("build_assurance_graph.py", "unified assurance graph joining all artifacts"),
+    ("build_mas_coverage.py", "MAS-by-KSI coverage report per class (FRC-CSX-MAS, advisory)"),
     ("build_sbom.py", "CycloneDX SBOM of the framework's own pinned dependencies"),
     ("build_release_manifest.py", "cryptographic release manifest of the package"),
     ("validate_package_consistency.py", "cross-artifact consistency check"),
@@ -335,6 +373,10 @@ TEST_SUITE = [
     "validation/scripts/test_vvk_automated_methods.py",
     "validation/scripts/test_init_wizard.py",
     "validation/scripts/test_profile_traceability.py",
+    "validation/scripts/test_profile_contract_classes.py",
+    "validation/scripts/test_artifact_obligations.py",
+    "validation/scripts/test_docs_class_table.py",
+    "validation/scripts/test_mas_coverage.py",
     "validation/scripts/test_customer_config_rules.py",
     "validation/scripts/test_assurance_graph_method_count.py",
     "validation/scripts/test_validate_class_matrix.py",
@@ -969,12 +1011,20 @@ def cmd_init(args):
             resp = overrides[key]
             consumed.add(key)
         elif interactive:
-            resp = _init_prompt(f"{question}  [{src}]", current)
+            # AUD-F51: the class answered above decides whether this question is
+            # required (FIELD_CLASS_EXEMPT); an exempt one is asked as optional.
+            so_far = dict(profile)
+            so_far.update(answers)
+            label = f"{question}  [{src}]"
+            if not _pc.field_required_at(key, so_far):
+                label = (f"{question}  [{src}; not required at Class "
+                         f"{_pc.profile_class(so_far).upper()}, Enter to skip]")
+            resp = _init_prompt(label, current)
             while key == "business_category" and resp.strip().lower() == "list":
                 out("FedRAMP business categories (CPO serviceProperties.businessCategory):")
                 for cat in _pc.business_category_enum():
                     out(f"  - {cat}")
-                resp = _init_prompt(f"{question}  [{src}]", current)
+                resp = _init_prompt(label, current)
         else:
             continue  # non-interactive with no override: leave the profile as-is
         if not resp:
@@ -1448,6 +1498,52 @@ def cmd_release(args):
     return 0
 
 
+def manifest_component_required(req, cls):
+    """Whether a package component's `required_for_initial_package` value makes
+    it required at class `cls`. The manifest states class scope as prose
+    ("Class B and C", "Class A") or True for every class. Class LETTERS are
+    matched as whole tokens (AUD-F53): a substring test found "A" inside
+    "CLASS" and "AND", so "Class B and C" read as required at Class A and the
+    Secure Configuration Guide scaffold blocked every Class A package."""
+    if req is True:
+        return True
+    if not isinstance(req, str):
+        return False
+    return str(cls).upper() in set(re.findall(r"\b([A-D])\b", req.upper()))
+
+
+def mas_coverage_advisory(report, cls):
+    """The FRC-CSX-MAS advisory line for preflight, or None when the coverage
+    report shows every MAS resource covered for every submitted KSI. FRC-CSX-MAS
+    is SHOULD, so this is a warning in every case, never a blocker (AUD-F56)."""
+    if not report:
+        return (f"FRC-CSX-MAS (SHOULD): no MAS-by-KSI coverage report for Class "
+                f"{str(cls).upper()} (run `python sdr.py build`) (advisory)")
+    meta = report.get("meta") or {}
+    s = report.get("summary") or {}
+    if not meta.get("inventory_declared"):
+        return ("FRC-CSX-MAS (SHOULD): no MAS inventory declared "
+                "(profiles/common/mas-inventory.json has no resources), so coverage of "
+                "every KSI against every information resource in the Minimum Assessment "
+                "Scope cannot be shown; list the MAS resources to produce the "
+                "MAS-by-KSI coverage report (advisory)")
+    problems = report.get("problems") or []
+    gaps = int(s.get("gap") or 0)
+    unresolved = int(s.get("unresolved") or 0)
+    if not gaps and not unresolved and not problems:
+        return None
+    sample = [f"{c['resource']}/{c['ksi']}" for c in (report.get("cells") or [])
+              if c.get("status") in ("gap", "unresolved")][:8]
+    return (f"FRC-CSX-MAS (SHOULD): MAS-by-KSI coverage has {gaps} gap(s) and "
+            f"{unresolved} unresolved declaration(s) across {s.get('resources_in_mas', 0)} "
+            f"MAS resource(s) x {s.get('ksis_applicable', 0)} KSI(s)"
+            + (f"; {len(problems)} inventory problem(s)" if problems else "")
+            + (": " + ", ".join(sample) if sample else "")
+            + (" ..." if (gaps + unresolved) > 8 else "")
+            + " (see artifacts/mas-ksi-coverage-class-" + str(cls).lower()
+            + ".md; advisory)")
+
+
 def cmd_preflight(args):
     """FedRAMP submission preflight: check for submission BLOCKERS.
     Structural validity (the build gate) is necessary but not sufficient to
@@ -1571,10 +1667,12 @@ def cmd_preflight(args):
     # Required offering-profile fields: the ONE definition is
     # validation/scripts/profile_contract.py, where every required field names
     # the FedRAMP source that requires it (an official CPO schema property or a
-    # CR26 rule). A field with no FedRAMP source is never a blocker. Identity /
-    # contact / URL fields must name a real entity (even a justified N/A is
-    # missing); CDS-CSO-PUB's "available and applicable" items (UEI, business
-    # category, documentation overview) accept a justified 'N/A: <reason>'.
+    # CR26 rule). A field with no FedRAMP source is never a blocker, nor is one
+    # FedRAMP does not require at this class (FIELD_CLASS_EXEMPT: at Class A the
+    # SCG and the FedRAMP Recognized assessor, unless FRC-APP-FIA is selected).
+    # Identity / contact / URL fields must name a real entity (even a justified
+    # N/A is missing); CDS-CSO-PUB's "available and applicable" items (UEI,
+    # business category, documentation overview) accept a justified 'N/A: <reason>'.
     unresolved_required = _pc.required_gaps(offering)
     if unresolved_required:
         blockers.append(f"{len(unresolved_required)} required offering-profile "
@@ -2834,6 +2932,15 @@ def cmd_preflight(args):
                         + (" ..." if len(kmt_should_gaps) > 8 else "")
                         + " (advisory)")
 
+    # FRC-CSX-MAS (SHOULD): apply ALL KSIs to ALL aspects of the offering within
+    # the MAS. The per-class coverage report (build_mas_coverage.py) shows, per
+    # declared MAS information resource and submitted KSI, what the provider
+    # demonstrated or excluded with a reason. Advisory only (AUD-F56).
+    mas_report = load_json(os.path.join(BASE, "artifacts", f"mas-ksi-coverage-class-{cls}.json"))
+    mas_advisory = mas_coverage_advisory(mas_report, cls)
+    if mas_advisory:
+        warnings.append(mas_advisory)
+
     # Evidence freshness at submission. FedRAMP guidance: "stale screenshots,
     # expired exports, outdated descriptions, or old evidence can cause
     # rejection." For each POPULATED applicable record carrying DATED evidence,
@@ -3067,7 +3174,7 @@ def cmd_preflight(args):
                                           "certification-package-manifest.json")) or {}
     for name, comp in (manifest_pkg.get("certification_package", {}) or {}).items():
         req = comp.get("required_for_initial_package")
-        required_here = req is True or (isinstance(req, str) and cls.upper() in req.upper())
+        required_here = manifest_component_required(req, cls)
         if not required_here:
             continue
         status = comp.get("status")

@@ -381,6 +381,54 @@ MUTATIONS = [
      '        elif rid == "CPO-CSO-MTD":\n            # Same principle (AUD-F50)',
      '        elif False:  # MUTATION CPO-CSO-MTD read only from the cpo_required_information pointer\n            # Same principle (AUD-F50)',
      "validation/scripts/test_profile_traceability.py"),
+    # AUD-F51: the profile contract is class-aware; a class-blind required_gaps
+    # demanded a FedRAMP Recognized assessor and a Secure Configuration Guide of
+    # a Class A provider on the alternative-framework path.
+    ("MUT-F51",
+     "validation/scripts/profile_contract.py",
+     "            if field_required_at(f, profile) and field_missing(f, profile.get(f))]",
+     "            if field_missing(f, profile.get(f))]  # MUTATION class-blind required fields",
+     "validation/scripts/test_profile_contract_classes.py"),
+    # AUD-F53 (component gate): the manifest's "Class B and C" is matched by
+    # class letter tokens; the substring form found the A in CLASS and AND, so
+    # the SCG scaffold blocked every Class A package.
+    ("MUT-F53",
+     "sdr.py",
+     '    return str(cls).upper() in set(re.findall(r"\\b([A-D])\\b", req.upper()))',
+     '    return str(cls).upper() in req.upper()  # MUTATION substring class match',
+     "validation/scripts/test_profile_contract_classes.py"),
+    # AUD-F52: a CDS-CSO-PUB listing never makes a field unconditional on its
+    # own; dropping the assessor_id exemption makes an optional CPO schema
+    # member (assessor) identity-required at every class, which the policy test
+    # checks against the schema's required list and FRC-APP-FIA's class force.
+    ("MUT-F52",
+     "validation/scripts/profile_contract.py",
+     '    "assessor_id": ("a",),\n}',
+     '}  # MUTATION assessor_id unconditional at every class',
+     "validation/scripts/test_profile_contract_classes.py"),
+    # AUD-F54: a rule's artifacts are classified per obligation; the joined
+    # string let one "if applicable" item make a mandatory sibling advisory.
+    ("MUT-F54",
+     "sdr.py",
+     '    kinds = [k for _t, k in artifact_obligations(strs)]\n    if not kinds:\n        return None\n',
+     '    kinds = [_classify_artifact_text(" ".join(strs))] if strs else []  # MUTATION rule-level joined classification\n    if not kinds:\n        return None\n',
+     "validation/scripts/test_artifact_obligations.py"),
+    # AUD-F55: the class table in docs/certification-classes.md is rendered from
+    # the canonical data; a hand edit that restores the stale "Class B KMT is
+    # MUST" statement must fail the docs gate.
+    ("MUT-F55",
+     "docs/certification-classes.md",
+     "| `MAY` include | `SHOULD` include 30-day and one-year summaries |",
+     "| `MAY` include | `MUST` include 30-day and one-year summaries |",
+     "validation/scripts/test_docs_class_table.py"),
+    # AUD-F56: a MAS-by-KSI cell is demonstrated only when the provider's
+    # reference resolves into the KSI record; a reference that resolves to
+    # nothing must read as unresolved, never as coverage.
+    ("MUT-F56",
+     "validation/scripts/build_mas_coverage.py",
+     "                    if refs and not missing:\n                        cell[\"status\"] = \"demonstrated\"",
+     "                    if refs:  # MUTATION any reference counts as coverage\n                        cell[\"status\"] = \"demonstrated\"",
+     "validation/scripts/test_mas_coverage.py"),
 ]
 
 

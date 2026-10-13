@@ -6,12 +6,12 @@ A note on impact levels. FedRAMP's current public 20x guidance maps the classes 
 
 ## What differs between classes
 
+<!-- Table rendered from the canonical data by validation/scripts/class_table.py (profiles, Class D register, KSI profile, dataset forces). Do not edit by hand: run `python validation/scripts/class_table.py --write`; test_docs_class_table.py fails on a hand edit. -->
 | | Class A | Class B | Class C | Class D |
 |---|---|---|---|---|
 | Provider rules resolved | 41 | 157 | 157 plus overlay | 156 in readiness register |
-| Indicators in scope | 7 mandatory | all 46 | all 46 | all 46 |
+| Indicators in scope | 7 mandatory of 46 | 41 baseline plus 5 optional, up to 46 | all 46 | all 46 |
 | Automated methods per indicator (`FRC-CSX-VVK`) | none required | at least 1 | at least 2 | at least 4 |
-| Metrics in the record (`SDR-CSX-KMT`) | `MAY` include | `MUST`: 30-day summary, plus a summary up to the past year where available | the same, plus all daily metric data up to the past year | `MUST` significantly supersede lower classes, specifics set in the Phase 4 Pilot |
 | Historical KSI metrics including persistent-validation status (`SDR-CSX-KMT`) | `MAY` include | `SHOULD` include 30-day and one-year summaries | `MUST`: summaries plus all daily data up to the past year, where available | `MUST` significantly supersede lower classes (specifics pending) |
 | Support in this repository | full | full | full | register only |
 
@@ -43,7 +43,7 @@ Names below are the dataset's own, not paraphrases.
 | `KSI-INR-RIR` | Incident Response | Reviewing Incident Response Procedures |
 | `KSI-SVC-SIN` | Service Configuration | Securing Information |
 
-If you are treating Class A as a starting point on the way to Class B, know that the jump is large: 41 rules to 157, and 7 indicators to 46. Plan it as a separate project rather than an increment.
+If you are treating Class A as a starting point on the way to Class B, know that the jump is large: 41 rules to 157, and 7 indicators to 41 (46 once the five optional Class B indicators are selected). Plan it as a separate project rather than an increment.
 
 ## Choosing
 
@@ -75,7 +75,7 @@ Your record store is shared across classes. Entries for rules outside your class
 
 ## Class D
 
-`profiles/class-d-future/readiness-register.json` holds 157 rules resolved against the class D variants already present in the dataset, plus a `delta_from_class_c` block so a Class C provider can see exactly what tightens.
+`profiles/class-d-future/readiness-register.json` holds 156 rules resolved against the class D variants already present in the dataset, plus a `delta_from_class_c` block so a Class C provider can see exactly what tightens.
 
 It is a planning aid, nothing more. Its metadata carries `status: FedRAMP pending`. On September 9, 2026 FedRAMP opened [RFC-0033](https://www.fedramp.gov/rfcs/0033/), "20x Phase 4 Development Tracks for 20x Class D," which states that detailed proposed Class D requirements will be released during the pilot and previews the direction: Class D will require holding a Class C certification without corrective action for 6 months to become eligible, deployment on a Class D certified IaaS/PaaS, and new Key Security Indicators including a theme for Foreign Ownership, Control, or Influence (FOCI). RFC-0033 anticipates a full-requirements RFC on October 14, 2026, final pilot requirements around November 18, 2026, and the pilot during FY27 Q1 to Q2. The register will change as those land. Nothing in it constitutes a claim of Class D readiness, and the framework will not generate a Class D deliverable.
 

@@ -678,6 +678,84 @@
       "mutation": "MUT-F50: the CPO-CSO-MTD branch of the required-information map is disabled so the item reads only the pointer (the pre-fix shape); expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F51",
+      "severity": "High",
+      "requirement": "FRC-CLA-ASF / FRC-CLA-EAM (MUST): a Class A provider certifies on an alternative security framework (FedRAMP Rev5 incl. Ready, SOC 2 Type II, GovRAMP). FRC-APP-FIA: a fresh FedRAMP independent assessment is MAY at Class A (MUST at B/C/D). SCG-CSO-RSC is not in the Class A rule set enumerated by FRC-CLA-MFR. CDS-CSO-PUB: the 16 public items are those 'available and applicable'",
+      "component": "validation/scripts/profile_contract.py (REQUIRED_FIELDS, IDENTITY_REQUIRED, required_gaps, derive_public_information); validation/scripts/build_cpo.py (assessor, secureConfigurationGuidance members); sdr.py (cmd_init prompts)",
+      "description": "Found by an external audit of main 80db0a6 (2026-10-12) and confirmed by execution. required_gaps() evaluated every REQUIRED_FIELDS entry regardless of certification class, and IDENTITY_REQUIRED refused even a justified N/A for assessor, assessor_id and secure_config_guide_uri. A legitimate Class A provider on the normal path (SOC 2 Type II within 12 months, complete FRC-CLA-EAM materials, no FedRAMP Recognized independent assessment, no Secure Configuration Guide) was reported as missing all three and could not reach Submission ready: a false negative. Preflight's own FIA gate (fia_applies), its generated-CPO scan and the package manifest ('Class B and C') already modelled Class A correctly; the profile contract did not, and the Class A end-to-end fixture filled all three fields, so the over-block was never exercised. The derived CDS-CSO-PUB object also emitted TBD for the two items, which the structured public-information check then blocked on.",
+      "root_cause": "The profile contract had no notion of class scope: 'required by FedRAMP' was read as 'required at every class', and the public-information derivation had no not-applicable value.",
+      "fix_commit": "this PR -- FIELD_CLASS_EXEMPT (secure_config_guide_uri, assessor, assessor_id exempt at Class A; fail-closed for an unknown class), FIA_SELECTED_FIELDS (a selected FRC-APP-FIA brings the assessor back, exactly as preflight gates FIA), field_required_at(); required_gaps() applies it; derive_public_information() publishes a dataset-derived not-applicable statement for the two items where they do not apply; build_cpo omits the optional assessor / secureConfigurationGuidance schema members where the requirement does not apply and the provider supplied nothing (committed Class B artifacts byte-identical); the wizard labels an exempt question 'not required at Class A, Enter to skip'",
+      "regression_test": "validation/scripts/test_profile_contract_classes.py (every exemption checked against profiles/class-*/profile.json, FRC-APP-FIA's per-class force and the CPO schema; gaps by class incl. FIA selected/unselected; published items; schema-valid Class A CPO without the members; Class B unchanged) and validation/scripts/test_submission_readiness.py (Class A alternative-framework path with no FedRAMP assessor and no SCG reaches Submission ready; FRC-APP-FIA selected blocks on assessor and assessor_id again)",
+      "mutation": "MUT-F51: required_gaps() made class-blind again (drop the field_required_at guard); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F52",
+      "severity": "Medium",
+      "requirement": "CDS-CSO-PUB (MUST): 'including at least the following information that is available and applicable'. Official CPO schema: top-level required members are serviceIdentification, serviceProperties and contactInformation; `assessor` and serviceProperties.secureConfigurationGuidance are optional",
+      "component": "validation/scripts/profile_contract.py (CDS_CSO_PUB_BACKING); validation/scripts/test_profile_contract_classes.py",
+      "description": "Found by the same audit. Nothing checked that a field was made unconditional for a reason FedRAMP states: a field could be identity-required at every class merely because CDS-CSO-PUB lists the item or the CPO schema has a property for it, although CDS-CSO-PUB qualifies all 16 items as 'available and applicable' and the schema does not require the member. That is how assessor (CDS-CSO-PUB) and assessor_id (cpo:assessor.assessorID, an optional schema object) became unconditional.",
+      "root_cause": "No policy gate between 'FedRAMP mentions this item' and 'this field is mandatory at every class'.",
+      "fix_commit": "this PR -- CDS_CSO_PUB_BACKING names, for each CDS-CSO-PUB-sourced field that is identity-required anywhere, the applicable MUST requirement that guarantees the item exists (certification_package_overview_uri: the rule's unconditional machine-readable artifact; assessor: FRC-APP-FIA's class force); the policy test verifies each backing against the dataset and checks every cpo:-sourced field against the schema's required lists (an optional member must be class-scoped), and that the 'available and applicable' qualifier is still in the rule text",
+      "regression_test": "validation/scripts/test_profile_contract_classes.py (AUD-F52 section)",
+      "mutation": "MUT-F52: the assessor_id exemption removed from FIELD_CLASS_EXEMPT (an optional schema member made unconditional at every class); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F53",
+      "severity": "High",
+      "requirement": "SCG-CSO-RSC applies at Class B/C/D, not Class A (FRC-CLA-MFR); package/certification-package-manifest.json states the Secure Configuration Guide component as required_for_initial_package 'Class B and C'",
+      "component": "sdr.py (cmd_preflight package-component gate; manifest_component_required)",
+      "description": "Found by the AUD-F51 end-to-end probe (2026-10-12): with the profile contract fixed, a Class A package on the alternative-framework path was still blocked by \"required package component 'secure_configuration_guide' is only a generated scaffold\". The gate decided class scope with a substring test, cls.upper() in req.upper(), and 'A' is a substring of 'CLASS B AND C' (the A in CLASS and in AND), so the Class-B-and-C component read as required at Class A. Every Class A package was blocked on an SCG that FedRAMP does not require of it; the manifest's own scope statement was correct.",
+      "root_cause": "Class scope parsed as a substring of prose instead of as class-letter tokens.",
+      "fix_commit": "this PR -- manifest_component_required(req, cls) matches the class letters as whole tokens (\\b[A-D]\\b) and the gate uses it",
+      "regression_test": "validation/scripts/test_profile_contract_classes.py ('Class B and C' required at B and C and not at A or D; 'Class A' at A only; True everywhere; the committed manifest scopes the SCG component to exactly the classes where SCG-CSO-RSC resolves) and the Class A alternative-framework path in validation/scripts/test_submission_readiness.py",
+      "mutation": "MUT-F53: the substring class match restored in manifest_component_required; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F54",
+      "severity": "Medium",
+      "requirement": "CR26 rules list their required artifacts as separate items (rule.artifacts.<applicability>[]). CDS-CSO-SVC (MUST, every class): 'URL to the human-readable data.' and 'URL to the machine-readable data (if applicable).' SDR-CSO-FRR: rule-specific artifacts are supplied for each applicable rule",
+      "component": "sdr.py (_classify_artifact, artifact_obligations, artifact_required_rule_ids)",
+      "description": "Found by the 2026-10-12 external audit (rated Medium, latent) and confirmed against the dataset: _classify_artifact joined all of a rule's artifact items into one string and returned CONDITIONAL as soon as any conditional marker appeared anywhere, so a mandatory artifact beside an 'if applicable' one was never hard-gated. The dataset has exactly one such rule today, CDS-CSO-SVC: its mandatory human-readable service-list URL was advisory at every class, and a provider could reach Submission ready without it. The other 14 rules whose items classify differently were REQUIRED beside REQUIRED_ONE_OF, both gated, so no behaviour changed for them.",
+      "root_cause": "Classification at the rule level over concatenated prose rather than per obligation.",
+      "fix_commit": "this PR -- artifact_obligations() classifies each listed item on its own (an item beginning 'or ' continues the previous one, the dataset's split 'X; or an explanation why' form); _classify_artifact() gates the rule when ANY obligation is REQUIRED or REQUIRED_ONE_OF and is CONDITIONAL only when every obligation has a no-artifact branch; the gated set gains exactly CDS-CSO-SVC at every class",
+      "regression_test": "validation/scripts/test_artifact_obligations.py (the synthetic mixed rule 'Provide A' + 'Provide B if applicable' gates in either order; all-conditional stays advisory; the 'or ...' continuation; CDS-CSO-SVC in the hard-gated set at A/B/C/D; whole-dataset agreement between verdict and obligations) and validation/scripts/test_submission_readiness.py (a followed Class C CDS-CSO-SVC with its rule_artifacts removed is blocked, restored clears)",
+      "mutation": "MUT-F54: the joined-string rule-level classification restored; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F55",
+      "severity": "Medium",
+      "requirement": "SDR-CSX-KMT is MAY at Class A, SHOULD at Class B (since dataset 2026.10.08.01), MUST at Class C and D. The KSI profile derived from the dataset has 46 indicators, 7 mandatory at Class A and 5 optional at Class B (41 baseline). The Class D readiness register resolves 156 rules at 2026.10.08.01",
+      "component": "docs/certification-classes.md; validation/scripts/class_table.py; validation/scripts/test_docs_class_table.py",
+      "description": "Found by the 2026-10-12 external audit: the hand-maintained class comparison table disagreed with the canonical data in three places. A stale 'Metrics in the record' row still said Class B SDR-CSX-KMT is MUST while the row beneath it said SHOULD (the 2026.10.08.01 adoption updated one row and left the other); 'Indicators in scope' said 'all 46' for Class B although the KSI profile has 41 in the default Class B scope and 5 optional; the Class D section said the register holds 157 rules while the register holds 156. The executable model had absorbed every change; the prose had not, and nothing checked it.",
+      "root_cause": "Numbers and forces typed into Markdown by hand with no gate against the files they describe.",
+      "fix_commit": "this PR -- class_table.py renders the table from profiles/class-*/profile.json, the Class D register, ksi-profile.json and the dataset's SDR-CSX-KMT forces (--check / --write); the doc carries the rendered table and a do-not-edit note; test_docs_class_table.py (CI suite) fails when the table or any count-bearing prose anchor disagrees with the canonical data",
+      "regression_test": "validation/scripts/test_docs_class_table.py (table equals the rendered one; anchors 41/157/157/156, 46/7/5, MAY/SHOULD/MUST/MUST; the four prose anchors; exactly one KMT row saying SHOULD at B; no 'Class B ... all 46'); red on the pre-fix doc with 5 failures naming exactly the audit's defects",
+      "mutation": "MUT-F55: the stale 'Class B KMT is MUST' wording restored in the doc's table; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F56",
+      "severity": "Medium",
+      "requirement": "FRC-CSX-MAS (SHOULD): 'Providers SHOULD apply ALL Key Security Indicators to ALL aspects of their cloud service offering that are within the FedRAMP Minimum Assessment Scope.' MAS-CSO-IIR (MUST): providers identify the information resources to assess",
+      "component": "validation/scripts/build_mas_coverage.py (new); profiles/common/mas-inventory.json (new, optional input); sdr.py (BUILD_STEPS, mas_coverage_advisory, preflight advisory); validation/scripts/build_release_manifest.py (ARTIFACT_GLOBS)",
+      "description": "Raised by the 2026-10-12 external audit as a missing assurance surface rather than a false-ready defect: the package could show that evidence exists for each KSI but not that no information resource inside the MAS had been forgotten, which is the question FRC-CSX-MAS asks and an assessor probes. No artifact answered 'for every resource in the MAS, is each applicable KSI demonstrated against it or explained'.",
+      "root_cause": "Coverage was modelled per KSI only; the MAS inventory had no structured representation and nothing joined the two.",
+      "fix_commit": "this PR -- a provider-authored MAS inventory (resources inside the MAS; excluded ones with a reason) is joined with the submitted KSI set per class (resolved exactly as build_sdr and preflight resolve it) into artifacts/mas-ksi-coverage-class-{a,b,c}.json and .md; a cell is demonstrated only when the provider's reference resolves to a tests[].method_id or evidence[].evidenceLocation of that KSI's record, not applicable only with a reason, otherwise unresolved or a gap; nothing is inferred and no status is set; all three classes are rendered every build so the committed files cannot drift; the active class's two files are fingerprinted in the release manifest; preflight reports gaps, unresolved cells and inventory problems as one advisory (never a blocker, the rule is SHOULD) and says so when no inventory is declared",
+      "regression_test": "validation/scripts/test_mas_coverage.py (resolving vs non-resolving references, reasoned vs reason-less exclusions, undeclared cells, unknown KSI keys, out-of-scope resources with and without a reason, the '*' default counted separately, determinism, empty inventory, the advisory in every state and absent only when fully covered, built artifacts resolving 7 / 41 / 46 KSIs, Class A and Class B KSI sets equal to the engine's)",
+      "mutation": "MUT-F56: a demonstrated_by reference counts as coverage without resolving into the KSI record; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

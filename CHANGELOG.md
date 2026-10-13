@@ -8,6 +8,88 @@ One project-specific convention: the pinned FedRAMP dataset version is recorded 
 
 Pinned dataset: `2026.10.08.01` (unchanged)
 
+An external audit of main `80db0a6` (2026-10-12) rated the Class A path
+NO-GO: the readiness contract imposed requirements FedRAMP does not impose on
+the normal Class A alternative-framework path. Confirmed by execution and
+closed, each with a regression test and a killed mutation (`AUD-F51` to
+`AUD-F56`):
+
+- **Class A is no longer over-blocked on a FedRAMP Recognized assessor or a
+  Secure Configuration Guide (AUD-F51, High).** `required_gaps()` evaluated
+  every required profile field regardless of class, so a Class A provider on
+  the path FedRAMP allows (SOC 2 Type II within 12 months with the FRC-CLA-EAM
+  materials, no FedRAMP independent assessment because `FRC-APP-FIA` is MAY at
+  Class A, no SCG because `SCG-CSO-RSC` is not in the `FRC-CLA-MFR` set) was
+  reported as missing `assessor`, `assessor_id` and `secure_config_guide_uri`
+  and could not reach Submission ready. Preflight's FIA gate, its CPO scan and
+  the package manifest already modelled Class A correctly; the contract did
+  not, and the Class A end-to-end fixture filled all three fields, so it was
+  never exercised. The contract now carries a class scope (`FIELD_CLASS_EXEMPT`,
+  fail-closed for an unknown class; a selected `FRC-APP-FIA` brings the
+  assessor requirement back exactly as preflight gates it), the published
+  CDS-CSO-PUB items state that the rule does not apply instead of `TBD`, the
+  generated CPO omits the two optional schema members where nothing applies
+  and nothing was supplied (Class B artifacts byte-identical), and the wizard
+  marks the three questions "not required at Class A, Enter to skip".
+  `test_submission_readiness.py` now drives that Class A path to Submission
+  ready and proves a selected `FRC-APP-FIA` blocks on the assessor again.
+- **A CDS-CSO-PUB listing never makes a field unconditional by itself
+  (AUD-F52).** CDS-CSO-PUB qualifies all 16 public items as "available and
+  applicable" and the official CPO schema requires neither `assessor` nor
+  `secureConfigurationGuidance`, yet nothing checked why a field was
+  mandatory at every class. `CDS_CSO_PUB_BACKING` now names the applicable
+  MUST requirement behind each identity-required CDS-CSO-PUB field, and
+  `test_profile_contract_classes.py` verifies every backing and every
+  exemption against the dataset, the class profiles and the schema's
+  `required` lists (an optional schema member must be class-scoped).
+- **The package-component gate matched class letters as substrings
+  (AUD-F53, High).** The manifest scopes the Secure Configuration Guide
+  component to "Class B and C"; the gate tested `"A" in "CLASS B AND C"`,
+  which is true (the A in CLASS and AND), so the SCG scaffold blocked every
+  Class A package. Found by the AUD-F51 end-to-end probe once the contract was
+  fixed. `manifest_component_required()` matches the class letters as whole
+  tokens.
+- **Artifact requirements are classified per obligation (AUD-F54).** A
+  rule's artifacts are separate items in the dataset, and
+  `_classify_artifact` joined them into one string: one "if applicable"
+  anywhere made the whole rule advisory, so a mandatory artifact beside a
+  conditional one was never gated. The dataset has exactly one such rule
+  today, CDS-CSO-SVC (MUST): its mandatory human-readable service-list URL was
+  advisory at every class. `artifact_obligations()` classifies each item on
+  its own (an item beginning "or " continues the previous one, the dataset's
+  split "X; or an explanation why" form) and a rule is hard-gated as soon as
+  any obligation demands an artifact; the gated set gains exactly CDS-CSO-SVC
+  at every class, and the readiness suite proves a followed CDS-CSO-SVC with
+  its artifact removed is blocked.
+- **The class comparison table is rendered from the canonical data
+  (AUD-F55).** `docs/certification-classes.md` disagreed with the files it
+  describes in three places: a stale row still said Class B `SDR-CSX-KMT` is
+  `MUST` beside the row saying `SHOULD`; "Indicators in scope" said "all 46"
+  for Class B where the KSI profile has 41 baseline plus 5 optional; the
+  Class D section said 157 register rules where the register holds 156.
+  `validation/scripts/class_table.py` now renders the table from the class
+  profiles, the Class D register, the KSI profile and the dataset's
+  `SDR-CSX-KMT` forces (`--check` / `--write`), and
+  `test_docs_class_table.py` in the CI suite fails on a hand edit of the
+  table or of any count-bearing sentence.
+- **A MAS-by-KSI coverage report for `FRC-CSX-MAS` (AUD-F56, new
+  surface).** The package could show evidence for each KSI but not that no
+  information resource inside the Minimum Assessment Scope had been
+  forgotten. An optional provider-authored inventory
+  (`profiles/common/mas-inventory.json`: the resources inside the MAS, each
+  excluded one with a reason) is joined with the KSI set the package submits
+  at each class into `artifacts/mas-ksi-coverage-class-<x>.json` and `.md`:
+  one cell per resource and KSI, demonstrated only when the provider's
+  reference resolves to a test method id or evidence location in that KSI's
+  record, not applicable only with a reason, otherwise unresolved or a gap.
+  Nothing is inferred and no status is set. All three classes render every
+  build, the active class's files are fingerprinted in the release manifest,
+  and preflight reports gaps as one advisory, never a blocker (the rule is
+  SHOULD); with no inventory it says so.
+
+That closes every item of the audit except the `sdr.py` decomposition it
+rated P2 and asked not to combine with the policy fixes.
+
 The documented consultant flow, run end to end on a fictional Class B offering
 (`init` with every answer scripted, the three importers, prefill, the drafter,
 `review --list`, `--walk`, `--accept-all prefill`, `build`, `preflight`),

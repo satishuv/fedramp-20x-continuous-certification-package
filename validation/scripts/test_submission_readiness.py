@@ -701,20 +701,26 @@ def main():
         # artifact must actually carry a rule_artifact when followed. Stripping
         # rule_artifacts from one such applicable, Implemented rule must block on
         # the rule-artifact gap; restoring it must clear.
-        rp2 = os.path.join(root, "sdr", "records", "records-store.json")
-        recs2 = json.load(open(rp2, encoding="utf-8"))
         # AFC-CSO-INB is an unconditional-MUST artifact rule in every class
         # profile ("Email address to receive messages from FedRAMP").
-        art_rid = "AFC-CSO-INB"
-        saved_arts = None
-        if art_rid in recs2.get("frr", {}):
+        # AUD-F54: CDS-CSO-SVC mixes a mandatory artifact ("URL to the
+        # human-readable data.") with an "if applicable" one; before the
+        # per-artifact classification the whole rule read as conditional and
+        # removing its artifact never blocked. Removing A must always fail.
+        for art_rid, label in (("AFC-CSO-INB", "unconditional-MUST-artifact"),
+                               ("CDS-CSO-SVC", "mixed mandatory + if-applicable artifact")):
+            rp2 = os.path.join(root, "sdr", "records", "records-store.json")
+            recs2 = json.load(open(rp2, encoding="utf-8"))
+            if art_rid not in recs2.get("frr", {}):
+                check(f"{art_rid} is in the Class C record store", False)
+                continue
             ext_a = recs2["frr"][art_rid].setdefault("extension", {})
             saved_arts = ext_a.get("rule_artifacts")
             ext_a["rule_artifacts"] = []
             json.dump(recs2, open(rp2, "w", encoding="utf-8", newline="\n"), indent=1)
             _build(root)
             rart = _preflight(root)
-            check("Class C blocks a followed unconditional-MUST-artifact rule with no rule_artifact",
+            check(f"Class C blocks a followed {label} rule ({art_rid}) with no rule_artifact",
                   rart.returncode == 1 and "rule-artifact" in rart.stdout
                   and art_rid in rart.stdout)
             recs3 = json.load(open(rp2, encoding="utf-8"))
@@ -803,6 +809,68 @@ def main():
               ra.returncode == 0)
         check("Class A is not blocked on the ~39 non-applicable KSIs",
               "no implementation information" not in ra.stdout)
+
+        # AUD-F51: the normal Class A path is SOC 2 Type II (FRC-CLA-ASF/EAM)
+        # with NO FedRAMP Recognized independent assessment (FRC-APP-FIA is MAY
+        # and unselected) and NO Secure Configuration Guide (SCG-CSO-RSC is not
+        # in the Class A rule set). FedRAMP allows that provider to certify; the
+        # framework must not report missing assessor / assessor_id /
+        # secure_config_guide_uri. The fixture above filled all three, which is
+        # why the over-block was never exercised before this probe.
+        pa = json.load(open(profile_a, encoding="utf-8"))
+        saved_a = {k: pa.get(k) for k in ("assessor", "assessor_id", "secure_config_guide_uri",
+                                          "secure_config_guide_machine_uri")}
+        pa["assessor"] = "TBD: no FedRAMP Recognized independent assessment at Class A"
+        pa["assessor_id"] = "TBD"
+        pa["secure_config_guide_uri"] = "TBD: no SCG at Class A"
+        pa.pop("secure_config_guide_machine_uri", None)
+        pa["selected_optional_rules"] = []
+        json.dump(pa, open(profile_a, "w", encoding="utf-8", newline="\n"), indent=1)
+        _build(root_a)
+        mhash_a0 = "sha256:" + hashlib.sha256(open(manifest_a, "rb").read()).hexdigest()
+        tag_a0 = json.load(open(manifest_a, encoding="utf-8")).get("release_tag")
+        reg_a0 = json.load(open(register_a, encoding="utf-8"))
+        reg_a0["package_signoff"] = {
+            "decision": "approved", "reviewer": "Jane Provider, VP Security",
+            "timestamp": now.isoformat(), "release_tag": tag_a0,
+            "package_manifest_sha256": mhash_a0, "notes": "Reviewed Class A package (alternative-framework path).",
+        }
+        json.dump(reg_a0, open(register_a, "w", encoding="utf-8", newline="\n"), indent=1)
+        r_alt = _preflight(root_a)
+        check("Class A on the alternative-framework path (no FedRAMP assessor, no SCG) "
+              "reaches Submission ready (exit 0)",
+              r_alt.returncode == 0)
+        if r_alt.returncode != 0:
+            print(r_alt.stdout[-1500:])
+        check("Class A alternative-framework path names none of the three as a gap",
+              not any(f in r_alt.stdout for f in ("assessor (CDS-CSO-PUB)", "assessor_id (cpo:",
+                                                   "secure_config_guide_uri (SCG-CSO-RSC)")))
+        cpo_alt = json.load(open(os.path.join(root_a, "package", "cpo", "cpo.json"), encoding="utf-8"))
+        check("Class A CPO on that path carries neither the assessor nor the SCG member",
+              "assessor" not in cpo_alt
+              and "secureConfigurationGuidance" not in cpo_alt.get("serviceProperties", {}))
+        pub_items = {i.get("rule"): i.get("provider_content")
+                     for i in cpo_alt.get("xCpoRequiredInformation", {}).get("items", [])}
+        pub_alt = pub_items.get("CDS-CSO-PUB") or {}
+        check("Class A CDS-CSO-PUB publishes explicit not-applicable statements for both items",
+              str(pub_alt.get("link_to_secure_configuration_guidance", "")).startswith("Not applicable at Class A")
+              and str(pub_alt.get("current_fedramp_recognized_independent_assessment_service", ""))
+              .startswith("Not applicable at Class A"))
+        # Selecting FRC-APP-FIA brings the assessor requirement back (the SCG stays out).
+        pa["selected_optional_rules"] = ["FRC-APP-FIA"]
+        json.dump(pa, open(profile_a, "w", encoding="utf-8", newline="\n"), indent=1)
+        _build(root_a)
+        r_sel = _preflight(root_a)
+        check("Class A with FRC-APP-FIA selected and no assessor is blocked on assessor and assessor_id",
+              r_sel.returncode == 1 and "assessor (CDS-CSO-PUB)" in r_sel.stdout
+              and "assessor_id (cpo:" in r_sel.stdout)
+        check("Class A with FRC-APP-FIA selected is still not asked for an SCG",
+              "secure_config_guide_uri (SCG-CSO-RSC)" not in r_sel.stdout)
+        # Restore the filled fixture values for the probes below.
+        pa.update({k: v for k, v in saved_a.items() if v is not None})
+        pa["selected_optional_rules"] = []
+        json.dump(pa, open(profile_a, "w", encoding="utf-8", newline="\n"), indent=1)
+        _build(root_a)
         # Class A CPO applicability: of the 9 OVR-referenced rules, only
         # CDS-CSO-PUB and MAS-CSO-IIR resolve for Class A, so the generated CPO
         # must carry exactly those two - not seven meaningless N/A entries.
