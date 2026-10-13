@@ -64,8 +64,14 @@ except Exception:
 
 try:
     from sign_evidence import verify_signature_offline as _sig_verify
+    from sign_evidence import key_reference as _key_reference
 except Exception:
     _sig_verify = None
+
+    def _key_reference(value):
+        # Without the signing module nothing can be verified anyway (the
+        # _sig_verify None path is HARD); compare references verbatim.
+        return str(value or "").strip()
 
 HASH_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 
@@ -317,7 +323,10 @@ def classify_entry(e, hash_fn=None, trusted_signer=None):
                             "a public_key_pem); refusing to trust a signature whose "
                             "signer is not independently pinned (findings 7/8)")
         pinned_arn = trusted_signer.get("key_arn")
-        if pinned_arn and sig.get("keyId") != pinned_arn:
+        # AUD-F60: the block records key_reference(key id) (never the ARN, which
+        # carries the signer's account id into the scanned package); the pinned
+        # value may be the ARN. Compare the two in reference form.
+        if pinned_arn and _key_reference(sig.get("keyId")) != _key_reference(pinned_arn):
             return ("hard", f"SIGNER NOT TRUSTED - evidence keyId {str(sig.get('keyId'))[:40]} "
                             f"is not the pinned trusted signer {str(pinned_arn)[:40]} "
                             "(a signature by an unpinned key is not trusted)")

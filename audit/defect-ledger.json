@@ -795,6 +795,19 @@
       "mutation": "MUT-F59: findings count toward linkage (only hard outcomes listed); expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F60",
+      "severity": "High",
+      "requirement": "CDS-CSO-* sensitivity guidance and the package gate's own no_sensitive_patterns check (validate_sdr.py: no AWS account ids or ARNs in generated artifacts) together with the repository signing contract (sign_evidence.py, AU-10 non-repudiation).",
+      "component": "automation/collectors/sign_evidence.py (key_reference, sign_hash); validation/scripts/validate_evidence.py (pinned-signer comparison); examples/sample-offering-class-c/build_class_c_sample.py (signed-evidence probes)",
+      "description": "Found by driving the production-assurance READY probe end to end after AUD-F57: sign_hash recorded the operator's KMS key id verbatim as the block keyId, and the documented pin form is the key ARN (offering-profile expected_evidence_signer.key_arn 'arn:aws:kms:<region>:<audit-account>:key/...'). A signed evidence entry is rendered into the SDR and lives in the record store, both scanned by no_sensitive_patterns, so every correctly signed production package failed its own validation gate on 'possible AWS account ID' and 'AWS resource ARN' hits, with the signer's account id published in the package. No fixture had ever carried a signed evidence entry through the full validate gate (the signature tests call classify_entry directly; the metric-history signature lives in an unscanned file).",
+      "root_cause": "The signing contract and the sensitivity gate were designed separately and never exercised together on a populated package.",
+      "fix_commit": "this PR -- sign_evidence.key_reference reduces a KMS key ARN to its key id (an alias ARN to alias/<name>; anything else unchanged) and sign_hash records that reference while still calling KMS with the full key id; classify_entry compares the block keyId and the pinned key_arn in reference form, so a pinned ARN matches a key-id block and a different key is still refused; the Class C sample signs its evidence the same way and its production-assurance READY probe passes the sensitivity gate",
+      "regression_test": "automation/collectors/test_sign_evidence.py (test_f60_signature_block_never_carries_the_key_arn_or_account: block trips none of validate_sdr.SENSITIVE_PATTERNS, KMS still receives the full key id, alias and bare-id forms, reference equality and inequality); validation/scripts/test_evidence_integrity.py (test_f60_key_id_block_verifies_under_a_signer_pinned_by_arn, different key id still hard); examples/sample-offering-class-c/build_class_c_sample.py READY probe with signed evidence",
+      "mutation": "MUT-F60: the block records the ARN verbatim; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

@@ -445,6 +445,22 @@ def test_f57_hashless_entry_without_required_signer_stays_finding():
           o_opt == "finding")
 
 
+def test_f60_key_id_block_verifies_under_a_signer_pinned_by_arn():
+    # AUD-F60: sign_hash records key_reference(key id) so the scanned package
+    # never carries the signer's ARN/account; the profile may still pin the
+    # ARN. The two must compare equal, and a different key id must still fail.
+    priv, pem = _make_keypair()
+    arn = "arn:aws:kms:us-east-1:123456789012:key/1a2b3c4d-0000-4000-8000-00000000abcd"
+    signer = {"public_key": pem, "key_arn": arn, "public_key_fingerprint": None, "required": True}
+    e, _ = _signed_entry(priv, keyid="1a2b3c4d-0000-4000-8000-00000000abcd")
+    outcome, msg = ve.classify_entry(e, hash_fn=evidence_hash, trusted_signer=signer)
+    check("key-id block under an ARN-pinned signer -> verified", outcome == "verified")
+    other, _ = _signed_entry(priv, keyid="1a2b3c4d-0000-4000-8000-00000000ffff")
+    outcome, msg = ve.classify_entry(other, hash_fn=evidence_hash, trusted_signer=signer)
+    check("a different key id under the same pin -> hard (signer not trusted)",
+          outcome == "hard" and "NOT TRUSTED" in msg)
+
+
 def main():
     for t in (test_wrong_hash_over_resolvable_source_is_hard_fail,
               test_matching_hash_passes, test_missing_hash_helper_is_hard_fail_not_finding,
@@ -470,7 +486,8 @@ def main():
               test_f57_hashless_entry_under_required_signer_is_hard,
               test_f57_full_downgrade_of_a_signed_entry_is_hard,
               test_f57_signature_without_hash_is_hard,
-              test_f57_hashless_entry_without_required_signer_stays_finding):
+              test_f57_hashless_entry_without_required_signer_stays_finding,
+              test_f60_key_id_block_verifies_under_a_signer_pinned_by_arn):
         print(t.__name__); t()
     print(f"\n{PASS}/{PASS + FAIL} passed")
     return 0 if FAIL == 0 else 1

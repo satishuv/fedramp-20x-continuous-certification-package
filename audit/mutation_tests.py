@@ -454,6 +454,13 @@ MUTATIONS = [
      "            if outcome != \"verified\":",
      "            if outcome == \"hard\":  # MUTATION findings count as linkage",
      "validation/scripts/test_production_evidence_linkage.py"),
+    # AUD-F60: the signature block records key_reference(key id), never the
+    # KMS ARN that carries the signer's account id into the scanned package.
+    ("MUT-F60",
+     "automation/collectors/sign_evidence.py",
+     "        \"keyId\": key_reference(key_id),",
+     "        \"keyId\": key_id,  # MUTATION record the ARN verbatim",
+     "automation/collectors/test_sign_evidence.py"),
 ]
 
 

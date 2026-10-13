@@ -155,11 +155,40 @@ def test_attach_signature_in_place():
           entry.get("xEvidenceSignature") == block)
 
 
+def test_f60_signature_block_never_carries_the_key_arn_or_account():
+    # AUD-F60: the block is rendered into the SDR and the record store, which
+    # the package gate scans for account ids and ARNs. Signing with the key ARN
+    # (the documented pin form) must record only the key id.
+    import json
+    import os
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__)))), "validation", "scripts"))
+    import validate_sdr  # noqa: E402
+    arn = "arn:aws:kms:us-east-1:123456789012:key/1a2b3c4d-0000-4000-8000-00000000abcd"
+    kms = FakeKMS(key_id=arn)
+    h = evidence_hash({"service": "iam", "check": "mfa", "status": "pass"})
+    block = se.sign_hash(kms, arn, h, when="2026-10-13")
+    check("KMS is still called with the full key id", kms.sign_calls[0][0] == arn)
+    check("block keyId is the key id, not the ARN",
+          block["keyId"] == "1a2b3c4d-0000-4000-8000-00000000abcd")
+    hits = [label for pat, label in validate_sdr.SENSITIVE_PATTERNS if pat.search(json.dumps(block))]
+    check("block trips none of the package gate's sensitive patterns", hits == [])
+    check("alias ARN reduces to alias/<name>",
+          se.key_reference("arn:aws-us-gov:kms:us-gov-west-1:123456789012:alias/sdr-signer") == "alias/sdr-signer")
+    check("a bare key id / label is unchanged",
+          se.key_reference("fake-signer-key-for-tests-not-an-arn") == "fake-signer-key-for-tests-not-an-arn")
+    check("pinned ARN and block key id compare equal in reference form",
+          se.key_reference(arn) == block["keyId"])
+    check("a different key is still a different reference",
+          se.key_reference(arn.replace("abcd", "ffff")) != block["keyId"])
+
+
 def main():
     for t in (test_sign_and_verify_roundtrip, test_changed_fact_fails_before_kms,
               test_tampered_signature_fails, test_non_canonical_hash_refused,
               test_refused_kms_sign_is_error, test_empty_signature_is_error,
-              test_attach_signature_needs_hash, test_attach_signature_in_place):
+              test_attach_signature_needs_hash, test_attach_signature_in_place,
+              test_f60_signature_block_never_carries_the_key_arn_or_account):
         print(t.__name__); t()
     print(f"\n{PASS}/{PASS + FAIL} passed")
     return 0 if FAIL == 0 else 1

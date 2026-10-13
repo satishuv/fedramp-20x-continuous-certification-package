@@ -92,9 +92,9 @@ rated P2 and asked not to combine with the policy fixes.
 
 A fresh audit of main `3e41c24` (2026-10-13) confirmed the six closures above
 and found one concrete evidence-integrity defect while reviewing the proposed
-provenance-mutation family. Confirmed by reading and by execution; closed,
-each with a regression test proven red on the old code and a killed mutation
-(`AUD-F57` to `AUD-F59`):
+provenance-mutation family; driving its fix end to end found two more.
+Confirmed by reading and by execution; closed, each with a regression test
+proven red on the old code and a killed mutation (`AUD-F57` to `AUD-F60`):
 
 - **Deleting an evidence entry's digest no longer bypasses a required signer
   (AUD-F57, High).** `classify_entry` returned the soft finding "no content
@@ -132,6 +132,25 @@ each with a regression test proven red on the old code and a killed mutation
   failure is not control failure, and template records never count. The
   Class C sample's production-assurance READY probe now carries bound, hashed
   and signed evidence, proving the profile remains satisfiable.
+- **A signed evidence entry no longer publishes the signer's account id, and
+  can pass the package gate (AUD-F60, High).** Found by driving that READY
+  probe end to end: `sign_hash` recorded the KMS key ARN verbatim as the block
+  `keyId`, the ARN is the documented pin form, and a signed entry is rendered
+  into the SDR and the record store, both scanned by `no_sensitive_patterns`.
+  Every correctly signed production package therefore failed its own
+  validation gate, with the audit account id in the package. The block now
+  records `key_reference(key id)` (a key ARN reduces to its key id, an alias
+  ARN to `alias/<name>`), KMS is still called with the full key id, and the
+  verifier compares the block and the pinned `key_arn` in reference form, so
+  existing ARN pins keep working and a different key is still refused.
+- Two Class C attack probes had quietly stopped testing anything: they
+  hollowed the `cpo_required_information["CDS-CSO-PUB"]` override, which the
+  AUD-F39 one-place-per-fact derivation ignores in favour of the profile
+  fields (so the package was correctly READY, and both probes reported a
+  false "reached READY despite tamper"). They now hollow the derived source
+  fields (verified to block with three blockers each), and a new probe proves
+  the ignored override keeps the package READY. The attack suite is still a
+  manual run (`--attack`, 43 probes), which is why this went unnoticed.
 
 The audit's remaining items are open by decision, not oversight: an explicit
 single Class D support state (`SUPPORTED` / `FUTURE` / `INVALID`) across every
