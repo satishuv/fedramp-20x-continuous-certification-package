@@ -1,6 +1,6 @@
 {
  "lock_note": "Provenance lock for every official source input this framework pins. Records the upstream URL, the exact version, a SHA-256 of the pinned copy on disk, and the date it was verified current against upstream. The daily drift-check workflow hash-compares the pinned copies against these upstreams; this file is the human-readable record of what the pins mean and where they came from. Update deliberately, in the same change that bumps a pin, and never by hand-editing a hash to make a check pass.",
- "verified_current_on": "2026-10-08",
+ "verified_current_on": "2026-10-14",
  "sources": {
   "cr26_consolidated_rules": {
    "description": "FedRAMP Consolidated Rules for 2026, the canonical machine-readable requirements dataset and source of truth for rule text, identifiers, force, class applicability, KSIs, and definitions.",
