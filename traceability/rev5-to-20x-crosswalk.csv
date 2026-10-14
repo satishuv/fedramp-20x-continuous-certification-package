@@ -1,5 +1,4 @@
 NIST Control (source),NIST Catalog,NIST Release,Relationship,Equivalence,KSI ID,KSI Name,KSI Family,KSI Family Name
-AC-1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-SIN,Securing Information,SVC,Service Configuration
 AC-2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-APM,Adopting Passwordless Methods,IAM,Identity and Access Management
 AC-2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 AC-2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SNU,Securing Non-User Authentication,IAM,Identity and Access Management
@@ -19,6 +18,14 @@ AC-2.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SV
 AC-2.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
 AC-2.6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
 AC-2.6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
+AC-2.7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
+AC-2.7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
+AC-2.9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
+AC-2.9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SNU,Securing Non-User Authentication,IAM,Identity and Access Management
+AC-2.11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
+AC-2.11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
+AC-2.11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SUS,Responding to Suspicious Activity,IAM,Identity and Access Management
+AC-2.12,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SUS,Responding to Suspicious Activity,IAM,Identity and Access Management
 AC-2.13,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-AAM,Automating Account Management,IAM,Identity and Access Management
 AC-2.13,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SUS,Responding to Suspicious Activity,IAM,Identity and Access Management
 AC-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-APM,Adopting Passwordless Methods,IAM,Identity and Access Management
@@ -27,6 +34,7 @@ AC-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-
 AC-4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
 AC-4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 AC-4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SNU,Securing Non-User Authentication,IAM,Identity and Access Management
+AC-4.21,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-ULN,Using Logical Networking,CNA,Cloud Native Architecture
 AC-5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 AC-5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RIS,Reviewing Investments in Security,PIY,Policy and Inventory
 AC-5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RSD,Reviewing Security in the SDLC,PIY,Policy and Inventory
@@ -34,16 +42,24 @@ AC-6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-
 AC-6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 AC-6.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 AC-6.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
+AC-6.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
+AC-6.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 AC-6.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 AC-6.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SNU,Securing Non-User Authentication,IAM,Identity and Access Management
 AC-6.7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-AAM,Automating Account Management,IAM,Identity and Access Management
 AC-6.7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
+AC-6.8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
+AC-6.8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
+AC-6.8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-ACM,Automating Configuration Management,SVC,Service Configuration
 AC-6.9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 AC-6.9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-LET,Logging Event Types,MLA,"Monitoring, Logging, and Auditing"
 AC-6.9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-RVL,Reviewing Logs,MLA,"Monitoring, Logging, and Auditing"
 AC-6.10,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 AC-7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 AC-7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SUS,Responding to Suspicious Activity,IAM,Identity and Access Management
+AC-10,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VCM,Validating Communications,SVC,Service Configuration
+AC-11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-SIN,Securing Information,SVC,Service Configuration
+AC-11.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-SIN,Securing Information,SVC,Service Configuration
 AC-12,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-ULN,Using Logical Networking,CNA,Cloud Native Architecture
 AC-12,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
 AC-14,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
@@ -60,8 +76,21 @@ AC-17.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-C
 AC-17.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-RNT,Restricting Network Traffic,CNA,Cloud Native Architecture
 AC-17.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-ULN,Using Logical Networking,CNA,Cloud Native Architecture
 AC-17.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
+AC-17.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
+AC-17.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VCM,Validating Communications,SVC,Service Configuration
+AC-17.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VRI,Validating Resource Integrity,SVC,Service Configuration
+AC-18,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VCM,Validating Communications,SVC,Service Configuration
+AC-18,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VRI,Validating Resource Integrity,SVC,Service Configuration
 AC-18.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-MAT,Minimizing Attack Surface,CNA,Cloud Native Architecture
 AC-18.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-MAT,Minimizing Attack Surface,CNA,Cloud Native Architecture
+AC-18.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
+AC-19,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-EVC,Evaluating Configurations,MLA,"Monitoring, Logging, and Auditing"
+AC-19,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
+AC-19,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MON,Monitoring Supply Chain Risk,SCR,Supply Chain Risk
+AC-19,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-PRR,Preventing Residual Risk,SVC,Service Configuration
+AC-19,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VCM,Validating Communications,SVC,Service Configuration
+AC-19,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VRI,Validating Resource Integrity,SVC,Service Configuration
+AC-19.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-SIN,Securing Information,SVC,Service Configuration
 AC-20,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
 AC-20,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
 AC-20,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MON,Monitoring Supply Chain Risk,SCR,Supply Chain Risk
@@ -70,6 +99,9 @@ AC-20.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-I
 AC-20.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 AC-20.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-LET,Logging Event Types,MLA,"Monitoring, Logging, and Auditing"
 AC-20.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
+AC-21,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
+AC-21,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
+AC-21,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-SIN,Securing Information,SVC,Service Configuration
 AT-2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CED-RAT,Reviewing All Training,CED,Cybersecurity Education
 AT-2.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CED-RAT,Reviewing All Training,CED,Cybersecurity Education
 AT-2.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CED-RAT,Reviewing All Training,CED,Cybersecurity Education
@@ -85,24 +117,44 @@ AU-3.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-ML
 AU-3.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RSD,Reviewing Security in the SDLC,PIY,Policy and Inventory
 AU-4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
 AU-5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
+AU-5.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
 AU-6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-RVL,Reviewing Logs,MLA,"Monitoring, Logging, and Auditing"
 AU-6.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
 AU-6.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-RVL,Reviewing Logs,MLA,"Monitoring, Logging, and Auditing"
 AU-6.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
+AU-6.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
+AU-6.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SUS,Responding to Suspicious Activity,IAM,Identity and Access Management
+AU-6.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
+AU-6.7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
+AU-6.7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-ALA,Authorizing Log Access,MLA,"Monitoring, Logging, and Auditing"
+AU-7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-LET,Logging Event Types,MLA,"Monitoring, Logging, and Auditing"
 AU-7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
+AU-7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-RVL,Reviewing Logs,MLA,"Monitoring, Logging, and Auditing"
 AU-7.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-LET,Logging Event Types,MLA,"Monitoring, Logging, and Auditing"
 AU-7.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
 AU-8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
 AU-9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
+AU-9.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VRI,Validating Resource Integrity,SVC,Service Configuration
 AU-9.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
+AU-10,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
+AU-10,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SNU,Securing Non-User Authentication,IAM,Identity and Access Management
+AU-10,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-LET,Logging Event Types,MLA,"Monitoring, Logging, and Auditing"
 AU-11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
 AU-12,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-LET,Logging Event Types,MLA,"Monitoring, Logging, and Auditing"
+AU-12.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
+AU-12.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
+AU-12.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
+AU-12.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-ALA,Authorizing Log Access,MLA,"Monitoring, Logging, and Auditing"
 CA-2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RIS,Reviewing Investments in Security,PIY,Policy and Inventory
 CA-2.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-EIS,Enforcing Intended State,CNA,Cloud Native Architecture
+CA-2.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RIS,Reviewing Investments in Security,PIY,Policy and Inventory
+CA-2.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MON,Monitoring Supply Chain Risk,SCR,Supply Chain Risk
 CA-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MON,Monitoring Supply Chain Risk,SCR,Supply Chain Risk
+CA-3.6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 CA-7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-EVC,Evaluating Configurations,MLA,"Monitoring, Logging, and Auditing"
-CA-7.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-EIS,Enforcing Intended State,CNA,Cloud Native Architecture
+CA-7.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-LMC,Logging Changes,CMT,Change Management
 CA-7.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
+CA-7.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-EIS,Evaluating and Improving Security,SVC,Service Configuration
 CA-9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-MAT,Minimizing Attack Surface,CNA,Cloud Native Architecture
 CA-9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-RNT,Restricting Network Traffic,CNA,Cloud Native Architecture
 CA-9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-ULN,Using Logical Networking,CNA,Cloud Native Architecture
@@ -121,40 +173,61 @@ CM-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-
 CM-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-RMV,Redeploying vs Modifying,CMT,Change Management
 CM-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-RVP,Reviewing Change Procedures,CMT,Change Management
 CM-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-VTD,Validating Throughout Deployment,CMT,Change Management
+CM-3.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-LMC,Logging Changes,CMT,Change Management
 CM-3.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-LMC,Logging Changes,CMT,Change Management
 CM-3.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-RVP,Reviewing Change Procedures,CMT,Change Management
 CM-3.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-VTD,Validating Throughout Deployment,CMT,Change Management
 CM-3.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-RVP,Reviewing Change Procedures,CMT,Change Management
 CM-3.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RSD,Reviewing Security in the SDLC,PIY,Policy and Inventory
+CM-3.6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-LMC,Logging Changes,CMT,Change Management
 CM-4.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-LMC,Logging Changes,CMT,Change Management
 CM-4.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-VTD,Validating Throughout Deployment,CMT,Change Management
 CM-5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-RMV,Redeploying vs Modifying,CMT,Change Management
 CM-5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-RVP,Reviewing Change Procedures,CMT,Change Management
 CM-5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
+CM-5.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
+CM-5.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
+CM-5.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SUS,Responding to Suspicious Activity,IAM,Identity and Access Management
+CM-5.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-LET,Logging Event Types,MLA,"Monitoring, Logging, and Auditing"
+CM-5.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
+CM-5.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
+CM-5.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-EIS,Evaluating and Improving Security,SVC,Service Configuration
 CM-6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-LMC,Logging Changes,CMT,Change Management
 CM-6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-RMV,Redeploying vs Modifying,CMT,Change Management
 CM-6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-EVC,Evaluating Configurations,MLA,"Monitoring, Logging, and Auditing"
 CM-6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-ACM,Automating Configuration Management,SVC,Service Configuration
+CM-6.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-EVC,Evaluating Configurations,MLA,"Monitoring, Logging, and Auditing"
+CM-6.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-VTD,Validating Throughout Deployment,CMT,Change Management
+CM-6.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-EIS,Enforcing Intended State,CNA,Cloud Native Architecture
+CM-6.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SUS,Responding to Suspicious Activity,IAM,Identity and Access Management
 CM-7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-RMV,Redeploying vs Modifying,CMT,Change Management
 CM-7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 CM-7.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-RVP,Reviewing Change Procedures,CMT,Change Management
 CM-7.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-RNT,Restricting Network Traffic,CNA,Cloud Native Architecture
 CM-7.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-ACM,Automating Configuration Management,SVC,Service Configuration
 CM-7.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-EIS,Evaluating and Improving Security,SVC,Service Configuration
+CM-7.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
 CM-7.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 CM-7.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 CM-7.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-GIV,Generating Inventories,PIY,Policy and Inventory
 CM-8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-GIV,Generating Inventories,PIY,Policy and Inventory
 CM-8.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-RMV,Redeploying vs Modifying,CMT,Change Management
 CM-8.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-GIV,Generating Inventories,PIY,Policy and Inventory
+CM-8.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-GIV,Generating Inventories,PIY,Policy and Inventory
 CM-8.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-LMC,Logging Changes,CMT,Change Management
 CM-8.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VRI,Validating Resource Integrity,SVC,Service Configuration
+CM-8.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-DFP,Defining Functionality and Privileges,CNA,Cloud Native Architecture
+CM-8.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-GIV,Generating Inventories,PIY,Policy and Inventory
 CM-9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-RVP,Reviewing Change Procedures,CMT,Change Management
 CM-9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
 CM-9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
+CM-11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CED-RAT,Reviewing All Training,CED,Cybersecurity Education
+CM-11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-EIS,Enforcing Intended State,CNA,Cloud Native Architecture
+CM-11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-ULN,Using Logical Networking,CNA,Cloud Native Architecture
 CM-12,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-GIV,Generating Inventories,PIY,Policy and Inventory
 CM-12.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-GIV,Generating Inventories,PIY,Policy and Inventory
 CM-12.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-EIS,Evaluating and Improving Security,SVC,Service Configuration
+CM-14,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VRI,Validating Resource Integrity,SVC,Service Configuration
 CP-2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-RPL-ARP,Aligning Recovery Plan,RPL,Recovery Planning
 CP-2.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RIS,Reviewing Investments in Security,PIY,Policy and Inventory
 CP-2.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-RPL-ARP,Aligning Recovery Plan,RPL,Recovery Planning
@@ -162,8 +235,10 @@ CP-2.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-RP
 CP-2.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-RPL-ARP,Aligning Recovery Plan,RPL,Recovery Planning
 CP-2.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-RPL-RRO,Reviewing Recovery Objectives,RPL,Recovery Planning
 CP-2.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-RPL-TRC,Testing Recovery Capabilities,RPL,Recovery Planning
+CP-2.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-OFA,Optimizing for Availability,CNA,Cloud Native Architecture
 CP-2.8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-GIV,Generating Inventories,PIY,Policy and Inventory
 CP-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CED-RAT,Reviewing All Training,CED,Cybersecurity Education
+CP-3.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CED-RAT,Reviewing All Training,CED,Cybersecurity Education
 CP-4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-RPL-TRC,Testing Recovery Capabilities,RPL,Recovery Planning
 CP-4.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RIS,Reviewing Investments in Security,PIY,Policy and Inventory
 CP-4.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-RPL-ARP,Aligning Recovery Plan,RPL,Recovery Planning
@@ -190,10 +265,14 @@ CP-10,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-RPL
 CP-10,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-RPL-TRC,Testing Recovery Capabilities,RPL,Recovery Planning
 CP-10.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-RPL-ABO,Aligning Backups with Objectives,RPL,Recovery Planning
 CP-10.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-RPL-ARP,Aligning Recovery Plan,RPL,Recovery Planning
+CP-10.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-DFP,Defining Functionality and Privileges,CNA,Cloud Native Architecture
+CP-10.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-EIS,Enforcing Intended State,CNA,Cloud Native Architecture
 IA-2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-APM,Adopting Passwordless Methods,IAM,Identity and Access Management
 IA-2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
 IA-2.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-APM,Adopting Passwordless Methods,IAM,Identity and Access Management
 IA-2.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-APM,Adopting Passwordless Methods,IAM,Identity and Access Management
+IA-2.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SNU,Securing Non-User Authentication,IAM,Identity and Access Management
+IA-2.6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-APM,Adopting Passwordless Methods,IAM,Identity and Access Management
 IA-2.8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-APM,Adopting Passwordless Methods,IAM,Identity and Access Management
 IA-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
 IA-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SNU,Securing Non-User Authentication,IAM,Identity and Access Management
@@ -211,15 +290,22 @@ IA-5.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SV
 IA-5.6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-APM,Adopting Passwordless Methods,IAM,Identity and Access Management
 IA-5.6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
 IA-5.6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-ASM,Automating Secret Management,SVC,Service Configuration
+IA-5.7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RSD,Reviewing Security in the SDLC,PIY,Policy and Inventory
+IA-5.8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-APM,Adopting Passwordless Methods,IAM,Identity and Access Management
 IA-6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-APM,Adopting Passwordless Methods,IAM,Identity and Access Management
 IA-7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 IA-8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-APM,Adopting Passwordless Methods,IAM,Identity and Access Management
+IA-8.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-APM,Adopting Passwordless Methods,IAM,Identity and Access Management
+IA-8.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-AAM,Automating Account Management,IAM,Identity and Access Management
+IA-8.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-APM,Adopting Passwordless Methods,IAM,Identity and Access Management
 IA-11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
 IA-12,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-AAM,Automating Account Management,IAM,Identity and Access Management
 IA-12.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-AAM,Automating Account Management,IAM,Identity and Access Management
 IA-12.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-AAM,Automating Account Management,IAM,Identity and Access Management
 IA-12.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-AAM,Automating Account Management,IAM,Identity and Access Management
 IR-2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CED-RAT,Reviewing All Training,CED,Cybersecurity Education
+IR-2.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CED-RAT,Reviewing All Training,CED,Cybersecurity Education
+IR-2.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CED-RAT,Reviewing All Training,CED,Cybersecurity Education
 IR-2.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CED-RAT,Reviewing All Training,CED,Cybersecurity Education
 IR-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-AAR,Generating After Action Reports,INR,Incident Response
 IR-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-RPI,Reviewing Past Incidents,INR,Incident Response
@@ -233,7 +319,18 @@ IR-4.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IN
 IR-4.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-RIR,Reviewing Incident Response Procedures,INR,Incident Response
 IR-4.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-RPI,Reviewing Past Incidents,INR,Incident Response
 IR-4.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
+IR-4.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-RVP,Reviewing Protections,CNA,Cloud Native Architecture
+IR-4.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SUS,Responding to Suspicious Activity,IAM,Identity and Access Management
+IR-4.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-RPI,Reviewing Past Incidents,INR,Incident Response
+IR-4.6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
+IR-4.6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
+IR-4.6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SUS,Responding to Suspicious Activity,IAM,Identity and Access Management
+IR-4.11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-RIR,Reviewing Incident Response Procedures,INR,Incident Response
+IR-4.11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-RPI,Reviewing Past Incidents,INR,Incident Response
+IR-4.11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RIS,Reviewing Investments in Security,PIY,Policy and Inventory
 IR-5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-RPI,Reviewing Past Incidents,INR,Incident Response
+IR-5.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-AAR,Generating After Action Reports,INR,Incident Response
+IR-5.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-RPI,Reviewing Past Incidents,INR,Incident Response
 IR-6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-RIR,Reviewing Incident Response Procedures,INR,Incident Response
 IR-6.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-RIR,Reviewing Incident Response Procedures,INR,Incident Response
 IR-6.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-RIR,Reviewing Incident Response Procedures,INR,Incident Response
@@ -244,8 +341,22 @@ IR-8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-
 IR-8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-RIR,Reviewing Incident Response Procedures,INR,Incident Response
 IR-8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-RPI,Reviewing Past Incidents,INR,Incident Response
 IR-8.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-RIR,Reviewing Incident Response Procedures,INR,Incident Response
-MA-2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-LMC,Logging Changes,CMT,Change Management
-MA-2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-EIS,Evaluating and Improving Security,SVC,Service Configuration
+IR-9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-RUD,Removing Unwanted Data,SVC,Service Configuration
+IR-9.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CED-RAT,Reviewing All Training,CED,Cybersecurity Education
+IR-9.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-AAR,Generating After Action Reports,INR,Incident Response
+IR-9.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-RIR,Reviewing Incident Response Procedures,INR,Incident Response
+IR-9.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-RPL-TRC,Testing Recovery Capabilities,RPL,Recovery Planning
+IR-9.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CED-RAT,Reviewing All Training,CED,Cybersecurity Education
+IR-9.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-VTD,Validating Throughout Deployment,CMT,Change Management
+IR-9.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-DFP,Defining Functionality and Privileges,CNA,Cloud Native Architecture
+IR-9.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-EIS,Enforcing Intended State,CNA,Cloud Native Architecture
+IR-9.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
+IR-9.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-LET,Logging Event Types,MLA,"Monitoring, Logging, and Auditing"
+IR-9.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-EIS,Evaluating and Improving Security,SVC,Service Configuration
+IR-9.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-PRR,Preventing Residual Risk,SVC,Service Configuration
+IR-9.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-SIN,Securing Information,SVC,Service Configuration
+PL-4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CED-RAT,Reviewing All Training,CED,Cybersecurity Education
+PL-4.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CED-RAT,Reviewing All Training,CED,Cybersecurity Education
 PL-8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RSD,Reviewing Security in the SDLC,PIY,Policy and Inventory
 PL-8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-EIS,Evaluating and Improving Security,SVC,Service Configuration
 PL-9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-ACM,Automating Configuration Management,SVC,Service Configuration
@@ -268,27 +379,53 @@ PS-6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-
 PS-7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MON,Monitoring Supply Chain Risk,SCR,Supply Chain Risk
 PS-8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SUS,Responding to Suspicious Activity,IAM,Identity and Access Management
 PS-9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
+RA-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-EVC,Evaluating Configurations,MLA,"Monitoring, Logging, and Auditing"
+RA-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
+RA-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MON,Monitoring Supply Chain Risk,SCR,Supply Chain Risk
+RA-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-EIS,Evaluating and Improving Security,SVC,Service Configuration
 RA-3.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
 RA-5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MON,Monitoring Supply Chain Risk,SCR,Supply Chain Risk
+RA-5.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
 RA-5.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 RA-5.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SNU,Securing Non-User Authentication,IAM,Identity and Access Management
+RA-5.8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-RPI,Reviewing Past Incidents,INR,Incident Response
+RA-5.8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-RVL,Reviewing Logs,MLA,"Monitoring, Logging, and Auditing"
 RA-5.11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RVD,Reviewing Vulnerability Disclosures,PIY,Policy and Inventory
+RA-9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RSD,Reviewing Security in the SDLC,PIY,Policy and Inventory
 SA-2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RIS,Reviewing Investments in Security,PIY,Policy and Inventory
 SA-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RIS,Reviewing Investments in Security,PIY,Policy and Inventory
 SA-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RSD,Reviewing Security in the SDLC,PIY,Policy and Inventory
+SA-4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
+SA-4.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
+SA-4.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
+SA-4.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
+SA-4.9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
 SA-5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-ACM,Automating Configuration Management,SVC,Service Configuration
 SA-8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RSD,Reviewing Security in the SDLC,PIY,Policy and Inventory
 SA-9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
 SA-9,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MON,Monitoring Supply Chain Risk,SCR,Supply Chain Risk
+SA-9.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
+SA-9.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
+SA-9.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
 SA-10,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
 SA-11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
+SA-11.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
+SA-11.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
+SA-15,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
 SA-15.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
+SA-16,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
+SA-17,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
+SA-21,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
 SA-22,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
+SC-2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
 SC-2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
+SC-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
+SC-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 SC-4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-ULN,Using Logical Networking,CNA,Cloud Native Architecture
 SC-4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
 SC-4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RSD,Reviewing Security in the SDLC,PIY,Policy and Inventory
 SC-4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-PRR,Preventing Residual Risk,SVC,Service Configuration
+SC-4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-SIN,Securing Information,SVC,Service Configuration
 SC-5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-RVP,Reviewing Protections,CNA,Cloud Native Architecture
 SC-7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-ULN,Using Logical Networking,CNA,Cloud Native Architecture
 SC-7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-EIS,Evaluating and Improving Security,SVC,Service Configuration
@@ -298,6 +435,19 @@ SC-7.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CN
 SC-7.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-RNT,Restricting Network Traffic,CNA,Cloud Native Architecture
 SC-7.7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-ULN,Using Logical Networking,CNA,Cloud Native Architecture
 SC-7.8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-MAT,Minimizing Attack Surface,CNA,Cloud Native Architecture
+SC-7.10,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-RNT,Restricting Network Traffic,CNA,Cloud Native Architecture
+SC-7.18,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-EIS,Enforcing Intended State,CNA,Cloud Native Architecture
+SC-7.18,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-IBP,Implementing Best Practices,CNA,Cloud Native Architecture
+SC-7.18,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-MAT,Minimizing Attack Surface,CNA,Cloud Native Architecture
+SC-7.18,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-RNT,Restricting Network Traffic,CNA,Cloud Native Architecture
+SC-7.18,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-RVP,Reviewing Protections,CNA,Cloud Native Architecture
+SC-7.18,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-ACM,Automating Configuration Management,SVC,Service Configuration
+SC-7.18,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-PRR,Preventing Residual Risk,SVC,Service Configuration
+SC-7.18,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-SIN,Securing Information,SVC,Service Configuration
+SC-7.20,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-RNT,Restricting Network Traffic,CNA,Cloud Native Architecture
+SC-7.20,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-ULN,Using Logical Networking,CNA,Cloud Native Architecture
+SC-7.21,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-RNT,Restricting Network Traffic,CNA,Cloud Native Architecture
+SC-7.21,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-ULN,Using Logical Networking,CNA,Cloud Native Architecture
 SC-8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-MAT,Minimizing Attack Surface,CNA,Cloud Native Architecture
 SC-8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-ULN,Using Logical Networking,CNA,Cloud Native Architecture
 SC-8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-SIN,Securing Information,SVC,Service Configuration
@@ -305,6 +455,10 @@ SC-8.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SV
 SC-10,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-MAT,Minimizing Attack Surface,CNA,Cloud Native Architecture
 SC-10,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-ULN,Using Logical Networking,CNA,Cloud Native Architecture
 SC-12,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-ASM,Automating Secret Management,SVC,Service Configuration
+SC-12.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-OFA,Optimizing for Availability,CNA,Cloud Native Architecture
+SC-12.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-RPL-TRC,Testing Recovery Capabilities,RPL,Recovery Planning
+SC-12.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-ASM,Automating Secret Management,SVC,Service Configuration
+SC-12.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-PRR,Preventing Residual Risk,SVC,Service Configuration
 SC-13,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-SIN,Securing Information,SVC,Service Configuration
 SC-13,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VRI,Validating Resource Integrity,SVC,Service Configuration
 SC-17,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-ASM,Automating Secret Management,SVC,Service Configuration
@@ -322,47 +476,77 @@ SC-23,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM
 SC-23,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-SIN,Securing Information,SVC,Service Configuration
 SC-23,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VCM,Validating Communications,SVC,Service Configuration
 SC-23,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VRI,Validating Resource Integrity,SVC,Service Configuration
+SC-24,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-EIS,Enforcing Intended State,CNA,Cloud Native Architecture
 SC-28,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-SIN,Securing Information,SVC,Service Configuration
 SC-28.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-SIN,Securing Information,SVC,Service Configuration
 SC-39,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
 SC-39,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-JIT,Authorizing Just-in-Time,IAM,Identity and Access Management
 SC-39,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-EIS,Evaluating and Improving Security,SVC,Service Configuration
+SC-45,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-ACM,Automating Configuration Management,SVC,Service Configuration
+SC-45.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-ACM,Automating Configuration Management,SVC,Service Configuration
 SI-2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-VTD,Validating Throughout Deployment,CMT,Change Management
 SI-2.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-EIS,Evaluating and Improving Security,SVC,Service Configuration
 SI-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CMT-RMV,Redeploying vs Modifying,CMT,Change Management
 SI-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-DFP,Defining Functionality and Privileges,CNA,Cloud Native Architecture
 SI-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
+SI-4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SUS,Responding to Suspicious Activity,IAM,Identity and Access Management
 SI-4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-RVL,Reviewing Logs,MLA,"Monitoring, Logging, and Auditing"
 SI-4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-EIS,Evaluating and Improving Security,SVC,Service Configuration
+SI-4.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SUS,Responding to Suspicious Activity,IAM,Identity and Access Management
 SI-4.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
+SI-4.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-RNT,Restricting Network Traffic,CNA,Cloud Native Architecture
+SI-4.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SUS,Responding to Suspicious Activity,IAM,Identity and Access Management
 SI-4.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-LET,Logging Event Types,MLA,"Monitoring, Logging, and Auditing"
 SI-4.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
 SI-4.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-RVL,Reviewing Logs,MLA,"Monitoring, Logging, and Auditing"
 SI-4.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-INR-RIR,Reviewing Incident Response Procedures,INR,Incident Response
 SI-4.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-LET,Logging Event Types,MLA,"Monitoring, Logging, and Auditing"
+SI-4.11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-RNT,Restricting Network Traffic,CNA,Cloud Native Architecture
+SI-4.16,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
+SI-4.18,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-RNT,Restricting Network Traffic,CNA,Cloud Native Architecture
+SI-4.18,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-SIN,Securing Information,SVC,Service Configuration
+SI-4.19,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-ELP,Ensuring Least Privilege,IAM,Identity and Access Management
+SI-4.19,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SUS,Responding to Suspicious Activity,IAM,Identity and Access Management
+SI-4.19,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-LET,Logging Event Types,MLA,"Monitoring, Logging, and Auditing"
+SI-4.19,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-RVL,Reviewing Logs,MLA,"Monitoring, Logging, and Auditing"
+SI-4.20,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SUS,Responding to Suspicious Activity,IAM,Identity and Access Management
+SI-4.20,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-LET,Logging Event Types,MLA,"Monitoring, Logging, and Auditing"
+SI-4.22,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-EIS,Enforcing Intended State,CNA,Cloud Native Architecture
+SI-4.22,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-IAM-SUS,Responding to Suspicious Activity,IAM,Identity and Access Management
+SI-4.22,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VCM,Validating Communications,SVC,Service Configuration
 SI-5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MON,Monitoring Supply Chain Risk,SCR,Supply Chain Risk
 SI-5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-ACM,Automating Configuration Management,SVC,Service Configuration
+SI-7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-EIS,Enforcing Intended State,CNA,Cloud Native Architecture
 SI-7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VRI,Validating Resource Integrity,SVC,Service Configuration
+SI-7.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-EIS,Enforcing Intended State,CNA,Cloud Native Architecture
 SI-7.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
 SI-7.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VCM,Validating Communications,SVC,Service Configuration
 SI-7.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VRI,Validating Resource Integrity,SVC,Service Configuration
+SI-7.5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-EIS,Enforcing Intended State,CNA,Cloud Native Architecture
+SI-7.7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-EIS,Enforcing Intended State,CNA,Cloud Native Architecture
 SI-7.7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-EVC,Evaluating Configurations,MLA,"Monitoring, Logging, and Auditing"
 SI-7.7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-LET,Logging Event Types,MLA,"Monitoring, Logging, and Auditing"
-SI-7.7,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-OSM,Operating SIEM Capability,MLA,"Monitoring, Logging, and Auditing"
+SI-7.15,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
+SI-7.15,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VRI,Validating Resource Integrity,SVC,Service Configuration
 SI-8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-RNT,Restricting Network Traffic,CNA,Cloud Native Architecture
 SI-8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-RVP,Reviewing Protections,CNA,Cloud Native Architecture
+SI-8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-RUD,Removing Unwanted Data,SVC,Service Configuration
 SI-8.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-RVP,Reviewing Protections,CNA,Cloud Native Architecture
+SI-8.2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-RUD,Removing Unwanted Data,SVC,Service Configuration
 SI-10,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-MAT,Minimizing Attack Surface,CNA,Cloud Native Architecture
+SI-10,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-RNT,Restricting Network Traffic,CNA,Cloud Native Architecture
 SI-10,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RSD,Reviewing Security in the SDLC,PIY,Policy and Inventory
 SI-11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-MAT,Minimizing Attack Surface,CNA,Cloud Native Architecture
 SI-11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-MLA-ALA,Authorizing Log Access,MLA,"Monitoring, Logging, and Auditing"
 SI-11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RSD,Reviewing Security in the SDLC,PIY,Policy and Inventory
-SI-12,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-RPL-ABO,Aligning Backups with Objectives,RPL,Recovery Planning
 SI-12.3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-RUD,Removing Unwanted Data,SVC,Service Configuration
 SI-16,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CNA-MAT,Minimizing Attack Surface,CNA,Cloud Native Architecture
 SI-16,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RSD,Reviewing Security in the SDLC,PIY,Policy and Inventory
 SI-18.4,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-RUD,Removing Unwanted Data,SVC,Service Configuration
+SR-2,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
 SR-2.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-PIY-RIS,Reviewing Investments in Security,PIY,Policy and Inventory
+SR-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
+SR-3,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MON,Monitoring Supply Chain Risk,SCR,Supply Chain Risk
 SR-5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
 SR-5,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MON,Monitoring Supply Chain Risk,SCR,Supply Chain Risk
 SR-6,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-MIT,Mitigating Supply Chain Risk,SCR,Supply Chain Risk
@@ -371,4 +555,5 @@ SR-8,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SCR-
 SR-10,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-ACM,Automating Configuration Management,SVC,Service Configuration
 SR-10,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-EIS,Evaluating and Improving Security,SVC,Service Configuration
 SR-10,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VRI,Validating Resource Integrity,SVC,Service Configuration
+SR-11,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-SVC-VRI,Validating Resource Integrity,SVC,Service Configuration
 SR-11.1,NIST SP 800-53 Rev. 5,5.2.0,fedramp_declared_related_control,false,KSI-CED-RAT,Reviewing All Training,CED,Cybersecurity Education

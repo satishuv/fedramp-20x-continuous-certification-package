@@ -1,6 +1,6 @@
 {
  "schema": "fedramp-rule-test-trace/v1",
- "dataset_version": "2026.10.08.01",
+ "dataset_version": "2026.10.13.01",
  "note": "Reverse traceability for the FRAMEWORK: rule -> gate -> regression test -> killed mutation, joined deterministically from the scanner check catalog, the defect ledger, the mutation runner and the gate registries. An entry means an automated check enforces something about the rule and names its protection. It never means the provider complies with the rule: a human decides every status and an assessor assesses. human_review_only lists applicable identifiers with no automated disposition; that is a coverage figure, not a defect list. unresolved_references lists identifiers a source cites that the pinned dataset does not carry: a ledger entry raised under a rule a later dataset release retired keeps its historical citation and is reported here rather than rewritten.",
  "modes": {
   "readiness-scan": "advisory per-resource scanner check; reports what is still missing before an assessor signs, never gates the build",

@@ -9,20 +9,11 @@
  "nist_release_date": "2025-08-27",
  "relationship_source": "CR26 dataset (ksi-catalog.json controls field)",
  "dataset_note": "Derived from ksi-catalog.json at build time.",
- "controls_mapped": 209,
+ "controls_mapped": 302,
  "ksis_without_control_mappings": [
-  "KSI-CNA-OFA",
   "KSI-PIY-RES"
  ],
  "crosswalk": {
-  "AC-1": [
-   {
-    "ksi_id": "KSI-SVC-SIN",
-    "ksi_name": "Securing Information",
-    "family": "SVC",
-    "family_name": "Service Configuration"
-   }
-  ],
   "AC-2": [
    {
     "ksi_id": "KSI-IAM-APM",
@@ -151,6 +142,62 @@
     "family_name": "Identity and Access Management"
    }
   ],
+  "AC-2.7": [
+   {
+    "ksi_id": "KSI-IAM-ELP",
+    "ksi_name": "Ensuring Least Privilege",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-IAM-JIT",
+    "ksi_name": "Authorizing Just-in-Time",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   }
+  ],
+  "AC-2.9": [
+   {
+    "ksi_id": "KSI-IAM-ELP",
+    "ksi_name": "Ensuring Least Privilege",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-IAM-SNU",
+    "ksi_name": "Securing Non-User Authentication",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   }
+  ],
+  "AC-2.11": [
+   {
+    "ksi_id": "KSI-IAM-ELP",
+    "ksi_name": "Ensuring Least Privilege",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-IAM-JIT",
+    "ksi_name": "Authorizing Just-in-Time",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-IAM-SUS",
+    "ksi_name": "Responding to Suspicious Activity",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   }
+  ],
+  "AC-2.12": [
+   {
+    "ksi_id": "KSI-IAM-SUS",
+    "ksi_name": "Responding to Suspicious Activity",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   }
+  ],
   "AC-2.13": [
    {
     "ksi_id": "KSI-IAM-AAM",
@@ -205,6 +252,14 @@
     "family_name": "Identity and Access Management"
    }
   ],
+  "AC-4.21": [
+   {
+    "ksi_id": "KSI-CNA-ULN",
+    "ksi_name": "Using Logical Networking",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   }
+  ],
   "AC-5": [
    {
     "ksi_id": "KSI-IAM-JIT",
@@ -255,6 +310,20 @@
     "family_name": "Identity and Access Management"
    }
   ],
+  "AC-6.3": [
+   {
+    "ksi_id": "KSI-IAM-ELP",
+    "ksi_name": "Ensuring Least Privilege",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-IAM-JIT",
+    "ksi_name": "Authorizing Just-in-Time",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   }
+  ],
   "AC-6.5": [
    {
     "ksi_id": "KSI-IAM-JIT",
@@ -281,6 +350,26 @@
     "ksi_name": "Authorizing Just-in-Time",
     "family": "IAM",
     "family_name": "Identity and Access Management"
+   }
+  ],
+  "AC-6.8": [
+   {
+    "ksi_id": "KSI-IAM-ELP",
+    "ksi_name": "Ensuring Least Privilege",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-IAM-JIT",
+    "ksi_name": "Authorizing Just-in-Time",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-SVC-ACM",
+    "ksi_name": "Automating Configuration Management",
+    "family": "SVC",
+    "family_name": "Service Configuration"
    }
   ],
   "AC-6.9": [
@@ -323,6 +412,30 @@
     "ksi_name": "Responding to Suspicious Activity",
     "family": "IAM",
     "family_name": "Identity and Access Management"
+   }
+  ],
+  "AC-10": [
+   {
+    "ksi_id": "KSI-SVC-VCM",
+    "ksi_name": "Validating Communications",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   }
+  ],
+  "AC-11": [
+   {
+    "ksi_id": "KSI-SVC-SIN",
+    "ksi_name": "Securing Information",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   }
+  ],
+  "AC-11.1": [
+   {
+    "ksi_id": "KSI-SVC-SIN",
+    "ksi_name": "Securing Information",
+    "family": "SVC",
+    "family_name": "Service Configuration"
    }
   ],
   "AC-12": [
@@ -433,6 +546,40 @@
     "family_name": "Identity and Access Management"
    }
   ],
+  "AC-17.4": [
+   {
+    "ksi_id": "KSI-IAM-JIT",
+    "ksi_name": "Authorizing Just-in-Time",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-SVC-VCM",
+    "ksi_name": "Validating Communications",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   },
+   {
+    "ksi_id": "KSI-SVC-VRI",
+    "ksi_name": "Validating Resource Integrity",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   }
+  ],
+  "AC-18": [
+   {
+    "ksi_id": "KSI-SVC-VCM",
+    "ksi_name": "Validating Communications",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   },
+   {
+    "ksi_id": "KSI-SVC-VRI",
+    "ksi_name": "Validating Resource Integrity",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   }
+  ],
   "AC-18.1": [
    {
     "ksi_id": "KSI-CNA-MAT",
@@ -447,6 +594,60 @@
     "ksi_name": "Minimizing Attack Surface",
     "family": "CNA",
     "family_name": "Cloud Native Architecture"
+   }
+  ],
+  "AC-18.4": [
+   {
+    "ksi_id": "KSI-IAM-ELP",
+    "ksi_name": "Ensuring Least Privilege",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   }
+  ],
+  "AC-19": [
+   {
+    "ksi_id": "KSI-MLA-EVC",
+    "ksi_name": "Evaluating Configurations",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
+   },
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   },
+   {
+    "ksi_id": "KSI-SCR-MON",
+    "ksi_name": "Monitoring Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   },
+   {
+    "ksi_id": "KSI-SVC-PRR",
+    "ksi_name": "Preventing Residual Risk",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   },
+   {
+    "ksi_id": "KSI-SVC-VCM",
+    "ksi_name": "Validating Communications",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   },
+   {
+    "ksi_id": "KSI-SVC-VRI",
+    "ksi_name": "Validating Resource Integrity",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   }
+  ],
+  "AC-19.5": [
+   {
+    "ksi_id": "KSI-SVC-SIN",
+    "ksi_name": "Securing Information",
+    "family": "SVC",
+    "family_name": "Service Configuration"
    }
   ],
   "AC-20": [
@@ -499,6 +700,26 @@
     "ksi_name": "Operating SIEM Capability",
     "family": "MLA",
     "family_name": "Monitoring, Logging, and Auditing"
+   }
+  ],
+  "AC-21": [
+   {
+    "ksi_id": "KSI-IAM-ELP",
+    "ksi_name": "Ensuring Least Privilege",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-IAM-JIT",
+    "ksi_name": "Authorizing Just-in-Time",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-SVC-SIN",
+    "ksi_name": "Securing Information",
+    "family": "SVC",
+    "family_name": "Service Configuration"
    }
   ],
   "AT-2": [
@@ -615,6 +836,14 @@
     "family_name": "Monitoring, Logging, and Auditing"
    }
   ],
+  "AU-5.1": [
+   {
+    "ksi_id": "KSI-MLA-OSM",
+    "ksi_name": "Operating SIEM Capability",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
+   }
+  ],
   "AU-6": [
    {
     "ksi_id": "KSI-MLA-RVL",
@@ -645,10 +874,58 @@
     "family_name": "Monitoring, Logging, and Auditing"
    }
   ],
-  "AU-7": [
+  "AU-6.4": [
    {
     "ksi_id": "KSI-MLA-OSM",
     "ksi_name": "Operating SIEM Capability",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
+   }
+  ],
+  "AU-6.5": [
+   {
+    "ksi_id": "KSI-IAM-SUS",
+    "ksi_name": "Responding to Suspicious Activity",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-MLA-OSM",
+    "ksi_name": "Operating SIEM Capability",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
+   }
+  ],
+  "AU-6.7": [
+   {
+    "ksi_id": "KSI-IAM-ELP",
+    "ksi_name": "Ensuring Least Privilege",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-MLA-ALA",
+    "ksi_name": "Authorizing Log Access",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
+   }
+  ],
+  "AU-7": [
+   {
+    "ksi_id": "KSI-MLA-LET",
+    "ksi_name": "Logging Event Types",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
+   },
+   {
+    "ksi_id": "KSI-MLA-OSM",
+    "ksi_name": "Operating SIEM Capability",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
+   },
+   {
+    "ksi_id": "KSI-MLA-RVL",
+    "ksi_name": "Reviewing Logs",
     "family": "MLA",
     "family_name": "Monitoring, Logging, and Auditing"
    }
@@ -683,12 +960,40 @@
     "family_name": "Monitoring, Logging, and Auditing"
    }
   ],
+  "AU-9.3": [
+   {
+    "ksi_id": "KSI-SVC-VRI",
+    "ksi_name": "Validating Resource Integrity",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   }
+  ],
   "AU-9.4": [
    {
     "ksi_id": "KSI-IAM-JIT",
     "ksi_name": "Authorizing Just-in-Time",
     "family": "IAM",
     "family_name": "Identity and Access Management"
+   }
+  ],
+  "AU-10": [
+   {
+    "ksi_id": "KSI-IAM-JIT",
+    "ksi_name": "Authorizing Just-in-Time",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-IAM-SNU",
+    "ksi_name": "Securing Non-User Authentication",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-MLA-LET",
+    "ksi_name": "Logging Event Types",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
    }
   ],
   "AU-11": [
@@ -703,6 +1008,34 @@
    {
     "ksi_id": "KSI-MLA-LET",
     "ksi_name": "Logging Event Types",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
+   }
+  ],
+  "AU-12.1": [
+   {
+    "ksi_id": "KSI-MLA-OSM",
+    "ksi_name": "Operating SIEM Capability",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
+   }
+  ],
+  "AU-12.3": [
+   {
+    "ksi_id": "KSI-IAM-ELP",
+    "ksi_name": "Ensuring Least Privilege",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-IAM-JIT",
+    "ksi_name": "Authorizing Just-in-Time",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-MLA-ALA",
+    "ksi_name": "Authorizing Log Access",
     "family": "MLA",
     "family_name": "Monitoring, Logging, and Auditing"
    }
@@ -723,12 +1056,36 @@
     "family_name": "Cloud Native Architecture"
    }
   ],
+  "CA-2.2": [
+   {
+    "ksi_id": "KSI-PIY-RIS",
+    "ksi_name": "Reviewing Investments in Security",
+    "family": "PIY",
+    "family_name": "Policy and Inventory"
+   }
+  ],
+  "CA-2.3": [
+   {
+    "ksi_id": "KSI-SCR-MON",
+    "ksi_name": "Monitoring Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   }
+  ],
   "CA-3": [
    {
     "ksi_id": "KSI-SCR-MON",
     "ksi_name": "Monitoring Supply Chain Risk",
     "family": "SCR",
     "family_name": "Supply Chain Risk"
+   }
+  ],
+  "CA-3.6": [
+   {
+    "ksi_id": "KSI-IAM-JIT",
+    "ksi_name": "Authorizing Just-in-Time",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
    }
   ],
   "CA-7": [
@@ -739,20 +1096,24 @@
     "family_name": "Monitoring, Logging, and Auditing"
    }
   ],
-  "CA-7.1": [
-   {
-    "ksi_id": "KSI-CNA-EIS",
-    "ksi_name": "Enforcing Intended State",
-    "family": "CNA",
-    "family_name": "Cloud Native Architecture"
-   }
-  ],
   "CA-7.4": [
+   {
+    "ksi_id": "KSI-CMT-LMC",
+    "ksi_name": "Logging Changes",
+    "family": "CMT",
+    "family_name": "Change Management"
+   },
    {
     "ksi_id": "KSI-SCR-MIT",
     "ksi_name": "Mitigating Supply Chain Risk",
     "family": "SCR",
     "family_name": "Supply Chain Risk"
+   },
+   {
+    "ksi_id": "KSI-SVC-EIS",
+    "ksi_name": "Evaluating and Improving Security",
+    "family": "SVC",
+    "family_name": "Service Configuration"
    }
   ],
   "CA-9": [
@@ -875,6 +1236,14 @@
     "family_name": "Change Management"
    }
   ],
+  "CM-3.1": [
+   {
+    "ksi_id": "KSI-CMT-LMC",
+    "ksi_name": "Logging Changes",
+    "family": "CMT",
+    "family_name": "Change Management"
+   }
+  ],
   "CM-3.2": [
    {
     "ksi_id": "KSI-CMT-LMC",
@@ -907,6 +1276,14 @@
     "ksi_name": "Reviewing Security in the SDLC",
     "family": "PIY",
     "family_name": "Policy and Inventory"
+   }
+  ],
+  "CM-3.6": [
+   {
+    "ksi_id": "KSI-CMT-LMC",
+    "ksi_name": "Logging Changes",
+    "family": "CMT",
+    "family_name": "Change Management"
    }
   ],
   "CM-4.2": [
@@ -943,6 +1320,52 @@
     "family_name": "Identity and Access Management"
    }
   ],
+  "CM-5.1": [
+   {
+    "ksi_id": "KSI-IAM-ELP",
+    "ksi_name": "Ensuring Least Privilege",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-IAM-JIT",
+    "ksi_name": "Authorizing Just-in-Time",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-IAM-SUS",
+    "ksi_name": "Responding to Suspicious Activity",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-MLA-LET",
+    "ksi_name": "Logging Event Types",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
+   }
+  ],
+  "CM-5.5": [
+   {
+    "ksi_id": "KSI-IAM-ELP",
+    "ksi_name": "Ensuring Least Privilege",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-IAM-JIT",
+    "ksi_name": "Authorizing Just-in-Time",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-SVC-EIS",
+    "ksi_name": "Evaluating and Improving Security",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   }
+  ],
   "CM-6": [
    {
     "ksi_id": "KSI-CMT-LMC",
@@ -967,6 +1390,34 @@
     "ksi_name": "Automating Configuration Management",
     "family": "SVC",
     "family_name": "Service Configuration"
+   }
+  ],
+  "CM-6.1": [
+   {
+    "ksi_id": "KSI-MLA-EVC",
+    "ksi_name": "Evaluating Configurations",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
+   }
+  ],
+  "CM-6.2": [
+   {
+    "ksi_id": "KSI-CMT-VTD",
+    "ksi_name": "Validating Throughout Deployment",
+    "family": "CMT",
+    "family_name": "Change Management"
+   },
+   {
+    "ksi_id": "KSI-CNA-EIS",
+    "ksi_name": "Enforcing Intended State",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-IAM-SUS",
+    "ksi_name": "Responding to Suspicious Activity",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
    }
   ],
   "CM-7": [
@@ -1011,6 +1462,12 @@
   ],
   "CM-7.2": [
    {
+    "ksi_id": "KSI-IAM-ELP",
+    "ksi_name": "Ensuring Least Privilege",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
     "ksi_id": "KSI-IAM-JIT",
     "ksi_name": "Authorizing Just-in-Time",
     "family": "IAM",
@@ -1053,6 +1510,14 @@
     "family_name": "Policy and Inventory"
    }
   ],
+  "CM-8.2": [
+   {
+    "ksi_id": "KSI-PIY-GIV",
+    "ksi_name": "Generating Inventories",
+    "family": "PIY",
+    "family_name": "Policy and Inventory"
+   }
+  ],
   "CM-8.3": [
    {
     "ksi_id": "KSI-CMT-LMC",
@@ -1065,6 +1530,20 @@
     "ksi_name": "Validating Resource Integrity",
     "family": "SVC",
     "family_name": "Service Configuration"
+   }
+  ],
+  "CM-8.4": [
+   {
+    "ksi_id": "KSI-CNA-DFP",
+    "ksi_name": "Defining Functionality and Privileges",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-PIY-GIV",
+    "ksi_name": "Generating Inventories",
+    "family": "PIY",
+    "family_name": "Policy and Inventory"
    }
   ],
   "CM-9": [
@@ -1087,6 +1566,26 @@
     "family_name": "Identity and Access Management"
    }
   ],
+  "CM-11": [
+   {
+    "ksi_id": "KSI-CED-RAT",
+    "ksi_name": "Reviewing All Training",
+    "family": "CED",
+    "family_name": "Cybersecurity Education"
+   },
+   {
+    "ksi_id": "KSI-CNA-EIS",
+    "ksi_name": "Enforcing Intended State",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-CNA-ULN",
+    "ksi_name": "Using Logical Networking",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   }
+  ],
   "CM-12": [
    {
     "ksi_id": "KSI-PIY-GIV",
@@ -1105,6 +1604,14 @@
    {
     "ksi_id": "KSI-SVC-EIS",
     "ksi_name": "Evaluating and Improving Security",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   }
+  ],
+  "CM-14": [
+   {
+    "ksi_id": "KSI-SVC-VRI",
+    "ksi_name": "Validating Resource Integrity",
     "family": "SVC",
     "family_name": "Service Configuration"
    }
@@ -1157,6 +1664,14 @@
     "family_name": "Recovery Planning"
    }
   ],
+  "CP-2.5": [
+   {
+    "ksi_id": "KSI-CNA-OFA",
+    "ksi_name": "Optimizing for Availability",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   }
+  ],
   "CP-2.8": [
    {
     "ksi_id": "KSI-PIY-GIV",
@@ -1166,6 +1681,14 @@
    }
   ],
   "CP-3": [
+   {
+    "ksi_id": "KSI-CED-RAT",
+    "ksi_name": "Reviewing All Training",
+    "family": "CED",
+    "family_name": "Cybersecurity Education"
+   }
+  ],
+  "CP-3.1": [
    {
     "ksi_id": "KSI-CED-RAT",
     "ksi_name": "Reviewing All Training",
@@ -1363,6 +1886,20 @@
     "family_name": "Recovery Planning"
    }
   ],
+  "CP-10.4": [
+   {
+    "ksi_id": "KSI-CNA-DFP",
+    "ksi_name": "Defining Functionality and Privileges",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-CNA-EIS",
+    "ksi_name": "Enforcing Intended State",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   }
+  ],
   "IA-2": [
    {
     "ksi_id": "KSI-IAM-APM",
@@ -1386,6 +1923,22 @@
    }
   ],
   "IA-2.2": [
+   {
+    "ksi_id": "KSI-IAM-APM",
+    "ksi_name": "Adopting Passwordless Methods",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   }
+  ],
+  "IA-2.5": [
+   {
+    "ksi_id": "KSI-IAM-SNU",
+    "ksi_name": "Securing Non-User Authentication",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   }
+  ],
+  "IA-2.6": [
    {
     "ksi_id": "KSI-IAM-APM",
     "ksi_name": "Adopting Passwordless Methods",
@@ -1511,6 +2064,22 @@
     "family_name": "Service Configuration"
    }
   ],
+  "IA-5.7": [
+   {
+    "ksi_id": "KSI-PIY-RSD",
+    "ksi_name": "Reviewing Security in the SDLC",
+    "family": "PIY",
+    "family_name": "Policy and Inventory"
+   }
+  ],
+  "IA-5.8": [
+   {
+    "ksi_id": "KSI-IAM-APM",
+    "ksi_name": "Adopting Passwordless Methods",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   }
+  ],
   "IA-6": [
    {
     "ksi_id": "KSI-IAM-APM",
@@ -1528,6 +2097,28 @@
    }
   ],
   "IA-8": [
+   {
+    "ksi_id": "KSI-IAM-APM",
+    "ksi_name": "Adopting Passwordless Methods",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   }
+  ],
+  "IA-8.2": [
+   {
+    "ksi_id": "KSI-IAM-APM",
+    "ksi_name": "Adopting Passwordless Methods",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   }
+  ],
+  "IA-8.4": [
+   {
+    "ksi_id": "KSI-IAM-AAM",
+    "ksi_name": "Automating Account Management",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
    {
     "ksi_id": "KSI-IAM-APM",
     "ksi_name": "Adopting Passwordless Methods",
@@ -1576,6 +2167,22 @@
    }
   ],
   "IR-2": [
+   {
+    "ksi_id": "KSI-CED-RAT",
+    "ksi_name": "Reviewing All Training",
+    "family": "CED",
+    "family_name": "Cybersecurity Education"
+   }
+  ],
+  "IR-2.1": [
+   {
+    "ksi_id": "KSI-CED-RAT",
+    "ksi_name": "Reviewing All Training",
+    "family": "CED",
+    "family_name": "Cybersecurity Education"
+   }
+  ],
+  "IR-2.2": [
    {
     "ksi_id": "KSI-CED-RAT",
     "ksi_name": "Reviewing All Training",
@@ -1671,7 +2278,83 @@
     "family_name": "Monitoring, Logging, and Auditing"
    }
   ],
+  "IR-4.2": [
+   {
+    "ksi_id": "KSI-CNA-RVP",
+    "ksi_name": "Reviewing Protections",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-IAM-SUS",
+    "ksi_name": "Responding to Suspicious Activity",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   }
+  ],
+  "IR-4.4": [
+   {
+    "ksi_id": "KSI-INR-RPI",
+    "ksi_name": "Reviewing Past Incidents",
+    "family": "INR",
+    "family_name": "Incident Response"
+   }
+  ],
+  "IR-4.6": [
+   {
+    "ksi_id": "KSI-IAM-ELP",
+    "ksi_name": "Ensuring Least Privilege",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-IAM-JIT",
+    "ksi_name": "Authorizing Just-in-Time",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-IAM-SUS",
+    "ksi_name": "Responding to Suspicious Activity",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   }
+  ],
+  "IR-4.11": [
+   {
+    "ksi_id": "KSI-INR-RIR",
+    "ksi_name": "Reviewing Incident Response Procedures",
+    "family": "INR",
+    "family_name": "Incident Response"
+   },
+   {
+    "ksi_id": "KSI-INR-RPI",
+    "ksi_name": "Reviewing Past Incidents",
+    "family": "INR",
+    "family_name": "Incident Response"
+   },
+   {
+    "ksi_id": "KSI-PIY-RIS",
+    "ksi_name": "Reviewing Investments in Security",
+    "family": "PIY",
+    "family_name": "Policy and Inventory"
+   }
+  ],
   "IR-5": [
+   {
+    "ksi_id": "KSI-INR-RPI",
+    "ksi_name": "Reviewing Past Incidents",
+    "family": "INR",
+    "family_name": "Incident Response"
+   }
+  ],
+  "IR-5.1": [
+   {
+    "ksi_id": "KSI-INR-AAR",
+    "ksi_name": "Generating After Action Reports",
+    "family": "INR",
+    "family_name": "Incident Response"
+   },
    {
     "ksi_id": "KSI-INR-RPI",
     "ksi_name": "Reviewing Past Incidents",
@@ -1753,18 +2436,112 @@
     "family_name": "Incident Response"
    }
   ],
-  "MA-2": [
+  "IR-9": [
    {
-    "ksi_id": "KSI-CMT-LMC",
-    "ksi_name": "Logging Changes",
+    "ksi_id": "KSI-SVC-RUD",
+    "ksi_name": "Removing Unwanted Data",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   }
+  ],
+  "IR-9.2": [
+   {
+    "ksi_id": "KSI-CED-RAT",
+    "ksi_name": "Reviewing All Training",
+    "family": "CED",
+    "family_name": "Cybersecurity Education"
+   }
+  ],
+  "IR-9.3": [
+   {
+    "ksi_id": "KSI-INR-AAR",
+    "ksi_name": "Generating After Action Reports",
+    "family": "INR",
+    "family_name": "Incident Response"
+   },
+   {
+    "ksi_id": "KSI-INR-RIR",
+    "ksi_name": "Reviewing Incident Response Procedures",
+    "family": "INR",
+    "family_name": "Incident Response"
+   },
+   {
+    "ksi_id": "KSI-RPL-TRC",
+    "ksi_name": "Testing Recovery Capabilities",
+    "family": "RPL",
+    "family_name": "Recovery Planning"
+   }
+  ],
+  "IR-9.4": [
+   {
+    "ksi_id": "KSI-CED-RAT",
+    "ksi_name": "Reviewing All Training",
+    "family": "CED",
+    "family_name": "Cybersecurity Education"
+   },
+   {
+    "ksi_id": "KSI-CMT-VTD",
+    "ksi_name": "Validating Throughout Deployment",
     "family": "CMT",
     "family_name": "Change Management"
+   },
+   {
+    "ksi_id": "KSI-CNA-DFP",
+    "ksi_name": "Defining Functionality and Privileges",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-CNA-EIS",
+    "ksi_name": "Enforcing Intended State",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-IAM-ELP",
+    "ksi_name": "Ensuring Least Privilege",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-MLA-LET",
+    "ksi_name": "Logging Event Types",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
    },
    {
     "ksi_id": "KSI-SVC-EIS",
     "ksi_name": "Evaluating and Improving Security",
     "family": "SVC",
     "family_name": "Service Configuration"
+   },
+   {
+    "ksi_id": "KSI-SVC-PRR",
+    "ksi_name": "Preventing Residual Risk",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   },
+   {
+    "ksi_id": "KSI-SVC-SIN",
+    "ksi_name": "Securing Information",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   }
+  ],
+  "PL-4": [
+   {
+    "ksi_id": "KSI-CED-RAT",
+    "ksi_name": "Reviewing All Training",
+    "family": "CED",
+    "family_name": "Cybersecurity Education"
+   }
+  ],
+  "PL-4.1": [
+   {
+    "ksi_id": "KSI-CED-RAT",
+    "ksi_name": "Reviewing All Training",
+    "family": "CED",
+    "family_name": "Cybersecurity Education"
    }
   ],
   "PL-8": [
@@ -1925,6 +2702,32 @@
     "family_name": "Identity and Access Management"
    }
   ],
+  "RA-3": [
+   {
+    "ksi_id": "KSI-MLA-EVC",
+    "ksi_name": "Evaluating Configurations",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
+   },
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   },
+   {
+    "ksi_id": "KSI-SCR-MON",
+    "ksi_name": "Monitoring Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   },
+   {
+    "ksi_id": "KSI-SVC-EIS",
+    "ksi_name": "Evaluating and Improving Security",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   }
+  ],
   "RA-3.1": [
    {
     "ksi_id": "KSI-SCR-MIT",
@@ -1943,6 +2746,12 @@
   ],
   "RA-5.5": [
    {
+    "ksi_id": "KSI-IAM-ELP",
+    "ksi_name": "Ensuring Least Privilege",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
     "ksi_id": "KSI-IAM-JIT",
     "ksi_name": "Authorizing Just-in-Time",
     "family": "IAM",
@@ -1955,10 +2764,32 @@
     "family_name": "Identity and Access Management"
    }
   ],
+  "RA-5.8": [
+   {
+    "ksi_id": "KSI-INR-RPI",
+    "ksi_name": "Reviewing Past Incidents",
+    "family": "INR",
+    "family_name": "Incident Response"
+   },
+   {
+    "ksi_id": "KSI-MLA-RVL",
+    "ksi_name": "Reviewing Logs",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
+   }
+  ],
   "RA-5.11": [
    {
     "ksi_id": "KSI-PIY-RVD",
     "ksi_name": "Reviewing Vulnerability Disclosures",
+    "family": "PIY",
+    "family_name": "Policy and Inventory"
+   }
+  ],
+  "RA-9": [
+   {
+    "ksi_id": "KSI-PIY-RSD",
+    "ksi_name": "Reviewing Security in the SDLC",
     "family": "PIY",
     "family_name": "Policy and Inventory"
    }
@@ -1983,6 +2814,46 @@
     "ksi_name": "Reviewing Security in the SDLC",
     "family": "PIY",
     "family_name": "Policy and Inventory"
+   }
+  ],
+  "SA-4": [
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   }
+  ],
+  "SA-4.1": [
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   }
+  ],
+  "SA-4.2": [
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   }
+  ],
+  "SA-4.5": [
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   }
+  ],
+  "SA-4.9": [
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
    }
   ],
   "SA-5": [
@@ -2015,6 +2886,30 @@
     "family_name": "Supply Chain Risk"
    }
   ],
+  "SA-9.1": [
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   }
+  ],
+  "SA-9.2": [
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   }
+  ],
+  "SA-9.5": [
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   }
+  ],
   "SA-10": [
    {
     "ksi_id": "KSI-SCR-MIT",
@@ -2031,7 +2926,55 @@
     "family_name": "Supply Chain Risk"
    }
   ],
+  "SA-11.1": [
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   }
+  ],
+  "SA-11.2": [
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   }
+  ],
+  "SA-15": [
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   }
+  ],
   "SA-15.3": [
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   }
+  ],
+  "SA-16": [
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   }
+  ],
+  "SA-17": [
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   }
+  ],
+  "SA-21": [
    {
     "ksi_id": "KSI-SCR-MIT",
     "ksi_name": "Mitigating Supply Chain Risk",
@@ -2048,6 +2991,26 @@
    }
   ],
   "SC-2": [
+   {
+    "ksi_id": "KSI-IAM-ELP",
+    "ksi_name": "Ensuring Least Privilege",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-IAM-JIT",
+    "ksi_name": "Authorizing Just-in-Time",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   }
+  ],
+  "SC-3": [
+   {
+    "ksi_id": "KSI-IAM-ELP",
+    "ksi_name": "Ensuring Least Privilege",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
    {
     "ksi_id": "KSI-IAM-JIT",
     "ksi_name": "Authorizing Just-in-Time",
@@ -2077,6 +3040,12 @@
    {
     "ksi_id": "KSI-SVC-PRR",
     "ksi_name": "Preventing Residual Risk",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   },
+   {
+    "ksi_id": "KSI-SVC-SIN",
+    "ksi_name": "Securing Information",
     "family": "SVC",
     "family_name": "Service Configuration"
    }
@@ -2149,6 +3118,92 @@
     "family_name": "Cloud Native Architecture"
    }
   ],
+  "SC-7.10": [
+   {
+    "ksi_id": "KSI-CNA-RNT",
+    "ksi_name": "Restricting Network Traffic",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   }
+  ],
+  "SC-7.18": [
+   {
+    "ksi_id": "KSI-CNA-EIS",
+    "ksi_name": "Enforcing Intended State",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-CNA-IBP",
+    "ksi_name": "Implementing Best Practices",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-CNA-MAT",
+    "ksi_name": "Minimizing Attack Surface",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-CNA-RNT",
+    "ksi_name": "Restricting Network Traffic",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-CNA-RVP",
+    "ksi_name": "Reviewing Protections",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-SVC-ACM",
+    "ksi_name": "Automating Configuration Management",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   },
+   {
+    "ksi_id": "KSI-SVC-PRR",
+    "ksi_name": "Preventing Residual Risk",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   },
+   {
+    "ksi_id": "KSI-SVC-SIN",
+    "ksi_name": "Securing Information",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   }
+  ],
+  "SC-7.20": [
+   {
+    "ksi_id": "KSI-CNA-RNT",
+    "ksi_name": "Restricting Network Traffic",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-CNA-ULN",
+    "ksi_name": "Using Logical Networking",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   }
+  ],
+  "SC-7.21": [
+   {
+    "ksi_id": "KSI-CNA-RNT",
+    "ksi_name": "Restricting Network Traffic",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-CNA-ULN",
+    "ksi_name": "Using Logical Networking",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   }
+  ],
   "SC-8": [
    {
     "ksi_id": "KSI-CNA-MAT",
@@ -2195,6 +3250,32 @@
    {
     "ksi_id": "KSI-SVC-ASM",
     "ksi_name": "Automating Secret Management",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   }
+  ],
+  "SC-12.1": [
+   {
+    "ksi_id": "KSI-CNA-OFA",
+    "ksi_name": "Optimizing for Availability",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-RPL-TRC",
+    "ksi_name": "Testing Recovery Capabilities",
+    "family": "RPL",
+    "family_name": "Recovery Planning"
+   },
+   {
+    "ksi_id": "KSI-SVC-ASM",
+    "ksi_name": "Automating Secret Management",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   },
+   {
+    "ksi_id": "KSI-SVC-PRR",
+    "ksi_name": "Preventing Residual Risk",
     "family": "SVC",
     "family_name": "Service Configuration"
    }
@@ -2315,6 +3396,14 @@
     "family_name": "Service Configuration"
    }
   ],
+  "SC-24": [
+   {
+    "ksi_id": "KSI-CNA-EIS",
+    "ksi_name": "Enforcing Intended State",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   }
+  ],
   "SC-28": [
    {
     "ksi_id": "KSI-SVC-SIN",
@@ -2347,6 +3436,22 @@
    {
     "ksi_id": "KSI-SVC-EIS",
     "ksi_name": "Evaluating and Improving Security",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   }
+  ],
+  "SC-45": [
+   {
+    "ksi_id": "KSI-SVC-ACM",
+    "ksi_name": "Automating Configuration Management",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   }
+  ],
+  "SC-45.1": [
+   {
+    "ksi_id": "KSI-SVC-ACM",
+    "ksi_name": "Automating Configuration Management",
     "family": "SVC",
     "family_name": "Service Configuration"
    }
@@ -2389,6 +3494,12 @@
   ],
   "SI-4": [
    {
+    "ksi_id": "KSI-IAM-SUS",
+    "ksi_name": "Responding to Suspicious Activity",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
     "ksi_id": "KSI-MLA-RVL",
     "ksi_name": "Reviewing Logs",
     "family": "MLA",
@@ -2401,6 +3512,14 @@
     "family_name": "Service Configuration"
    }
   ],
+  "SI-4.1": [
+   {
+    "ksi_id": "KSI-IAM-SUS",
+    "ksi_name": "Responding to Suspicious Activity",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   }
+  ],
   "SI-4.2": [
    {
     "ksi_id": "KSI-MLA-OSM",
@@ -2410,6 +3529,18 @@
    }
   ],
   "SI-4.4": [
+   {
+    "ksi_id": "KSI-CNA-RNT",
+    "ksi_name": "Restricting Network Traffic",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-IAM-SUS",
+    "ksi_name": "Responding to Suspicious Activity",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
    {
     "ksi_id": "KSI-MLA-LET",
     "ksi_name": "Logging Event Types",
@@ -2443,6 +3574,96 @@
     "family_name": "Monitoring, Logging, and Auditing"
    }
   ],
+  "SI-4.11": [
+   {
+    "ksi_id": "KSI-CNA-RNT",
+    "ksi_name": "Restricting Network Traffic",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   }
+  ],
+  "SI-4.16": [
+   {
+    "ksi_id": "KSI-MLA-OSM",
+    "ksi_name": "Operating SIEM Capability",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
+   }
+  ],
+  "SI-4.18": [
+   {
+    "ksi_id": "KSI-CNA-RNT",
+    "ksi_name": "Restricting Network Traffic",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-SVC-SIN",
+    "ksi_name": "Securing Information",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   }
+  ],
+  "SI-4.19": [
+   {
+    "ksi_id": "KSI-IAM-ELP",
+    "ksi_name": "Ensuring Least Privilege",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-IAM-SUS",
+    "ksi_name": "Responding to Suspicious Activity",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-MLA-LET",
+    "ksi_name": "Logging Event Types",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
+   },
+   {
+    "ksi_id": "KSI-MLA-RVL",
+    "ksi_name": "Reviewing Logs",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
+   }
+  ],
+  "SI-4.20": [
+   {
+    "ksi_id": "KSI-IAM-SUS",
+    "ksi_name": "Responding to Suspicious Activity",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-MLA-LET",
+    "ksi_name": "Logging Event Types",
+    "family": "MLA",
+    "family_name": "Monitoring, Logging, and Auditing"
+   }
+  ],
+  "SI-4.22": [
+   {
+    "ksi_id": "KSI-CNA-EIS",
+    "ksi_name": "Enforcing Intended State",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-IAM-SUS",
+    "ksi_name": "Responding to Suspicious Activity",
+    "family": "IAM",
+    "family_name": "Identity and Access Management"
+   },
+   {
+    "ksi_id": "KSI-SVC-VCM",
+    "ksi_name": "Validating Communications",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   }
+  ],
   "SI-5": [
    {
     "ksi_id": "KSI-SCR-MON",
@@ -2459,6 +3680,12 @@
   ],
   "SI-7": [
    {
+    "ksi_id": "KSI-CNA-EIS",
+    "ksi_name": "Enforcing Intended State",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
     "ksi_id": "KSI-SVC-VRI",
     "ksi_name": "Validating Resource Integrity",
     "family": "SVC",
@@ -2466,6 +3693,12 @@
    }
   ],
   "SI-7.1": [
+   {
+    "ksi_id": "KSI-CNA-EIS",
+    "ksi_name": "Enforcing Intended State",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
    {
     "ksi_id": "KSI-SCR-MIT",
     "ksi_name": "Mitigating Supply Chain Risk",
@@ -2485,7 +3718,21 @@
     "family_name": "Service Configuration"
    }
   ],
+  "SI-7.5": [
+   {
+    "ksi_id": "KSI-CNA-EIS",
+    "ksi_name": "Enforcing Intended State",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   }
+  ],
   "SI-7.7": [
+   {
+    "ksi_id": "KSI-CNA-EIS",
+    "ksi_name": "Enforcing Intended State",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
    {
     "ksi_id": "KSI-MLA-EVC",
     "ksi_name": "Evaluating Configurations",
@@ -2497,12 +3744,20 @@
     "ksi_name": "Logging Event Types",
     "family": "MLA",
     "family_name": "Monitoring, Logging, and Auditing"
+   }
+  ],
+  "SI-7.15": [
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
    },
    {
-    "ksi_id": "KSI-MLA-OSM",
-    "ksi_name": "Operating SIEM Capability",
-    "family": "MLA",
-    "family_name": "Monitoring, Logging, and Auditing"
+    "ksi_id": "KSI-SVC-VRI",
+    "ksi_name": "Validating Resource Integrity",
+    "family": "SVC",
+    "family_name": "Service Configuration"
    }
   ],
   "SI-8": [
@@ -2517,6 +3772,12 @@
     "ksi_name": "Reviewing Protections",
     "family": "CNA",
     "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-SVC-RUD",
+    "ksi_name": "Removing Unwanted Data",
+    "family": "SVC",
+    "family_name": "Service Configuration"
    }
   ],
   "SI-8.2": [
@@ -2525,12 +3786,24 @@
     "ksi_name": "Reviewing Protections",
     "family": "CNA",
     "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-SVC-RUD",
+    "ksi_name": "Removing Unwanted Data",
+    "family": "SVC",
+    "family_name": "Service Configuration"
    }
   ],
   "SI-10": [
    {
     "ksi_id": "KSI-CNA-MAT",
     "ksi_name": "Minimizing Attack Surface",
+    "family": "CNA",
+    "family_name": "Cloud Native Architecture"
+   },
+   {
+    "ksi_id": "KSI-CNA-RNT",
+    "ksi_name": "Restricting Network Traffic",
     "family": "CNA",
     "family_name": "Cloud Native Architecture"
    },
@@ -2559,14 +3832,6 @@
     "ksi_name": "Reviewing Security in the SDLC",
     "family": "PIY",
     "family_name": "Policy and Inventory"
-   }
-  ],
-  "SI-12": [
-   {
-    "ksi_id": "KSI-RPL-ABO",
-    "ksi_name": "Aligning Backups with Objectives",
-    "family": "RPL",
-    "family_name": "Recovery Planning"
    }
   ],
   "SI-12.3": [
@@ -2599,12 +3864,34 @@
     "family_name": "Service Configuration"
    }
   ],
+  "SR-2": [
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   }
+  ],
   "SR-2.1": [
    {
     "ksi_id": "KSI-PIY-RIS",
     "ksi_name": "Reviewing Investments in Security",
     "family": "PIY",
     "family_name": "Policy and Inventory"
+   }
+  ],
+  "SR-3": [
+   {
+    "ksi_id": "KSI-SCR-MIT",
+    "ksi_name": "Mitigating Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
+   },
+   {
+    "ksi_id": "KSI-SCR-MON",
+    "ksi_name": "Monitoring Supply Chain Risk",
+    "family": "SCR",
+    "family_name": "Supply Chain Risk"
    }
   ],
   "SR-5": [
@@ -2656,6 +3943,14 @@
     "family": "SVC",
     "family_name": "Service Configuration"
    },
+   {
+    "ksi_id": "KSI-SVC-VRI",
+    "ksi_name": "Validating Resource Integrity",
+    "family": "SVC",
+    "family_name": "Service Configuration"
+   }
+  ],
+  "SR-11": [
    {
     "ksi_id": "KSI-SVC-VRI",
     "ksi_name": "Validating Resource Integrity",

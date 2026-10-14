@@ -1,5 +1,5 @@
 {
- "generated": "deterministic check against dataset 2026.10.08.01",
+ "generated": "deterministic check against dataset 2026.10.13.01",
  "class": "B",
  "checks": [
   {
@@ -10,7 +10,7 @@
   {
    "check": "dataset_version_agreement",
    "result": "PASS",
-   "detail": "pinned dataset info.version 2026.10.08.01 vs profile dataset_version 2026.10.08.01"
+   "detail": "pinned dataset info.version 2026.10.13.01 vs profile dataset_version 2026.10.13.01"
   },
   {
    "check": "pinned_schema_version_guard",
