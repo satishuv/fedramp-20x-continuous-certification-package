@@ -134,6 +134,13 @@ Full check reference: [automation/sdrscan/README.md](../automation/sdrscan/READM
 | `validate_isolation_stack.py` | The evidence-store isolation reference stack keeps its load-bearing invariants (WORM, deny-collector-mutation, deny-collector-sign, separate signer, separate access logging) |
 | `validate_package_consistency.py` | Cross-artifact consistency across the generated package |
 
+### Assurance of the framework itself
+
+Two machine-readable records answer questions about the checks rather than about the record (AUD-F66, AUD-F67):
+
+- `traceability/rule-test-map.json`, a build step (`build_rule_test_map.py`), is the reverse map: for a rule or indicator, which automated check enforces anything about it, which regression test protects that check, and which killed mutation proves the test detects the defect it guards. It is joined deterministically from the scanner check catalog, the defect ledger, the mutation runner and the gate registries; every identifier is resolved against the pinned catalogs and the dataset's FRD definitions, and anything that does not resolve is reported under `unresolved_references`, never dropped or invented. A per-class coverage block counts the applicable identifiers with an automated disposition and lists the rest as `human_review_only`. That is a coverage figure, not a defect list: an entry means an automated check enforces something about the rule, never that a provider complies with it. `test_rule_test_map.py` checks every reference and recomputes the coverage.
+- `validation/reports/gate-results.json` is written by every run of the one release gate (`audit/release_gate.py`): one record per executed step (`gate_id`, argv, exit code, status), the steps a failure stopped, the overall verdict, the class and dataset version, and nothing volatile, so identical runs write identical bytes. In GitHub Actions a separate `gate-results.run.json` envelope records commit, run id and time, and both are uploaded per section as artifacts. They are gitignored run evidence; the exit code remains the verdict.
+
 ## Submission readiness (preflight)
 
 The build gate answers a structural question: is this package well-formed and faithful to the dataset? Submission readiness answers a stricter, separate question: is this package actually ready to hand to an assessor? That is `preflight`, and it is deliberately hard to fool.

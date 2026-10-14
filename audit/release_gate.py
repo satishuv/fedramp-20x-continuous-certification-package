@@ -35,7 +35,17 @@ Sections
 The build/validate/reproducibility/preflight steps are not listed here because
 `sdr.py release` runs them natively and CI's validate job runs them as explicit
 steps; test_release_gate.py asserts both still do.
+
+Results (AUD-F66). Every run writes validation/reports/gate-results.json: the
+executed steps as records (gate_id `<section>.<name>`, argv, exit code, status),
+the steps a failure stopped, the overall verdict, the active class and dataset
+version, and nothing volatile, so identical runs write identical bytes. When
+GitHub Actions facts are in the environment a separate gate-results.run.json
+envelope records commit, run id, job and time. Both are gitignored run
+evidence (CI uploads them per section as artifacts); the exit code remains the
+verdict. The gate_id is the id traceability/rule-test-map.json registers.
 """
+import json
 import os
 import subprocess
 import sys
@@ -100,20 +110,86 @@ SECURITY_TOOL_PINS = {"bandit": "1.8.6", "pip-audit": "2.10.1"}
 
 SECTION_ORDER = ["audit", "attack", "security"]
 
+# AUD-F66: machine-readable results. The deterministic file carries only what
+# the run decided (gate ids, argv, exit codes, statuses, the active class and
+# dataset version); the envelope carries the volatile CI facts (commit, run id,
+# runner, timestamps) when GitHub Actions provides them. Both are gitignored:
+# a gate result is evidence of a run, not a generated deliverable.
+RESULTS = os.path.join(BASE, "validation", "reports", "gate-results.json")
+RESULTS_ENVELOPE = os.path.join(BASE, "validation", "reports", "gate-results.run.json")
+RESULTS_SCHEMA = "fedramp-gate-results/v1"
 
-def run_step(name, argv, cwd=BASE):
-    """Run one step; return its exit code (non-zero on any failure, including a
-    tool that cannot be started)."""
+
+def run_step(name, argv, cwd=BASE, section=None):
+    """Run one step; return its result record. `exit_code` is non-zero on any
+    failure, including a tool that cannot be started. The record's gate_id
+    (`<section>.<name>`) is the id traceability/rule-test-map.json registers."""
     print(f"--- release-gate step: {name}")
     print("    " + " ".join(argv))
+    record = {"gate_id": f"{section}.{name}" if section else name, "section": section,
+              "name": name,
+              "argv": [("python" if a == sys.executable else a) for a in argv]}
     try:
         r = subprocess.run(argv, cwd=cwd)
+        code = r.returncode
     except OSError as e:
         print(f"FAIL release-gate step {name}: cannot run {argv[0]!r}: {e}")
-        return 1
-    if r.returncode != 0:
-        print(f"FAIL release-gate step {name}: exit {r.returncode}")
-    return r.returncode
+        code = 1
+        record["error"] = f"cannot run {argv[0]!r}: {e}"
+    if code != 0 and "error" not in record:
+        print(f"FAIL release-gate step {name}: exit {code}")
+    record["exit_code"] = code
+    record["status"] = "PASS" if code == 0 else "FAIL"
+    return record
+
+
+def _step_code(record):
+    """Exit code of a run_step record (0 only on PASS)."""
+    return record["exit_code"] if isinstance(record, dict) else int(record)
+
+
+def _offering_facts():
+    try:
+        with open(os.path.join(BASE, "profiles", "common", "offering-profile.json"),
+                  encoding="utf-8") as f:
+            prof = json.load(f)
+    except (OSError, ValueError):
+        return {"certification_class": None, "dataset_version": None}
+    return {"certification_class": str(prof.get("certification_class") or "").upper() or None,
+            "dataset_version": prof.get("dataset_version")}
+
+
+def write_results(records, wanted, overall, path=None, envelope_path=None):
+    """Write the deterministic results document and, when CI facts exist in
+    the environment, the volatile envelope beside it. Never raises on a write
+    failure: the gate's verdict is its exit code, the file is evidence of it."""
+    path = path or RESULTS
+    envelope_path = envelope_path or RESULTS_ENVELOPE
+    doc = {"schema": RESULTS_SCHEMA, **_offering_facts(), "sections": list(wanted),
+           "overall": overall,
+           "gates": [{k: r[k] for k in ("gate_id", "section", "name", "argv", "exit_code", "status")}
+                     | ({"error": r["error"]} if "error" in r else {}) for r in records],
+           "skipped": [f"{s}.{n}" for s in wanted for n, _ in SECTIONS.get(s, [])
+                       if f"{s}.{n}" not in {r["gate_id"] for r in records}]}
+    envelope = {k: os.environ.get(v) for k, v in (
+        ("commit", "GITHUB_SHA"), ("run_id", "GITHUB_RUN_ID"), ("run_attempt", "GITHUB_RUN_ATTEMPT"),
+        ("job", "GITHUB_JOB"), ("workflow", "GITHUB_WORKFLOW"), ("repository", "GITHUB_REPOSITORY"),
+        ("ref", "GITHUB_REF"), ("runner_os", "RUNNER_OS"))}
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8", newline="\n") as f:
+            json.dump(doc, f, indent=1)
+            f.write("\n")
+        if any(envelope.values()):
+            import datetime as _dt
+            envelope["recorded_at"] = _dt.datetime.now(_dt.timezone.utc).isoformat()
+            envelope["results_file"] = os.path.relpath(path, BASE)
+            with open(envelope_path, "w", encoding="utf-8", newline="\n") as f:
+                json.dump(envelope, f, indent=1)
+                f.write("\n")
+    except OSError as e:
+        print(f"WARN release-gate: could not write {path}: {e}")
+    return doc
 
 
 def run(sections=None, cwd=BASE):
@@ -127,14 +203,19 @@ def run(sections=None, cwd=BASE):
               f"known: {SECTION_ORDER}")
         return 2
     failed = []
+    records = []
     for section in wanted:
         print(f"=== release-gate section: {section}")
         for name, argv in SECTIONS[section]:
-            if run_step(name, argv, cwd=cwd) != 0:
+            record = run_step(name, argv, cwd=cwd, section=section)
+            records.append(record)
+            if _step_code(record) != 0:
                 failed.append(f"{section}/{name}")
                 # Stop within the section: later steps assume earlier ones held
                 # (e.g. tree-clean assumes the runner ran to completion).
                 break
+    overall = "FAIL" if failed else "PASS"
+    write_results(records, wanted, overall)
     if failed:
         print("\nrelease-gate: FAIL -- " + ", ".join(failed))
         return 1

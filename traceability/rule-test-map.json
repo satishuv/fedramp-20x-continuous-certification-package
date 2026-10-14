@@ -1,0 +1,2888 @@
+{
+ "schema": "fedramp-rule-test-trace/v1",
+ "dataset_version": "2026.10.08.01",
+ "note": "Reverse traceability for the FRAMEWORK: rule -> gate -> regression test -> killed mutation, joined deterministically from the scanner check catalog, the defect ledger, the mutation runner and the gate registries. An entry means an automated check enforces something about the rule and names its protection. It never means the provider complies with the rule: a human decides every status and an assessor assesses. human_review_only lists applicable identifiers with no automated disposition; that is a coverage figure, not a defect list. unresolved_references lists identifiers a source cites that the pinned dataset does not carry: a ledger entry raised under a rule a later dataset release retired keeps its historical citation and is reported here rather than rewritten.",
+ "modes": {
+  "readiness-scan": "advisory per-resource scanner check; reports what is still missing before an assessor signs, never gates the build",
+  "regression-test+mutation": "a closed defect raised under this rule, guarded by a regression test that a re-introduced mutation turns red (anti-circular proof)",
+  "regression-test": "a closed defect raised under this rule, guarded by a regression test; no mutation verified yet"
+ },
+ "gates": {
+  "attack.class-c-attack-harness": {
+   "kind": "release-gate-step",
+   "section": "attack",
+   "argv": [
+    "python",
+    "examples/sample-offering-class-c/build_class_c_sample.py",
+    "--attack"
+   ]
+  },
+  "attack.tree-clean-after-attack": {
+   "kind": "release-gate-step",
+   "section": "attack",
+   "argv": [
+    "git",
+    "diff",
+    "--exit-code"
+   ]
+  },
+  "audit.mutation-runner": {
+   "kind": "release-gate-step",
+   "section": "audit",
+   "argv": [
+    "python",
+    "audit/mutation_tests.py"
+   ]
+  },
+  "audit.mutation-runner-selftest": {
+   "kind": "release-gate-step",
+   "section": "audit",
+   "argv": [
+    "python",
+    "audit/test_mutation_runner.py"
+   ]
+  },
+  "audit.requirements-oracle": {
+   "kind": "release-gate-step",
+   "section": "audit",
+   "argv": [
+    "python",
+    "audit/requirements_oracle.py"
+   ]
+  },
+  "audit.requirements-oracle-selftest": {
+   "kind": "release-gate-step",
+   "section": "audit",
+   "argv": [
+    "python",
+    "audit/test_requirements_oracle.py"
+   ]
+  },
+  "audit.tree-clean-after-mutation": {
+   "kind": "release-gate-step",
+   "section": "audit",
+   "argv": [
+    "git",
+    "diff",
+    "--exit-code"
+   ]
+  },
+  "ledger.AUD-F01": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "validation/scripts/validate_evidence.py:classify_entry"
+  },
+  "ledger.AUD-F02": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "validation/scripts/verification_methods.py:count_automated_methods; sdr.py vvk_method_binding"
+  },
+  "ledger.AUD-F03": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "automation/metrics/append_metrics.py:datapoint_for_ksi,per_metric; validation/scripts/build_collector_registry.py:METRIC_SOURCE_MAP"
+  },
+  "ledger.AUD-F04": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/metrics/append_metrics.py:load_facts,datapoint_for_ksi"
+  },
+  "ledger.AUD-F05": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/metrics/append_metrics.py:append_run (require_fresh)"
+  },
+  "ledger.AUD-F06": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "sdr.py:mot_continuity + MOT caller"
+  },
+  "ledger.AUD-F07": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/metrics/append_metrics.py:load_history_safe"
+  },
+  "ledger.AUD-F08": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "automation/collectors/collectors.py:collect_s3_data_protection"
+  },
+  "ledger.AUD-F09": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "automation/collectors/collectors.py:collect_inspector"
+  },
+  "ledger.AUD-F10": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "sdr.py:_utc_today + all preflight date windows"
+  },
+  "ledger.AUD-F11": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "validation/scripts/build_sdr.py:_derive_daily_data,_window_summaries,_derive_per_metric"
+  },
+  "ledger.AUD-F12": {
+   "kind": "closed-defect",
+   "severity": "Critical",
+   "component": ".github/workflows/validate.yml; automation/pipeline/buildspec-validate.yml; sdr.py:cmd_release; audit/release_gate.py (new)"
+  },
+  "ledger.AUD-F13": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "audit/mutation_tests.py:run"
+  },
+  "ledger.AUD-F14": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "audit/mutation_tests.py:reconcile_ledger (new)"
+  },
+  "ledger.AUD-F15": {
+   "kind": "closed-defect",
+   "severity": "Critical",
+   "component": "automation/collectors/collectors.py (every list/describe call); append_metrics._posture_score"
+  },
+  "ledger.AUD-F16": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "validation/scripts/build_collector_registry.py:METRIC_SOURCE_MAP; append_metrics._route; prefill_from_facts.posture_facts_for_ksi; method_ids.py (new)"
+  },
+  "ledger.AUD-F17": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/collectors/collectors.py per-resource loops; _fact coverage fields; append_metrics._posture_score/_coverage_gap"
+  },
+  "ledger.AUD-F18": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/prefill/prefill_from_facts.py:prefill_ksi; automation/metrics/method_ids.py (new); append_metrics per_metric_datapoints_for_ksi"
+  },
+  "ledger.AUD-F19": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/metrics/append_metrics.py:append_run"
+  },
+  "ledger.AUD-F20": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/pipeline/buildspec-collect.yml; automation/metrics/publish_history.py (new)"
+  },
+  "ledger.AUD-F21": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "sdr.py:mot_continuity, cmd_preflight MOT block; mot_max_gap_days (new)"
+  },
+  "ledger.AUD-F22": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "audit/requirements_oracle.py (FRR traversal, new); audit/test_requirements_oracle.py (new)"
+  },
+  "ledger.AUD-F23": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "validation/scripts/validate_sdr.py (SDR_VALIDATE_CLASS); sdr.py:cmd_validate (class matrix); sdr/records/records-store.json (three example KSIs)"
+  },
+  "ledger.AUD-F24": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "validation/scripts/test_assurance_graph_method_count.py; validation/scripts/validate_sdr.py report contract"
+  },
+  "ledger.AUD-F25": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "requirements.lock (new); Makefile lock target; every CI workflow and buildspec install step; validation/scripts/build_sbom.py (consumer); validation/scripts/test_lock_closure.py (new)"
+  },
+  "ledger.AUD-F26": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/collectors/evidence_wiring.py (fact_to_evidence, canonical_payload, BOUND_FIELDS); validation/scripts/validate_evidence.py (_resolve_source, classify_entry); automation/collectors/evidence_lifecycle.py (verify_integrity); automation/collectors/sign_evidence.py (docs)"
+  },
+  "ledger.AUD-F27": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/collectors/evidence_wiring.py (scope_id, new_run_id, _pointer, _sanitize_fact_for_evidence, fact_to_evidence, observation_identity, attach_evidence); automation/collectors/collect_multi_account.py (run_id/scope stamping, scope_map, write_private_store, --out)"
+  },
+  "ledger.AUD-F28": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "automation/collectors/evidence_wiring.py (scrub_text, scrub_hits, _require_slug, _sanitize_fact_for_evidence, fact_to_evidence); validation/scripts/validate_sdr.py (SENSITIVE_PATTERNS)"
+  },
+  "ledger.AUD-F29": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/collectors/collect_facts.py (collection_outcome, EXIT_NO_EVALUATED, main)"
+  },
+  "ledger.AUD-F30": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/metrics/append_metrics.py (_update_meta, EXIT_NO_DATAPOINTS, main)"
+  },
+  "ledger.AUD-F31": {
+   "kind": "closed-defect",
+   "severity": "Critical",
+   "component": ".github/workflows/living-sdr-loop.yml"
+  },
+  "ledger.AUD-F32": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/pipeline/sdr-pipeline.yaml (ScheduledBuildFailureNotification); .github/workflows/living-sdr-loop.yml (issue on failure)"
+  },
+  "ledger.AUD-F33": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "sdr.py (MOT_STALE_ADVISORY_DAYS, mot_stale_days, package-preflight advisory)"
+  },
+  "ledger.AUD-F34": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "audit/release_gate.py (security section: pip-audit; SECURITY_TOOL_PINS); .github/workflows/validate.yml; automation/pipeline/buildspec-validate.yml; requirements.txt; requirements-ci.txt; requirements.lock; artifacts/sbom.cdx.json"
+  },
+  "ledger.AUD-F35": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "validation/scripts/build_docx.py (normalize_docx, document_timestamp); validation/scripts/build_release_manifest.py (ARTIFACT_GLOBS); sdr.py (cmd_reproducibility); .github/workflows/validate.yml; automation/pipeline/buildspec-validate.yml; .github/workflows/living-sdr-loop.yml; validation/scripts/assemble_release_bundle.py"
+  },
+  "ledger.AUD-F36": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "validation/scripts/build_inactive_classes.py (new build step); sdr.py (BUILD_STEPS); examples/sample-offering-class-c/build_class_c_sample.py (_backup, _restore_tree); examples/sample-offering/build_sample.py"
+  },
+  "ledger.AUD-F37": {
+   "kind": "closed-defect",
+   "severity": "Critical",
+   "component": "automation/metrics/history_integrity.py (new); automation/metrics/append_metrics.py (chain_observation, run_provenance, anchor-preserving prune, record_heads); automation/collectors/collect_facts.py (run_id); automation/metrics/publish_history.py (--sign-key-arn, meta.history_signature); sdr.py (package-preflight integrity, profile and signature gates; VVK binding freshness); profiles/common/offering-profile.json (evidence_store_profile)"
+  },
+  "ledger.AUD-F38": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "validation/scripts/unreviewed_text.py (new, single definition); sdr.py package-preflight (_is_tbd, _answered); validation/scripts/validate_sdr.py (populated checks); automation/sdrscan/checks.py (state); automation/ai/draft_narratives.py (is_tbd, rule drafting); automation/review/review_proposals.py (new); validation/scripts/validate_reviews.py (field-review-log binding)"
+  },
+  "ledger.AUD-F39": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "validation/scripts/validate_sdr.py (ksi_test_minimums, evidence_linkage_for_populated_musts under SDR_VALIDATE_CLASS); sdr.py validate class matrix (AUD-F23)"
+  },
+  "ledger.AUD-F40": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": ".github/workflows/drift-check.yml (regenerate step); validation/scripts/update_sources_lock.py; profiles/common/offering-profile.json and the other curated dataset_version pins; validation/scripts/validate_package_consistency.py"
+  },
+  "ledger.AUD-F41": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "validation/scripts/dataset_diff.py (_index_rules, diff_datasets, render); consumed by change_impact.py and the drift workflow's PR body"
+  },
+  "ledger.AUD-F42": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "validation/scripts/build_sdr.py (record-store scaffold and guidance backfill); sdr.py package-preflight"
+  },
+  "ledger.AUD-F43": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": ".github/workflows/drift-check.yml (regenerate step: push and PR creation)"
+  },
+  "ledger.AUD-F44": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": ".github/workflows/drift-check.yml (regenerate step; issue step); .github/.markdown-changelog-baseline; validation/scripts/markdown_changelog.py (new)"
+  },
+  "ledger.AUD-F45": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "sdr.py (cmd_init, _init_ask_contact, _init_known_set_keys, _init_unknown_key_message)"
+  },
+  "ledger.AUD-F46": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/review/review_proposals.py (proposals, _authored_by, split_decided, run); sdr.py (review --all)"
+  },
+  "ledger.AUD-F47": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "automation/review/review_proposals.py (apply_decisions, walk)"
+  },
+  "ledger.AUD-F48": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "automation/prefill/prefill_from_facts.py (tests[].method, evidence[].evidenceDescription templates)"
+  },
+  "ledger.AUD-F49": {
+   "kind": "closed-defect",
+   "severity": "Low",
+   "component": "automation/ai/draft_narratives.py (load_all_config_facts, config_facts_for_ksi, draft_ksi, main)"
+  },
+  "ledger.AUD-F50": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "validation/scripts/profile_contract.py (derive_cpo_metadata, CPO_METADATA_SOURCES); validation/scripts/build_cpo.py (_required_information_map)"
+  },
+  "ledger.AUD-F51": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "validation/scripts/profile_contract.py (REQUIRED_FIELDS, IDENTITY_REQUIRED, required_gaps, derive_public_information); validation/scripts/build_cpo.py (assessor, secureConfigurationGuidance members); sdr.py (cmd_init prompts)"
+  },
+  "ledger.AUD-F52": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "validation/scripts/profile_contract.py (CDS_CSO_PUB_BACKING); validation/scripts/test_profile_contract_classes.py"
+  },
+  "ledger.AUD-F53": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "sdr.py (cmd_preflight package-component gate; manifest_component_required)"
+  },
+  "ledger.AUD-F54": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "sdr.py (_classify_artifact, artifact_obligations, artifact_required_rule_ids)"
+  },
+  "ledger.AUD-F55": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "docs/certification-classes.md; validation/scripts/class_table.py; validation/scripts/test_docs_class_table.py"
+  },
+  "ledger.AUD-F56": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "validation/scripts/build_mas_coverage.py (new); profiles/common/mas-inventory.json (new, optional input); sdr.py (BUILD_STEPS, mas_coverage_advisory, preflight advisory); validation/scripts/build_release_manifest.py (ARTIFACT_GLOBS)"
+  },
+  "ledger.AUD-F57": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "validation/scripts/validate_evidence.py (classify_entry ordering, module and load_trusted_signer docstrings, PASS message)"
+  },
+  "ledger.AUD-F58": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "automation/prefill/prefill_from_facts.py (evidence proposals, config_fact_as_collector_fact, --location-base, SDR_EVIDENCE_SCOPE_KEY)"
+  },
+  "ledger.AUD-F59": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "sdr.py (unverified_evidence_under_production, _record_is_populated, cmd_preflight production-assurance block)"
+  },
+  "ledger.AUD-F60": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/collectors/sign_evidence.py (key_reference, sign_hash); validation/scripts/validate_evidence.py (pinned-signer comparison); examples/sample-offering-class-c/build_class_c_sample.py (signed-evidence probes)"
+  },
+  "ledger.AUD-F61": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "audit/release_gate.py (attack section); .github/workflows/validate.yml (attack-gate job, release-gate aggregate); automation/pipeline/buildspec-validate.yml; sdr.py cmd_release"
+  },
+  "ledger.AUD-F62": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "validation/scripts/validate_evidence.py (load_source_bindings, classify_source_binding, first_bound_source, main); sdr.py (unbound_evidence_under_production, package-preflight production-assurance blocker); examples/sample-offering-class-c/build_class_c_sample.py (bound sources, AUD-F62 probe)"
+  },
+  "ledger.AUD-F63": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "validation/scripts/validate_evidence.py (classify_pointer_binding, main); sdr.py (unbound_evidence_under_production, package-preflight); examples/sample-offering-class-c/build_class_c_sample.py (AUD-F63 probe)"
+  },
+  "ledger.AUD-F64": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "sdr.py (classify_evidence_freshness, package-preflight freshness scan); validation/scripts/test_provenance_mutations.py; examples/sample-offering-class-c/build_class_c_sample.py (AUD-F64 probe); audit/mutation_tests.py"
+  },
+  "ledger.AUD-F65": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "validation/scripts/class_support.py (new); sdr.py (submitted_rule_ids, submitted_ksi_ids, cmd_preflight); validation/scripts/build_mas_coverage.py (applicable_ksis_for_class); the fourteen entry points build_sdr, build_docx, validate_sdr, build_scg, build_cpo, build_ocr, build_events, build_reports, build_release_manifest, build_applicability_decisions, build_assurance_graph, validate_assurance_graph, validate_package_consistency, automation/sdrscan/sdrscan.py"
+  },
+  "ledger.AUD-F66": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "audit/release_gate.py (run_step record, write_results, run); .github/workflows/validate.yml (gate-results artifacts per section); .gitignore"
+  },
+  "ledger.AUD-F67": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "validation/scripts/build_rule_test_map.py (new, a build step); traceability/rule-test-map.json (generated); validation/scripts/test_rule_test_map.py"
+  },
+  "scan.frr_artifacts_referenced": {
+   "kind": "readiness-scan",
+   "severity": "medium",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.frr_assessor_responses_recorded": {
+   "kind": "readiness-scan",
+   "severity": "low",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.frr_implementation_explained": {
+   "kind": "readiness-scan",
+   "severity": "high",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.frr_independent_validation_recorded": {
+   "kind": "readiness-scan",
+   "severity": "high",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.frr_independent_verification_recorded": {
+   "kind": "readiness-scan",
+   "severity": "high",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.frr_nonconformance_reason_stated": {
+   "kind": "readiness-scan",
+   "severity": "high",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.frr_nonconformance_risk_stated": {
+   "kind": "readiness-scan",
+   "severity": "high",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.frr_owner_assigned": {
+   "kind": "readiness-scan",
+   "severity": "medium",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.frr_senior_official_acceptance": {
+   "kind": "readiness-scan",
+   "severity": "high",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.frr_statement_fidelity": {
+   "kind": "readiness-scan",
+   "severity": "critical",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.frr_status_declared": {
+   "kind": "readiness-scan",
+   "severity": "medium",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.frr_validation_recorded": {
+   "kind": "readiness-scan",
+   "severity": "high",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.frr_verification_recorded": {
+   "kind": "readiness-scan",
+   "severity": "high",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.ksi_automation_verified": {
+   "kind": "readiness-scan",
+   "severity": "high",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.ksi_evidence_present": {
+   "kind": "readiness-scan",
+   "severity": "high",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.ksi_evidence_typed": {
+   "kind": "readiness-scan",
+   "severity": "low",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.ksi_independent_assessment_recorded": {
+   "kind": "readiness-scan",
+   "severity": "high",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.ksi_measures_explained": {
+   "kind": "readiness-scan",
+   "severity": "high",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.ksi_measures_validated": {
+   "kind": "readiness-scan",
+   "severity": "high",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.ksi_measures_verified": {
+   "kind": "readiness-scan",
+   "severity": "high",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.ksi_metrics_30day_summary": {
+   "kind": "readiness-scan",
+   "severity": "high",
+   "classes": [
+    "b",
+    "c"
+   ]
+  },
+  "scan.ksi_metrics_daily_data": {
+   "kind": "readiness-scan",
+   "severity": "high",
+   "classes": [
+    "c"
+   ]
+  },
+  "scan.ksi_metrics_yearly_summary": {
+   "kind": "readiness-scan",
+   "severity": "medium",
+   "classes": [
+    "b",
+    "c"
+   ]
+  },
+  "scan.ksi_operating_cycle_explained": {
+   "kind": "readiness-scan",
+   "severity": "medium",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.ksi_owner_assigned": {
+   "kind": "readiness-scan",
+   "severity": "medium",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.ksi_pending_marked_honestly": {
+   "kind": "readiness-scan",
+   "severity": "informational",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.ksi_statement_fidelity": {
+   "kind": "readiness-scan",
+   "severity": "critical",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.ksi_status_declared": {
+   "kind": "readiness-scan",
+   "severity": "medium",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.ksi_test_minimum_met": {
+   "kind": "readiness-scan",
+   "severity": "high",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.sdr_dataset_version_pinned": {
+   "kind": "readiness-scan",
+   "severity": "medium",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.sdr_dual_format_present": {
+   "kind": "readiness-scan",
+   "severity": "critical",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.sdr_format_consistency": {
+   "kind": "readiness-scan",
+   "severity": "critical",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.sdr_human_readable_clean": {
+   "kind": "readiness-scan",
+   "severity": "low",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.sdr_json_schema_valid": {
+   "kind": "readiness-scan",
+   "severity": "critical",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.sdr_metadata_complete": {
+   "kind": "readiness-scan",
+   "severity": "high",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.sdr_no_sensitive_data": {
+   "kind": "readiness-scan",
+   "severity": "critical",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.sdr_overview_uri_declared": {
+   "kind": "readiness-scan",
+   "severity": "medium",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "scan.sdr_record_freshness": {
+   "kind": "readiness-scan",
+   "severity": "medium",
+   "classes": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "security.bandit": {
+   "kind": "release-gate-step",
+   "section": "security",
+   "argv": [
+    "python",
+    "-m",
+    "bandit",
+    "-r",
+    ".",
+    "--exclude",
+    "./automation/collectors/testdata,./.git",
+    "--skip",
+    "B101",
+    "--severity-level",
+    "medium",
+    "--confidence-level",
+    "medium",
+    "--format",
+    "txt",
+    "--output",
+    "bandit-report.txt"
+   ]
+  },
+  "security.pip-audit": {
+   "kind": "release-gate-step",
+   "section": "security",
+   "argv": [
+    "python",
+    "-m",
+    "pip_audit",
+    "-r",
+    "requirements.lock",
+    "--require-hashes",
+    "--strict",
+    "--progress-spinner",
+    "off"
+   ]
+  },
+  "validate.validate_assurance_graph": {
+   "kind": "validation-gate",
+   "path": "validation/scripts/validate_assurance_graph.py",
+   "description": "assurance graph (full-chain traceability)"
+  },
+  "validate.validate_cpo_semantics": {
+   "kind": "validation-gate",
+   "path": "validation/scripts/validate_cpo_semantics.py",
+   "description": "CPO rule-completeness (CPO-CSO-OVR/MTD, not just schema)"
+  },
+  "validate.validate_evidence": {
+   "kind": "validation-gate",
+   "path": "validation/scripts/validate_evidence.py",
+   "description": "live evidence-integrity gate (malformed/mismatched digests)"
+  },
+  "validate.validate_evidence_store_controls": {
+   "kind": "validation-gate",
+   "path": "validation/scripts/validate_evidence_store_controls.py",
+   "description": "evidence-store control mapping cites only real CR26 identifiers"
+  },
+  "validate.validate_isolation_stack": {
+   "kind": "validation-gate",
+   "path": "validation/scripts/validate_isolation_stack.py",
+   "description": "evidence-store isolation reference stack keeps its load-bearing invariants"
+  },
+  "validate.validate_package": {
+   "kind": "validation-gate",
+   "path": "validation/scripts/validate_package.py",
+   "description": "CPO/OCR against official schemas"
+  },
+  "validate.validate_package_consistency": {
+   "kind": "validation-gate",
+   "path": "validation/scripts/validate_package_consistency.py",
+   "description": "cross-artifact package consistency"
+  },
+  "validate.validate_reviews": {
+   "kind": "validation-gate",
+   "path": "validation/scripts/validate_reviews.py",
+   "description": "human review register (no machine-authored approvals)"
+  },
+  "validate.validate_sdr": {
+   "kind": "validation-gate",
+   "path": "validation/scripts/validate_sdr.py",
+   "description": "SDR schema, coverage, minimums, hygiene, content fidelity"
+  }
+ },
+ "rules": {
+  "CCM-OCR-AVL": {
+   "kind": "rule",
+   "name": "Report Availability",
+   "enforcement": [
+    {
+     "gate_id": "scan.frr_owner_assigned",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "medium"
+    },
+    {
+     "gate_id": "scan.sdr_human_readable_clean",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "low"
+    }
+   ]
+  },
+  "CDS-CSO-CBF": {
+   "kind": "rule",
+   "name": "Consistency Between Formats",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F35",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "validation/scripts/test_docx_integrity.py"
+     ],
+     "mutations": [
+      "MUT-F35"
+     ],
+     "mutated_files": [
+      "validation/scripts/build_docx.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F66",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "automation/pipeline/test_release_gate.py"
+     ],
+     "mutations": [
+      "MUT-F66"
+     ],
+     "mutated_files": [
+      "audit/release_gate.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "scan.sdr_format_consistency",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "critical"
+    }
+   ]
+  },
+  "CDS-CSO-PUB": {
+   "kind": "rule",
+   "name": "Public Information",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F51",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "validation/scripts/test_profile_contract_classes.py",
+      "validation/scripts/test_submission_readiness.py"
+     ],
+     "mutations": [
+      "MUT-F51"
+     ],
+     "mutated_files": [
+      "validation/scripts/profile_contract.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F52",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_profile_contract_classes.py"
+     ],
+     "mutations": [
+      "MUT-F52"
+     ],
+     "mutated_files": [
+      "validation/scripts/profile_contract.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "scan.sdr_dual_format_present",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "critical"
+    },
+    {
+     "gate_id": "scan.sdr_no_sensitive_data",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "critical"
+    }
+   ]
+  },
+  "CDS-CSO-SVC": {
+   "kind": "rule",
+   "name": "Public Service List",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F54",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_artifact_obligations.py",
+      "validation/scripts/test_submission_readiness.py"
+     ],
+     "mutations": [
+      "MUT-F54"
+     ],
+     "mutated_files": [
+      "sdr.py"
+     ],
+     "in_test_suite": true
+    }
+   ]
+  },
+  "CPO-CSO-MTD": {
+   "kind": "rule",
+   "name": "Certification Package Overview Metadata",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F50",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_profile_traceability.py"
+     ],
+     "mutations": [
+      "MUT-F50"
+     ],
+     "mutated_files": [
+      "validation/scripts/build_cpo.py"
+     ],
+     "in_test_suite": true
+    }
+   ]
+  },
+  "CPO-CSO-OVR": {
+   "kind": "rule",
+   "name": "Overview of the Cloud Service Offering",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F50",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_profile_traceability.py"
+     ],
+     "mutations": [
+      "MUT-F50"
+     ],
+     "mutated_files": [
+      "validation/scripts/build_cpo.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "scan.sdr_overview_uri_declared",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "medium"
+    }
+   ]
+  },
+  "FRC-APP-FIA": {
+   "kind": "rule",
+   "name": "Fresh Independent Assessment",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F51",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "validation/scripts/test_profile_contract_classes.py",
+      "validation/scripts/test_submission_readiness.py"
+     ],
+     "mutations": [
+      "MUT-F51"
+     ],
+     "mutated_files": [
+      "validation/scripts/profile_contract.py"
+     ],
+     "in_test_suite": true
+    }
+   ]
+  },
+  "FRC-CLA-ASF": {
+   "kind": "rule",
+   "name": "Approved Alternative Security Frameworks",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F51",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "validation/scripts/test_profile_contract_classes.py",
+      "validation/scripts/test_submission_readiness.py"
+     ],
+     "mutations": [
+      "MUT-F51"
+     ],
+     "mutated_files": [
+      "validation/scripts/profile_contract.py"
+     ],
+     "in_test_suite": true
+    }
+   ]
+  },
+  "FRC-CLA-EAM": {
+   "kind": "rule",
+   "name": "External Assessment Materials",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F51",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "validation/scripts/test_profile_contract_classes.py",
+      "validation/scripts/test_submission_readiness.py"
+     ],
+     "mutations": [
+      "MUT-F51"
+     ],
+     "mutated_files": [
+      "validation/scripts/profile_contract.py"
+     ],
+     "in_test_suite": true
+    }
+   ]
+  },
+  "FRC-CLA-MFR": {
+   "kind": "rule",
+   "name": "Mandatory FedRAMP Rules for Class A",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F51",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "validation/scripts/test_profile_contract_classes.py",
+      "validation/scripts/test_submission_readiness.py"
+     ],
+     "mutations": [
+      "MUT-F51"
+     ],
+     "mutated_files": [
+      "validation/scripts/profile_contract.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F53",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "validation/scripts/test_profile_contract_classes.py",
+      "validation/scripts/test_submission_readiness.py"
+     ],
+     "mutations": [
+      "MUT-F53"
+     ],
+     "mutated_files": [
+      "sdr.py"
+     ],
+     "in_test_suite": true
+    }
+   ]
+  },
+  "FRC-CSO-JSN": {
+   "kind": "rule",
+   "name": "FedRAMP JSON Schemas",
+   "enforcement": [
+    {
+     "gate_id": "scan.frr_statement_fidelity",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "critical"
+    },
+    {
+     "gate_id": "scan.frr_status_declared",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "medium"
+    },
+    {
+     "gate_id": "scan.ksi_evidence_typed",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "low"
+    },
+    {
+     "gate_id": "scan.ksi_statement_fidelity",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "critical"
+    },
+    {
+     "gate_id": "scan.ksi_status_declared",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "medium"
+    },
+    {
+     "gate_id": "scan.sdr_dataset_version_pinned",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "medium"
+    },
+    {
+     "gate_id": "scan.sdr_json_schema_valid",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "critical"
+    }
+   ]
+  },
+  "FRC-CSO-MRA": {
+   "kind": "rule",
+   "name": "Maintain Responsibility and Accountability",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F01",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "validation/scripts/test_evidence_integrity.py"
+     ],
+     "mutations": [
+      "MUT-F01"
+     ],
+     "mutated_files": [
+      "validation/scripts/validate_evidence.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F12",
+     "mode": "regression-test+mutation",
+     "severity": "Critical",
+     "tests": [
+      "automation/pipeline/test_release_gate.py"
+     ],
+     "mutations": [
+      "MUT-F12"
+     ],
+     "mutated_files": [
+      "audit/release_gate.py"
+     ],
+     "in_test_suite": true
+    }
+   ]
+  },
+  "FRC-CSO-PKG": {
+   "kind": "rule",
+   "name": "FedRAMP Certification Package",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F35",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "validation/scripts/test_docx_integrity.py"
+     ],
+     "mutations": [
+      "MUT-F35"
+     ],
+     "mutated_files": [
+      "validation/scripts/build_docx.py"
+     ],
+     "in_test_suite": true
+    }
+   ]
+  },
+  "FRC-CSX-MAS": {
+   "kind": "rule",
+   "name": "Application within MAS",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F56",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_mas_coverage.py"
+     ],
+     "mutations": [
+      "MUT-F56"
+     ],
+     "mutated_files": [
+      "validation/scripts/build_mas_coverage.py"
+     ],
+     "in_test_suite": true
+    }
+   ]
+  },
+  "FRC-CSX-VVK": {
+   "kind": "rule",
+   "name": "Automated Verification and Validation of Key Security Indicators",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F02",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "validation/scripts/test_vvk_automated_methods.py"
+     ],
+     "mutations": [
+      "MUT-F02"
+     ],
+     "mutated_files": [
+      "validation/scripts/verification_methods.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F15",
+     "mode": "regression-test+mutation",
+     "severity": "Critical",
+     "tests": [
+      "automation/collectors/test_collectors.py",
+      "automation/metrics/test_append_metrics.py"
+     ],
+     "mutations": [
+      "MUT-F15"
+     ],
+     "mutated_files": [
+      "automation/collectors/collectors.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F17",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/collectors/test_collectors.py",
+      "automation/metrics/test_append_metrics.py"
+     ],
+     "mutations": [
+      "MUT-F17"
+     ],
+     "mutated_files": [
+      "automation/metrics/append_metrics.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F18",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/prefill/test_binding_e2e.py",
+      "automation/prefill/test_prefill.py"
+     ],
+     "mutations": [
+      "MUT-F18"
+     ],
+     "mutated_files": [
+      "automation/prefill/prefill_from_facts.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F24",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_assurance_graph_method_count.py",
+      "validation/scripts/test_validate_class_matrix.py"
+     ],
+     "mutations": [
+      "MUT-F24"
+     ],
+     "mutated_files": [
+      "validation/scripts/validate_sdr.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F37",
+     "mode": "regression-test+mutation",
+     "severity": "Critical",
+     "tests": [
+      "automation/metrics/test_history_integrity.py",
+      "validation/scripts/test_assessor_attack.py"
+     ],
+     "mutations": [
+      "MUT-F37"
+     ],
+     "mutated_files": [
+      "automation/metrics/history_integrity.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F38",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/review/test_review_proposals.py",
+      "validation/scripts/test_unreviewed_text.py"
+     ],
+     "mutations": [
+      "MUT-F38"
+     ],
+     "mutated_files": [
+      "validation/scripts/unreviewed_text.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F39",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "validation/scripts/test_validate_class_matrix.py"
+     ],
+     "mutations": [
+      "MUT-F39"
+     ],
+     "mutated_files": [
+      "validation/scripts/validate_sdr.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F47",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "automation/review/test_review_proposals.py"
+     ],
+     "mutations": [
+      "MUT-F47"
+     ],
+     "mutated_files": [
+      "automation/review/review_proposals.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F59",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_production_evidence_linkage.py"
+     ],
+     "mutations": [
+      "MUT-F59"
+     ],
+     "mutated_files": [
+      "sdr.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F61",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "automation/pipeline/test_release_gate.py"
+     ],
+     "mutations": [
+      "MUT-F61"
+     ],
+     "mutated_files": [
+      "audit/release_gate.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F62",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "validation/scripts/test_provenance_mutations.py"
+     ],
+     "mutations": [
+      "MUT-F62"
+     ],
+     "mutated_files": [
+      "validation/scripts/validate_evidence.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F63",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_provenance_mutations.py"
+     ],
+     "mutations": [
+      "MUT-F63"
+     ],
+     "mutated_files": [
+      "validation/scripts/validate_evidence.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F65",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_class_support.py"
+     ],
+     "mutations": [
+      "MUT-F65"
+     ],
+     "mutated_files": [
+      "validation/scripts/class_support.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F67",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_rule_test_map.py"
+     ],
+     "mutations": [
+      "MUT-F67"
+     ],
+     "mutated_files": [
+      "validation/scripts/build_rule_test_map.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "scan.ksi_automation_verified",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.ksi_evidence_present",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.ksi_test_minimum_met",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    }
+   ]
+  },
+  "FRC-CSX-VVR": {
+   "kind": "rule",
+   "name": "Automated Verification and Validation of FedRAMP Rules",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F67",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_rule_test_map.py"
+     ],
+     "mutations": [
+      "MUT-F67"
+     ],
+     "mutated_files": [
+      "validation/scripts/build_rule_test_map.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "scan.sdr_format_consistency",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "critical"
+    },
+    {
+     "gate_id": "scan.sdr_record_freshness",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "medium"
+    }
+   ]
+  },
+  "FRD-PER": {
+   "kind": "definition",
+   "name": "Persistently",
+   "enforcement": [
+    {
+     "gate_id": "scan.frr_owner_assigned",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "medium"
+    },
+    {
+     "gate_id": "scan.ksi_operating_cycle_explained",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "medium"
+    },
+    {
+     "gate_id": "scan.ksi_owner_assigned",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "medium"
+    }
+   ]
+  },
+  "IVV-CSX-AIA": {
+   "kind": "rule",
+   "name": "Annual Independent Assessments for 20x",
+   "enforcement": [
+    {
+     "gate_id": "scan.ksi_independent_assessment_recorded",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    }
+   ]
+  },
+  "IVV-IAS-VEF": {
+   "kind": "rule",
+   "name": "Validate Effectiveness",
+   "enforcement": [
+    {
+     "gate_id": "scan.frr_independent_validation_recorded",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.ksi_independent_assessment_recorded",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    }
+   ]
+  },
+  "IVV-IAS-VIM": {
+   "kind": "rule",
+   "name": "Verify Implementation",
+   "enforcement": [
+    {
+     "gate_id": "scan.frr_independent_verification_recorded",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    }
+   ]
+  },
+  "MAS-CSO-IIR": {
+   "kind": "rule",
+   "name": "Identify Information Resources",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F04",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/metrics/test_append_metrics.py"
+     ],
+     "mutations": [
+      "MUT-F04"
+     ],
+     "mutated_files": [
+      "automation/metrics/append_metrics.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F56",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_mas_coverage.py"
+     ],
+     "mutations": [
+      "MUT-F56"
+     ],
+     "mutated_files": [
+      "validation/scripts/build_mas_coverage.py"
+     ],
+     "in_test_suite": true
+    }
+   ]
+  },
+  "SCG-CSO-RSC": {
+   "kind": "rule",
+   "name": "Recommended Secure Configuration",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F51",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "validation/scripts/test_profile_contract_classes.py",
+      "validation/scripts/test_submission_readiness.py"
+     ],
+     "mutations": [
+      "MUT-F51"
+     ],
+     "mutated_files": [
+      "validation/scripts/profile_contract.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F53",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "validation/scripts/test_profile_contract_classes.py",
+      "validation/scripts/test_submission_readiness.py"
+     ],
+     "mutations": [
+      "MUT-F53"
+     ],
+     "mutated_files": [
+      "sdr.py"
+     ],
+     "in_test_suite": true
+    }
+   ]
+  },
+  "SDR-CSO-FRR": {
+   "kind": "rule",
+   "name": "FedRAMP Rules",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F38",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/review/test_review_proposals.py",
+      "validation/scripts/test_unreviewed_text.py"
+     ],
+     "mutations": [
+      "MUT-F38"
+     ],
+     "mutated_files": [
+      "validation/scripts/unreviewed_text.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F54",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_artifact_obligations.py",
+      "validation/scripts/test_submission_readiness.py"
+     ],
+     "mutations": [
+      "MUT-F54"
+     ],
+     "mutated_files": [
+      "sdr.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "scan.frr_artifacts_referenced",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "medium"
+    },
+    {
+     "gate_id": "scan.frr_assessor_responses_recorded",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "low"
+    },
+    {
+     "gate_id": "scan.frr_implementation_explained",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.frr_independent_validation_recorded",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.frr_independent_verification_recorded",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.frr_nonconformance_reason_stated",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.frr_nonconformance_risk_stated",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.frr_senior_official_acceptance",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.frr_status_declared",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "medium"
+    },
+    {
+     "gate_id": "scan.frr_validation_recorded",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.frr_verification_recorded",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.sdr_dual_format_present",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "critical"
+    },
+    {
+     "gate_id": "scan.sdr_human_readable_clean",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "low"
+    },
+    {
+     "gate_id": "scan.sdr_json_schema_valid",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "critical"
+    },
+    {
+     "gate_id": "scan.sdr_overview_uri_declared",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "medium"
+    }
+   ]
+  },
+  "SDR-CSO-MTD": {
+   "kind": "rule",
+   "name": "Security Decision Record Metadata",
+   "enforcement": [
+    {
+     "gate_id": "scan.sdr_metadata_complete",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.sdr_record_freshness",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "medium"
+    }
+   ]
+  },
+  "SDR-CSX-KMT": {
+   "kind": "rule",
+   "name": "Key Security Indicator Metrics",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F03",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "automation/metrics/test_append_metrics.py"
+     ],
+     "mutations": [
+      "MUT-F03"
+     ],
+     "mutated_files": [
+      "automation/metrics/append_metrics.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F04",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/metrics/test_append_metrics.py"
+     ],
+     "mutations": [
+      "MUT-F04"
+     ],
+     "mutated_files": [
+      "automation/metrics/append_metrics.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F05",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/metrics/test_append_metrics.py"
+     ],
+     "mutations": [
+      "MUT-F05"
+     ],
+     "mutated_files": [
+      "automation/metrics/append_metrics.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F07",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/metrics/test_append_metrics.py"
+     ],
+     "mutations": [
+      "MUT-F07"
+     ],
+     "mutated_files": [
+      "automation/metrics/append_metrics.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F10",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_utc_clock.py"
+     ],
+     "mutations": [
+      "MUT-F10"
+     ],
+     "mutated_files": [
+      "sdr.py"
+     ],
+     "in_test_suite": false
+    },
+    {
+     "gate_id": "ledger.AUD-F11",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_build_sdr_utc_window.py"
+     ],
+     "mutations": [
+      "MUT-F11"
+     ],
+     "mutated_files": [
+      "validation/scripts/build_sdr.py"
+     ],
+     "in_test_suite": false
+    },
+    {
+     "gate_id": "ledger.AUD-F15",
+     "mode": "regression-test+mutation",
+     "severity": "Critical",
+     "tests": [
+      "automation/collectors/test_collectors.py",
+      "automation/metrics/test_append_metrics.py"
+     ],
+     "mutations": [
+      "MUT-F15"
+     ],
+     "mutated_files": [
+      "automation/collectors/collectors.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F16",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/collectors/test_collectors.py",
+      "automation/metrics/test_append_metrics.py",
+      "automation/prefill/test_binding_e2e.py"
+     ],
+     "mutations": [
+      "MUT-F16"
+     ],
+     "mutated_files": [
+      "automation/metrics/append_metrics.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F17",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/collectors/test_collectors.py",
+      "automation/metrics/test_append_metrics.py"
+     ],
+     "mutations": [
+      "MUT-F17"
+     ],
+     "mutated_files": [
+      "automation/metrics/append_metrics.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F29",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/collectors/test_collection_fail_closed.py"
+     ],
+     "mutations": [
+      "MUT-F29"
+     ],
+     "mutated_files": [
+      "automation/collectors/collect_facts.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F30",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/metrics/test_append_metrics.py"
+     ],
+     "mutations": [
+      "MUT-F30"
+     ],
+     "mutated_files": [
+      "automation/metrics/append_metrics.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F31",
+     "mode": "regression-test+mutation",
+     "severity": "Critical",
+     "tests": [
+      "automation/collectors/test_collection_fail_closed.py"
+     ],
+     "mutations": [
+      "MUT-F31"
+     ],
+     "mutated_files": [
+      ".github/workflows/living-sdr-loop.yml"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F37",
+     "mode": "regression-test+mutation",
+     "severity": "Critical",
+     "tests": [
+      "automation/metrics/test_history_integrity.py",
+      "validation/scripts/test_assessor_attack.py"
+     ],
+     "mutations": [
+      "MUT-F37"
+     ],
+     "mutated_files": [
+      "automation/metrics/history_integrity.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F55",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_docs_class_table.py"
+     ],
+     "mutations": [
+      "MUT-F55"
+     ],
+     "mutated_files": [
+      "docs/certification-classes.md"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "scan.ksi_metrics_30day_summary",
+     "mode": "readiness-scan",
+     "classes": [
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.ksi_metrics_daily_data",
+     "mode": "readiness-scan",
+     "classes": [
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.ksi_metrics_yearly_summary",
+     "mode": "readiness-scan",
+     "classes": [
+      "b",
+      "c"
+     ],
+     "severity": "medium"
+    }
+   ]
+  },
+  "SDR-CSX-KSI": {
+   "kind": "rule",
+   "name": "Key Security Indicators",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F01",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "validation/scripts/test_evidence_integrity.py"
+     ],
+     "mutations": [
+      "MUT-F01"
+     ],
+     "mutated_files": [
+      "validation/scripts/validate_evidence.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F08",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "automation/collectors/test_collectors.py"
+     ],
+     "mutations": [
+      "MUT-F08"
+     ],
+     "mutated_files": [
+      "automation/collectors/collectors.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F09",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "automation/collectors/test_collectors.py"
+     ],
+     "mutations": [
+      "MUT-F09"
+     ],
+     "mutated_files": [
+      "automation/collectors/collectors.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F61",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "automation/pipeline/test_release_gate.py"
+     ],
+     "mutations": [
+      "MUT-F61"
+     ],
+     "mutated_files": [
+      "audit/release_gate.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F62",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "validation/scripts/test_provenance_mutations.py"
+     ],
+     "mutations": [
+      "MUT-F62"
+     ],
+     "mutated_files": [
+      "validation/scripts/validate_evidence.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F63",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_provenance_mutations.py"
+     ],
+     "mutations": [
+      "MUT-F63"
+     ],
+     "mutated_files": [
+      "validation/scripts/validate_evidence.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "scan.ksi_automation_verified",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.ksi_evidence_present",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.ksi_independent_assessment_recorded",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.ksi_measures_explained",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.ksi_measures_validated",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.ksi_measures_verified",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "high"
+    },
+    {
+     "gate_id": "scan.ksi_operating_cycle_explained",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "medium"
+    },
+    {
+     "gate_id": "scan.ksi_pending_marked_honestly",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "informational"
+    },
+    {
+     "gate_id": "scan.ksi_status_declared",
+     "mode": "readiness-scan",
+     "classes": [
+      "a",
+      "b",
+      "c"
+     ],
+     "severity": "medium"
+    }
+   ]
+  }
+ },
+ "coverage": {
+  "a": {
+   "applicable_rules": 41,
+   "applicable_ksis": 7,
+   "with_automated_disposition": 11,
+   "human_review_only": [
+    "AFC-CSO-CRA",
+    "AFC-CSO-INB",
+    "AFC-CSO-RCV",
+    "CCM-OCR-NRD",
+    "CCM-QTR-MTG",
+    "CDS-CSO-AVR",
+    "CDS-CSO-PSM",
+    "CDS-CSO-UTC",
+    "CDS-UTC-AAD",
+    "CMU-CSO-UVM",
+    "CPO-CSX-CPM",
+    "FRC-CLA-IVV",
+    "FRC-CLA-OFR",
+    "FRC-CLA-RFR",
+    "FRC-CSO-POP",
+    "IEC-CSO-EFR",
+    "IEC-CSO-FIR",
+    "IEC-CSO-IIR",
+    "IEC-CSO-OIR",
+    "IVV-CSO-FIA",
+    "VDR-CSO-DET",
+    "VDR-TFR-MVX",
+    "VDR-TFR-PCD",
+    "VDR-TFR-PDD",
+    "VDR-TFR-PSD",
+    "VDR-TFR-PVR",
+    "VER-TFR-EVU",
+    "VER-TFR-IRI",
+    "VER-TFR-MRH",
+    "VER-TFR-NRI",
+    "KSI-CED-RAT",
+    "KSI-CMT-LMC",
+    "KSI-CNA-RNT",
+    "KSI-IAM-AAM",
+    "KSI-IAM-APM",
+    "KSI-INR-RIR",
+    "KSI-SVC-SIN"
+   ]
+  },
+  "b": {
+   "applicable_rules": 157,
+   "applicable_ksis": 41,
+   "with_automated_disposition": 20,
+   "human_review_only": [
+    "AFC-CSO-ACK",
+    "AFC-CSO-CRA",
+    "AFC-CSO-EMR",
+    "AFC-CSO-IMA",
+    "AFC-CSO-INB",
+    "AFC-CSO-NOC",
+    "AFC-CSO-RCV",
+    "AFC-CSO-TFG",
+    "CCM-OCR-AFS",
+    "CCM-OCR-FBM",
+    "CCM-OCR-LSI",
+    "CCM-OCR-NRD",
+    "CCM-OCR-RPS",
+    "CCM-OCR-SOR",
+    "CCM-QTR-ACT",
+    "CCM-QTR-MTG",
+    "CCM-QTR-NID",
+    "CCM-QTR-NRD",
+    "CCM-QTR-REG",
+    "CCM-QTR-RTP",
+    "CCM-QTR-RTR",
+    "CCM-QTR-SAR",
+    "CCM-QTR-SCR",
+    "CCM-QTR-SRR",
+    "CDS-CSO-AVR",
+    "CDS-CSO-FID",
+    "CDS-CSO-FRC",
+    "CDS-CSO-HAD",
+    "CDS-CSO-IRP",
+    "CDS-CSO-PSM",
+    "CDS-CSO-RIS",
+    "CDS-CSO-RPS",
+    "CDS-CSO-UTC",
+    "CDS-TRC-AAI",
+    "CDS-TRC-ACL",
+    "CDS-TRC-HMR",
+    "CDS-TRC-PAC",
+    "CDS-TRC-SSM",
+    "CDS-TRC-USH",
+    "CDS-UTC-AAD",
+    "CDS-UTC-AGA",
+    "CMU-CSO-CAT",
+    "CMU-CSO-CMD",
+    "CMU-CSO-UVM",
+    "CPO-CSO-OSA",
+    "CPO-CSX-CPM",
+    "FRC-APP-AFC",
+    "FRC-APP-FCP",
+    "FRC-APP-MLF",
+    "FRC-APP-NTP",
+    "FRC-APP-USA",
+    "FRC-CSO-FCP",
+    "FRC-CSO-POP",
+    "IEC-CSO-AIR",
+    "IEC-CSO-DPR",
+    "IEC-CSO-EFI",
+    "IEC-CSO-EFR",
+    "IEC-CSO-FIR",
+    "IEC-CSO-IIR",
+    "IEC-CSO-OIR",
+    "IVV-CSO-DUS",
+    "IVV-CSO-FIA",
+    "IVV-CSO-ICP",
+    "IVV-CSO-RAA",
+    "IVV-CSO-SEE",
+    "IVV-CSO-SEI",
+    "IVV-CSO-STE",
+    "IVV-CSO-USR",
+    "MAS-CSO-FLO",
+    "MAS-CSO-MDI",
+    "MAS-CSO-SUP",
+    "MAS-CSO-TPR",
+    "MKT-CSO-MLR",
+    "MKT-CSO-PML",
+    "MKT-IIP-AGU",
+    "MKT-IIP-DCP",
+    "MKT-IIP-DLA",
+    "SCG-CSO-AUP",
+    "SCG-CSO-PUB",
+    "SCG-CSO-SDF",
+    "SCG-ENH-API",
+    "SCG-ENH-CMP",
+    "SCG-ENH-EXP",
+    "SCG-ENH-MRG",
+    "SCG-ENH-VRH",
+    "SCN-ADP-NTF",
+    "SCN-CSO-ARI",
+    "SCN-CSO-EMG",
+    "SCN-CSO-EVA",
+    "SCN-CSO-HIS",
+    "SCN-CSO-HRM",
+    "SCN-CSO-INF",
+    "SCN-CSO-MAR",
+    "SCN-CSO-NOM",
+    "SCN-RTR-NNR",
+    "SCN-TRF-NAF",
+    "SCN-TRF-NAV",
+    "SCN-TRF-NFP",
+    "SCN-TRF-NIP",
+    "SCN-TRF-TPR",
+    "SCN-TRF-UPD",
+    "VDR-CSO-ADT",
+    "VDR-CSO-AKE",
+    "VDR-CSO-DAC",
+    "VDR-CSO-DET",
+    "VDR-CSO-DFR",
+    "VDR-CSO-FAV",
+    "VDR-CSO-MSP",
+    "VDR-CSO-RES",
+    "VDR-CSO-SIR",
+    "VDR-TFR-KEV",
+    "VDR-TFR-MVX",
+    "VDR-TFR-NMV",
+    "VDR-TFR-PCD",
+    "VDR-TFR-PDD",
+    "VDR-TFR-PSD",
+    "VDR-TFR-PVR",
+    "VDR-TFR-RMN",
+    "VER-EVA-AIA",
+    "VER-EVA-EFA",
+    "VER-EVA-EFP",
+    "VER-EVA-EIR",
+    "VER-EVA-ELX",
+    "VER-EVA-EPA",
+    "VER-EVA-GRV",
+    "VER-RPT-AVI",
+    "VER-RPT-HLO",
+    "VER-RPT-NID",
+    "VER-RPT-PER",
+    "VER-RPT-RPD",
+    "VER-RPT-VDT",
+    "VER-TFR-EVU",
+    "VER-TFR-IRI",
+    "VER-TFR-MAV",
+    "VER-TFR-MHR",
+    "VER-TFR-MRH",
+    "VER-TFR-NRI",
+    "KSI-CED-RAT",
+    "KSI-CMT-LMC",
+    "KSI-CMT-RMV",
+    "KSI-CMT-RVP",
+    "KSI-CMT-VTD",
+    "KSI-CNA-DFP",
+    "KSI-CNA-IBP",
+    "KSI-CNA-MAT",
+    "KSI-CNA-OFA",
+    "KSI-CNA-RNT",
+    "KSI-CNA-RVP",
+    "KSI-CNA-ULN",
+    "KSI-IAM-AAM",
+    "KSI-IAM-APM",
+    "KSI-IAM-ELP",
+    "KSI-IAM-JIT",
+    "KSI-IAM-SNU",
+    "KSI-IAM-SUS",
+    "KSI-INR-AAR",
+    "KSI-INR-RIR",
+    "KSI-INR-RPI",
+    "KSI-MLA-EVC",
+    "KSI-MLA-LET",
+    "KSI-MLA-OSM",
+    "KSI-MLA-RVL",
+    "KSI-PIY-GIV",
+    "KSI-PIY-RES",
+    "KSI-PIY-RIS",
+    "KSI-PIY-RSD",
+    "KSI-PIY-RVD",
+    "KSI-RPL-ABO",
+    "KSI-RPL-ARP",
+    "KSI-RPL-RRO",
+    "KSI-RPL-TRC",
+    "KSI-SCR-MIT",
+    "KSI-SCR-MON",
+    "KSI-SVC-ACM",
+    "KSI-SVC-ASM",
+    "KSI-SVC-EIS",
+    "KSI-SVC-SIN",
+    "KSI-SVC-VRI"
+   ]
+  },
+  "c": {
+   "applicable_rules": 157,
+   "applicable_ksis": 46,
+   "with_automated_disposition": 20,
+   "human_review_only": [
+    "AFC-CSO-ACK",
+    "AFC-CSO-CRA",
+    "AFC-CSO-EMR",
+    "AFC-CSO-IMA",
+    "AFC-CSO-INB",
+    "AFC-CSO-NOC",
+    "AFC-CSO-RCV",
+    "AFC-CSO-TFG",
+    "CCM-OCR-AFS",
+    "CCM-OCR-FBM",
+    "CCM-OCR-LSI",
+    "CCM-OCR-NRD",
+    "CCM-OCR-RPS",
+    "CCM-OCR-SOR",
+    "CCM-QTR-ACT",
+    "CCM-QTR-MTG",
+    "CCM-QTR-NID",
+    "CCM-QTR-NRD",
+    "CCM-QTR-REG",
+    "CCM-QTR-RTP",
+    "CCM-QTR-RTR",
+    "CCM-QTR-SAR",
+    "CCM-QTR-SCR",
+    "CCM-QTR-SRR",
+    "CDS-CSO-AVR",
+    "CDS-CSO-FID",
+    "CDS-CSO-FRC",
+    "CDS-CSO-HAD",
+    "CDS-CSO-IRP",
+    "CDS-CSO-PSM",
+    "CDS-CSO-RIS",
+    "CDS-CSO-RPS",
+    "CDS-CSO-UTC",
+    "CDS-TRC-AAI",
+    "CDS-TRC-ACL",
+    "CDS-TRC-HMR",
+    "CDS-TRC-PAC",
+    "CDS-TRC-SSM",
+    "CDS-TRC-USH",
+    "CDS-UTC-AAD",
+    "CDS-UTC-AGA",
+    "CMU-CSO-CAT",
+    "CMU-CSO-CMD",
+    "CMU-CSO-UVM",
+    "CPO-CSO-OSA",
+    "CPO-CSX-CPM",
+    "FRC-APP-AFC",
+    "FRC-APP-FCP",
+    "FRC-APP-MLF",
+    "FRC-APP-NTP",
+    "FRC-APP-USA",
+    "FRC-CSO-FCP",
+    "FRC-CSO-POP",
+    "IEC-CSO-AIR",
+    "IEC-CSO-DPR",
+    "IEC-CSO-EFI",
+    "IEC-CSO-EFR",
+    "IEC-CSO-FIR",
+    "IEC-CSO-IIR",
+    "IEC-CSO-OIR",
+    "IVV-CSO-DUS",
+    "IVV-CSO-FIA",
+    "IVV-CSO-ICP",
+    "IVV-CSO-RAA",
+    "IVV-CSO-SEE",
+    "IVV-CSO-SEI",
+    "IVV-CSO-STE",
+    "IVV-CSO-USR",
+    "MAS-CSO-FLO",
+    "MAS-CSO-MDI",
+    "MAS-CSO-SUP",
+    "MAS-CSO-TPR",
+    "MKT-CSO-MLR",
+    "MKT-CSO-PML",
+    "MKT-IIP-AGU",
+    "MKT-IIP-DCP",
+    "MKT-IIP-DLA",
+    "SCG-CSO-AUP",
+    "SCG-CSO-PUB",
+    "SCG-CSO-SDF",
+    "SCG-ENH-API",
+    "SCG-ENH-CMP",
+    "SCG-ENH-EXP",
+    "SCG-ENH-MRG",
+    "SCG-ENH-VRH",
+    "SCN-ADP-NTF",
+    "SCN-CSO-ARI",
+    "SCN-CSO-EMG",
+    "SCN-CSO-EVA",
+    "SCN-CSO-HIS",
+    "SCN-CSO-HRM",
+    "SCN-CSO-INF",
+    "SCN-CSO-MAR",
+    "SCN-CSO-NOM",
+    "SCN-RTR-NNR",
+    "SCN-TRF-NAF",
+    "SCN-TRF-NAV",
+    "SCN-TRF-NFP",
+    "SCN-TRF-NIP",
+    "SCN-TRF-TPR",
+    "SCN-TRF-UPD",
+    "VDR-CSO-ADT",
+    "VDR-CSO-AKE",
+    "VDR-CSO-DAC",
+    "VDR-CSO-DET",
+    "VDR-CSO-DFR",
+    "VDR-CSO-FAV",
+    "VDR-CSO-MSP",
+    "VDR-CSO-RES",
+    "VDR-CSO-SIR",
+    "VDR-TFR-KEV",
+    "VDR-TFR-MVX",
+    "VDR-TFR-NMV",
+    "VDR-TFR-PCD",
+    "VDR-TFR-PDD",
+    "VDR-TFR-PSD",
+    "VDR-TFR-PVR",
+    "VDR-TFR-RMN",
+    "VER-EVA-AIA",
+    "VER-EVA-EFA",
+    "VER-EVA-EFP",
+    "VER-EVA-EIR",
+    "VER-EVA-ELX",
+    "VER-EVA-EPA",
+    "VER-EVA-GRV",
+    "VER-RPT-AVI",
+    "VER-RPT-HLO",
+    "VER-RPT-NID",
+    "VER-RPT-PER",
+    "VER-RPT-RPD",
+    "VER-RPT-VDT",
+    "VER-TFR-EVU",
+    "VER-TFR-IRI",
+    "VER-TFR-MAV",
+    "VER-TFR-MHR",
+    "VER-TFR-MRH",
+    "VER-TFR-NRI",
+    "KSI-CED-RAT",
+    "KSI-CMT-LMC",
+    "KSI-CMT-RMV",
+    "KSI-CMT-RVP",
+    "KSI-CMT-VTD",
+    "KSI-CNA-DFP",
+    "KSI-CNA-EIS",
+    "KSI-CNA-IBP",
+    "KSI-CNA-MAT",
+    "KSI-CNA-OFA",
+    "KSI-CNA-RNT",
+    "KSI-CNA-RVP",
+    "KSI-CNA-ULN",
+    "KSI-IAM-AAM",
+    "KSI-IAM-APM",
+    "KSI-IAM-ELP",
+    "KSI-IAM-JIT",
+    "KSI-IAM-SNU",
+    "KSI-IAM-SUS",
+    "KSI-INR-AAR",
+    "KSI-INR-RIR",
+    "KSI-INR-RPI",
+    "KSI-MLA-ALA",
+    "KSI-MLA-EVC",
+    "KSI-MLA-LET",
+    "KSI-MLA-OSM",
+    "KSI-MLA-RVL",
+    "KSI-PIY-GIV",
+    "KSI-PIY-RES",
+    "KSI-PIY-RIS",
+    "KSI-PIY-RSD",
+    "KSI-PIY-RVD",
+    "KSI-RPL-ABO",
+    "KSI-RPL-ARP",
+    "KSI-RPL-RRO",
+    "KSI-RPL-TRC",
+    "KSI-SCR-MIT",
+    "KSI-SCR-MON",
+    "KSI-SVC-ACM",
+    "KSI-SVC-ASM",
+    "KSI-SVC-EIS",
+    "KSI-SVC-PRR",
+    "KSI-SVC-RUD",
+    "KSI-SVC-SIN",
+    "KSI-SVC-VCM",
+    "KSI-SVC-VRI"
+   ]
+  }
+ },
+ "unresolved_references": {
+  "rule_ids": [
+   {
+    "id": "FRC-CSX-MOT",
+    "source": "AUD-F05"
+   },
+   {
+    "id": "FRC-CSX-MOT",
+    "source": "AUD-F06"
+   },
+   {
+    "id": "FRC-CSX-MOT",
+    "source": "AUD-F10"
+   },
+   {
+    "id": "FRC-CSX-MOT",
+    "source": "AUD-F11"
+   },
+   {
+    "id": "FRC-CSX-MOT",
+    "source": "AUD-F19"
+   },
+   {
+    "id": "FRC-CSX-MOT",
+    "source": "AUD-F20"
+   },
+   {
+    "id": "FRC-CSX-MOT",
+    "source": "AUD-F21"
+   },
+   {
+    "id": "FRC-CSX-MOT",
+    "source": "AUD-F29"
+   },
+   {
+    "id": "FRC-CSX-MOT",
+    "source": "AUD-F31"
+   },
+   {
+    "id": "FRC-CSX-MOT",
+    "source": "AUD-F32"
+   },
+   {
+    "id": "FRC-CSX-MOT",
+    "source": "AUD-F33"
+   },
+   {
+    "id": "FRC-CSX-MOT",
+    "source": "AUD-F37"
+   }
+  ],
+  "tests": [],
+  "mutations": []
+ }
+}

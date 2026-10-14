@@ -119,6 +119,15 @@ jobs:
       # RELEASE_MODE build, and `sdr.py release` cannot drift apart (AUD-F12).
       - name: Audit section of the release gate (HARD GATE)
         run: python audit/release_gate.py audit
+      - name: Upload gate results (audit)
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: gate-results-audit
+          path: |
+            validation/reports/gate-results.json
+            validation/reports/gate-results.run.json
+          if-no-files-found: ignore
 
   attack-gate:
     # Assessor-attack harness (AUD-F61). Drives the fully populated fictional
@@ -141,6 +150,15 @@ jobs:
       # the AWS RELEASE_MODE build and `sdr.py release`).
       - name: Attack section of the release gate (HARD GATE)
         run: python audit/release_gate.py attack
+      - name: Upload gate results (attack)
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: gate-results-attack
+          path: |
+            validation/reports/gate-results.json
+            validation/reports/gate-results.run.json
+          if-no-files-found: ignore
 
   security-scan:
     # Static security analysis of ALL executable Python (root, automation,
@@ -170,6 +188,15 @@ jobs:
         with:
           name: bandit-security-report
           path: bandit-report.txt
+      - name: Upload gate results (security)
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: gate-results-security
+          path: |
+            validation/reports/gate-results.json
+            validation/reports/gate-results.run.json
+          if-no-files-found: ignore
 
   release-gate:
     # THE ONE REQUIRED STATUS CHECK on main (AUD-F12). Succeeds only when every

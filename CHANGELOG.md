@@ -237,6 +237,42 @@ The audit's one remaining item is open by decision, not oversight:
 machine-readable per-gate results with a reverse rule-to-test map. The
 `sdr.py` decomposition is withdrawn: the file stays as it is.
 
+That item is closed too (`AUD-F66`, `AUD-F67`, both Medium), which leaves the
+2026-10-13 audit with nothing open:
+
+- **The release gate leaves a machine-readable record (AUD-F66).** `run_step`
+  returned an integer and `run()` printed a line, so which gate ran for a
+  release, with what argv and how it ended could only be read from job logs.
+  `run_step` now returns a record (`gate_id` `<section>.<name>`, argv, exit
+  code, status, error when a tool cannot start) and `run()` writes
+  `validation/reports/gate-results.json`: one entry per executed step, the
+  steps a failure stopped, the overall verdict, class and dataset version, and
+  nothing volatile, so identical runs write identical bytes. In GitHub Actions
+  a separate `gate-results.run.json` envelope records commit, run id, job and
+  time; CI uploads both per section. Gitignored run evidence, never a committed
+  deliverable; the exit code is still the verdict. `MUT-F66` (results never
+  written) killed; `test_release_gate.py` 88/88.
+- **A reverse rule-to-gate-to-test-to-mutation map (AUD-F67).** For a rule or
+  indicator: which automated check enforces anything about it, which regression
+  test protects that check, which killed mutation proves the test detects the
+  defect. `build_rule_test_map.py` (a build step, so regenerate-and-diff
+  checked) joins the scanner catalog's `fedramp_basis`, the defect ledger's
+  requirement / regression_test / mutation fields, the mutation runner and the
+  gate registries into `traceability/rule-test-map.json`, deterministically.
+  Every identifier is resolved against the rule catalog, the KSI catalog and
+  the dataset's FRD definitions; what does not resolve is reported under
+  `unresolved_references` (the retired `FRC-CSX-MOT` citations of older
+  entries stay historical), never dropped or invented. A per-class coverage
+  block lists the applicable identifiers with an automated disposition and the
+  rest as `human_review_only`: Class A 11 of 48, Class B 20 of 198, Class C 20
+  of 203. That is a coverage figure, not a defect list, and an entry never
+  means a provider complies. Building the join exposed that this round's
+  `AUD-F61` to `AUD-F63` had cited `SDR-CSX-VER` and `SDR-CSX-VAL`, identifiers
+  the pinned dataset does not carry (the verification and validation language
+  lives in `SDR-CSX-KSI` and `FRC-CSX-VVK`); corrected. `MUT-F67` (unresolved
+  identifiers dropped silently) killed; `test_rule_test_map.py` checks every
+  reference and recomputes the coverage.
+
 The documented consultant flow, run end to end on a fictional Class B offering
 (`init` with every answer scripted, the three importers, prefill, the drafter,
 `review --list`, `--walk`, `--accept-all prefill`, `build`, `preflight`),

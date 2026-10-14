@@ -16,6 +16,7 @@ import re
 import sys
 import json
 import fnmatch
+import shutil
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PIPELINE = os.path.join(HERE, "sdr-pipeline.yaml")
@@ -334,6 +335,83 @@ def main():
           "bandit" in security_steps)
     check("release gate refuses an unknown section (fails closed, not silently empty)",
           rg.run(["no-such-section"]) != 0)
+    # AUD-F66: machine-readable results. run_step returns a record whose gate_id
+    # is the id the rule-test map registers; run() writes the deterministic
+    # results document (no timestamps, durations, hosts) and an envelope only
+    # when CI facts exist. This is the MUT-F66 target.
+    import tempfile as _tf
+    rec_ok = rg.run_step("probe-pass", [sys.executable, "-c", "import sys; sys.exit(0)"], section="audit")
+    rec_bad = rg.run_step("probe-fail", [sys.executable, "-c", "import sys; sys.exit(3)"], section="audit")
+    rec_err = rg.run_step("probe-missing", ["no-such-tool-xyz"], section="security")
+    check("run_step returns a PASS record with gate_id <section>.<name> and exit 0",
+          rec_ok["gate_id"] == "audit.probe-pass" and rec_ok["status"] == "PASS" and rec_ok["exit_code"] == 0
+          and rec_ok["argv"][0] == "python")
+    check("run_step returns a FAIL record carrying the real exit code",
+          rec_bad["status"] == "FAIL" and rec_bad["exit_code"] == 3)
+    check("run_step records a tool that cannot start as FAIL with an error, not an exception",
+          rec_err["status"] == "FAIL" and rec_err["exit_code"] != 0 and "error" in rec_err)
+    _tmpd = _tf.mkdtemp(prefix="gate-results-")
+    _res = os.path.join(_tmpd, "gate-results.json"); _env = os.path.join(_tmpd, "gate-results.run.json")
+    _saved = {k: os.environ.pop(k, None) for k in ("GITHUB_SHA", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT",
+                                                      "GITHUB_JOB", "GITHUB_WORKFLOW", "GITHUB_REPOSITORY",
+                                                      "GITHUB_REF", "RUNNER_OS")}
+    try:
+        doc1 = rg.write_results([rec_ok, rec_bad], ["audit"], "FAIL", path=_res, envelope_path=_env)
+        text1 = open(_res, encoding="utf-8").read()
+        doc2 = rg.write_results([rec_ok, rec_bad], ["audit"], "FAIL", path=_res, envelope_path=_env)
+        text2 = open(_res, encoding="utf-8").read()
+        check("gate-results document is deterministic across two writes", text1 == text2 and doc1 == doc2)
+        check("gate-results carries schema, overall, the class and dataset version, and one entry per step",
+              doc1["schema"] == rg.RESULTS_SCHEMA and doc1["overall"] == "FAIL"
+              and doc1["certification_class"] and doc1["dataset_version"]
+              and [g["gate_id"] for g in doc1["gates"]] == ["audit.probe-pass", "audit.probe-fail"])
+        check("gate-results lists the section's steps that did not run (stopped after a failure)",
+              set(doc1["skipped"]) == {f"audit.{n}" for n, _ in rg.SECTIONS["audit"]})
+        for volatile in ("timestamp", "recorded_at", "duration", "hostname", "run_id"):
+            check(f"deterministic results carry no {volatile}", volatile not in text1)
+        check("no envelope is written without CI facts", not os.path.exists(_env))
+        os.environ["GITHUB_SHA"] = "0" * 40; os.environ["GITHUB_RUN_ID"] = "1"
+        rg.write_results([rec_ok], ["audit"], "PASS", path=_res, envelope_path=_env)
+        env_doc = json.load(open(_env, encoding="utf-8"))
+        check("the envelope carries the CI facts and points at the results file",
+              env_doc["commit"] == "0" * 40 and env_doc["run_id"] == "1"
+              and env_doc["results_file"].endswith("gate-results.json") and "recorded_at" in env_doc)
+        text3 = open(_res, encoding="utf-8").read()
+        check("CI facts never enter the deterministic document", "0" * 40 not in text3)
+        # End to end: run() on a probe section writes the results file (the
+        # MUT-F66 target: dropping the write turns this red).
+        os.environ.pop("GITHUB_SHA", None); os.environ.pop("GITHUB_RUN_ID", None)
+        os.remove(_res)
+        _saved_sections, _saved_order, _saved_results = rg.SECTIONS, rg.SECTION_ORDER, rg.RESULTS
+        try:
+            rg.SECTIONS = {"probe": [("ok", [sys.executable, "-c", "import sys; sys.exit(0)"]),
+                                     ("bad", [sys.executable, "-c", "import sys; sys.exit(2)"]),
+                                     ("never", [sys.executable, "-c", "import sys; sys.exit(0)"])]}
+            rg.SECTION_ORDER = ["probe"]
+            rg.RESULTS = _res
+            rc_probe = rg.run(["probe"])
+            run_doc = json.load(open(_res, encoding="utf-8")) if os.path.exists(_res) else None
+        finally:
+            rg.SECTIONS, rg.SECTION_ORDER, rg.RESULTS = _saved_sections, _saved_order, _saved_results
+        check("run() returns 1 when a step fails and writes gate-results.json",
+              rc_probe == 1 and run_doc is not None)
+        check("run() results record PASS then FAIL and list the step that never ran as skipped",
+              run_doc is not None and [g["status"] for g in run_doc["gates"]] == ["PASS", "FAIL"]
+              and run_doc["skipped"] == ["probe.never"] and run_doc["overall"] == "FAIL")
+    finally:
+        for k, v in _saved.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+        shutil.rmtree(_tmpd, ignore_errors=True)
+    check("results files are gitignored (run evidence, never a committed deliverable)",
+          all(p in open(os.path.join(BASE, ".gitignore"), encoding="utf-8").read()
+              for p in ("validation/reports/gate-results.json", "validation/reports/gate-results.run.json")))
+    wf_text = open(os.path.join(BASE, ".github", "workflows", "validate.yml"), encoding="utf-8").read()
+    for sec in ("audit", "attack", "security"):
+        check(f"CI uploads the {sec} section's gate results as an artifact",
+              f"name: gate-results-{sec}" in wf_text)
     # Every argv must name an existing script or a module the gate can run.
     for section, steps in rg.SECTIONS.items():
         for name, argv in steps:
