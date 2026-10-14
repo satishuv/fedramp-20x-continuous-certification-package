@@ -821,6 +821,45 @@
       "mutation": "MUT-F61: the attack harness step dropped from the gate definition (a manual run again); expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F62",
+      "severity": "High",
+      "requirement": "SDR-CSX-VER / SDR-CSX-VAL (verified and validated records: the evidence behind a KSI claim must be evidence OF that indicator) and the repository production-assurance contract (evidence_store_profile production-assurance: tamper-evident AND traceable evidence, AUD-F37/F59).",
+      "component": "validation/scripts/validate_evidence.py (load_source_bindings, classify_source_binding, first_bound_source, main); sdr.py (unbound_evidence_under_production, package-preflight production-assurance blocker); examples/sample-offering-class-c/build_class_c_sample.py (bound sources, AUD-F62 probe)",
+      "description": "Found while designing the orthogonal provenance mutations the 2026-10-13 audit asked for: no gate checked that a collector-derived evidence entry's source fact (service:check) is a source the repository registers for the KSI it sits under. The collector registry's per-KSI metric_service_keys allowlist and config-rule checks bind prefill and the metric engine, but validation never read them, so an entry derived from a valid observation of a different indicator, with a recomputed digest and a real signature, passed the integrity gate as verified and counted toward Class C evidence linkage under production-assurance. The 11 artifact-existence KSIs (KSI-CED-RAT, KSI-CMT-RVP, KSI-INR-AAR, KSI-INR-RIR, KSI-INR-RPI, KSI-MLA-RVL, KSI-PIY-RES, KSI-PIY-RIS, KSI-PIY-RVD, KSI-RPL-ARP, KSI-RPL-RRO) have no registry source at all; their deployed rule names live only in automation/config-rules/rules-manifest.json. The Class C sample itself attached every KSI's signed evidence to a fictional securityhub check nothing maps to the indicator, and reached READY.",
+      "root_cause": "Provenance was bound cryptographically (the digest covers the bound payload, AUD-F26) but not semantically: nothing joined the evidence entry to the KSI's registered sources. The hash proves an entry was not edited, not that it belongs where it sits.",
+      "fix_commit": "this PR -- validate_evidence.load_source_bindings joins the collector registry (metric_service_keys, config_managed_rule targets including customer custom rules), the config-rules manifest (the 11 deployed rules, as service config) and the registered third-party adapters (ksi_targets, as the adapter's service) into one per-KSI binding map; classify_source_binding is pure (bound / unbound / no-claim for entries without a source fact, which stay a human's review); the integrity gate reports an unbound entry as a readiness finding and package-preflight BLOCKS on it behind a populated applicable record under production-assurance (sdr.unbound_evidence_under_production, the AUD-F59 pattern; development profile unchanged). The Class C sample derives each KSI's evidence from first_bound_source(kid)",
+      "regression_test": "validation/scripts/test_provenance_mutations.py (QUERY family: a valid, re-signed entry from KSI-B's source on KSI-A is cryptographically verified AND unbound; bound on KSI-B; metric allowlist, manifest rule, adapter target and unknown-KSI cases; no-claim without a source fact; all 46 repository KSIs have a registered source so the gate is satisfiable; each manifest rule binds its own KSI; Falcon binds only its targets; preflight helper lists (KSI, idx, source) for populated records only); examples/sample-offering-class-c/build_class_c_sample.py --attack (AUD-F62 probe: donor KSI's source re-signed on the victim blocks; READY probe stays READY with bound sources)",
+      "mutation": "MUT-F62: classify_source_binding returns bound for any source; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F63",
+      "severity": "Medium",
+      "requirement": "SDR-CSX-VER / SDR-CSX-VAL and the AUD-F27 evidence-pointer identity (service/check/scope/region/run_id): an evidence pointer must name the observation the entry's source fact describes.",
+      "component": "validation/scripts/validate_evidence.py (classify_pointer_binding, main); sdr.py (unbound_evidence_under_production, package-preflight); examples/sample-offering-class-c/build_class_c_sample.py (AUD-F63 probe)",
+      "description": "The factory builds evidenceLocation from the same fields it stamps into xSourceFact (<base>/<service>/<check>[/<scope>]/<region>[/<run_id>].json), but nothing re-checked that relation after the fact. Both fields are inside the bound payload, so an actor who re-targets the pointer at another observation (another region, another scope, another run, or a different check entirely) and recomputes and re-signs the digest produces an entry the integrity gate reports verified while its pointer and its source fact describe two different observations.",
+      "root_cause": "The pointer-to-fact relation existed only at construction time (evidence_wiring._pointer); no validator reconstructed it.",
+      "fix_commit": "this PR -- classify_pointer_binding (pure) rebuilds the expected slug from xSourceFact and requires the pointer to end in it; placeholder pointers and entries without a source fact make no claim; reported as a readiness finding by the integrity gate for KSI evidence and FRR rule artifacts alike, and a production-assurance blocker at package-preflight",
+      "regression_test": "validation/scripts/test_provenance_mutations.py (SOURCE family: pointer swapped with the digest kept is hard INTEGRITY FAILED; swapped + recomputed + re-signed is verified AND unbound; scope stripped and run id moved likewise; scoped factory pointer bound; placeholder and human entries no-claim; FRR artifact listed by the preflight helper); examples/sample-offering-class-c/build_class_c_sample.py --attack (AUD-F63 probe)",
+      "mutation": "MUT-F63: the pointer is never compared to the source fact; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F64",
+      "severity": "Medium",
+      "requirement": "Evidence freshness policy (evidence_freshness_policy_days, hard expiry at 2x; expired evidence a blocker at Class C/D per package-preflight) must be load-bearing against an entry whose every other provenance dimension is valid.",
+      "component": "sdr.py (classify_evidence_freshness, package-preflight freshness scan); validation/scripts/test_provenance_mutations.py; examples/sample-offering-class-c/build_class_c_sample.py (AUD-F64 probe); audit/mutation_tests.py",
+      "description": "The freshness classifier had a regression suite (test_evidence_freshness.py) but no mutation: nothing proved that disabling expiry turns a test red, and no fixture exercised a STALE observation carrying a recomputed, re-signed digest, which is the shape that passes every integrity check and can only be stopped by the freshness policy. A refactor that made every observation 'stale' instead of 'expired' would have left the suite green while a Class C package backed by year-old evidence reached READY.",
+      "root_cause": "Freshness was tested in isolation from the integrity gate; the two were never shown to be independent dimensions on one entry.",
+      "fix_commit": "this PR -- no production change to the classifier; the regression binds the dimensions (date edited with digest kept is hard; date edited, recomputed and re-signed is verified and expired/stale/current by age; a tightened policy expires sooner) and the attack harness drives a 400-day-old re-signed entry to a Class C blocker",
+      "regression_test": "validation/scripts/test_provenance_mutations.py (FRESHNESS family); examples/sample-offering-class-c/build_class_c_sample.py --attack (AUD-F64 probe)",
+      "mutation": "MUT-F64: classify_evidence_freshness never returns expired; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

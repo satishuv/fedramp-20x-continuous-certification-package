@@ -43,7 +43,13 @@ the downgrade an actor with write access to the record would use.
     python validation/scripts/validate_evidence.py
 
 Exit 1 only on a HARD failure (malformed or mismatched digest, or any of the
-signing-required downgrades above).
+signing-required downgrades above). Two SEMANTIC provenance checks are reported
+as readiness findings beside the integrity findings (AUD-F62: an entry's source
+fact must name a source the repository registers for its KSI; AUD-F63: its
+pointer must describe the same observation as its source fact) and become
+submission blockers under evidence_store_profile production-assurance in
+`sdr.py package-preflight`, which is where the development profile's advisory
+posture and the production profile's hard posture are decided (AUD-F59).
 """
 
 import json
@@ -144,6 +150,167 @@ def iter_evidence(records):
         for e in ((rec.get("extension", {}) or {}).get("rule_artifacts") or []):
             if isinstance(e, dict):
                 yield oid, "frr", e
+
+
+# ---------------------------------------------------------------------------
+# Semantic provenance (AUD-F62 / AUD-F63). The digest and signature above prove
+# an entry was not EDITED after it was recorded; they prove nothing about
+# whether the entry BELONGS where it sits. An actor who can write the record
+# store can derive a perfectly valid entry (recomputed digest, real signature)
+# from the wrong observation and attach it to a KSI it does not measure, or
+# point an entry's evidenceLocation at a different observation than its source
+# fact describes. Both pass every cryptographic check. The two classifiers
+# below are the SEMANTIC half: an entry that CLAIMS a collector source
+# (xSourceFact with service/check) must name a source the repository registers
+# for that KSI, and its pointer must describe the same observation.
+#
+# Sources a KSI may legitimately be measured by, all already declared in the
+# repository (nothing is inferred from prose):
+#   - the collector registry's per-KSI metric_service_keys allowlist
+#     ("service:check", the same binding prefill and the metric engine use);
+#   - the registry's config_managed_rule checks (AWS Config managed rules named
+#     in the guidance, plus the provider's custom rules from the customer
+#     overlay), as service "config" and the rule name;
+#   - the provider-deployed Config custom rules in
+#     automation/config-rules/rules-manifest.json (the 11 KSIs whose only
+#     automated method is an artifact-existence rule), as service "config";
+#   - a registered third-party adapter (thirdparty_adapters.py) whose
+#     ksi_targets() names the KSI, as that adapter's service (any check).
+# An entry WITHOUT xSourceFact makes no source claim (human-authored or
+# file-backed evidence) and is out of scope here: its review is a human's.
+# FRR rule artifacts have no machine-readable source map (the registry is per
+# KSI), so only the pointer check applies to them.
+REGISTRY = os.path.join(BASE, "automation", "collectors", "registry.json")
+RULES_MANIFEST = os.path.join(BASE, "automation", "config-rules", "rules-manifest.json")
+
+
+def load_source_bindings(registry=None, rules_manifest=None, adapters=None):
+    """Build {ksi_id: {"keys": set, "config": set, "services": set}} from the
+    collector registry, the config-rules manifest and the registered adapters.
+    Each argument may be injected (tests); None loads the repository's own."""
+    if registry is None:
+        registry = (load(REGISTRY, {}) or {}).get("ksis", {}) or {}
+    if rules_manifest is None:
+        rules_manifest = (load(RULES_MANIFEST, {}) or {})
+    if adapters is None:
+        adapters = _registered_adapters()
+    out = {}
+
+    def _slot(kid):
+        return out.setdefault(kid, {"keys": set(), "config": set(), "services": set()})
+
+    for kid, entry in (registry or {}).items():
+        slot = _slot(kid)
+        for key in (entry or {}).get("metric_service_keys") or []:
+            slot["keys"].add(str(key))
+        for chk in (entry or {}).get("checks") or []:
+            if (chk or {}).get("type") == "config_managed_rule" and chk.get("target"):
+                slot["config"].add(str(chk["target"]))
+    rules = rules_manifest.get("rules") if isinstance(rules_manifest, dict) else rules_manifest
+    for rule in rules or []:
+        if isinstance(rule, dict) and rule.get("ksi_id") and rule.get("rule_name"):
+            _slot(rule["ksi_id"])["config"].add(str(rule["rule_name"]))
+    for adapter in adapters or []:
+        targets = getattr(adapter, "ksi_targets", None)
+        service = getattr(adapter, "service", None)
+        if not callable(targets) or not service:
+            continue
+        for kid in targets() or []:
+            _slot(kid)["services"].add(str(service))
+    return out
+
+
+def _registered_adapters():
+    """Every registered EvidenceAdapter instance, after importing the optional
+    third-party adapters module so its registrations are present. An import
+    failure contributes nothing (fail closed: an adapter-derived entry is then
+    unbound, never silently bound)."""
+    try:
+        import evidence_wiring as _ew
+    except Exception:
+        return []
+    try:
+        import thirdparty_adapters  # noqa: F401  (registers on import)
+    except Exception:
+        pass
+    return [_ew.get_adapter(n) for n in _ew.list_adapters()]
+
+
+def classify_source_binding(ksi_id, e, bindings):
+    """Pure. ('bound' | 'unbound' | 'no-claim', message). An entry that carries
+    a collector source fact must name a (service, check) the repository
+    registers as a source for THIS KSI (see the module comment above)."""
+    sf = e.get("xSourceFact") if isinstance(e, dict) else None
+    if not isinstance(sf, dict):
+        return ("no-claim", "")
+    service = str(sf.get("service") or "").strip()
+    check = str(sf.get("check") or "").strip()
+    if not service or not check:
+        return ("no-claim", "")
+    slot = (bindings or {}).get(ksi_id)
+    if not slot:
+        return ("unbound", f"SOURCE NOT BOUND - {ksi_id} has no registered evidence "
+                           "source (collector registry, config-rules manifest or "
+                           "adapter), so no collector-derived entry can be attached "
+                           f"to it; this entry claims {service}:{check} (AUD-F62)")
+    if service == "config" and check in slot["config"]:
+        return ("bound", "")
+    if f"{service}:{check}" in slot["keys"]:
+        return ("bound", "")
+    if service in slot["services"]:
+        return ("bound", "")
+    return ("unbound", f"SOURCE NOT BOUND - {service}:{check} is not a registered source "
+                       f"for {ksi_id} (registry metric_service_keys / config rules, "
+                       "config-rules manifest, adapter ksi_targets); a valid digest "
+                       "over the wrong observation does not make it evidence for this "
+                       "indicator. Derive the entry from a source this KSI registers, or "
+                       "register the source (customer overlay / rules manifest) (AUD-F62)")
+
+
+def classify_pointer_binding(e):
+    """Pure. ('bound' | 'unbound' | 'no-claim', message). The factory builds
+    evidenceLocation from the SAME fields it stamps into xSourceFact
+    (<base>/<service>/<check>[/<scope>]/<region>[/<run_id>].json, AUD-F27), so
+    a pointer that does not end in that slug describes a different observation
+    than the entry's own source fact: a provenance substitution that survives
+    every digest check because both fields are inside the bound payload."""
+    sf = e.get("xSourceFact") if isinstance(e, dict) else None
+    loc = e.get("evidenceLocation") if isinstance(e, dict) else None
+    if not isinstance(sf, dict) or not isinstance(loc, str) or not loc:
+        return ("no-claim", "")
+    if loc.startswith("sdr://placeholder/"):
+        return ("no-claim", "")  # already a readiness finding, never verified
+    parts = [sf.get("service"), sf.get("check")]
+    if sf.get("scope"):
+        parts.append(sf.get("scope"))
+    parts.append(sf.get("region"))
+    if sf.get("run_id"):
+        parts.append(sf.get("run_id"))
+    if any(not str(p or "").strip() for p in parts):
+        return ("unbound", "POINTER NOT BOUND - the source fact lacks service/check/region, "
+                           "so the pointer cannot be checked against it (AUD-F63)")
+    expected_tail = "/" + "/".join(str(p) for p in parts) + ".json"
+    if loc.endswith(expected_tail):
+        return ("bound", "")
+    return ("unbound", f"POINTER NOT BOUND - evidenceLocation does not describe the "
+                       f"observation xSourceFact records (expected the pointer to end in "
+                       f"{expected_tail}); re-derive the entry with "
+                       "evidence_wiring.fact_to_evidence instead of editing the pointer "
+                       "(AUD-F63)")
+
+
+def first_bound_source(ksi_id, bindings):
+    """A deterministic (service, check) the repository registers for ksi_id, or
+    None when it registers none. Config rules first (the manifest's deployed
+    rules cover the KSIs with no posture source), then the metric allowlist.
+    Used by fixtures that need a LEGITIMATELY bound source."""
+    slot = (bindings or {}).get(ksi_id) or {}
+    if slot.get("config"):
+        return ("config", sorted(slot["config"])[0])
+    if slot.get("keys"):
+        service, _, check = sorted(slot["keys"])[0].partition(":")
+        return (service, check)
+    return None
 
 
 def _resolve_source(e):
@@ -351,8 +518,10 @@ def classify_entry(e, hash_fn=None, trusted_signer=None):
 def main():
     records = load(RECORDS, {"frr": {}, "ksi": {}})
     trusted_signer = load_trusted_signer()
+    bindings = load_source_bindings()
     hard, findings = [], []
     checked = verified = 0
+    provenance_findings = 0
 
     for oid, section, e in iter_evidence(records):
         checked += 1
@@ -363,10 +532,23 @@ def main():
             findings.append(f"{section}:{oid}: {msg}")
         else:
             verified += 1
+        # AUD-F62 / AUD-F63: semantic provenance, reported as readiness findings
+        # here (the submission gate blocks on them under production-assurance,
+        # sdr.py package-preflight). Source binding is a KSI concept.
+        if section == "ksi":
+            b_outcome, b_msg = classify_source_binding(oid, e, bindings)
+            if b_outcome == "unbound":
+                provenance_findings += 1
+                findings.append(f"{section}:{oid}: {b_msg}")
+        p_outcome, p_msg = classify_pointer_binding(e)
+        if p_outcome == "unbound":
+            provenance_findings += 1
+            findings.append(f"{section}:{oid}: {p_msg}")
 
     print("Evidence integrity gate")
     print("-" * 68)
-    print(f"Evidence entries checked: {checked}  (cryptographically verified: {verified})")
+    print(f"Evidence entries checked: {checked}  (cryptographically verified: {verified}; "
+          f"provenance findings: {provenance_findings})")
     if findings:
         print(f"Readiness findings ({len(findings)}) - not compliance failures:")
         for f in findings[:20]:

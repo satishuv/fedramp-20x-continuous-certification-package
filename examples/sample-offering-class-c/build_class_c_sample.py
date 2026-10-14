@@ -392,12 +392,19 @@ def attack():
     base_history = generate_history(base_store)
     passed = failed = 0
 
-    def probe(name, mutate, post_sign=None):
+    def probe(name, mutate, post_sign=None, expect=None):
+        """expect: a substring that must appear in preflight's output for the
+        probe to pass, so a tamper is proven blocked for ITS reason and not by
+        an unrelated blocker (a false pass otherwise)."""
         nonlocal passed, failed
         st, pr, hi = copy.deepcopy(base_store), copy.deepcopy(base_profile), copy.deepcopy(base_history)
         mutate(st, pr, hi)
-        rc, _out = _preflight_rc(st, pr, hi, post_sign=post_sign)
+        rc, out = _preflight_rc(st, pr, hi, post_sign=post_sign)
         blocked = rc != 0
+        if blocked and expect is not None and expect not in (out or ""):
+            failed += 1
+            print(f"  FAIL (blocked, but not by the expected gate {expect!r}) {name}")
+            return
         if blocked:
             passed += 1; print(f"  PASS (blocked) {name}")
         else:
@@ -769,12 +776,18 @@ def attack():
         """Replace the sample's hand-written (hashless) evidence with entries
         derived by the canonical factory, so the integrity gate can recompute
         each digest from the entry's own bound fields; optionally sign each
-        digest with the probe's key the way sign_evidence.py would."""
+        digest with the probe's key the way sign_evidence.py would. AUD-F62:
+        each KSI's entry is derived from a source the repository REGISTERS for
+        that KSI (collector registry, config-rules manifest or adapter), the
+        same bindings the production gate checks; a fictional check name would
+        be a valid digest over an observation nothing maps to the indicator."""
         import base64
         from cryptography.hazmat.primitives import hashes
         from cryptography.hazmat.primitives.asymmetric import ec
+        import validate_evidence as _ve
         observed = f"{TODAY.isoformat()}T00:00:00+00:00"
         base = "https://evidence.bfc-demo.invalid/store"
+        bindings = _ve.load_source_bindings()
 
         def one(service, check, what):
             ev = _ew.fact_to_evidence(
@@ -796,11 +809,15 @@ def attack():
 
         for kid, rec in st["ksi"].items():
             if rec.get("evidence"):
-                rec["evidence"] = [one("securityhub", f"{kid.lower()}-latest", kid)]
+                source = _ve.first_bound_source(kid, bindings)
+                if source is None:
+                    raise RuntimeError(f"{kid}: the repository registers no evidence source")
+                rec["evidence"] = [one(source[0], source[1], kid)]
         for rid, rec in st["frr"].items():
             ext = rec.get("extension") or {}
             if ext.get("rule_artifacts"):
                 ext["rule_artifacts"] = [one("config", f"frr-{rid.lower()}", rid)]
+        return one
 
     def _production_unsigned(st, pr, hi_):
         pr["evidence_store_profile"] = "production-assurance"
@@ -854,6 +871,61 @@ def attack():
         _bind_sample_evidence(st, sign_with=(key, key_arn))
     _probe_ready("production-assurance with a VALID signed digest, pinned signer and signed "
                  "evidence stays READY", _production_signed)
+
+    # Orthogonal provenance tampers (AUD-F62/F63/F64). Each starts from the
+    # READY production package above and tampers ONE semantic dimension of ONE
+    # entry, then RECOMPUTES the digest and RE-SIGNS it with the pinned key, so
+    # the cryptographic gate stays silent and only the semantic gate can block.
+    def _resign(ev, key, key_arn):
+        import base64
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.asymmetric import ec
+        ev["xEvidenceContentHash"] = _ew.evidence_hash(_ew.canonical_payload(ev))
+        sig = key.sign(ev["xEvidenceContentHash"].encode("ascii"), ec.ECDSA(hashes.SHA256()))
+        ev["xEvidenceSignature"] = {"algorithm": "ECDSA_SHA_256", "keyId": _se.key_reference(key_arn),
+                                    "signedHash": ev["xEvidenceContentHash"],
+                                    "signature": base64.b64encode(sig).decode("ascii")}
+
+    def _production_wrong_source(st, pr, hi_):
+        key, key_arn = _pin_signer_and_sign_history(pr, hi_)
+        one = _bind_sample_evidence(st, sign_with=(key, key_arn))
+        import validate_evidence as _ve
+        bindings = _ve.load_source_bindings()
+        kids = sorted(st["ksi"])
+        # A source the repository registers for ANOTHER KSI, derived and signed
+        # exactly like the legitimate entries, attached to the first KSI.
+        victim = kids[0]
+        donor = next(k for k in kids[1:]
+                     if _ve.first_bound_source(k, bindings) != _ve.first_bound_source(victim, bindings)
+                     and _ve.classify_source_binding(victim, one(*_ve.first_bound_source(k, bindings), k), bindings)[0] == "unbound")
+        st["ksi"][victim]["evidence"] = [one(*_ve.first_bound_source(donor, bindings), victim)]
+    probe("production-assurance: a VALID signed entry from a source registered for a DIFFERENT KSI "
+          "blocks (AUD-F62, query binding)", _production_wrong_source,
+          expect="not PROVENANCE-BOUND (1 source (e.g.")
+
+    def _production_pointer_swapped(st, pr, hi_):
+        key, key_arn = _pin_signer_and_sign_history(pr, hi_)
+        _bind_sample_evidence(st, sign_with=(key, key_arn))
+        kids = sorted(st["ksi"])
+        a, b = st["ksi"][kids[0]]["evidence"][0], st["ksi"][kids[1]]["evidence"][0]
+        a["evidenceLocation"] = b["evidenceLocation"]  # another observation's pointer
+        _resign(a, key, key_arn)
+    probe("production-assurance: a pointer re-targeted to another observation, digest recomputed and "
+          "re-signed, blocks (AUD-F63, source binding)", _production_pointer_swapped,
+          expect="not PROVENANCE-BOUND (1 pointer (e.g.")
+
+    def _production_stale_resigned(st, pr, hi_):
+        key, key_arn = _pin_signer_and_sign_history(pr, hi_)
+        _bind_sample_evidence(st, sign_with=(key, key_arn))
+        old = (TODAY - dt.timedelta(days=400))
+        kid = sorted(st["ksi"])[0]
+        ev = st["ksi"][kid]["evidence"][0]
+        ev["lastUpdated"] = old.isoformat()
+        ev["xSourceFact"]["collected_at"] = f"{old.isoformat()}T00:00:00+00:00"
+        _resign(ev, key, key_arn)
+    probe("production-assurance: a 400-day-old observation with a recomputed, re-signed digest blocks "
+          "at Class C (AUD-F64, freshness)", _production_stale_resigned,
+          expect="backed only by EXPIRED evidence")
 
     print(f"\n{passed}/{passed + failed} assessor-attack probes passed "
           "(each tamper must be BLOCKED; baseline + justified-narrative combo must be READY)")
