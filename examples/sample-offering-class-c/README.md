@@ -60,7 +60,7 @@ review had missed:
 
 The remaining assessor probes were already correctly blocked, confirming the
 readiness gating is robust against those vectors. The `--attack` harness runs
-43 checks: those that must stay READY (the complete baseline, a
+46 checks: those that must stay READY (the complete baseline, a
 justified-`N/A: <reason>` on NARRATIVE fields, a hollowed override the
 AUD-F39 derivation ignores, production-assurance with a valid signed digest
 and signed evidence) plus the hollowing tampers that must each be BLOCKED.

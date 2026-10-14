@@ -392,6 +392,7 @@ TEST_SUITE = [
     "validation/scripts/test_evidence_freshness.py",
     "validation/scripts/test_evidence_integrity.py",
     "validation/scripts/test_production_evidence_linkage.py",
+    "validation/scripts/test_provenance_mutations.py",
     "automation/collectors/test_sign_evidence.py",    "validation/scripts/test_applicability.py",
     "automation/exporters/test_oscal_export.py",
     "automation/collectors/test_evidence_wiring.py",
@@ -828,6 +829,49 @@ def unverified_evidence_under_production(records_with_ids, trusted_signer, class
             outcome, msg = classify(ev, hash_fn, trusted_signer)
             if outcome != "verified":
                 out.append((rid, idx, outcome, msg))
+    return out
+
+
+def unbound_evidence_under_production(ksi_records, frr_records, bindings,
+                                      classify_source, classify_pointer):
+    """AUD-F62 / AUD-F63. For every POPULATED record, return the evidence
+    entries whose SEMANTIC provenance is unbound, as (record_id, index, kind,
+    message) with kind 'source' (a KSI entry's source fact names a service:check
+    the repository does not register for that KSI) or 'pointer' (the pointer
+    describes a different observation than the entry's own source fact; checked
+    for KSI evidence and FRR rule artifacts alike).
+
+    Why: the integrity gate (AUD-F59) proves an entry was not edited after it
+    was recorded. It cannot tell whether the entry belongs where it sits: a
+    valid entry derived from the wrong observation, or an entry whose pointer
+    was re-targeted and whose digest was recomputed, passes every cryptographic
+    check. Under production-assurance (the provider's declaration that the
+    evidence store is tamper-evident AND traceable) such an entry contradicts
+    the declaration, so preflight blocks on it. The development profile reports
+    it as a finding only. Pure: no I/O, classifiers and bindings injected."""
+    out = []
+    for rid, rec in ksi_records:
+        if not isinstance(rec, dict) or not _record_is_populated(rec):
+            continue
+        for idx, ev in enumerate(rec.get("evidence") or []):
+            if not isinstance(ev, dict):
+                continue
+            outcome, msg = classify_source(rid, ev, bindings)
+            if outcome == "unbound":
+                out.append((rid, idx, "source", msg))
+            outcome, msg = classify_pointer(ev)
+            if outcome == "unbound":
+                out.append((rid, idx, "pointer", msg))
+    for rid, rec in frr_records:
+        if not isinstance(rec, dict) or not _record_is_populated(rec):
+            continue
+        ext = rec.get("extension", {}) or {}
+        for idx, ev in enumerate(ext.get("rule_artifacts") or []):
+            if not isinstance(ev, dict):
+                continue
+            outcome, msg = classify_pointer(ev)
+            if outcome == "unbound":
+                out.append((rid, idx, "pointer", msg))
     return out
 
 
@@ -3087,6 +3131,27 @@ def cmd_preflight(args):
                 "own bound fields (and its signature verifies under the pinned signer when one is "
                 "required); re-derive each entry with evidence_wiring.fact_to_evidence and sign it, "
                 "or declare the development profile (AUD-F59)")
+        # AUD-F62 / AUD-F63: a VERIFIED entry must also BELONG where it sits.
+        # Same bindings and classifiers the validation gate reports with.
+        _unbound = unbound_evidence_under_production(
+            [(kid, rec) for kid, rec in (records.get("ksi", {}) or {}).items() if kid in applicable_ksi],
+            [(rid, rec) for rid, rec in (records.get("frr", {}) or {}).items() if rid in applicable_frr],
+            _ve.load_source_bindings(), _ve.classify_source_binding, _ve.classify_pointer_binding)
+        if _unbound:
+            _by_kind = {}
+            for _rid, _idx, _kind, _msg in _unbound:
+                _by_kind.setdefault(_kind, []).append(f"{_rid}[{_idx}]")
+            _summary = "; ".join(
+                f"{len(v)} {k} (e.g. {v[0]})" for k, v in sorted(_by_kind.items()))
+            blockers.append(
+                f"evidence_store_profile is production-assurance but {len(_unbound)} evidence "
+                f"entr{'y' if len(_unbound) == 1 else 'ies'} behind populated applicable records "
+                f"are not PROVENANCE-BOUND ({_summary}). A recomputable digest proves an entry was "
+                "not edited, not that it belongs to this indicator: a source fact must name a "
+                "service:check the repository registers for the KSI (collector registry, "
+                "config-rules manifest or adapter), and the pointer must describe the same "
+                "observation as the source fact. Re-derive each entry from a registered source "
+                "with evidence_wiring.fact_to_evidence (AUD-F62/F63)")
 
     # Scan the GENERATED submission artifacts, not merely the input profile. A
     # generated CPO carrying template markers, placeholder IDs/URLs, or recorded

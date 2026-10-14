@@ -163,12 +163,57 @@ attack security`. `test_release_gate.py` asserts the section, the step's
 (68/68), and `MUT-F61` (the harness dropped from the gate) is killed. About 20
 minutes per run, in parallel with `validate`.
 
+Evidence provenance is now bound semantically, not only cryptographically
+(`AUD-F62` to `AUD-F64`). The digest and signature prove an entry was not
+edited after it was recorded; nothing proved it belongs where it sits:
+
+- **An entry's source must be a registered source for its KSI (AUD-F62,
+  High).** No gate read the collector registry's per-KSI binding
+  (`metric_service_keys`, Config rule checks) that prefill and the metric
+  engine already honour, so an entry derived from a valid observation of a
+  different indicator, with a recomputed digest and a real signature, was
+  `verified` and counted toward Class C linkage under production-assurance.
+  The 11 artifact-existence KSIs had no registry source at all (their deployed
+  rule names live only in `automation/config-rules/rules-manifest.json`), and
+  the Class C sample attached every KSI's signed evidence to a fictional
+  Security Hub check nothing maps to the indicator, and reached READY.
+  `validate_evidence.load_source_bindings` joins the registry, the rules
+  manifest and the registered third-party adapters' `ksi_targets()` into one
+  per-KSI map; `classify_source_binding` is pure (`bound` / `unbound` /
+  `no-claim` for entries without a source fact, which stay a human's review).
+  The integrity gate reports an unbound entry as a readiness finding and
+  `package-preflight` blocks on it behind a populated applicable record under
+  production-assurance (the AUD-F59 pattern; development unchanged). Every one
+  of the 46 KSIs has at least one registered source (asserted), so the gate is
+  satisfiable; the sample now derives each KSI's evidence from
+  `first_bound_source`.
+- **An entry's pointer must describe its own source fact (AUD-F63, Medium).**
+  The factory builds `evidenceLocation` from the fields it stamps into
+  `xSourceFact`, but nothing re-checked the relation, so a pointer re-targeted
+  at another observation (region, scope, run or check), recomputed and
+  re-signed, verified. `classify_pointer_binding` rebuilds the expected slug
+  and requires the pointer to end in it; KSI evidence and FRR rule artifacts
+  alike; finding at the gate, blocker at preflight under production-assurance.
+- **Freshness proven load-bearing against an internally valid entry (AUD-F64,
+  Medium).** The classifier had tests but no mutation and no fixture with a
+  stale observation carrying a recomputed, re-signed digest, the one shape only
+  the freshness policy can stop. No production change; the regression binds
+  the dimensions and `MUT-F64` (never `expired`) is killed.
+
+The regression family `test_provenance_mutations.py` (46 checks) tampers one
+dimension at a time, recomputes the digest and re-signs with the pinned key,
+and asserts the cryptographic gate stays silent while the one semantic gate
+catches it (the HASH family covers every tripwire shape: deleted, corrupted,
+kept-after-edit, stale binding, re-signed by an unpinned key). `MUT-F62` to
+`MUT-F64` killed; `MUT-F01`, `F26`, `F57`, `F59` re-killed. The attack harness
+gains three production-assurance probes (wrong-KSI source, swapped pointer,
+400-day-old observation, each recomputed and re-signed) and its READY probe
+stays READY with bound sources.
+
 The audit's remaining items are open by decision, not oversight: an explicit
 single Class D support state (`SUPPORTED` / `FUTURE` / `INVALID`) across every
-resolver, orthogonal provenance mutations that recompute the digest after a
-semantic tamper, and machine-readable per-gate results with a reverse
-rule-to-test map. The `sdr.py` decomposition is withdrawn: the file stays as
-it is.
+resolver, and machine-readable per-gate results with a reverse rule-to-test
+map. The `sdr.py` decomposition is withdrawn: the file stays as it is.
 
 The documented consultant flow, run end to end on a fictional Class B offering
 (`init` with every answer scripted, the three importers, prefill, the drafter,

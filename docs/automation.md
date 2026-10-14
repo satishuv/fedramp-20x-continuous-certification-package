@@ -58,6 +58,9 @@ Two evidence-store profiles, declared in the offering profile as `evidence_store
 | Observations without chain fields or run provenance | Advisory | Blocker |
 | History digest unsigned | Advisory | Blocker |
 | Signature present but not verifying under the pinned signer | Blocker | Blocker |
+| Evidence behind a populated applicable record not `verified` by the integrity gate (hashless, unresolvable, unsigned under a required signer) | Finding | Blocker |
+| Evidence whose source fact names a `service:check` the repository does not register for its KSI (AUD-F62) | Finding | Blocker |
+| Evidence whose pointer describes a different observation than its own source fact (AUD-F63) | Finding | Blocker |
 | Unknown profile value | Blocker | Blocker |
 
 The FRC-CSX-VVK binding gate counts a declared automated method as working only when its per-method series carries a datapoint inside the method's cadence window (daily 7 days, weekly 14, monthly 45, quarterly 90; project policy, FedRAMP names no cadence). A series that exists but stopped, or was written with old dates, is not a working method. A real Class C offering should declare `production-assurance` before submission; the fictional Class C sample stays on `development` because it cannot hold a signer's key, and its attack mode shows that the same package under `production-assurance` is blocked until the digest is signed.
@@ -84,6 +87,15 @@ Versioning and the evidence content hash give tamper-**evidence**: a reviewer or
 - **Control-plane isolation** (`automation/evidence-store-isolation/`): a reference CloudFormation stack that puts the evidence bucket and the signing key in a dedicated audit account, denies the assessed accounts' collector roles any mutation of the store or `kms:Sign`, allows only a narrow append-only writer, and logs access separately. It is a reference — the account topology is a provider decision — and the non-repudiation property holds only when the audit account is administered separately from the assessed accounts.
 
 `traceability/evidence-store-controls.json` maps each of these mechanisms to the CR26 / NIST Rev5 control identifiers it supports (AU-09 and its enhancements, AU-10 at the class where the profile requires it, AU-11, KSI-MLA-ALA), and `validate_evidence_store_controls.py` gates that every cited identifier appears verbatim in the pinned dataset so the mapping can never drift into an invented control.
+
+### Semantic provenance: an entry must also belong where it sits
+
+The digest and the signature prove an entry was not edited after it was recorded. They prove nothing about whether the entry belongs to the indicator it sits under: an actor who can write the record store can derive a perfectly valid entry (recomputed digest, real signature from the pinned key) from a different observation and attach it to a KSI it does not measure, or re-target an entry's pointer at another observation. Two semantic checks in `validate_evidence.py` close that (AUD-F62, AUD-F63), reported as readiness findings and enforced as blockers at `package-preflight` under `production-assurance`:
+
+- **Source binding.** An entry that carries a collector source fact must name a `service:check` the repository registers for that KSI. The sources are the ones already declared, nothing is inferred from prose: the collector registry's per-KSI `metric_service_keys` allowlist and its Config managed-rule and customer custom-rule checks (as service `config`), the provider-deployed artifact-existence rules in `automation/config-rules/rules-manifest.json` for the 11 KSIs that have no posture source, and a registered third-party adapter's `ksi_targets()`. Every one of the 46 KSIs has at least one registered source (a test asserts it), so the gate is satisfiable. An entry with no source fact (human-authored or file-backed evidence) makes no claim here; its review stays a human's.
+- **Pointer binding.** The factory builds `evidenceLocation` from the same fields it stamps into the source fact (`<base>/<service>/<check>[/<scope>]/<region>[/<run_id>].json`), so a pointer that does not end in that slug describes a different observation than the entry's own source fact. Checked for KSI evidence and FRR rule artifacts alike.
+
+The regression family (`validation/scripts/test_provenance_mutations.py`) tampers one dimension at a time, recomputes the digest and re-signs it, and asserts the cryptographic gate stays silent while the one semantic gate catches it: wrong KSI (source binding), re-targeted pointer (pointer binding), stale observation with a valid signature (the freshness policy, AUD-F64). Each has a killed mutation (`MUT-F62` to `MUT-F64`), and the Class C attack harness drives all three through `package-preflight`.
 
 ## Layer 2: AI assist (opt-in, built)
 

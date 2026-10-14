@@ -467,6 +467,27 @@ MUTATIONS = [
      '          "examples/sample-offering-class-c/build_class_c_sample.py", "--attack"]),\n',
      '        # MUTATION: attack harness dropped from the release gate (manual run again)\n',
      "automation/pipeline/test_release_gate.py"),
+    # AUD-F62..F64: orthogonal provenance. Each mutation disables ONE semantic
+    # gate; the regression tampers that dimension with a recomputed, re-signed
+    # digest, so the generic hash tripwire cannot be what kills it.
+    ("MUT-F62",
+     "validation/scripts/validate_evidence.py",
+     '    if service in slot["services"]:\n        return ("bound", "")\n'
+     '    return ("unbound", f"SOURCE NOT BOUND - {service}:{check} is not',
+     '    if service in slot["services"]:\n        return ("bound", "")\n'
+     '    return ("bound", "")  # MUTATION any source binds to any KSI\n'
+     '    return ("unbound", f"SOURCE NOT BOUND - {service}:{check} is not',
+     "validation/scripts/test_provenance_mutations.py"),
+    ("MUT-F63",
+     "validation/scripts/validate_evidence.py",
+     '    if loc.endswith(expected_tail):\n        return ("bound", "")',
+     '    if True:  # MUTATION pointer never compared to the source fact\n        return ("bound", "")',
+     "validation/scripts/test_provenance_mutations.py"),
+    ("MUT-F64",
+     "sdr.py",
+     '    if now <= hard_expiry:\n        return "stale"\n    return "expired"',
+     '    if now <= hard_expiry:\n        return "stale"\n    return "stale"  # MUTATION evidence never expires',
+     "validation/scripts/test_provenance_mutations.py"),
 ]
 
 
