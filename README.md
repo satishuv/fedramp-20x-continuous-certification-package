@@ -197,6 +197,7 @@ Being direct about this matters more than adoption numbers. See the [caution ban
 | [Continuous integration](docs/ci-cd.md) | You are wiring this into GitHub Actions or AWS CodePipeline |
 | [Deployment](docs/deployment.md) | You want to publish the package and stand up continuous verification |
 | [Optional evidence sources](examples/evidence-sources/README.md) | You run CrowdStrike Falcon or Wiz and want that telemetry as evidence |
+| [Third-party names notice](THIRD_PARTY_NOTICE.md) | You want to know why other vendors' product names appear here, and the rules and CI guard that bound their use |
 | [How this relates to official FedRAMP repos](docs/comparison.md) | You want the capability comparison against FedRAMP/rules, /2026, and /2026-markdown |
 | [Versioning and releases](docs/versioning.md) | You want the release-tag convention and what a release does and does not mean |
 | [Automation layers](docs/automation.md) | You want evidence collected from a live account rather than typed |
@@ -212,7 +213,7 @@ Corrections to requirement interpretation are the most valuable contributions, a
 
 Licensed under a permissive grant owned by AWS Security Assurance Services (SAS): you may use, copy, modify, and distribute the Work with attribution and the disclaimer, subject to the trademark and no-compliance-determination conditions. See [LICENSE](LICENSE). Final terms are subject to confirmation by AWS legal.
 
-This work is associated with **Amazon Web Services (AWS) Security Assurance Services (SAS)**. AWS Security Assurance Services and its affiliates reserve all rights in and to this work to the fullest extent applicable, and all AWS names, marks, and materials remain the property of Amazon Web Services, Inc. and its affiliates. Nothing here is an official AWS position, product, service, or endorsement.
+This work is associated with **Amazon Web Services (AWS) Security Assurance Services (SAS)**. AWS Security Assurance Services and its affiliates reserve all rights in and to this work to the fullest extent applicable, and all AWS names, marks, and materials remain the property of Amazon Web Services, Inc. and its affiliates. Nothing here is an official AWS position, product, service, or endorsement. Other organizations' product names appear only to identify export formats that optional adapters read; see [THIRD_PARTY_NOTICE.md](THIRD_PARTY_NOTICE.md).
 
 FedRAMP requirement text and schemas are published by the United States General Services Administration at [github.com/FedRAMP/rules](https://github.com/FedRAMP/rules) and are reproduced here under their terms as government works.
 
