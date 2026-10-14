@@ -899,6 +899,32 @@
       "mutation": "MUT-F67: unresolved identifiers dropped silently instead of reported; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F68",
+      "severity": "Medium",
+      "requirement": "SDR-CSX-KSI (ksiEvidence lastUpdated and evidence completeness) and FRC-CSX-VVK (automated methods whose telemetry is bound to the indicator) as applied to the evidence INPUT side: every adapter fact must carry what the package layer needs to date, locate and bind the observation. MCE-01 of the multi-cloud evidence epic.",
+      "component": "automation/collectors/fact-contract.schema.json (new, the published contract); automation/collectors/evidence_wiring.py (fact_contract, validate_fact, require_conforming_facts, FactContractError, EvidenceAdapter.to_evidence); automation/collectors/apply_third_party_evidence.py (fail closed on refusal)",
+      "description": "Found while building MCE-01: the adapter contract was a docstring. EvidenceAdapter.to_evidence passed whatever collect() yielded straight to fact_to_evidence, which defaulted a missing service or check to 'unknown' and silently omitted lastUpdated when observed_at was absent or None, so an adapter that forgot the source timestamp produced undated evidence (never fresh, never expired, invisible to the freshness gate) and an adapter that mis-spelled a field produced evidence under service 'unknown'. The csv-count reference adapter's own slug test exercised exactly that path without a timestamp.",
+      "root_cause": "The fact shape was documented, not enforced; the input side had no schema while the output side (the SDR evidence object) had an official one.",
+      "fix_commit": "this PR -- fact-contract.schema.json (draft 2020-12) publishes the one shape: required service, check, status, detail, region, observed_at (a calendar-date prefix), optional opaque scope and run_id, slug-safe key segments, the raw platform identifiers declared as input-only properties. evidence_wiring reads required fields and raw-scope fields FROM the schema (no duplicated list); validate_fact returns problems naming each field; require_conforming_facts checks every fact of a batch before any is converted and raises FactContractError (an EvidenceExportError, so existing handlers catch it) naming adapter, index and field; EvidenceAdapter.to_evidence calls it, so nothing non-conforming reaches fact_to_evidence. apply_third_party_evidence prints the refusal and exits 1 with the record store untouched. The AWS collectors (collected_at facts) are not routed through the adapter contract and are unchanged; the three existing adapters are proven byte-identical against a golden fixture captured from the unmodified code",
+      "regression_test": "automation/collectors/test_fact_contract.py (schema committed, valid and lists the required fields; each required field missing is rejected by name; wrong types and non-slug key segments rejected by field; a batch with one bad fact converts nothing, proven with a spy on fact_to_evidence; golden byte-identity for crowdstrike-falcon, wiz and csv-count; AWS collected_at path unchanged; fixture fictional)",
+      "mutation": "MUT-F68: contract violations never refuse (require_conforming_facts skips the raise); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F69",
+      "severity": "High",
+      "requirement": "Non-sensitive public package: no environment-identifying detail in customer-facing evidence (CDS-CSO-* sensitivity, the AUD-F27/F28 family), on every platform rather than only for the AWS account field. MCE-01 AC3.",
+      "component": "automation/collectors/evidence_wiring.py (scope_id kind, fact_to_evidence raw-scope refusal, projected-fact stripping); automation/collectors/fact-contract.schema.json (x-rawScopeFields, x-rawScopeRule)",
+      "description": "Found while building MCE-01 AC3: the AUD-F27 refusal (an account-tagged fact with no opaque scope and no scope_key is refused, never exported) keyed on the literal field name 'account'. A fact from any other platform carrying its raw scope identifier (tenant, subscription, compartment, project, organization) was neither refused nor scrubbed by that path: the identifier was simply not in the xSourceFact allowlist, so two tenants' opposite observations of one check collapsed onto one evidence location exactly as AUD-F27 described for accounts, and a collector that copied the identifier into detail relied on the free-text scrub alone.",
+      "root_cause": "The scope rule was written for the one platform the collectors knew; the field name was the contract.",
+      "fix_commit": "this PR -- the schema declares x-rawScopeFields (account, tenant, subscription, compartment, project, organization); fact_to_evidence refuses a fact carrying any of them without scope or scope_key, naming the field(s), derives the opaque scope with scope_id(value, key, kind=<field>) otherwise (the HMAC message is the bare value for 'account', so every committed AWS scope id is byte-identical, and '<kind>:<value>' for the rest, so equal literals of different kinds never share a scope; several raw fields on one fact derive one stable composite scope), and strips every raw field from the projected fact before sanitizing",
+      "regression_test": "automation/collectors/test_fact_contract.py (each raw field without a key is refused naming the field and the word scope, also through an adapter; with a key the raw value appears nowhere in the canonical evidence JSON, the scope is in the pointer and the signed payload recomputes; distinct kinds give distinct scopes; composite scope is order-independent; explicit alias accepted; the account derivation equals the pre-MCE-01 HMAC byte for byte)",
+      "mutation": "MUT-F69: the raw-scope refusal narrowed back to the account field only; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

@@ -11,6 +11,33 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### Neutral evidence fact contract (MCE-01; AUD-F68, AUD-F69)
+
+`automation/collectors/fact-contract.schema.json` publishes the one shape every
+evidence adapter yields, on any platform: required `service`, `check`,
+`status`, `detail`, `region`, `observed_at` (a calendar-date prefix), optional
+opaque `scope` and `run_id`, slug-safe key segments. `evidence_wiring` reads
+the required and raw-scope field lists from the schema, so the document and
+the enforcement cannot drift. `EvidenceAdapter.to_evidence` now checks every
+fact of a batch against it before any is converted; a violation raises
+`FactContractError` naming adapter, index and field, and nothing of that batch
+reaches `fact_to_evidence` (`AUD-F68`: the contract had been a docstring, and
+an adapter that forgot the timestamp produced undated evidence the freshness
+gate could not see). The raw-scope refusal `AUD-F27` built for the AWS
+`account` field now applies to every raw platform identifier the schema lists
+(`account`, `tenant`, `subscription`, `compartment`, `project`,
+`organization`): without an opaque scope or a scope key the fact is refused
+naming the field; with a key the scope is derived per identifier kind and the
+raw value appears nowhere in the evidence (`AUD-F69`, High). The AWS account
+derivation is byte-identical to before, so no committed scope id changes.
+`apply_third_party_evidence.py` fails closed on a refusal with the record
+store untouched. The three existing adapters are proven byte-identical against
+`automation/collectors/fixtures/adapter-golden-evidence.json`, captured from
+the unmodified code. Regression: `automation/collectors/test_fact_contract.py`
+(in the validate suite); `MUT-F68` and `MUT-F69` killed. The AWS collectors
+(`collected_at` facts) are not routed through the adapter contract and are
+unchanged.
+
 ### Third-party names: notice and CI guard (MCE-11, MCE-15)
 
 `THIRD_PARTY_NOTICE.md` records every other organization's product name the

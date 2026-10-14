@@ -503,6 +503,20 @@ MUTATIONS = [
      '            if rid not in known:\n                unresolved["rule_ids"].append({"id": rid, "source": d.get("id")})\n                continue\n',
      '            if rid not in known:\n                continue  # MUTATION unresolved ids dropped silently\n',
      "validation/scripts/test_rule_test_map.py"),
+    # MCE-01 (AUD-F68/F69): the adapter fact contract and the platform-neutral
+    # raw-scope refusal. F68 makes a contract violation pass through to
+    # conversion; F69 narrows the raw-scope refusal back to the AWS account
+    # field, so a tenant/subscription/project identifier would export raw.
+    ("MUT-F68",
+     "automation/collectors/evidence_wiring.py",
+     '    if bad:\n        raise FactContractError(',
+     '    if False:  # MUTATION contract violations never refuse\n        raise FactContractError(',
+     "automation/collectors/test_fact_contract.py"),
+    ("MUT-F69",
+     "automation/collectors/evidence_wiring.py",
+     '    raw_ids = [(k, fact[k]) for k in raw_scope_fields()\n',
+     '    raw_ids = [(k, fact[k]) for k in ("account",)  # MUTATION only AWS accounts are scopes\n',
+     "automation/collectors/test_fact_contract.py"),
 ]
 
 
