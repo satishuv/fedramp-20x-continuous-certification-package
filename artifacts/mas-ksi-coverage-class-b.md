@@ -1,4 +1,4 @@
-MAS-by-KSI coverage, Class B (dataset 2026.10.08.01)
+MAS-by-KSI coverage, Class B (dataset 2026.10.13.01)
 
 FRC-CSX-MAS (SHOULD): Providers SHOULD apply ALL Key Security Indicators to ALL aspects of their cloud service offering that are within the FedRAMP Minimum Assessment Scope.
 

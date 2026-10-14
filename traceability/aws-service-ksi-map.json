@@ -2,7 +2,7 @@
  "meta": {
   "title": "AWS service to Key Security Indicator (KSI) implementation map",
   "provenance": "Seeded from AWS Security Assurance Services internal implementation guidance (2026-09). KSI identifiers, names, families, and canonical control lists are verified against the pinned CR26 dataset named in dataset_version: validation/scripts/update_sources_lock.py re-runs that comparison at every dataset adoption and advances dataset_version only when it holds, and validation/scripts/test_dataset_version_consistency.py repeats it in CI (46 KSIs, unchanged through 2026.10.05.01). Guidance text is example reference architecture, not a compliance claim.",
-  "dataset_version": "2026.10.08.01",
+  "dataset_version": "2026.10.13.01",
   "count": 46,
   "missing_ksis": [],
   "name_or_id_problems": [],
@@ -30,16 +30,24 @@
     "sr-11.1"
    ],
    "rev5_controls_canonical": [
-    "cp-3",
-    "ir-2",
-    "ps-6",
     "at-2",
     "at-2.2",
     "at-2.3",
+    "at-3",
     "at-3.5",
     "at-4",
+    "cm-11",
+    "cp-3",
+    "cp-3.1",
+    "ir-2",
+    "ir-2.1",
+    "ir-2.2",
     "ir-2.3",
-    "at-3",
+    "ir-9.2",
+    "ir-9.4",
+    "pl-4",
+    "pl-4.1",
+    "ps-6",
     "sr-11.1"
    ]
   },
@@ -61,12 +69,14 @@
    ],
    "rev5_controls_canonical": [
     "au-2",
+    "ca-7.4",
     "cm-3",
+    "cm-3.1",
     "cm-3.2",
+    "cm-3.6",
     "cm-4.2",
     "cm-6",
-    "cm-8.3",
-    "ma-2"
+    "cm-8.3"
    ]
   },
   "KSI-CMT-RMV": {
@@ -136,6 +146,8 @@
     "cm-3",
     "cm-3.2",
     "cm-4.2",
+    "cm-6.2",
+    "ir-9.4",
     "si-2"
    ]
   },
@@ -152,6 +164,9 @@
    ],
    "rev5_controls_canonical": [
     "cm-2",
+    "cm-8.4",
+    "cp-10.4",
+    "ir-9.4",
     "si-3"
    ]
   },
@@ -168,7 +183,17 @@
    ],
    "rev5_controls_canonical": [
     "ca-2.1",
-    "ca-7.1"
+    "cm-11",
+    "cm-6.2",
+    "cp-10.4",
+    "ir-9.4",
+    "sc-24",
+    "sc-7.18",
+    "si-4.22",
+    "si-7",
+    "si-7.1",
+    "si-7.5",
+    "si-7.7"
    ]
   },
   "KSI-CNA-IBP": {
@@ -186,7 +211,8 @@
    "rev5_controls_canonical": [
     "ac-17.3",
     "cm-2",
-    "pl-10"
+    "pl-10",
+    "sc-7.18"
    ]
   },
   "KSI-CNA-MAT": {
@@ -218,12 +244,13 @@
     "ac-18.3",
     "ac-20.1",
     "ca-9",
+    "sc-10",
+    "sc-7.18",
     "sc-7.3",
     "sc-7.4",
     "sc-7.5",
     "sc-7.8",
     "sc-8",
-    "sc-10",
     "si-10",
     "si-11",
     "si-16"
@@ -240,7 +267,10 @@
     "cp-6",
     "cp-10 (associated through the recovery planning theme; see note)"
    ],
-   "rev5_controls_canonical": []
+   "rev5_controls_canonical": [
+    "cp-2.5",
+    "sc-12.1"
+   ]
   },
   "KSI-CNA-RNT": {
    "name": "Restricting Network Traffic",
@@ -260,7 +290,15 @@
     "ac-17.3",
     "ca-9",
     "cm-7.1",
+    "sc-7.10",
+    "sc-7.18",
+    "sc-7.20",
+    "sc-7.21",
     "sc-7.5",
+    "si-10",
+    "si-4.11",
+    "si-4.18",
+    "si-4.4",
     "si-8"
    ]
   },
@@ -277,7 +315,9 @@
     "si-8.2"
    ],
    "rev5_controls_canonical": [
+    "ir-4.2",
     "sc-5",
+    "sc-7.18",
     "si-8",
     "si-8.2"
    ]
@@ -302,12 +342,16 @@
    "rev5_controls_canonical": [
     "ac-12",
     "ac-17.3",
+    "ac-4.21",
     "ca-9",
+    "cm-11",
+    "sc-10",
     "sc-4",
     "sc-7",
+    "sc-7.20",
+    "sc-7.21",
     "sc-7.7",
-    "sc-8",
-    "sc-10"
+    "sc-8"
    ]
   },
   "KSI-IAM-AAM": {
@@ -329,15 +373,16 @@
     "ia-12.5"
    ],
    "rev5_controls_canonical": [
+    "ac-2.13",
     "ac-2.2",
     "ac-2.3",
-    "ac-2.13",
     "ac-6.7",
-    "ia-4.4",
     "ia-12",
     "ia-12.2",
     "ia-12.3",
-    "ia-12.5"
+    "ia-12.5",
+    "ia-4.4",
+    "ia-8.4"
    ]
   },
   "KSI-IAM-APM": {
@@ -363,18 +408,22 @@
     "sc-23"
    ],
    "rev5_controls_canonical": [
-    "ac-3",
-    "ia-5.1",
-    "ia-5.2",
-    "ia-5.6",
-    "ia-6",
     "ac-2",
+    "ac-3",
     "ia-2",
     "ia-2.1",
     "ia-2.2",
+    "ia-2.6",
     "ia-2.8",
     "ia-5",
+    "ia-5.1",
+    "ia-5.2",
+    "ia-5.6",
+    "ia-5.8",
+    "ia-6",
     "ia-8",
+    "ia-8.2",
+    "ia-8.4",
     "sc-23"
    ]
   },
@@ -422,40 +471,58 @@
     "si-3"
    ],
    "rev5_controls_canonical": [
-    "ac-2.5",
-    "ac-2.6",
-    "ac-3",
-    "ac-4",
-    "ac-6",
     "ac-12",
     "ac-14",
     "ac-17",
     "ac-17.1",
     "ac-17.2",
     "ac-17.3",
+    "ac-18.4",
+    "ac-2.11",
+    "ac-2.5",
+    "ac-2.6",
+    "ac-2.7",
+    "ac-2.9",
     "ac-20",
     "ac-20.1",
+    "ac-21",
+    "ac-3",
+    "ac-4",
+    "ac-6",
+    "ac-6.3",
+    "ac-6.8",
+    "au-12.3",
+    "au-6.7",
     "cm-2.7",
+    "cm-5.1",
+    "cm-5.5",
+    "cm-7.2",
     "cm-9",
+    "ia-11",
     "ia-2",
     "ia-3",
     "ia-4",
     "ia-4.4",
     "ia-5.2",
     "ia-5.6",
-    "ia-11",
+    "ir-4.6",
+    "ir-9.4",
     "ps-2",
     "ps-3",
     "ps-4",
     "ps-5",
     "ps-6",
-    "sc-4",
+    "ra-5.5",
+    "sc-2",
     "sc-20",
     "sc-21",
     "sc-22",
     "sc-23",
+    "sc-3",
     "sc-39",
-    "si-3"
+    "sc-4",
+    "si-3",
+    "si-4.19"
    ]
   },
   "KSI-IAM-JIT": {
@@ -506,27 +573,38 @@
     "sc-39"
    ],
    "rev5_controls_canonical": [
+    "ac-17",
+    "ac-17.4",
     "ac-2",
     "ac-2.1",
+    "ac-2.11",
     "ac-2.2",
     "ac-2.3",
     "ac-2.4",
     "ac-2.6",
+    "ac-2.7",
+    "ac-20.1",
+    "ac-21",
     "ac-3",
     "ac-4",
     "ac-5",
     "ac-6",
     "ac-6.1",
+    "ac-6.10",
     "ac-6.2",
+    "ac-6.3",
     "ac-6.5",
     "ac-6.7",
+    "ac-6.8",
     "ac-6.9",
-    "ac-6.10",
     "ac-7",
-    "ac-20.1",
-    "ac-17",
+    "au-10",
+    "au-12.3",
     "au-9.4",
+    "ca-3.6",
     "cm-5",
+    "cm-5.1",
+    "cm-5.5",
     "cm-7",
     "cm-7.2",
     "cm-7.5",
@@ -534,6 +612,7 @@
     "ia-4",
     "ia-4.4",
     "ia-7",
+    "ir-4.6",
     "ps-2",
     "ps-3",
     "ps-4",
@@ -543,6 +622,7 @@
     "ra-5.5",
     "sc-2",
     "sc-23",
+    "sc-3",
     "sc-39"
    ]
   },
@@ -565,8 +645,11 @@
    "rev5_controls_canonical": [
     "ac-2",
     "ac-2.2",
+    "ac-2.9",
     "ac-4",
     "ac-6.5",
+    "au-10",
+    "ia-2.5",
     "ia-3",
     "ia-5.2",
     "ra-5.5"
@@ -591,11 +674,24 @@
    "rev5_controls_canonical": [
     "ac-2",
     "ac-2.1",
-    "ac-2.3",
+    "ac-2.11",
+    "ac-2.12",
     "ac-2.13",
+    "ac-2.3",
     "ac-7",
+    "au-6.5",
+    "cm-5.1",
+    "cm-6.2",
+    "ir-4.2",
+    "ir-4.6",
     "ps-4",
-    "ps-8"
+    "ps-8",
+    "si-4",
+    "si-4.1",
+    "si-4.19",
+    "si-4.20",
+    "si-4.22",
+    "si-4.4"
    ]
   },
   "KSI-INR-AAR": {
@@ -615,7 +711,9 @@
     "ir-3",
     "ir-4",
     "ir-4.1",
-    "ir-8"
+    "ir-5.1",
+    "ir-8",
+    "ir-9.3"
    ]
   },
   "KSI-INR-RIR": {
@@ -640,6 +738,7 @@
    "rev5_controls_canonical": [
     "ir-4",
     "ir-4.1",
+    "ir-4.11",
     "ir-6",
     "ir-6.1",
     "ir-6.3",
@@ -647,6 +746,7 @@
     "ir-7.1",
     "ir-8",
     "ir-8.1",
+    "ir-9.3",
     "si-4.5"
    ]
   },
@@ -668,8 +768,12 @@
     "ir-3",
     "ir-4",
     "ir-4.1",
+    "ir-4.11",
+    "ir-4.4",
     "ir-5",
-    "ir-8"
+    "ir-5.1",
+    "ir-8",
+    "ra-5.8"
    ]
   },
   "KSI-MLA-ALA": {
@@ -683,6 +787,8 @@
     "si-11"
    ],
    "rev5_controls_canonical": [
+    "au-12.3",
+    "au-6.7",
     "si-11"
    ]
   },
@@ -700,9 +806,12 @@
     "si-7.7"
    ],
    "rev5_controls_canonical": [
+    "ac-19",
     "ca-7",
     "cm-2",
     "cm-6",
+    "cm-6.1",
+    "ra-3",
     "si-7.7"
    ]
   },
@@ -726,13 +835,19 @@
     "si-7.7"
    ],
    "rev5_controls_canonical": [
-    "ac-2.4",
-    "ac-6.9",
     "ac-17.1",
+    "ac-2.4",
     "ac-20.1",
-    "au-2",
-    "au-7.1",
+    "ac-6.9",
+    "au-10",
     "au-12",
+    "au-2",
+    "au-7",
+    "au-7.1",
+    "cm-5.1",
+    "ir-9.4",
+    "si-4.19",
+    "si-4.20",
     "si-4.4",
     "si-4.5",
     "si-7.7"
@@ -768,22 +883,26 @@
    "rev5_controls_canonical": [
     "ac-17.1",
     "ac-20.1",
+    "au-11",
+    "au-12.1",
     "au-2",
     "au-3",
     "au-3.1",
     "au-4",
     "au-5",
+    "au-5.1",
     "au-6.1",
     "au-6.3",
+    "au-6.4",
+    "au-6.5",
     "au-7",
     "au-7.1",
     "au-8",
     "au-9",
-    "au-11",
     "ir-4.1",
+    "si-4.16",
     "si-4.2",
-    "si-4.4",
-    "si-7.7"
+    "si-4.4"
    ]
   },
   "KSI-MLA-RVL": {
@@ -808,7 +927,10 @@
     "au-2",
     "au-6",
     "au-6.1",
+    "au-7",
+    "ra-5.8",
     "si-4",
+    "si-4.19",
     "si-4.4"
    ]
   },
@@ -829,12 +951,14 @@
     "cp-2.8"
    ],
    "rev5_controls_canonical": [
+    "cm-12",
+    "cm-12.1",
     "cm-2.2",
     "cm-7.5",
     "cm-8",
     "cm-8.1",
-    "cm-12",
-    "cm-12.1",
+    "cm-8.2",
+    "cm-8.4",
     "cp-2.8"
    ]
   },
@@ -871,9 +995,11 @@
    "rev5_controls_canonical": [
     "ac-5",
     "ca-2",
+    "ca-2.2",
     "cp-2.1",
     "cp-4.1",
     "ir-3.2",
+    "ir-4.11",
     "pm-3",
     "sa-2",
     "sa-3",
@@ -905,12 +1031,14 @@
     "ac-5",
     "au-3.3",
     "cm-3.4",
+    "ia-5.7",
     "pl-8",
     "pm-7",
+    "ra-9",
     "sa-3",
     "sa-8",
-    "sc-4",
     "sc-18",
+    "sc-4",
     "si-10",
     "si-11",
     "si-16"
@@ -947,11 +1075,10 @@
    ],
    "rev5_controls_canonical": [
     "cm-2.3",
-    "cp-6",
-    "cp-9",
     "cp-10",
     "cp-10.2",
-    "si-12"
+    "cp-6",
+    "cp-9"
    ]
   },
   "KSI-RPL-ARP": {
@@ -1034,6 +1161,7 @@
     "ir-3.2"
    ],
    "rev5_controls_canonical": [
+    "cp-10",
     "cp-2.1",
     "cp-2.3",
     "cp-4",
@@ -1041,9 +1169,10 @@
     "cp-6",
     "cp-6.1",
     "cp-9.1",
-    "cp-10",
     "ir-3",
-    "ir-3.2"
+    "ir-3.2",
+    "ir-9.3",
+    "sc-12.1"
    ]
   },
   "KSI-SCR-MIT": {
@@ -1068,18 +1197,37 @@
     "sr-6"
    ],
    "rev5_controls_canonical": [
+    "ac-19",
     "ac-20",
+    "ca-7.4",
+    "ra-3",
     "ra-3.1",
-    "sa-9",
     "sa-10",
     "sa-11",
+    "sa-11.1",
+    "sa-11.2",
+    "sa-15",
     "sa-15.3",
+    "sa-16",
+    "sa-17",
+    "sa-21",
     "sa-22",
+    "sa-4",
+    "sa-4.1",
+    "sa-4.2",
+    "sa-4.5",
+    "sa-4.9",
+    "sa-9",
+    "sa-9.1",
+    "sa-9.2",
+    "sa-9.5",
+    "sc-18",
     "si-7.1",
+    "si-7.15",
+    "sr-2",
+    "sr-3",
     "sr-5",
-    "sr-6",
-    "ca-7.4",
-    "sc-18"
+    "sr-6"
    ]
   },
   "KSI-SCR-MON": {
@@ -1102,13 +1250,17 @@
     "sr-8"
    ],
    "rev5_controls_canonical": [
+    "ac-19",
     "ac-20",
+    "ca-2.3",
     "ca-3",
     "ir-6.3",
     "ps-7",
+    "ra-3",
     "ra-5",
     "sa-9",
     "si-5",
+    "sr-3",
     "sr-5",
     "sr-6",
     "sr-8"
@@ -1136,14 +1288,18 @@
    ],
    "rev5_controls_canonical": [
     "ac-2.4",
+    "ac-6.8",
     "cm-2",
     "cm-2.2",
     "cm-2.3",
     "cm-6",
     "cm-7.1",
-    "pl-9",
     "pl-10",
+    "pl-9",
     "sa-5",
+    "sc-45",
+    "sc-45.1",
+    "sc-7.18",
     "si-5",
     "sr-10"
    ]
@@ -1167,6 +1323,7 @@
     "ia-5.2",
     "ia-5.6",
     "sc-12",
+    "sc-12.1",
     "sc-17"
    ]
   },
@@ -1189,12 +1346,15 @@
     "sr-10"
    ],
    "rev5_controls_canonical": [
-    "cm-7.1",
+    "ca-7.4",
     "cm-12.1",
-    "ma-2",
+    "cm-5.5",
+    "cm-7.1",
+    "ir-9.4",
     "pl-8",
-    "sc-7",
+    "ra-3",
     "sc-39",
+    "sc-7",
     "si-2.2",
     "si-4",
     "sr-10"
@@ -1211,7 +1371,11 @@
     "sc-4"
    ],
    "rev5_controls_canonical": [
-    "sc-4"
+    "ac-19",
+    "ir-9.4",
+    "sc-12.1",
+    "sc-4",
+    "sc-7.18"
    ]
   },
   "KSI-SVC-RUD": {
@@ -1226,8 +1390,11 @@
     "si-18.4"
    ],
    "rev5_controls_canonical": [
+    "ir-9",
     "si-12.3",
-    "si-18.4"
+    "si-18.4",
+    "si-8",
+    "si-8.2"
    ]
   },
   "KSI-SVC-SIN": {
@@ -1252,18 +1419,25 @@
     "sc-28.1"
    ],
    "rev5_controls_canonical": [
-    "ac-1",
+    "ac-11",
+    "ac-11.1",
     "ac-17.2",
+    "ac-19.5",
+    "ac-21",
     "cp-9.8",
-    "sc-8",
-    "sc-8.1",
+    "ir-9.4",
     "sc-13",
     "sc-20",
     "sc-21",
     "sc-22",
     "sc-23",
     "sc-28",
-    "sc-28.1"
+    "sc-28.1",
+    "sc-4",
+    "sc-7.18",
+    "sc-8",
+    "sc-8.1",
+    "si-4.18"
    ]
   },
   "KSI-SVC-VCM": {
@@ -1278,7 +1452,12 @@
     "si-7.1"
    ],
    "rev5_controls_canonical": [
+    "ac-10",
+    "ac-17.4",
+    "ac-18",
+    "ac-19",
     "sc-23",
+    "si-4.22",
     "si-7.1"
    ]
   },
@@ -1299,13 +1478,20 @@
     "sr-10"
    ],
    "rev5_controls_canonical": [
+    "ac-17.4",
+    "ac-18",
+    "ac-19",
+    "au-9.3",
+    "cm-14",
     "cm-2.2",
     "cm-8.3",
     "sc-13",
     "sc-23",
     "si-7",
     "si-7.1",
-    "sr-10"
+    "si-7.15",
+    "sr-10",
+    "sr-11"
    ]
   }
  }
