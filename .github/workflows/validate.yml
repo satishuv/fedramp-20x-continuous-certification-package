@@ -9,10 +9,11 @@
 #      regression test RED (a surviving OR skipped mutation fails).
 #   5. Requirements-differential oracle: an independent dataset traversal must
 #      reconcile exactly with the production applicability engine.
-# Plus Bandit (security-scan job). The audit and security step lists are
-# defined ONCE in audit/release_gate.py and shared with the AWS RELEASE_MODE
-# build and `sdr.py release`. The `release-gate` job aggregates all three and
-# is the single required status check on main (AUD-F12).
+# Plus Bandit (security-scan job) and the assessor-attack harness (attack-gate
+# job, AUD-F61). The audit, attack and security step lists are defined ONCE in
+# audit/release_gate.py and shared with the AWS RELEASE_MODE build and
+# `sdr.py release`. The `release-gate` job aggregates all four and is the
+# single required status check on main (AUD-F12).
 # Actions are pinned to full commit SHAs for supply-chain integrity.
 name: validate-sdr
 
@@ -119,6 +120,28 @@ jobs:
       - name: Audit section of the release gate (HARD GATE)
         run: python audit/release_gate.py audit
 
+  attack-gate:
+    # Assessor-attack harness (AUD-F61). Drives the fully populated fictional
+    # Class C sample to Submission ready, then applies one hollowing tamper at a
+    # time (empty metric summaries, placeholder evidence, one automated method,
+    # stale assessment, hashless or unsigned evidence under a required signer,
+    # content-free CPO answers, ...) and asserts preflight BLOCKS every one while
+    # the justified baseline stays READY. Two of its probes had silently stopped
+    # testing anything for 18 merged PRs while it was a manual run. HARD GATE;
+    # its own job so it runs in parallel with validate (about 20 minutes).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install --quiet --require-hashes -r requirements.lock
+      # The step list lives in audit/release_gate.py (one definition for CI,
+      # the AWS RELEASE_MODE build and `sdr.py release`).
+      - name: Attack section of the release gate (HARD GATE)
+        run: python audit/release_gate.py attack
+
   security-scan:
     # Static security analysis of ALL executable Python (root, automation,
     # validation), not just automation/. Runs in CI on every PR so a security
@@ -156,7 +179,7 @@ jobs:
     # `if: always()` makes this job run (and FAIL) even when a dependency
     # failed or was cancelled; without it the job would be skipped and a
     # skipped required check blocks nothing.
-    needs: [validate, audit-gate, security-scan]
+    needs: [validate, audit-gate, attack-gate, security-scan]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -164,11 +187,12 @@ jobs:
         env:
           VALIDATE: ${{ needs.validate.result }}
           AUDIT: ${{ needs.audit-gate.result }}
+          ATTACK: ${{ needs.attack-gate.result }}
           SECURITY: ${{ needs.security-scan.result }}
         run: |
-          echo "validate=$VALIDATE audit-gate=$AUDIT security-scan=$SECURITY"
+          echo "validate=$VALIDATE audit-gate=$AUDIT attack-gate=$ATTACK security-scan=$SECURITY"
           rc=0
-          for pair in "validate:$VALIDATE" "audit-gate:$AUDIT" "security-scan:$SECURITY"; do
+          for pair in "validate:$VALIDATE" "audit-gate:$AUDIT" "attack-gate:$ATTACK" "security-scan:$SECURITY"; do
             job="${pair%%:*}"; result="${pair#*:}"
             if [ "$result" != "success" ]; then
               echo "FAIL. Release gate section '$job' result: $result"
@@ -176,7 +200,7 @@ jobs:
             fi
           done
           if [ "$rc" -ne 0 ]; then exit 1; fi
-          echo "release-gate: PASS (validate, audit-gate, security-scan all succeeded)."
+          echo "release-gate: PASS (validate, audit-gate, attack-gate, security-scan all succeeded)."
 
 
 

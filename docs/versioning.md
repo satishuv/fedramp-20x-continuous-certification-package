@@ -64,18 +64,26 @@ signature badge.
 Release-ready has exactly one definition, `audit/release_gate.py`, and every
 path that can produce a release executes it:
 
-- GitHub Actions runs its sections as the `audit-gate` and `security-scan` jobs
-  beside `validate`, and a `release-gate` job that depends on all three (and
-  runs even when one failed) is the single required status check on `main`.
+- GitHub Actions runs its sections as the `audit-gate`, `attack-gate` and
+  `security-scan` jobs beside `validate`, and a `release-gate` job that depends
+  on all four (and runs even when one failed) is the single required status
+  check on `main`.
 - The AWS CodeBuild `RELEASE_MODE=true` build runs `python audit/release_gate.py
-  audit security` after the full validate and reproducibility gates.
+  audit attack security` after the full validate and reproducibility gates.
 - `python sdr.py release` runs the same sections between validation and the
   reproducibility check, so a local release cannot pass while CI would be red.
 
 The audit section is the requirements-differential oracle, the mutation-runner
 self-test, the mutation runner (a surviving OR skipped mutation fails, and the
 defect ledger must reconcile with the runner), and a tree-clean check. The
-security section is Bandit at medium-or-higher severity and confidence.
+attack section (AUD-F61) is the Class C assessor-attack harness
+(`examples/sample-offering-class-c/build_class_c_sample.py --attack`: a fully
+populated fictional package driven to Submission ready, then tampered one
+hollowing edit at a time, each of which must be blocked while the justified
+baseline stays ready) followed by a tree-clean check, because the harness
+restores every file it overwrites. The security section is Bandit at
+medium-or-higher severity and confidence, and pip-audit over the hash-locked
+closure.
 
 ## Publishing a release
 

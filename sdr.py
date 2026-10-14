@@ -1443,9 +1443,10 @@ def cmd_release(args):
     verify reproducibility, hard-run package-preflight, then print the tag.
 
     Runs the same validation suite CI runs (via cmd_validate) AND the identical
-    audit/security step list CI and the AWS RELEASE_MODE build run
+    audit/attack/security step list CI and the AWS RELEASE_MODE build run
     (audit/release_gate.py: oracle, mutation-runner self-test, mutation runner,
-    tree-clean, Bandit) AND a local double-build reproducibility check AND
+    tree-clean, Class C assessor-attack harness, Bandit, pip-audit) AND a local
+    double-build reproducibility check AND
     package-preflight as a HARD gate, so `release` verifies what it claims and
     refuses to prepare a release for a package any of those would reject. Before
     AUD-F12 this command skipped the audit gate and Bandit, so a local release
@@ -1464,15 +1465,16 @@ def cmd_release(args):
     if code != 0:
         out("Validation gate failed; not releasable.")
         return code
-    # AUD-F12: the audit and security sections of the ONE release gate, from
-    # the same definition CI and the AWS RELEASE_MODE build execute. Run before
-    # the reproducibility check so a mutation the runner failed to restore is
-    # caught by the gate's own tree-clean step rather than confusing the
+    # AUD-F12: the audit, attack and security sections of the ONE release gate,
+    # from the same definition CI and the AWS RELEASE_MODE build execute. Run
+    # before the reproducibility check so a mutation the runner failed to
+    # restore (or sample residue the attack harness failed to restore) is
+    # caught by the gate's own tree-clean steps rather than confusing the
     # double-build comparison.
     out()
-    code = run(os.path.join(BASE, "audit", "release_gate.py"), ["audit", "security"])
+    code = run(os.path.join(BASE, "audit", "release_gate.py"), ["audit", "attack", "security"])
     if code != 0:
-        out("Release gate (audit/security sections) failed; not releasable.")
+        out("Release gate (audit/attack/security sections) failed; not releasable.")
         return code
     out()
     code = cmd_reproducibility()

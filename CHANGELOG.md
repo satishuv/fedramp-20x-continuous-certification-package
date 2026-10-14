@@ -152,11 +152,23 @@ proven red on the old code and a killed mutation (`AUD-F57` to `AUD-F60`):
   the ignored override keeps the package READY. The attack suite is still a
   manual run (`--attack`, 43 probes), which is why this went unnoticed.
 
+The attack suite is a manual run no longer (`AUD-F61`, Medium): the Class C
+assessor-attack harness is now the `attack` section of the one release gate
+(`audit/release_gate.py`, in `SECTION_ORDER`), with a tree-clean step after it
+because the harness restores every file it overwrites. CI runs it as its own
+parallel `attack-gate` job and the required `release-gate` aggregate now needs
+all four jobs; the AWS `RELEASE_MODE` build and `sdr.py release` run `audit
+attack security`. `test_release_gate.py` asserts the section, the step's
+`--attack` argv, the job, the aggregate's dependency and both executors
+(68/68), and `MUT-F61` (the harness dropped from the gate) is killed. About 20
+minutes per run, in parallel with `validate`.
+
 The audit's remaining items are open by decision, not oversight: an explicit
 single Class D support state (`SUPPORTED` / `FUTURE` / `INVALID`) across every
 resolver, orthogonal provenance mutations that recompute the digest after a
-semantic tamper, machine-readable per-gate results with a reverse
-rule-to-test map, and the `sdr.py` decomposition after those are locked.
+semantic tamper, and machine-readable per-gate results with a reverse
+rule-to-test map. The `sdr.py` decomposition is withdrawn: the file stays as
+it is.
 
 The documented consultant flow, run end to end on a fictional Class B offering
 (`init` with every answer scripted, the three importers, prefill, the drafter,

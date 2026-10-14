@@ -25,6 +25,10 @@ Sections
   audit     requirements-differential oracle; mutation-runner self-test; the
             mutation runner (every ledgered defect re-introduced and killed);
             working tree clean after the runner restored every mutation.
+  attack    assessor-attack harness (AUD-F61): the fictional Class C package
+            driven to READY, then tampered one hollowing edit at a time; every
+            tamper must be BLOCKED, the justified baseline must stay READY;
+            working tree clean after the harness restored every file.
   security  Bandit static analysis over all executable Python, medium-or-higher
             severity AND confidence, hard failure on any finding.
 
@@ -56,6 +60,21 @@ SECTIONS = {
         ("tree-clean-after-mutation",
          ["git", "diff", "--exit-code"]),
     ],
+    # AUD-F61: the assessor-attack harness. A fully populated fictional Class C
+    # package is driven to READY, then tampered one hollowing edit at a time;
+    # every tamper must be BLOCKED and the justified baseline must stay READY.
+    # It was a manual run until two of its probes silently stopped testing
+    # anything for 18 merged PRs (CHANGELOG, AUD-F57..F60). Its own section
+    # (not a step of `audit`) so CI runs it in parallel: ~20 minutes locally.
+    "attack": [
+        ("class-c-attack-harness",
+         [sys.executable,
+          "examples/sample-offering-class-c/build_class_c_sample.py", "--attack"]),
+        # The harness backs up and restores every file it overwrites (AUD-F36);
+        # a dirty tree here means sample residue reached the checkout.
+        ("tree-clean-after-attack",
+         ["git", "diff", "--exit-code"]),
+    ],
     "security": [
         ("bandit",
          [sys.executable, "-m", "bandit", "-r", ".",
@@ -79,7 +98,7 @@ SECTIONS = {
 # path installs the same auditor (CI workflow, AWS buildspec, local release).
 SECURITY_TOOL_PINS = {"bandit": "1.8.6", "pip-audit": "2.10.1"}
 
-SECTION_ORDER = ["audit", "security"]
+SECTION_ORDER = ["audit", "attack", "security"]
 
 
 def run_step(name, argv, cwd=BASE):

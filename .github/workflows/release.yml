@@ -11,8 +11,8 @@
 #                   name equals the committed release manifest's release_tag
 #                   (tag <-> version identity). Fails closed on any mismatch.
 #   2. gate         the WHOLE validate workflow (validate + audit-gate +
-#                   security-scan + the aggregate release-gate) re-run on the
-#                   exact tagged commit.
+#                   attack-gate + security-scan + the aggregate release-gate)
+#                   re-run on the exact tagged commit.
 #   3. publish      build the release attestation (binds the deterministic
 #                   manifest hash to this commit/tree; refuses a dirty tree),
 #                   assemble the active-class bundle from exactly the
@@ -94,7 +94,7 @@ jobs:
         run: |
           set -e
           assets="artifacts/release-manifest.json artifacts/release-attestation.json artifacts/sbom.cdx.json artifacts/release-bundle-${TAG}.zip"
-          notes="Release ${TAG}. Full gate (validate, audit-gate, security-scan, release-gate) re-run on the tagged commit in this workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Assets: the deterministic release manifest, the release attestation binding that manifest's hash to commit ${GITHUB_SHA}, the SBOM, and the active-class bundle assembled from exactly the fingerprinted artifact set. See CHANGELOG.md for the change list. Build-provenance record, not a compliance determination."
+          notes="Release ${TAG}. Full gate (validate, audit-gate, attack-gate, security-scan, release-gate) re-run on the tagged commit in this workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Assets: the deterministic release manifest, the release attestation binding that manifest's hash to commit ${GITHUB_SHA}, the SBOM, and the active-class bundle assembled from exactly the fingerprinted artifact set. See CHANGELOG.md for the change list. Build-provenance record, not a compliance determination."
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "Release $TAG exists; attaching assets."
             gh release upload "$TAG" $assets --clobber
