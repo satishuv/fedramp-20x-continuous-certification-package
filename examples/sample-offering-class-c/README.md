@@ -60,9 +60,14 @@ review had missed:
 
 The remaining assessor probes were already correctly blocked, confirming the
 readiness gating is robust against those vectors. The `--attack` harness runs
-31 checks: two that must stay READY (the complete baseline, and a
-justified-`N/A: <reason>` on NARRATIVE fields) plus 29 hollowing tampers that
-must each be BLOCKED. The tampers include:
+43 checks: those that must stay READY (the complete baseline, a
+justified-`N/A: <reason>` on NARRATIVE fields, a hollowed override the
+AUD-F39 derivation ignores, production-assurance with a valid signed digest
+and signed evidence) plus the hollowing tampers that must each be BLOCKED.
+Since AUD-F61 the harness is the `attack` section of the one release gate
+(`audit/release_gate.py`): CI runs it as the `attack-gate` job on every push
+and pull request, and the AWS `RELEASE_MODE` build and `sdr.py release` run it
+too, so it is no longer a manual run. The tampers include:
 
 - empty SDR-CSX-KMT historical-metric summaries (the gap above)
 - an `sdr://placeholder/` evidence URI in an applicable record

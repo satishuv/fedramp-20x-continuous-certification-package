@@ -808,6 +808,19 @@
       "mutation": "MUT-F60: the block records the ARN verbatim; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F61",
+      "severity": "Medium",
+      "requirement": "Repository assurance contract (docs/versioning.md: release-ready has exactly one definition, audit/release_gate.py, executed by every release path), supporting SDR-CSX-VER / SDR-CSX-VAL (verified and validated records): the readiness gates the assessor-attack harness defends must be proven defended on every change, not on a manual run.",
+      "component": "audit/release_gate.py (attack section); .github/workflows/validate.yml (attack-gate job, release-gate aggregate); automation/pipeline/buildspec-validate.yml; sdr.py cmd_release",
+      "description": "The Class C assessor-attack harness (examples/sample-offering-class-c/build_class_c_sample.py --attack: a fully populated fictional package driven to READY, then tampered one hollowing edit at a time, each of which must be BLOCKED) ran only by hand. Two of its probes silently stopped testing anything at PR #199 (they hollowed an override the AUD-F39 derivation ignores) and reported false failures for 18 merged PRs until the AUD-F57..F60 work ran the harness again. No release path executed it, so a readiness gate could regress with the suite that defends it never running.",
+      "root_cause": "The harness was built as a worked example and never registered as a gate section; the one-definition release gate (AUD-F12) listed only the audit and security sections.",
+      "fix_commit": "this PR -- release_gate.py gains an `attack` section (class-c-attack-harness, then tree-clean-after-attack because the harness restores every file it overwrites), in SECTION_ORDER; CI runs it as its own parallel attack-gate job and the release-gate aggregate requires it; the AWS RELEASE_MODE build and `sdr.py release` run `audit attack security`",
+      "regression_test": "automation/pipeline/test_release_gate.py (attack section includes class-c-attack-harness and tree-clean-after-attack; the step runs build_class_c_sample.py --attack; attack is in SECTION_ORDER; CI attack-gate job runs `release_gate.py attack`; release-gate needs all four jobs and checks the attack-gate result; RELEASE_MODE and sdr.py release run `audit attack security`)",
+      "mutation": "MUT-F61: the attack harness step dropped from the gate definition (a manual run again); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

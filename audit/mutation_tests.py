@@ -461,6 +461,12 @@ MUTATIONS = [
      "        \"keyId\": key_reference(key_id),",
      "        \"keyId\": key_id,  # MUTATION record the ARN verbatim",
      "automation/collectors/test_sign_evidence.py"),
+    ("MUT-F61",
+     "audit/release_gate.py",
+     '        ("class-c-attack-harness",\n         [sys.executable,\n'
+     '          "examples/sample-offering-class-c/build_class_c_sample.py", "--attack"]),\n',
+     '        # MUTATION: attack harness dropped from the release gate (manual run again)\n',
+     "automation/pipeline/test_release_gate.py"),
 ]
 
 
