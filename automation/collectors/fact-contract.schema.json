@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/satishuv/fedramp-20x-continuous-certification-package/automation/collectors/fact-contract.schema.json",
+  "title": "Collector fact contract (evidence input side)",
+  "description": "The one shape every evidence adapter yields, on any platform, before a fact may reach fact_to_evidence. A fact is telemetry: it records WHAT was checked, WHERE, WHEN and what the source reported. It is never a compliance determination and never carries a status the package layer would treat as a verdict. The package layer learns nothing about the platform from this shape. Loaded and enforced by automation/collectors/evidence_wiring.py (validate_fact, EvidenceAdapter.to_evidence); the AWS collectors predate this contract and are bound to it by the collector fixture tests rather than at conversion time.",
+  "type": "object",
+  "required": ["service", "check", "status", "detail", "region", "observed_at"],
+  "properties": {
+    "service": {
+      "description": "Source slug the check belongs to (an evidence source registered in the source registry, e.g. a scanner or a cloud service). Becomes a segment of the evidence object key, so it must be slug-safe.",
+      "$ref": "#/$defs/slug"
+    },
+    "check": {
+      "description": "Identifier of the individual check or rule within the source. Becomes a segment of the evidence object key, so it must be slug-safe.",
+      "$ref": "#/$defs/slug"
+    },
+    "status": {
+      "description": "The source's own observation string for this check (e.g. a count, a percentage, COMPLIANT, ENABLED). Free text, scrubbed and bounded before it enters the package. Not a compliance verdict. A value starting with ERROR records a failed read and is not evidence.",
+      "type": "string",
+      "minLength": 1
+    },
+    "detail": {
+      "description": "Short human summary of the observation. May be empty. Scrubbed (identifiers, secrets, hosts, addresses redacted) and bounded before it enters the package.",
+      "type": "string"
+    },
+    "region": {
+      "description": "Where the observation was made (a region slug or 'global'). Becomes a segment of the evidence object key, so it must be slug-safe.",
+      "$ref": "#/$defs/slug"
+    },
+    "observed_at": {
+      "description": "When the SOURCE observed this (ISO 8601 date or date-time, the first ten characters a calendar date). Never invented by an adapter: carry the source's real timestamp so evidence freshness is honest.",
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}"
+    },
+    "scope": {
+      "description": "OPTIONAL opaque scope identifier (an HMAC-derived scope-... id or a caller-supplied slug alias) that distinguishes one account, tenant, subscription, compartment or project of a deployment from another WITHOUT naming it. Never a raw identifier.",
+      "$ref": "#/$defs/slug",
+      "not": {"pattern": "^[0-9]{12}$"}
+    },
+    "run_id": {
+      "description": "OPTIONAL slug-safe identifier of the collection run that produced the fact.",
+      "$ref": "#/$defs/slug"
+    },
+    "account": {"$ref": "#/$defs/rawScopeIdentifier"},
+    "tenant": {"$ref": "#/$defs/rawScopeIdentifier"},
+    "subscription": {"$ref": "#/$defs/rawScopeIdentifier"},
+    "compartment": {"$ref": "#/$defs/rawScopeIdentifier"},
+    "project": {"$ref": "#/$defs/rawScopeIdentifier"},
+    "organization": {"$ref": "#/$defs/rawScopeIdentifier"}
+  },
+  "additionalProperties": true,
+  "x-rawScopeFields": ["account", "tenant", "subscription", "compartment", "project", "organization"],
+  "x-rawScopeRule": "A fact carrying any x-rawScopeFields value and no `scope` is exported ONLY when the caller supplies a deployment-private scope_key, from which an opaque scope id is derived; otherwise the fact is REFUSED with an explicit error naming the field. The raw value never enters an evidence object, a pointer or a hash input.",
+  "$defs": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$",
+      "not": {"pattern": "\\.\\."}
+    },
+    "rawScopeIdentifier": {
+      "description": "A raw platform identifier of the scope an observation came from. Legitimate on an INPUT fact; it must be replaced by an opaque scope before export (see x-rawScopeRule).",
+      "type": ["string", "integer"]
+    }
+  }
+}

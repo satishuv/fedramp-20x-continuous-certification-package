@@ -41,7 +41,35 @@ python automation/collectors/apply_third_party_evidence.py
 
 It attaches evidence to the mapped KSIs and updates the record store. If a
 source is enabled but its export file is absent, it is skipped with a message,
-not an error.
+not an error. If an adapter yields a fact that does not meet the fact contract
+(below), the run stops with the offending field named and the record store is
+left untouched.
+
+## The fact contract (every adapter, any platform)
+
+An adapter yields facts, never evidence. The one shape a fact must have is
+published as JSON Schema in `automation/collectors/fact-contract.schema.json`
+and enforced before any fact is converted:
+
+| Field | Required | Meaning |
+|---|---|---|
+| `service` | yes | source slug the check belongs to (slug-safe, becomes part of the evidence object key) |
+| `check` | yes | the individual check or rule id within the source (slug-safe) |
+| `status` | yes | the source's own observation string (a count, a percentage, COMPLIANT). Not a verdict |
+| `detail` | yes (may be empty) | short human summary; scrubbed and bounded before it enters the package |
+| `region` | yes | where it was observed, or `global` (slug-safe) |
+| `observed_at` | yes | the source's real timestamp, ISO 8601 with a calendar-date prefix. Never invented |
+| `scope` | no | an opaque scope id (`scope-...` or a slug alias), never a raw identifier |
+| `run_id` | no | slug-safe collection-run id |
+
+A fact may carry the raw identifier of the scope it came from (`account`,
+`tenant`, `subscription`, `compartment`, `project`, `organization`) on input.
+It is exported only when a deployment-private scope key is supplied (an opaque
+scope id is derived from it) or an opaque `scope` alias is set; otherwise the
+fact is refused with the field named. The raw value never enters an evidence
+object, a pointer or a hash. The package layer learns nothing about the
+platform from the fact shape; that is what lets one SDR pipeline accept
+evidence from any source.
 
 ## What each maps to (real CR26 KSI ids, verified against the dataset)
 

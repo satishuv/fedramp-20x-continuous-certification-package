@@ -129,7 +129,13 @@ def main():
                   "Produce the export in your own environment (no API client here).")
             continue
         raw = load(export_path)
-        evidence = adapter.to_evidence(raw)
+        try:
+            evidence = adapter.to_evidence(raw)
+        except ew.EvidenceExportError as e:
+            # Fact contract or scope refusal (MCE-01): nothing is written, the
+            # offending field is named, and the exit is non-zero.
+            print(f"'{name}': refused, record store untouched. {e}")
+            return 1
         targets = adapter.ksi_targets()
         attached = 0
         for kid in targets:

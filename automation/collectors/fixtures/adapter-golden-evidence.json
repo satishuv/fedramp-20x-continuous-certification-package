@@ -1,0 +1,155 @@
+{
+  "_about": "Golden adapter outputs (MCE-01 AC4). raw -> adapter.to_evidence(raw, location_base) must stay byte-identical. Fictional values only.",
+  "adapters": {
+    "crowdstrike-falcon": {
+      "expected": [
+        {
+          "evidenceDescription": "crowdstrike:sensor_coverage = 96.0%. Falcon sensor on 480 of 500 hosts",
+          "evidenceLocation": "https://evidence.example.gov/store/crowdstrike/sensor_coverage/global.json",
+          "evidenceText": "crowdstrike:sensor_coverage status=96.0% region=global",
+          "evidenceType": "Log",
+          "lastUpdated": "2026-09-08",
+          "xEvidenceContentHash": "sha256:53c9d51fe645ef73f543c29b96ab5a23b654b8a78f130290ef4726fafcec6fd4",
+          "xSourceFact": {
+            "check": "sensor_coverage",
+            "observed_at": "2026-09-08T00:00:00Z",
+            "region": "global",
+            "service": "crowdstrike",
+            "status": "96.0%",
+            "summary": "Falcon sensor on 480 of 500 hosts"
+          }
+        },
+        {
+          "evidenceDescription": "crowdstrike:open_detections = 3. 3 open Falcon detection(s)",
+          "evidenceLocation": "https://evidence.example.gov/store/crowdstrike/open_detections/global.json",
+          "evidenceText": "crowdstrike:open_detections status=3 region=global",
+          "evidenceType": "Log",
+          "lastUpdated": "2026-09-08",
+          "xEvidenceContentHash": "sha256:5141973e661006d82b340210d5f2e2d9f92ebb82a75c75b140d6507d3f0c2442",
+          "xSourceFact": {
+            "check": "open_detections",
+            "observed_at": "2026-09-08T00:00:00Z",
+            "region": "global",
+            "service": "crowdstrike",
+            "status": "3",
+            "summary": "3 open Falcon detection(s)"
+          }
+        },
+        {
+          "evidenceDescription": "crowdstrike:prevention_policy = ENABLED. Falcon prevention policy applied",
+          "evidenceLocation": "https://evidence.example.gov/store/crowdstrike/prevention_policy/global.json",
+          "evidenceText": "crowdstrike:prevention_policy status=ENABLED region=global",
+          "evidenceType": "Log",
+          "lastUpdated": "2026-09-08",
+          "xEvidenceContentHash": "sha256:3e25fb7028209b0d377413e51a2d93f7dc634835ce7200be864073ef9f531b5a",
+          "xSourceFact": {
+            "check": "prevention_policy",
+            "observed_at": "2026-09-08T00:00:00Z",
+            "region": "global",
+            "service": "crowdstrike",
+            "status": "ENABLED",
+            "summary": "Falcon prevention policy applied"
+          }
+        }
+      ],
+      "raw": {
+        "detections_open": 3,
+        "observed_at": "2026-09-08T00:00:00Z",
+        "prevention_policy_enabled": true,
+        "sensor_coverage": {
+          "protected": 480,
+          "total": 500
+        }
+      }
+    },
+    "csv-count": {
+      "expected": [
+        {
+          "evidenceDescription": "scan:patch-coverage = 98.0%. 98 of 100",
+          "evidenceLocation": "https://evidence.example.gov/store/scan/patch-coverage/global.json",
+          "evidenceText": "scan:patch-coverage status=98.0% region=global",
+          "evidenceType": "Report",
+          "lastUpdated": "2026-09-08",
+          "xEvidenceContentHash": "sha256:6065faf616a53668b2aec6153629155ad65b627c740ec86ac52df3ca58316981",
+          "xSourceFact": {
+            "check": "patch-coverage",
+            "observed_at": "2026-09-08T00:00:00+00:00",
+            "region": "global",
+            "service": "scan",
+            "status": "98.0%",
+            "summary": "98 of 100"
+          }
+        }
+      ],
+      "raw": {
+        "check": "patch-coverage",
+        "observed": 98,
+        "observed_at": "2026-09-08T00:00:00+00:00",
+        "total": 100
+      }
+    },
+    "wiz": {
+      "expected": [
+        {
+          "evidenceDescription": "wiz:issues_critical_high = 0 critical / 2 high. Wiz open issues by severity",
+          "evidenceLocation": "https://evidence.example.gov/store/wiz/issues_critical_high/global.json",
+          "evidenceText": "wiz:issues_critical_high status=0 critical / 2 high region=global",
+          "evidenceType": "Report",
+          "lastUpdated": "2026-09-08",
+          "xEvidenceContentHash": "sha256:a673fe097453be8e2030869484dadf3b79e04909a2b6f946177f1045a4b7df05",
+          "xSourceFact": {
+            "check": "issues_critical_high",
+            "observed_at": "2026-09-08T00:00:00Z",
+            "region": "global",
+            "service": "wiz",
+            "status": "0 critical / 2 high",
+            "summary": "Wiz open issues by severity"
+          }
+        },
+        {
+          "evidenceDescription": "wiz:config_findings = 4. 4 open Wiz configuration finding(s)",
+          "evidenceLocation": "https://evidence.example.gov/store/wiz/config_findings/global.json",
+          "evidenceText": "wiz:config_findings status=4 region=global",
+          "evidenceType": "Report",
+          "lastUpdated": "2026-09-08",
+          "xEvidenceContentHash": "sha256:a9bff3debebac67f9322f576bac1f178b487b14ec4d44fe9742bedb760b41f5a",
+          "xSourceFact": {
+            "check": "config_findings",
+            "observed_at": "2026-09-08T00:00:00Z",
+            "region": "global",
+            "service": "wiz",
+            "status": "4",
+            "summary": "4 open Wiz configuration finding(s)"
+          }
+        },
+        {
+          "evidenceDescription": "wiz:vulnerabilities = 7. 7 open Wiz vulnerability finding(s)",
+          "evidenceLocation": "https://evidence.example.gov/store/wiz/vulnerabilities/global.json",
+          "evidenceText": "wiz:vulnerabilities status=7 region=global",
+          "evidenceType": "Report",
+          "lastUpdated": "2026-09-08",
+          "xEvidenceContentHash": "sha256:4d182d0d8630384da8c1aba2631c9fe60b23d77bc8c7133a31ceceacff9fb3d3",
+          "xSourceFact": {
+            "check": "vulnerabilities",
+            "observed_at": "2026-09-08T00:00:00Z",
+            "region": "global",
+            "service": "wiz",
+            "status": "7",
+            "summary": "7 open Wiz vulnerability finding(s)"
+          }
+        }
+      ],
+      "raw": {
+        "config_findings_open": 4,
+        "issues_by_severity": {
+          "critical": 0,
+          "high": 2,
+          "medium": 10
+        },
+        "observed_at": "2026-09-08T00:00:00Z",
+        "vulnerabilities_open": 7
+      }
+    }
+  },
+  "location_base": "https://evidence.example.gov/store"
+}

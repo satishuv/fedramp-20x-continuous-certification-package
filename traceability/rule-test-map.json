@@ -402,6 +402,16 @@
    "severity": "Medium",
    "component": "validation/scripts/build_rule_test_map.py (new, a build step); traceability/rule-test-map.json (generated); validation/scripts/test_rule_test_map.py"
   },
+  "ledger.AUD-F68": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "automation/collectors/fact-contract.schema.json (new, the published contract); automation/collectors/evidence_wiring.py (fact_contract, validate_fact, require_conforming_facts, FactContractError, EvidenceAdapter.to_evidence); automation/collectors/apply_third_party_evidence.py (fail closed on refusal)"
+  },
+  "ledger.AUD-F69": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/collectors/evidence_wiring.py (scope_id kind, fact_to_evidence raw-scope refusal, projected-fact stripping); automation/collectors/fact-contract.schema.json (x-rawScopeFields, x-rawScopeRule)"
+  },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
    "severity": "medium",
@@ -1522,6 +1532,21 @@
      "in_test_suite": true
     },
     {
+     "gate_id": "ledger.AUD-F68",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "automation/collectors/test_fact_contract.py"
+     ],
+     "mutations": [
+      "MUT-F68"
+     ],
+     "mutated_files": [
+      "automation/collectors/evidence_wiring.py"
+     ],
+     "in_test_suite": true
+    },
+    {
      "gate_id": "scan.ksi_automation_verified",
      "mode": "readiness-scan",
      "classes": [
@@ -2314,6 +2339,21 @@
      ],
      "mutated_files": [
       "validation/scripts/validate_evidence.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F68",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "automation/collectors/test_fact_contract.py"
+     ],
+     "mutations": [
+      "MUT-F68"
+     ],
+     "mutated_files": [
+      "automation/collectors/evidence_wiring.py"
      ],
      "in_test_suite": true
     },

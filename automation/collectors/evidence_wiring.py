@@ -53,10 +53,24 @@ account id, hostname, long opaque token) and length-bounded before it enters an
 evidence entry, and every identifier that becomes part of the object key must
 be slug-safe. A scrub is conservative by design: it may redact a harmless
 dotted token, it never lets an identifying one through.
+
+FACT CONTRACT (MCE-01 / AUD-F68). Adapters on any platform yield ONE fact
+shape, published as JSON Schema at FACT_CONTRACT_PATH and enforced by
+EvidenceAdapter.to_evidence before any fact reaches fact_to_evidence: a fact
+missing a required field (service, check, status, detail, region, observed_at)
+or carrying a wrong type is refused naming the field, never converted. The
+raw-scope refusal that AUD-F27 built for the AWS `account` field applies to
+every raw platform identifier the schema lists (RAW_SCOPE_FIELDS: account,
+tenant, subscription, compartment, project, organization): without an opaque
+`scope` or a scope_key the fact is refused, and the raw value never enters an
+evidence object. The package layer learns nothing about the platform from the
+fact shape.
 """
 
 import hashlib
 import hmac
+import json
+import os
 import re
 import uuid
 
@@ -64,6 +78,15 @@ import uuid
 class EvidenceExportError(ValueError):
     """A fact that cannot be exported safely is refused, loudly. Silent drop
     (the pre-AUD-F27 behaviour) hid a lost observation; silent export leaked."""
+
+
+class FactContractError(EvidenceExportError):
+    """A fact that does not conform to the published fact contract. `problems`
+    names each offending field so the adapter author can fix the shape."""
+
+    def __init__(self, message, problems=()):
+        super().__init__(message)
+        self.problems = list(problems)
 
 
 # Every field a reader uses to interpret the observation. The content hash is
@@ -140,7 +163,80 @@ def _require_slug(value, what):
     return s
 
 
-def scope_id(account, scope_key):
+# --- Fact contract (MCE-01 / AUD-F68) ----------------------------------------
+#
+# The published input-side contract every adapter's facts must meet. The schema
+# file is the single source: REQUIRED_FACT_FIELDS and RAW_SCOPE_FIELDS are read
+# from it, not duplicated here, so the document and the enforcement cannot
+# drift (a test asserts the file is valid JSON Schema and lists these fields).
+
+FACT_CONTRACT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                  "fact-contract.schema.json")
+_FACT_CONTRACT = None
+
+
+def fact_contract():
+    """The fact contract schema (loaded once). Raises if the committed file is
+    missing or unreadable: an adapter with no contract to meet is not allowed
+    to export, so this fails closed rather than falling back to 'any dict'."""
+    global _FACT_CONTRACT
+    if _FACT_CONTRACT is None:
+        with open(FACT_CONTRACT_PATH, encoding="utf-8") as f:
+            _FACT_CONTRACT = json.load(f)
+    return _FACT_CONTRACT
+
+
+def required_fact_fields():
+    return tuple(fact_contract()["required"])
+
+
+def raw_scope_fields():
+    """Raw platform identifiers a fact may carry on INPUT (account, tenant,
+    subscription, compartment, project, organization). Each must become an
+    opaque scope before export; none may enter an evidence object."""
+    return tuple(fact_contract()["x-rawScopeFields"])
+
+
+def validate_fact(fact):
+    """Return a list of problems (each naming the field) for one fact against
+    the contract; [] means conforming. Missing required fields are reported
+    first and by name, then type/pattern violations from the JSON Schema.
+    Pure: never raises on a bad fact, never converts it."""
+    if not isinstance(fact, dict):
+        return ["fact is not an object"]
+    problems = []
+    for name in required_fact_fields():
+        if name not in fact:
+            problems.append(f"missing required field '{name}'")
+    if problems:
+        return problems
+    import jsonschema  # a hard requirement of the repository (REQUIRED_MODULES)
+    validator = jsonschema.Draft202012Validator(fact_contract())
+    for err in sorted(validator.iter_errors(fact), key=lambda e: list(e.absolute_path)):
+        where = "/".join(str(p) for p in err.absolute_path) or "(fact)"
+        problems.append(f"field '{where}': {err.message}")
+    return problems
+
+
+def require_conforming_facts(facts, who="adapter"):
+    """Validate every fact BEFORE any is converted. Raises FactContractError
+    naming the adapter, the fact index and each offending field; returns the
+    facts as a list when all conform. Nothing non-conforming reaches
+    fact_to_evidence, and nothing is silently skipped."""
+    facts = list(facts or [])
+    bad = []
+    for i, fact in enumerate(facts):
+        for p in validate_fact(fact):
+            bad.append(f"fact[{i}] {p}")
+    if bad:
+        raise FactContractError(
+            f"{who} yielded {len(bad)} fact contract violation(s); refusing to convert "
+            f"any of its facts (contract: {os.path.basename(FACT_CONTRACT_PATH)}): "
+            + "; ".join(bad), problems=bad)
+    return facts
+
+
+def scope_id(account, scope_key, kind="account"):
     """Opaque, non-reversible identifier for an account scope.
 
     HMAC-SHA256(scope_key, account), truncated, prefixed 'scope-'. The key is
@@ -149,17 +245,24 @@ def scope_id(account, scope_key):
     in minutes, which is why the id is KEYED. The scope -> account map that an
     assessor needs lives in the git-excluded private facts store
     (collect_multi_account.py writes it beside the facts), never in the SDR.
+
+    kind: which raw identifier this is (one of raw_scope_fields()). For
+    'account' the HMAC message is the bare value, exactly as before MCE-01, so
+    every committed AWS scope id is unchanged; for any other kind the message is
+    '<kind>:<value>' so a tenant and a project with the same literal value never
+    share a scope.
     """
     if not scope_key:
         raise EvidenceExportError(
             "scope_key is required to derive an opaque scope id for an "
-            "account-tagged fact (set SDR_EVIDENCE_SCOPE_KEY or pass scope_key)")
+            f"{kind}-tagged fact (set SDR_EVIDENCE_SCOPE_KEY or pass scope_key)")
     if isinstance(scope_key, str):
         scope_key = scope_key.encode("utf-8")
     acct = str(account).strip()
     if not acct:
-        raise EvidenceExportError("account is empty; cannot derive a scope id")
-    digest = hmac.new(bytes(scope_key), acct.encode("utf-8"), hashlib.sha256).hexdigest()
+        raise EvidenceExportError(f"{kind} is empty; cannot derive a scope id")
+    message = acct if kind == "account" else f"{kind}:{acct}"
+    digest = hmac.new(bytes(scope_key), message.encode("utf-8"), hashlib.sha256).hexdigest()
     return "scope-" + digest[:16]
 
 
@@ -305,8 +408,10 @@ def fact_to_evidence(fact, location_base=None, scope_key=None):
     check = _require_slug(fact.get("check", "unknown"), "check")
     region = _require_slug(fact.get("region", "unknown"), "region")
 
-    # Scope identity (AUD-F27). Never the account itself.
-    account = fact.get("account")
+    # Scope identity (AUD-F27, generalized by MCE-01). Never the raw identifier
+    # itself, whichever platform it names.
+    raw_ids = [(k, fact[k]) for k in raw_scope_fields()
+               if fact.get(k) not in (None, "")]
     scope = fact.get("scope")
     if scope is not None:
         scope = _require_slug(scope, "scope")
@@ -314,14 +419,24 @@ def fact_to_evidence(fact, location_base=None, scope_key=None):
             raise EvidenceExportError(
                 "scope must be an opaque identifier, not a 12-digit AWS account id; "
                 "derive it with evidence_wiring.scope_id(account, scope_key)")
-    elif account:
+    elif raw_ids:
+        names = ", ".join(k for k, _ in raw_ids)
         if not scope_key:
             raise EvidenceExportError(
-                f"fact {service}:{check} is tagged with an AWS account but carries no "
-                "opaque scope and no scope_key was supplied; refusing to export it "
-                "(dropping the account collides scopes, exporting it leaks it). "
-                "Set SDR_EVIDENCE_SCOPE_KEY / pass scope_key, or stamp fact['scope'].")
-        scope = scope_id(account, scope_key)
+                f"fact {service}:{check} is tagged with a raw {names} identifier but "
+                "carries no opaque scope and no scope_key was supplied; refusing to "
+                "export it (dropping the identifier collides scopes, exporting it "
+                "leaks it). Set SDR_EVIDENCE_SCOPE_KEY / pass scope_key, or stamp "
+                "fact['scope'] with an opaque alias.")
+        if len(raw_ids) == 1:
+            kind, value = raw_ids[0]
+            scope = scope_id(value, scope_key, kind=kind)
+        else:
+            # Several raw identifiers describe one scope (e.g. tenant plus
+            # subscription): derive from the canonical joined form so the scope
+            # is stable regardless of key order.
+            joined = ";".join(f"{k}={v}" for k, v in sorted(raw_ids))
+            scope = scope_id(joined, scope_key, kind="composite")
     run_id = fact.get("run_id")
     if run_id is not None:
         run_id = _require_slug(run_id, "run_id")
@@ -340,7 +455,8 @@ def fact_to_evidence(fact, location_base=None, scope_key=None):
     # persist the projection, so a reviewer/CI recompute over the bound payload
     # matches xEvidenceContentHash.
     projected = dict(fact)
-    projected.pop("account", None)
+    for k in raw_scope_fields():
+        projected.pop(k, None)
     if scope:
         projected["scope"] = scope
     if run_id:
@@ -454,7 +570,9 @@ class EvidenceAdapter:
     """Base class for an evidence source. Subclasses set `name` and implement
     `collect(raw)`, returning an iterable of collector-shaped fact dicts:
         {service, check, status, detail, region, observed_at}
-    The fact is hashed and mapped to an SDR evidence object downstream.
+    The shape is the published fact contract (FACT_CONTRACT_PATH); to_evidence
+    checks every fact against it before conversion. The fact is hashed and
+    mapped to an SDR evidence object downstream.
 
     Adapter contract v2 (metadata only, backward compatible): subclasses may
     declare `version`, `source_type`, `supported_evidence_types`, and
@@ -475,9 +593,13 @@ class EvidenceAdapter:
         raise NotImplementedError
 
     def to_evidence(self, raw, location_base=None, scope_key=None):
-        """Run collect() and map every fact to an SDR evidence object."""
-        return facts_to_evidence(list(self.collect(raw)), location_base,
-                                 scope_key=scope_key)
+        """Run collect(), check EVERY fact against the published fact contract
+        (FACT_CONTRACT_PATH), then map the conforming facts to SDR evidence
+        objects. A non-conforming fact raises FactContractError naming the
+        adapter, the fact index and the field; no fact of that batch reaches
+        fact_to_evidence (MCE-01 / AUD-F68)."""
+        facts = require_conforming_facts(self.collect(raw), who=f"adapter '{self.name}'")
+        return facts_to_evidence(facts, location_base, scope_key=scope_key)
 
     def describe(self):
         """Adapter capability metadata (contract v2). Pure, no collection."""

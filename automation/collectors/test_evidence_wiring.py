@@ -325,12 +325,13 @@ def test_f28_key_segments_must_be_slug_safe():
 
 def test_f28_csv_adapter_check_from_raw_is_slug_checked():
     ad = ew.get_adapter("csv-count")
+    at = "2026-09-08T00:00:00+00:00"  # the contract (MCE-01) requires the source timestamp
     try:
-        ad.to_evidence({"check": "../escape", "observed": 1, "total": 1})
+        ad.to_evidence({"check": "../escape", "observed": 1, "total": 1, "observed_at": at})
         assert False
     except ew.EvidenceExportError:
         pass
-    ok = ad.to_evidence({"check": "patch-coverage", "observed": 9, "total": 10})
+    ok = ad.to_evidence({"check": "patch-coverage", "observed": 9, "total": 10, "observed_at": at})
     assert ok and ok[0]["xSourceFact"]["status"] == "90.0%"
 
 
