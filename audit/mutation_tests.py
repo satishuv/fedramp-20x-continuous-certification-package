@@ -493,6 +493,16 @@ MUTATIONS = [
      'SUPPORTED_CLASSES = ("a", "b", "c")\n',
      'SUPPORTED_CLASSES = ("a", "b", "c", "d")  # MUTATION Class D treated as supported\n',
      "validation/scripts/test_class_support.py"),
+    ("MUT-F66",
+     "audit/release_gate.py",
+     '    overall = "FAIL" if failed else "PASS"\n    write_results(records, wanted, overall)\n',
+     '    overall = "FAIL" if failed else "PASS"\n    # MUTATION: gate results never written\n',
+     "automation/pipeline/test_release_gate.py"),
+    ("MUT-F67",
+     "validation/scripts/build_rule_test_map.py",
+     '            if rid not in known:\n                unresolved["rule_ids"].append({"id": rid, "source": d.get("id")})\n                continue\n',
+     '            if rid not in known:\n                continue  # MUTATION unresolved ids dropped silently\n',
+     "validation/scripts/test_rule_test_map.py"),
 ]
 
 

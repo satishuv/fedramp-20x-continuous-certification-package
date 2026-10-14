@@ -62,6 +62,8 @@ The AWS CodeBuild release path (`RELEASE_MODE=true`) runs the same two checks, s
 
 The `attack-gate` job runs the `attack` section of the same release gate definition: the Class C assessor-attack harness (`examples/sample-offering-class-c/build_class_c_sample.py --attack`). It builds a fully populated fictional Class C package, drives it to Submission ready, then applies one hollowing tamper at a time (empty metric summaries, placeholder evidence, a single automated method, a stale assessment, hashless or unsigned evidence under a required signer, content-free CPO answers, and more) and fails the build if any tamper still reaches ready, or if the justified baseline does not. A tree-clean step follows because the harness restores every file it overwrites. It runs as its own job, in parallel with `validate` (about 20 minutes), and the `release-gate` aggregate requires it (AUD-F61). Before that it was a manual run, and two of its probes had stopped testing anything for 18 merged pull requests without anyone noticing.
 
+Each gate job (`audit-gate`, `attack-gate`, `security-scan`) uploads the gate's machine-readable results as an artifact (`gate-results-<section>`): `validation/reports/gate-results.json` with one record per executed step and the overall verdict, plus `gate-results.run.json` with the commit, run id and time (AUD-F66). The results are evidence of the run; the job's exit code remains the verdict.
+
 Actions are pinned to full commit SHAs rather than tags, so a compromised or retagged upstream action cannot change what runs in your pipeline. Keep it that way when you add steps.
 
 ## Local security gate (ASH and Fortify)
