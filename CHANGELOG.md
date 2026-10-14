@@ -210,10 +210,32 @@ gains three production-assurance probes (wrong-KSI source, swapped pointer,
 400-day-old observation, each recomputed and re-signed) and its READY probe
 stays READY with bound sources.
 
-The audit's remaining items are open by decision, not oversight: an explicit
-single Class D support state (`SUPPORTED` / `FUTURE` / `INVALID`) across every
-resolver, and machine-readable per-gate results with a reverse rule-to-test
-map. The `sdr.py` decomposition is withdrawn: the file stays as it is.
+A certification class has one interpretation (`AUD-F65`, Medium).
+`validation/scripts/class_support.py` is the single state: `SUPPORTED` (a, b,
+c), `FUTURE` (d), `INVALID` (anything else, never read as pending D). Before,
+thirteen entry points carried their own `if cls == "d"` guard with thirteen
+messages, two carried `not in ("a", "b", "c")`, and the generic resolvers
+underneath did not know Class D existed: `submitted_ksi_ids` special-cased only
+Class B and returned the full KSI set for `d` and for any typo,
+`submitted_rule_ids` special-cased only Class A, and the MAS coverage resolver
+sent everything that was not a or b to the all-KSIs branch; an unknown value
+such as `e` fell through every guard into generic processing (a missing
+class-e profile and a traceback, or a document labelled Class E). Every entry
+point (the fourteen builders and validators, `sdrscan`, `package-preflight`)
+now prints the one message (`CLASS_D_NOT_SUPPORTED_YET` with the readiness
+register path, or `INVALID_CERTIFICATION_CLASS`) and returns 1 before any
+write; the three resolvers raise `UnsupportedCertificationClass` (a
+`ValueError`) instead of returning a plausible set. The Class D readiness
+register keeps its own explicit path (`build_profiles.py`). The dataset
+carrying some Class D values is not support for Class D.
+`test_class_support.py` (53 checks) drives every entry point in process with
+a Class D and an invalid profile and asserts exit 1, the one message and no
+exception, and fails if a scattered guard reappears; `MUT-F65` (Class D added
+to the supported set) is killed. No generated artifact changes.
+
+The audit's one remaining item is open by decision, not oversight:
+machine-readable per-gate results with a reverse rule-to-test map. The
+`sdr.py` decomposition is withdrawn: the file stays as it is.
 
 The documented consultant flow, run end to end on a fictional Class B offering
 (`init` with every answer scripted, the three importers, prefill, the drafter,

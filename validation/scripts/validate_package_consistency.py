@@ -26,6 +26,7 @@ BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 OFFERING = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 sys.path.insert(0, os.path.join(BASE, "validation", "scripts"))
 import profile_contract as _pc  # noqa: E402  (cpo_uri: the generators' resolver)
+import class_support  # noqa: E402  (AUD-F65: the one class-support state)
 
 
 def load(rel, default=None):
@@ -48,8 +49,9 @@ def sha256_file(path):
 def main():
     offering = load(OFFERING, {})
     cls = (offering.get("certification_class") or "b").lower()
-    if cls == "d":
-        print("Class D is FedRAMP pending; no package to check.")
+    _unsupported = class_support.unsupported_class_message(cls, 'package consistency validation')
+    if _unsupported:
+        print(_unsupported)
         return 1
     problems = []
 

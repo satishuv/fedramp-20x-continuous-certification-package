@@ -18,6 +18,7 @@ import os
 import sys
 
 import profile_contract as _pc  # noqa: E402  (offering_title: honest title while the name is TBD)
+import class_support  # noqa: E402  (AUD-F65: the one class-support state)
 
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OFFERING = os.path.join(BASE, "profiles", "common", "offering-profile.json")
@@ -137,8 +138,9 @@ def reviewer_md(graph, decisions, offering, cov):
 def main():
     offering = load(OFFERING, {})
     cls = (offering.get("certification_class") or "b").lower()
-    if cls == "d":
-        print("Class D is FedRAMP pending; no reports generated.")
+    _unsupported = class_support.unsupported_class_message(cls, 'report generation')
+    if _unsupported:
+        print(_unsupported)
         return 1
     graph = load(GRAPH)
     if graph is None:

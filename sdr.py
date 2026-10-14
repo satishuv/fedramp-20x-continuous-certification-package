@@ -59,6 +59,7 @@ sys.path.insert(0, os.path.join(BASE, "automation", "collectors"))
 sys.path.insert(0, os.path.join(BASE, "validation", "scripts"))
 import history_integrity as _hi  # noqa: E402
 import sign_evidence as _se  # noqa: E402
+import class_support  # noqa: E402  (AUD-F65: the one class-support state)
 # AUD-F38: a labelled proposal (DRAFT / Example) is unanswered until a human
 # accepts it; the one definition lives in validation/scripts/unreviewed_text.py.
 from unreviewed_text import is_unreviewed as _is_unreviewed  # noqa: E402
@@ -393,6 +394,7 @@ TEST_SUITE = [
     "validation/scripts/test_evidence_integrity.py",
     "validation/scripts/test_production_evidence_linkage.py",
     "validation/scripts/test_provenance_mutations.py",
+    "validation/scripts/test_class_support.py",
     "automation/collectors/test_sign_evidence.py",    "validation/scripts/test_applicability.py",
     "automation/exporters/test_oscal_export.py",
     "automation/collectors/test_evidence_wiring.py",
@@ -695,7 +697,12 @@ def submitted_rule_ids(profile_rules, cls, selected_optional=None):
     in selected_optional (default empty). Every other class submits all profile
     rules. Preflight uses this so its applicable-record scan matches what the
     SDR actually contains, instead of gating optional rules the SDR excluded.
+
+    AUD-F65: raises class_support.UnsupportedCertificationClass for Class D
+    (FUTURE) or an unknown value (INVALID). Before, every class but A fell into
+    the generic branch, so "d" and any typo resolved to the full rule set.
     """
+    cls = class_support.require_supported_class(cls, "submitted rule scope")
     ids = {r.get("rule_id") for r in profile_rules}
     if cls == "a":
         selected = set(selected_optional or [])
@@ -719,7 +726,12 @@ def submitted_ksi_ids(ksi_indicators, cls, selected_optional_ksis=None):
 
     Returns the set of submitted ksi_ids. Use unknown_optional_ksi_selections()
     to detect misspelled/unknown selections and block on them.
+
+    AUD-F65: raises class_support.UnsupportedCertificationClass for Class D
+    (FUTURE) or an unknown value (INVALID). Before, the only special case was
+    Class B, so "d" (and any typo) resolved to a plausible full KSI set.
     """
+    cls = class_support.require_supported_class(cls, "submitted KSI scope")
     all_ids = {ind.get("ksi_id") for ind in (ksi_indicators or [])}
     if cls != "b":
         return all_ids
@@ -1649,6 +1661,15 @@ def cmd_preflight(args):
     import datetime as _dt
     offering = load_json(OFFERING_PROFILE) or {}
     cls = current_class().lower()
+    # AUD-F65: one interpretation of the class. Class D (FUTURE) and an unknown
+    # value (INVALID) stop here with the one message every entry point prints,
+    # instead of resolving a plausible rule/KSI scope through the generic
+    # helpers below and reporting readiness blockers for a package that cannot
+    # be built.
+    _unsupported = class_support.unsupported_class_message(cls, "package-preflight")
+    if _unsupported:
+        out(_unsupported)
+        return 1
     blockers = []
     warnings = []
     # Loaded once, early, because both the MOT gate and the applicable-record

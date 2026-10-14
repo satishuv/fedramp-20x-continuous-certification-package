@@ -32,6 +32,7 @@ BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 # validate_sdr.py so this reviewer-facing report agrees with the authoritative
 # validator by construction (no independent len(tests) counter).
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import class_support  # noqa: E402  (AUD-F65: the one class-support state)
 from verification_methods import count_automated_methods  # noqa: E402
 
 # Reuse the evidence lifecycle model rather than duplicating it, so the graph's
@@ -271,8 +272,9 @@ def build_graph(cls):
 def main():
     profile = load(PROFILE, {})
     cls = (profile.get("certification_class") or "b").lower()
-    if cls == "d":
-        print("Class D is FedRAMP pending; no assurance graph is generated.")
+    _unsupported = class_support.unsupported_class_message(cls, 'assurance graph generation')
+    if _unsupported:
+        print(_unsupported)
         return 1
     graph = build_graph(cls)
     if graph is None:

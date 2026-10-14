@@ -48,6 +48,10 @@ from datetime import date, datetime, timezone
 HERE = os.path.dirname(os.path.abspath(__file__))
 BASE = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(BASE, "validation", "scripts"))
+import class_support  # noqa: E402  (AUD-F65: the one class-support state)
+
+OFFERING = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 
 import checks as checkmod  # noqa: E402  (path set above)
 
@@ -92,8 +96,7 @@ class Context:
 
     def __init__(self, cls):
         self.cls = cls
-        self.offering = load(os.path.join(BASE, "profiles", "common",
-                                          "offering-profile.json"))
+        self.offering = load(OFFERING)
         self.class_profile = load(os.path.join(BASE, "profiles", f"class-{cls}",
                                                "profile.json"))
         self.ksi_profile = load(os.path.join(BASE, "profiles", "common",
@@ -600,11 +603,11 @@ def main(argv=None):
         print(f"\n{len(checkmod.METADATA)} checks")
         return 0
 
-    offering = load(os.path.join(BASE, "profiles", "common", "offering-profile.json"))
+    offering = load(OFFERING)
     cls = args.cls or offering["certification_class"].lower()
-    if cls == "d":
-        print("Class D is FedRAMP pending, so there is no Security Decision "
-              "Record to scan. See profiles/class-d-future/readiness-register.json.")
+    _unsupported = class_support.unsupported_class_message(cls, 'readiness scan')
+    if _unsupported:
+        print(_unsupported)
         return 1
 
     try:

@@ -860,6 +860,19 @@
       "mutation": "MUT-F64: classify_evidence_freshness never returns expired; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F65",
+      "severity": "Medium",
+      "requirement": "FRC-CSX-* class-varying rules and the pinned dataset's Class D values (for example FRC-CSX-VVK's four automated methods per KSI at Class D) together with FedRAMP's position that Class D requirements are set through the 20x Phase 4 pilot: data existing for a class is not support for it. Repository contract: no Class D package is built, validated, preflighted, scanned or released until the pilot requirements are adopted; the readiness register is a separate explicit path.",
+      "component": "validation/scripts/class_support.py (new); sdr.py (submitted_rule_ids, submitted_ksi_ids, cmd_preflight); validation/scripts/build_mas_coverage.py (applicable_ksis_for_class); the fourteen entry points build_sdr, build_docx, validate_sdr, build_scg, build_cpo, build_ocr, build_events, build_reports, build_release_manifest, build_applicability_decisions, build_assurance_graph, validate_assurance_graph, validate_package_consistency, automation/sdrscan/sdrscan.py",
+      "description": "Raised as an open item by the 2026-10-13 audit and confirmed in source: there was no single interpretation of a certification class. Thirteen entry points carried their own `if cls == \"d\"` guard with thirteen different messages, two carried `if cls not in (\"a\", \"b\", \"c\")`, and the generic resolvers underneath them did not know Class D existed: sdr.submitted_ksi_ids special-cased only Class B and returned the full KSI set for \"d\" and for any typo, sdr.submitted_rule_ids special-cased only Class A, and build_mas_coverage.applicable_ksis_for_class resolved everything that was not a or b to all KSIs. An unknown value such as \"e\" fell through every `== \"d\"` guard into generic processing (a missing class-e profile and a traceback in the builder, or a document labelled Class E elsewhere). The top-level builders refused D correctly, which is why no package was ever produced for it; the inconsistency was in the helpers and in the INVALID case.",
+      "root_cause": "Class support was a string comparison repeated at each call site rather than a state the whole package shares; the dataset carrying some Class D values let generic helpers resolve \"d\" to something plausible.",
+      "fix_commit": "this PR -- class_support.py: SUPPORTED a/b/c, FUTURE d, INVALID anything else (never pending D); unsupported_class_message for entry points (one message, codes CLASS_D_NOT_SUPPORTED_YET / INVALID_CERTIFICATION_CLASS, the readiness register path) and require_supported_class for library resolvers (raises UnsupportedCertificationClass, a ValueError). All fourteen entry points and cmd_preflight print that message and return 1 before any write; submitted_rule_ids, submitted_ksi_ids and the MAS coverage resolver raise instead of returning a plausible set. The Class D readiness register keeps its own explicit path (build_profiles.py). sdrscan gained an OFFERING constant so its guard is testable",
+      "regression_test": "validation/scripts/test_class_support.py (53 checks: the pure state for every shape of value; the two codes and the register path in the messages; require_supported_class raising with .code; submitted_ksi_ids / submitted_rule_ids / MAS coverage refusing d and e; EVERY entry point driven in process with a Class D and an invalid offering profile, asserting exit 1, the one message and no exception; the readiness register present and produced by build_profiles.py; no scattered `== \"d\"` or `not in (a,b,c)` guard left in an entry point)",
+      "mutation": "MUT-F65: Class D added to SUPPORTED_CLASSES; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

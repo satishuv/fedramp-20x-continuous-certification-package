@@ -46,6 +46,7 @@ BASE = os.path.abspath(os.path.join(HERE, "..", ".."))
 if BASE not in sys.path:
     sys.path.insert(0, BASE)
 from sdr import submitted_ksi_ids  # noqa: E402
+import class_support  # noqa: E402  (AUD-F65: the one class-support state)
 
 INVENTORY = os.path.join(BASE, "profiles", "common", "mas-inventory.json")
 OFFERING = os.path.join(BASE, "profiles", "common", "offering-profile.json")
@@ -84,7 +85,10 @@ def _text(v):
 def applicable_ksis_for_class(cls, ksi_profile, class_profile, offering):
     """The KSI ids the package submits at `cls`, resolved exactly as build_sdr
     and preflight resolve them (Class A: the FRC-CLA-MFR enumeration in the
-    class-a profile meta; Class B: the shared opt-in resolver; Class C: all)."""
+    class-a profile meta; Class B: the shared opt-in resolver; Class C: all).
+    AUD-F65: an unsupported class raises instead of falling into the Class C
+    branch (everything that was not a or b used to resolve to all KSIs)."""
+    cls = class_support.require_supported_class(cls, "MAS coverage")
     indicators = ksi_profile.get("indicators") or []
     if cls == "a":
         tier = ((class_profile or {}).get("meta") or {}).get("class_a_ksis") or {}

@@ -20,6 +20,7 @@ import os
 import sys
 
 import profile_contract as _pc  # noqa: E402  (offering_title: honest title while the name is TBD)
+import class_support  # noqa: E402  (AUD-F65: the one class-support state)
 
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
@@ -100,8 +101,9 @@ def render(profile):
 def main():
     profile = load(PROFILE)
     cls = (profile.get("certification_class") or "b").lower()
-    if cls == "d":
-        print("Class D is FedRAMP pending; no SCG is generated.")
+    _unsupported = class_support.unsupported_class_message(cls, 'SCG generation')
+    if _unsupported:
+        print(_unsupported)
         return 1
     os.makedirs(os.path.dirname(OUT_MD), exist_ok=True)
     with open(OUT_MD, "w", encoding="utf-8", newline="\n") as f:
