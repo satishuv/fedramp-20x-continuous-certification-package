@@ -412,6 +412,7 @@ TEST_SUITE = [
     "validation/scripts/test_submission_readiness.py",
     "validation/scripts/test_assessor_attack.py",
     "validation/scripts/test_cpo_semantics_adversarial.py",
+    "validation/scripts/test_third_party_names.py",
 ]
 
 REQUIRED_MODULES = [

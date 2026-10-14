@@ -6,7 +6,32 @@ One project-specific convention: the pinned FedRAMP dataset version is recorded 
 
 ## Unreleased
 
-Pinned dataset: `2026.10.08.01` (unchanged)
+Pinned dataset: `2026.10.13.01` (adopted 2026-10-14 in #223: 46 KSIs unchanged
+in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
+added or removed, 0 force changes; the AWS service-KSI map was re-verified by
+diff against the previous dataset and its pin advanced)
+
+### Third-party names: notice and CI guard (MCE-11, MCE-15)
+
+`THIRD_PARTY_NOTICE.md` records every other organization's product name the
+repository uses, its owner, and the one reason it appears: to identify an
+export format an optional offline adapter reads. It states what the repository
+does not do with those names (no evaluation, no compliance claims, no vendor
+text or marks, no vendor clients, no real identifiers) and, like the LICENSE
+and README, is subject to confirmation by AWS legal. The README links it.
+
+`validation/scripts/test_third_party_names.py` joins the validate suite and
+makes the mechanical parts of that policy a merge gate: a vendor watchlist name
+that is not registered in the notice fails (G1); a sentence or code line that
+names a registered third party and uses comparative, evaluative or endorsing
+language fails, naming file, line and term (G2); an image file whose name
+carries a vendor token fails (G3). Prose is split into sentences with table
+rows as their own units, so unrelated rows are never fused. The guard runs a
+21-shape self-test on every invocation before scanning, so a weakened lexicon
+or parser fails the gate itself. Baseline on this commit: 0 findings across
+357 tracked files. Existing CrowdStrike Falcon and Wiz mentions are registered;
+the planned Google Cloud, Microsoft Azure, Oracle Cloud Infrastructure and
+OpenSCAP adapter sources are pre-registered so their stories can proceed.
 
 An external audit of main `80db0a6` (2026-10-12) rated the Class A path
 NO-GO: the readiness contract imposed requirements FedRAMP does not impose on
