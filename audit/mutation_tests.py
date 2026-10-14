@@ -488,6 +488,11 @@ MUTATIONS = [
      '    if now <= hard_expiry:\n        return "stale"\n    return "expired"',
      '    if now <= hard_expiry:\n        return "stale"\n    return "stale"  # MUTATION evidence never expires',
      "validation/scripts/test_provenance_mutations.py"),
+    ("MUT-F65",
+     "validation/scripts/class_support.py",
+     'SUPPORTED_CLASSES = ("a", "b", "c")\n',
+     'SUPPORTED_CLASSES = ("a", "b", "c", "d")  # MUTATION Class D treated as supported\n',
+     "validation/scripts/test_class_support.py"),
 ]
 
 

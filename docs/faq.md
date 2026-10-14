@@ -46,6 +46,8 @@ Three reasons. Builds stay reproducible, so a reviewer can regenerate your packa
 
 Readiness register only, at `profiles/class-d-future/readiness-register.json`: 157 rules resolved against the class D variants already in the dataset, plus a delta against Class C. FedRAMP lists the 20x Program path for Class D as coming in 2027 with specifics set during the Phase 4 Pilot. The register is a planning aid and claims nothing.
 
+Everywhere else, Class D is one explicit state. `validation/scripts/class_support.py` is the single interpretation of a certification class: `a`, `b`, `c` are supported; `d` is future; anything else is invalid and is never read as pending D. Every entry point (build, validate, preflight, scan, the package generators, the release manifest) stops on the same one-line message, and the generic rule and KSI scope resolvers raise instead of returning a plausible answer for a class the package does not support. The dataset carrying some Class D values (such as four automated methods per indicator) is not support for Class D.
+
 ## Is Class D the same as FedRAMP High?
 
 People say so, and it may end up that way, but no rule in CR26 states it. `FRD-CCL` only describes assurance "increasing from minimal assurance at Class A to significant assurance at Class D." This framework does not encode the mapping and you should not put it in your record.

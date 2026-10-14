@@ -35,6 +35,7 @@ if BASE not in sys.path:
     sys.path.insert(0, BASE)
 from sdr import submitted_ksi_ids, _utc_today  # noqa: E402
 import profile_contract as _pc  # noqa: E402  (offering_title: honest title while the name is TBD)
+import class_support  # noqa: E402  (AUD-F65: the one class-support state)
 
 TBD = "TBD: Information has not been provided."
 
@@ -848,9 +849,9 @@ def render_human(profile, rules, ksis, records, cls, metric_history=None):
 def main():
     profile = load(PROFILE)
     cls = (os.environ.get("SDR_BUILD_CLASS") or profile["certification_class"]).lower()
-    if cls not in ("a", "b", "c"):
-        print(f"Class {cls.upper()} SDR generation is not supported: "
-              "Class D is FedRAMP pending (Phase 4 pilot).")
+    _unsupported = class_support.unsupported_class_message(cls, 'SDR generation')
+    if _unsupported:
+        print(_unsupported)
         return 1
     class_profile = load(os.path.join(BASE, "profiles", f"class-{cls}", "profile.json"))
     rules = class_profile["rules"]

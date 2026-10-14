@@ -30,6 +30,7 @@ import sys
 
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import class_support  # noqa: E402  (AUD-F65: the one class-support state)
 import build_profiles as bp  # noqa: E402
 
 OFFERING = os.path.join(BASE, "profiles", "common", "offering-profile.json")
@@ -194,8 +195,9 @@ def build(cls):
 
 def main():
     cls = (load(OFFERING).get("certification_class") or "b").lower()
-    if cls == "d":
-        print("Class D is FedRAMP pending; no applicability decisions generated.")
+    _unsupported = class_support.unsupported_class_message(cls, 'applicability decisions generation')
+    if _unsupported:
+        print(_unsupported)
         return 1
     result = build(cls)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)

@@ -30,6 +30,7 @@ import sys
 import zipfile
 
 import profile_contract as _pc  # noqa: E402  (offering_title: honest title while the name is TBD)
+import class_support  # noqa: E402  (AUD-F65: the one class-support state)
 try:
     from docx import Document
     from docx.shared import Pt, RGBColor
@@ -100,8 +101,9 @@ def label_para(doc, label, text, italic=False):
 def main():
     profile = load("profiles", "common", "offering-profile.json")
     cls = (os.environ.get("SDR_BUILD_CLASS") or profile["certification_class"]).lower()
-    if cls not in ("a", "b", "c"):
-        print("Class D is FedRAMP pending; no authoring document generated.")
+    _unsupported = class_support.unsupported_class_message(cls, 'authoring document generation')
+    if _unsupported:
+        print(_unsupported)
         return 1
     class_profile = load("profiles", f"class-{cls}", "profile.json")
     rules = class_profile["rules"]

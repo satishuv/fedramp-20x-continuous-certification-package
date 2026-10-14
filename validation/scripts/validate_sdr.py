@@ -35,6 +35,8 @@ from verification_methods import count_automated_methods
 from unreviewed_text import is_unreviewed
 
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import class_support  # noqa: E402  (AUD-F65: the one class-support state)
 # Shared Class B KSI-scope resolver (single source of truth). sdr.py guards
 # execution under __main__, so importing it has no side effects.
 if BASE not in sys.path:
@@ -282,12 +284,9 @@ def main():
     # Tests may redirect the reports entirely (SDR_REPORTS_DIR) so a test-driven
     # run never rewrites the committed canonical reports.
     reports_dir = os.environ.get("SDR_REPORTS_DIR") or reports_dir
-    if cls == "d":
-        # Match build_sdr.py and build_docx.py: Class D is FedRAMP pending
-        # (20x Program path coming in 2027, specifics set during the Phase 4
-        # Pilot), so no SDR exists to validate.
-        print("Class D is FedRAMP pending; no SDR is generated or validated. "
-              "See profiles/class-d-future/readiness-register.json.")
+    _unsupported = class_support.unsupported_class_message(cls, 'SDR validation')
+    if _unsupported:
+        print(_unsupported)
         return 1
     sdr = load(os.path.join(BASE, "sdr", "json", f"sdr-class-{cls}.json"))
     class_profile = load(os.path.join(BASE, "profiles", f"class-{cls}", "profile.json"))

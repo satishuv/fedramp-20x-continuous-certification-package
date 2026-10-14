@@ -34,6 +34,7 @@ BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 sys.path.insert(0, os.path.join(BASE, "validation", "scripts"))
 from fedramp_time import add_calendar_months  # noqa: E402
 import profile_contract as _pc  # noqa: E402  (cpo_uri: one resolver shared with the validator)
+import class_support  # noqa: E402  (AUD-F65: the one class-support state)
 PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 OUT_DIR = os.path.join(BASE, "package", "events")
 
@@ -148,8 +149,9 @@ def scn_markdown(scn):
 def main():
     profile = load(PROFILE)
     cls = (profile.get("certification_class") or "b").lower()
-    if cls == "d":
-        print("Class D is FedRAMP pending; no event artifacts are generated.")
+    _unsupported = class_support.unsupported_class_message(cls, 'event artifact generation')
+    if _unsupported:
+        print(_unsupported)
         return 1
     artifacts = build_all(profile)
     for fn, doc in artifacts.items():

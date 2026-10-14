@@ -21,6 +21,8 @@ import os
 import sys
 
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import class_support  # noqa: E402  (AUD-F65: the one class-support state)
 OFFERING = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 GRAPH = os.path.join(BASE, "traceability", "assurance-graph.json")
 
@@ -37,8 +39,9 @@ def load(path):
 
 def main():
     cls = (load(OFFERING).get("certification_class") or "b").lower()
-    if cls == "d":
-        print("Class D is FedRAMP pending; no assurance graph to validate.")
+    _unsupported = class_support.unsupported_class_message(cls, 'assurance graph validation')
+    if _unsupported:
+        print(_unsupported)
         return 1
     if not os.path.exists(GRAPH):
         print(f"FAIL: assurance graph missing at {os.path.relpath(GRAPH, BASE)} "

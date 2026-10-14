@@ -33,6 +33,7 @@ BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 sys.path.insert(0, os.path.join(BASE, "validation", "scripts"))
 from fedramp_time import add_calendar_months  # noqa: E402
 import profile_contract as _pc  # noqa: E402  (one place per fact; CDS-CSO-PUB derivation)
+import class_support  # noqa: E402  (AUD-F65: the one class-support state)
 PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 OUT_JSON = os.path.join(BASE, "package", "cpo", "cpo.json")
 OUT_MD = os.path.join(BASE, "package", "cpo", "cpo.md")
@@ -391,8 +392,9 @@ def render_md(profile, doc):
 def main():
     profile = load(PROFILE)
     cls = (profile.get("certification_class") or "b").lower()
-    if cls == "d":
-        print("Class D is FedRAMP pending; no CPO is generated.")
+    _unsupported = class_support.unsupported_class_message(cls, 'CPO generation')
+    if _unsupported:
+        print(_unsupported)
         return 1
     doc = build_cpo(profile)
     dump_json(doc, OUT_JSON)
