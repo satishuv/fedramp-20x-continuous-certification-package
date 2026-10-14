@@ -1,0 +1,25 @@
+{
+  "schema": "fedramp-adapter-mapping/v1",
+  "name": "example-posture-scanner",
+  "service": "example-posture",
+  "version": "1.0.0",
+  "source_type": "posture-findings",
+  "evidence_type": "Report",
+  "freshness_policy_days": 1,
+  "export_format": "jsonl",
+  "fields": {
+    "check": "finding.type",
+    "status": "finding.state",
+    "observed_at": "finding.event_time",
+    "location": "resource.location",
+    "detail": "finding.title",
+    "scope": {"path": "resource.project", "kind": "project"}
+  },
+  "status_normalization": {
+    "ACTIVE": "FAIL",
+    "INACTIVE": "PASS",
+    "MUTED": "UNKNOWN"
+  },
+  "ksi_targets": ["KSI-MLA-EVC", "KSI-MLA-OSM"],
+  "note": "Fictional example source for tests and the quickstart. Every value is invented; no real product, project or organization is described."
+}

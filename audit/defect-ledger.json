@@ -925,6 +925,32 @@
       "mutation": "MUT-F69: the raw-scope refusal narrowed back to the account field only; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F70",
+      "severity": "High",
+      "requirement": "SDR-CSX-KSI (evidence outcome honesty: an evidence status the package layer counts must be what the source said, never a default) and FRC-CSX-VVK (automated methods bound to telemetry). MCE-02 AC3 of the multi-cloud evidence epic: a declarative adapter's status normalization must fail closed.",
+      "component": "automation/collectors/mapping_adapter.py (normalize_status, UNMAPPED_STATUS); automation/collectors/adapter-mapping.schema.json (status_normalization enum PASS/FAIL/UNKNOWN)",
+      "description": "Invariant introduced with MCE-02 and recorded here so the mutation runner and the rule-test map carry it. A mapping-driven adapter normalizes a source's own status vocabulary to PASS / FAIL / UNKNOWN through a table the provider writes. A source value absent from the table is the exact case a hand-written adapter gets wrong silently (a new vendor state appears after an upgrade and is read as clean). The adapter emits UNKNOWN for any unmapped value, including a source that literally says PASS, and keeps the raw source state in detail so a reader sees what the source said.",
+      "root_cause": "New capability; the default for an unmapped value is a design decision that only a killed mutation keeps honest.",
+      "fix_commit": "this PR -- normalize_status matches exactly, then case-insensitively, then returns UNMAPPED_STATUS = UNKNOWN; the schema restricts normalization targets to PASS, FAIL, UNKNOWN; the fixture export carries an unmapped state and the golden facts pin it as UNKNOWN",
+      "regression_test": "automation/collectors/test_mapping_adapter.py (unmapped, empty, None and literal PASS values normalize to UNKNOWN; mapped values normalize; raw state in detail; every yielded status in the normalized vocabulary; golden facts byte-identical)",
+      "mutation": "MUT-F70: UNMAPPED_STATUS becomes PASS; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F71",
+      "severity": "Medium",
+      "requirement": "SDR-CSX-KSI evidence completeness: the absence of findings is not evidence of a clean posture unless a collection actually ran. MCE-02 AC4.",
+      "component": "automation/collectors/mapping_adapter.py (MappingAdapter.collect, collection_outcome, health); automation/collectors/apply_third_party_evidence.py (not-run message, nothing attached)",
+      "description": "Invariant introduced with MCE-02 and recorded here so the mutation runner and the rule-test map carry it. An export with zero records (a failed export job, a wrong filter, an empty tenant) must not be read as 'no findings, all clean'. The adapter yields nothing and reports a collection outcome of not-run with the reason in health(); the apply driver prints it and attaches nothing.",
+      "root_cause": "New capability; an empty input is the one shape every pipeline is tempted to treat as success.",
+      "fix_commit": "this PR -- MappingAdapter.collect sets status not-run and last_error 'export contained no records' when the parsed export is empty and yields no facts; a later non-empty collection flips the outcome to collected and a later empty one flips it back; apply_third_party_evidence reports the not-run outcome and leaves the record store untouched",
+      "regression_test": "automation/collectors/test_mapping_adapter.py (empty jsonl, blank-line jsonl, header-only csv and empty json array all yield no facts and report not-run with the reason; a real collection flips to collected; driver end to end: empty export attaches nothing and exits 0)",
+      "mutation": "MUT-F71: an empty export is reported as collected; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

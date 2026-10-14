@@ -11,6 +11,34 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### Declarative export adapter, offline, mapping-driven (MCE-02; AUD-F70, AUD-F71)
+
+A provider adds an evidence source by writing one JSON file against
+`automation/collectors/adapter-mapping.schema.json`, not Python.
+`automation/collectors/mapping_adapter.py` builds an `EvidenceAdapter` from
+it: where in a customer-produced export (JSON lines, CSV, or a JSON document
+with `records_path`) the check id, status, observation time, location, detail
+and raw scope identifier live; how the source's status words normalize to
+`PASS` / `FAIL` / `UNKNOWN`; which KSIs the facts support; which official SDR
+`evidenceType` they become. Offline by construction (it reads the export text;
+a test fails if a socket is opened). Facts meet the MCE-01 contract or the
+batch is refused; a record with no observation time is refused, never dated.
+Unmapped source states normalize to `UNKNOWN`, never `PASS`, with the raw
+state kept in `detail` (`AUD-F70`, High, `MUT-F70` killed). An empty export
+yields nothing and reports a collection outcome of `not-run` (`AUD-F71`,
+`MUT-F71` killed). A mapping naming a KSI id absent from the pinned KSI
+profile refuses to register, naming the id. Non-slug check ids become
+deterministic, collision-free slugs (a digest of the original appended).
+`apply_third_party_evidence.py` accepts `mapping_path` beside `export_path`
+in `evidence_sources`, requires the key to equal the mapping's `name`, reads
+`SDR_EVIDENCE_SCOPE_KEY` for raw scope identifiers, and attaches nothing for a
+not-run collection. `evidence_wiring.register_service_evidence_type` lets a
+mapping declare its service's evidenceType once; two adapters may not
+disagree about one service. Fictional example mapping, JSON lines and CSV
+exports and golden facts in `automation/collectors/fixtures/mapping/`.
+Regression: `automation/collectors/test_mapping_adapter.py` (in the validate
+suite), including the driver end to end in a temp copy.
+
 ### Neutral evidence fact contract (MCE-01; AUD-F68, AUD-F69)
 
 `automation/collectors/fact-contract.schema.json` publishes the one shape every

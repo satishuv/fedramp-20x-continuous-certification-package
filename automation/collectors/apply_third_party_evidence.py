@@ -17,6 +17,15 @@ not an error, so a fresh clone with the flag on but no export still builds.
 
 Run before build_sdr.py so the attached evidence flows into the SDR. Offline:
 reads only local files, no network, no credentials.
+
+A source may also be MAPPING-DRIVEN (MCE-02): its evidence_sources entry
+carries `mapping_path` (an adapter-mapping.schema.json file) beside
+`export_path`; the adapter is built from the mapping at run time, so adding a
+source is a JSON file, not Python. The entry's key must equal the mapping's
+`name`. An export with no records is reported as a collection outcome of
+not-run and attaches nothing. Set SDR_EVIDENCE_SCOPE_KEY when an export carries
+raw scope identifiers (account, tenant, subscription, compartment, project,
+organization); without it such facts are refused, never exported raw.
 """
 
 import json
@@ -26,7 +35,8 @@ import sys
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import evidence_wiring as ew  # noqa: E402
-import thirdparty_adapters  # noqa: E402  (registers the adapters)
+import mapping_adapter as ma  # noqa: E402
+import thirdparty_adapters  # noqa: E402,F401  (registers the adapters)
 
 PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 RECORDS = os.path.join(BASE, "sdr", "records", "records-store.json")
@@ -116,9 +126,25 @@ def main():
         print("Record store not found; run build_sdr.py once first.")
         return 1
     records = load(RECORDS)
+    scope_key = os.environ.get("SDR_EVIDENCE_SCOPE_KEY") or None
     total_attached = 0
     for name, cfg in enabled:
-        adapter = ew.get_adapter(name)
+        # Mapping-driven source (MCE-02): a mapping file declares the adapter;
+        # registration is refused, naming the problem, when the mapping or its
+        # KSI targets are wrong.
+        mapping_rel = cfg.get("mapping_path")
+        if mapping_rel:
+            try:
+                adapter = ma.register_mapping_adapter(ma.load_mapping(os.path.join(BASE, mapping_rel)))
+            except (ma.MappingError, ew.EvidenceExportError, OSError, ValueError) as e:
+                print(f"'{name}': mapping refused, record store untouched. {e}")
+                return 1
+            if adapter.name != name:
+                print(f"'{name}': the mapping at {mapping_rel} declares name {adapter.name!r}; "
+                      "the evidence_sources key must match. Record store untouched.")
+                return 1
+        else:
+            adapter = ew.get_adapter(name)
         if adapter is None:
             print(f"WARNING: enabled source '{name}' has no registered adapter; skipping.")
             continue
@@ -128,14 +154,22 @@ def main():
             print(f"'{name}' enabled but export not found at {export_rel}; skipping. "
                   "Produce the export in your own environment (no API client here).")
             continue
-        raw = load(export_path)
+        if mapping_rel:
+            with open(export_path, encoding="utf-8") as f:
+                raw = f.read()
+        else:
+            raw = load(export_path)
         try:
-            evidence = adapter.to_evidence(raw)
+            evidence = adapter.to_evidence(raw, scope_key=scope_key)
         except ew.EvidenceExportError as e:
             # Fact contract or scope refusal (MCE-01): nothing is written, the
             # offending field is named, and the exit is non-zero.
             print(f"'{name}': refused, record store untouched. {e}")
             return 1
+        if mapping_rel and adapter.collection_outcome() == "not-run":
+            print(f"'{name}': export at {export_rel} contained no records; collection outcome "
+                  "not-run. Nothing attached: an empty export is not a clean posture.")
+            continue
         targets = adapter.ksi_targets()
         attached = 0
         for kid in targets:

@@ -1,0 +1,41 @@
+{
+  "_about": "Golden facts (MCE-02): example-posture-scanner.mapping.json applied to example-posture-scanner.export.jsonl must yield exactly these facts. Fictional values only.",
+  "facts": [
+    {
+      "check": "PUBLIC_BUCKET_ACL",
+      "detail": "source state: ACTIVE. Storage bucket grants public read",
+      "observed_at": "2026-10-01T06:00:00Z",
+      "project": "fictional-project-0001",
+      "region": "us-central1",
+      "service": "example-posture",
+      "status": "FAIL"
+    },
+    {
+      "check": "OPEN_FIREWALL",
+      "detail": "source state: INACTIVE. Firewall rule allowed 0.0.0.0/0 on 22; remediated",
+      "observed_at": "2026-10-01T06:00:00Z",
+      "project": "fictional-project-0001",
+      "region": "us-central1",
+      "service": "example-posture",
+      "status": "PASS"
+    },
+    {
+      "check": "MFA_NOT_ENFORCED",
+      "detail": "source state: needs_review. A state the normalization table does not list",
+      "observed_at": "2026-10-01T06:05:00Z",
+      "project": "fictional-project-0002",
+      "region": "europe-west1",
+      "service": "example-posture",
+      "status": "UNKNOWN"
+    },
+    {
+      "check": "policies-custom-rule-7-draft-4e082b91",
+      "detail": "source state: muted. Check id that is not slug-safe",
+      "observed_at": "2026-10-01T06:10:00Z",
+      "project": "fictional-project-0002",
+      "region": "global",
+      "service": "example-posture",
+      "status": "UNKNOWN"
+    }
+  ]
+}

@@ -402,6 +402,7 @@ TEST_SUITE = [
     "automation/collectors/test_evidence_wiring.py",
     "automation/collectors/test_thirdparty_adapters.py",
     "automation/collectors/test_fact_contract.py",
+    "automation/collectors/test_mapping_adapter.py",
     "automation/importers/test_import_findings.py",
     "automation/importers/test_import_oscal_ssp.py",
     "automation/importers/test_import_landing_zone.py",
