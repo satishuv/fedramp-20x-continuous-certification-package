@@ -517,6 +517,21 @@ MUTATIONS = [
      '    raw_ids = [(k, fact[k]) for k in raw_scope_fields()\n',
      '    raw_ids = [(k, fact[k]) for k in ("account",)  # MUTATION only AWS accounts are scopes\n',
      "automation/collectors/test_fact_contract.py"),
+    # MCE-02 (AUD-F70/F71): the mapping-driven adapter's two fail-closed
+    # invariants. F70 makes an unmapped source status default to PASS; F71
+    # reports an empty export as a completed collection.
+    ("MUT-F70",
+     "automation/collectors/mapping_adapter.py",
+     'UNMAPPED_STATUS = "UNKNOWN"\n',
+     'UNMAPPED_STATUS = "PASS"  # MUTATION unmapped source states read as passing\n',
+     "automation/collectors/test_mapping_adapter.py"),
+    ("MUT-F71",
+     "automation/collectors/mapping_adapter.py",
+     '            self._last.update({"status": "not-run",\n'
+     '                               "last_error": "export contained no records"})\n',
+     '            self._last.update({"status": "collected",  # MUTATION empty export counts as collected\n'
+     '                               "last_error": None})\n',
+     "automation/collectors/test_mapping_adapter.py"),
 ]
 
 

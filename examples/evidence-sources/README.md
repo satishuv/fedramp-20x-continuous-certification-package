@@ -71,6 +71,82 @@ object, a pointer or a hash. The package layer learns nothing about the
 platform from the fact shape; that is what lets one SDR pipeline accept
 evidence from any source.
 
+## Adding a source with a mapping file, not Python
+
+A provider on any platform adds an evidence source by writing one JSON file
+against `automation/collectors/adapter-mapping.schema.json`. It names where in
+the customer-produced export the check id, the source's status, the
+observation time and the location live, how the source's status words
+normalize to `PASS`, `FAIL` or `UNKNOWN`, and which KSIs the facts support:
+
+```json
+{
+  "schema": "fedramp-adapter-mapping/v1",
+  "name": "example-posture-scanner",
+  "service": "example-posture",
+  "source_type": "posture-findings",
+  "evidence_type": "Report",
+  "export_format": "jsonl",
+  "fields": {
+    "check": "finding.type",
+    "status": "finding.state",
+    "observed_at": "finding.event_time",
+    "location": "resource.location",
+    "detail": "finding.title",
+    "scope": {"path": "resource.project", "kind": "project"}
+  },
+  "status_normalization": {"ACTIVE": "FAIL", "INACTIVE": "PASS", "MUTED": "UNKNOWN"},
+  "ksi_targets": ["KSI-MLA-EVC", "KSI-MLA-OSM"]
+}
+```
+
+Exports may be JSON lines, CSV (header row; paths are column names) or a JSON
+document (an array, or an object with `records_path`). Then, in the offering
+profile, declare the source with both paths; the key must equal the mapping's
+`name`:
+
+```json
+"evidence_sources": {
+  "example-posture-scanner": {
+    "enabled": true,
+    "mapping_path": "automation/collectors/fixtures/mapping/example-posture-scanner.mapping.json",
+    "export_path": "automation/facts/posture-export.jsonl"
+  }
+}
+```
+
+and run the same driver. What the adapter guarantees, each with a regression
+test and a killed mutation:
+
+- Offline by construction. It reads the export file; there is no client and no
+  credential. A test fails if a socket is opened.
+- Every fact meets the fact contract above, or the batch is refused naming the
+  field. A record with no observation time is refused, never given a
+  timestamp.
+- A source status with no entry in the normalization table becomes `UNKNOWN`,
+  never `PASS`, and the source's own state is kept in `detail`.
+- An export with no records yields nothing and reports a collection outcome
+  of `not-run`; nothing is attached, because an empty export is not a clean
+  posture.
+- A mapping naming a KSI id that is not in the pinned KSI profile refuses to
+  register, naming the id.
+- A record's raw scope identifier (`account`, `tenant`, `subscription`,
+  `compartment`, `project`, `organization`) rides on the fact under the kind
+  the mapping declares, so it is refused without `SDR_EVIDENCE_SCOPE_KEY` and
+  replaced by an opaque scope with it. It never enters the package.
+
+Dry run without touching the record store:
+
+```bash
+python automation/collectors/mapping_adapter.py MAPPING.json EXPORT
+```
+
+The example mapping and its two exports (JSON lines and CSV, same records)
+live in `automation/collectors/fixtures/mapping/`; every value is fictional.
+A source owned by another organization also records `documentation` (the
+owner's public page for the export format and the date it was read) in the
+mapping, per `THIRD_PARTY_NOTICE.md`.
+
 ## What each maps to (real CR26 KSI ids, verified against the dataset)
 
 | Source | Signal | KSIs it supports |

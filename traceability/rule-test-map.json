@@ -412,6 +412,16 @@
    "severity": "High",
    "component": "automation/collectors/evidence_wiring.py (scope_id kind, fact_to_evidence raw-scope refusal, projected-fact stripping); automation/collectors/fact-contract.schema.json (x-rawScopeFields, x-rawScopeRule)"
   },
+  "ledger.AUD-F70": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/collectors/mapping_adapter.py (normalize_status, UNMAPPED_STATUS); automation/collectors/adapter-mapping.schema.json (status_normalization enum PASS/FAIL/UNKNOWN)"
+  },
+  "ledger.AUD-F71": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "automation/collectors/mapping_adapter.py (MappingAdapter.collect, collection_outcome, health); automation/collectors/apply_third_party_evidence.py (not-run message, nothing attached)"
+  },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
    "severity": "medium",
@@ -1547,6 +1557,21 @@
      "in_test_suite": true
     },
     {
+     "gate_id": "ledger.AUD-F70",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/collectors/test_mapping_adapter.py"
+     ],
+     "mutations": [
+      "MUT-F70"
+     ],
+     "mutated_files": [
+      "automation/collectors/mapping_adapter.py"
+     ],
+     "in_test_suite": true
+    },
+    {
      "gate_id": "scan.ksi_automation_verified",
      "mode": "readiness-scan",
      "classes": [
@@ -2354,6 +2379,36 @@
      ],
      "mutated_files": [
       "automation/collectors/evidence_wiring.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F70",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/collectors/test_mapping_adapter.py"
+     ],
+     "mutations": [
+      "MUT-F70"
+     ],
+     "mutated_files": [
+      "automation/collectors/mapping_adapter.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F71",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "automation/collectors/test_mapping_adapter.py"
+     ],
+     "mutations": [
+      "MUT-F71"
+     ],
+     "mutated_files": [
+      "automation/collectors/mapping_adapter.py"
      ],
      "in_test_suite": true
     },

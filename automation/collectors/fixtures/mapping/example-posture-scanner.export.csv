@@ -1,0 +1,5 @@
+finding_type,finding_state,event_time,title,project,location
+PUBLIC_BUCKET_ACL,ACTIVE,2026-10-01T06:00:00Z,Storage bucket grants public read,fictional-project-0001,us-central1
+OPEN_FIREWALL,INACTIVE,2026-10-01T06:00:00Z,Firewall rule allowed 0.0.0.0/0 on 22; remediated,fictional-project-0001,us-central1
+MFA_NOT_ENFORCED,needs_review,2026-10-01T06:05:00Z,A state the normalization table does not list,fictional-project-0002,europe-west1
+"policies/custom rule #7 (draft)",muted,2026-10-01T06:10:00Z,Check id that is not slug-safe,fictional-project-0002,

@@ -1,0 +1,4 @@
+{"finding": {"type": "PUBLIC_BUCKET_ACL", "state": "ACTIVE", "event_time": "2026-10-01T06:00:00Z", "title": "Storage bucket grants public read"}, "resource": {"project": "fictional-project-0001", "location": "us-central1"}}
+{"finding": {"type": "OPEN_FIREWALL", "state": "INACTIVE", "event_time": "2026-10-01T06:00:00Z", "title": "Firewall rule allowed 0.0.0.0/0 on 22; remediated"}, "resource": {"project": "fictional-project-0001", "location": "us-central1"}}
+{"finding": {"type": "MFA_NOT_ENFORCED", "state": "needs_review", "event_time": "2026-10-01T06:05:00Z", "title": "A state the normalization table does not list"}, "resource": {"project": "fictional-project-0002", "location": "europe-west1"}}
+{"finding": {"type": "policies/custom rule #7 (draft)", "state": "muted", "event_time": "2026-10-01T06:10:00Z", "title": "Check id that is not slug-safe"}, "resource": {"project": "fictional-project-0002", "location": ""}}

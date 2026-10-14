@@ -308,6 +308,30 @@ _SERVICE_EVIDENCE = {
 
 _DEFAULT_TYPE = "Report"
 
+_EVIDENCE_TYPES = ("Log", "Report", "Screenshot", "Configuration", "Policy",
+                   "Procedure", "Audit Record")
+
+
+def register_service_evidence_type(service, evidence_type):
+    """Declare which official SDR evidenceType facts from `service` become
+    (mapping-driven adapters declare it in their mapping file, MCE-02). The
+    value must be one of the official enum values; the service must be a slug.
+    Re-registering the same pair is a no-op; a different type for a registered
+    service is refused, so two adapters cannot disagree about one source."""
+    service = _require_slug(service, "service")
+    if evidence_type not in _EVIDENCE_TYPES:
+        raise EvidenceExportError(
+            f"evidence_type {evidence_type!r} for service {service!r} is not an official "
+            f"SDR evidenceType (one of {', '.join(_EVIDENCE_TYPES)})")
+    current = _SERVICE_EVIDENCE.get(service)
+    if current is not None and current[0] != evidence_type:
+        raise EvidenceExportError(
+            f"service {service!r} is already registered as evidenceType {current[0]!r}; "
+            f"refusing to re-register it as {evidence_type!r}")
+    _SERVICE_EVIDENCE[service] = (evidence_type, service)
+    return _SERVICE_EVIDENCE[service]
+
+
 # Statuses that indicate the read itself failed; these do not become evidence
 # (a failed read is not evidence of anything about the control).
 _ERROR_PREFIX = "ERROR"

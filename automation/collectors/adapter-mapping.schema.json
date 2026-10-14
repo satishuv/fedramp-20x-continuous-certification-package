@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/satishuv/fedramp-20x-continuous-certification-package/automation/collectors/adapter-mapping.schema.json",
+  "title": "Declarative evidence adapter mapping",
+  "description": "A provider adds an evidence source by writing this file, not Python. It names where in a customer-produced export (JSON lines, CSV, or a JSON document) the check id, the source's status, the observation time and the location live; how the source's status vocabulary normalizes to PASS / FAIL / UNKNOWN; and which KSIs the source's facts support. The adapter built from it is offline by construction (it reads a file the customer already exported), yields facts that meet fact-contract.schema.json, and never decides a compliance status. Loaded and enforced by automation/collectors/mapping_adapter.py.",
+  "type": "object",
+  "required": ["schema", "name", "service", "export_format", "fields", "status_normalization", "ksi_targets"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "fedramp-adapter-mapping/v1"},
+    "name": {
+      "description": "Adapter registry name; the offering profile's evidence_sources key.",
+      "$ref": "#/$defs/slug"
+    },
+    "service": {
+      "description": "Fact `service` slug for every fact this adapter yields; the source the AUD-F62 registry binds to KSIs.",
+      "$ref": "#/$defs/slug"
+    },
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$", "default": "1.0.0"},
+    "source_type": {
+      "description": "Kind of source, for describe(): e.g. posture-findings, policy-compliance, scan-results.",
+      "type": "string", "minLength": 1, "maxLength": 64
+    },
+    "evidence_type": {
+      "description": "SDR evidenceType every fact from this source becomes (official enum).",
+      "enum": ["Log", "Report", "Screenshot", "Configuration", "Policy", "Procedure", "Audit Record"],
+      "default": "Report"
+    },
+    "freshness_policy_days": {"type": "integer", "minimum": 1, "default": 1},
+    "export_format": {
+      "description": "jsonl: one JSON object per line. csv: header row then one record per row. json: a JSON array, or an object whose records_path names the array.",
+      "enum": ["jsonl", "csv", "json"]
+    },
+    "records_path": {
+      "description": "For export_format json when the document is an object: dotted path to the array of records.",
+      "type": "string", "minLength": 1
+    },
+    "fields": {
+      "type": "object",
+      "required": ["check", "status", "observed_at"],
+      "additionalProperties": false,
+      "properties": {
+        "check": {"description": "Path to the check / rule / finding-type identifier.", "$ref": "#/$defs/path"},
+        "status": {"description": "Path to the source's own state or result value.", "$ref": "#/$defs/path"},
+        "observed_at": {"description": "Path to the source's observation time (ISO 8601). Never a constant: an adapter does not invent a timestamp.", "$ref": "#/$defs/path"},
+        "location": {"description": "Path to where the observation was made (region, zone, site). Omitted: 'global'.", "$ref": "#/$defs/path"},
+        "detail": {"description": "Path to a short human summary. Scrubbed and bounded downstream.", "$ref": "#/$defs/path"},
+        "scope": {
+          "description": "Path to the RAW scope identifier the record came from, and which kind it is. The fact carries it under that kind so the fact contract's raw-scope rule applies: refused without a scope key, replaced by an opaque scope with one, never exported raw.",
+          "type": "object",
+          "required": ["path", "kind"],
+          "additionalProperties": false,
+          "properties": {
+            "path": {"$ref": "#/$defs/path"},
+            "kind": {"enum": ["account", "tenant", "subscription", "compartment", "project", "organization"]}
+          }
+        }
+      }
+    },
+    "status_normalization": {
+      "description": "Source status value -> PASS, FAIL or UNKNOWN. Matching is exact, then case-insensitive. A value with no entry becomes UNKNOWN, never PASS.",
+      "type": "object",
+      "additionalProperties": {"enum": ["PASS", "FAIL", "UNKNOWN"]}
+    },
+    "ksi_targets": {
+      "description": "KSI ids this source's facts are evidence toward. Every id must exist in the pinned KSI profile or registration is refused naming it.",
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^KSI-[A-Z]{3}-[A-Z]{3}$"}
+    },
+    "documentation": {
+      "description": "Where the export format is documented by its owner, and when that page was read. Required by the third-party naming constitution for any source owned by another organization.",
+      "type": "object",
+      "required": ["url", "captured"],
+      "additionalProperties": false,
+      "properties": {
+        "url": {"type": "string", "pattern": "^https://"},
+        "captured": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"}
+      }
+    },
+    "note": {"type": "string", "maxLength": 1000}
+  },
+  "$defs": {
+    "slug": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$", "not": {"pattern": "\\.\\."}},
+    "path": {
+      "description": "A column name (CSV) or a dotted path into a record (JSON); list elements by index, e.g. resources.0.name.",
+      "type": "string", "minLength": 1, "maxLength": 200
+    }
+  }
+}
