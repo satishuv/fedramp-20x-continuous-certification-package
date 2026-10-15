@@ -47,5 +47,5 @@
     "url": "https://csrc.nist.gov/schema/xccdf/1.2/xccdf_1.2.xsd",
     "captured": "2026-10-15"
   },
-  "note": "Fictional example mapping for the XCCDF results reader (MCE-07). The results fixture beside it is invented in the com.example namespace; the results file an OpenSCAP scan writes has the same TestResult shape. Which benchmark rules are evidence toward which KSIs is the provider's declaration, made here for illustration only. The scan target reaches a fact only as a raw host scope, replaced by an opaque scope before export."
+  "note": "Fictional example mapping for the XCCDF results reader (MCE-07). The results fixture beside it is invented in the com.example namespace; the results file an OpenSCAP scan writes has the same TestResult shape. Which benchmark rules are evidence toward which KSIs is the provider's declaration, made here for illustration only. The scan target reaches a fact only as a raw host scope, which becomes an opaque scope before export."
 }
