@@ -355,6 +355,35 @@ def test_doctype_and_non_xccdf_documents_are_refused():
         assert refused, (bad[:40], needle)
 
 
+def test_parser_is_never_reached_for_a_doctype_or_oversize_document():
+    """The B314 exemption rests on this: a DOCTYPE (the only place an entity
+    can be declared) and an oversize document are refused BEFORE the stdlib
+    parser is called. Spy on ET.fromstring to prove it is not invoked."""
+    calls = []
+    real = xr.ET.fromstring
+
+    def spy(text, *a, **k):
+        calls.append(len(text))
+        return real(text, *a, **k)
+
+    xr.ET.fromstring = spy
+    try:
+        for bad in ('<?xml version="1.0"?><!DOCTYPE x [<!ENTITY a "b">]><x/>',
+                    "<!doctype html><x/>",
+                    "<x/>" + " " * (xr.MAX_DOCUMENT_BYTES + 1)):
+            refused = False
+            try:
+                xr.parse_document(bad)
+            except xr.XccdfReadError:
+                refused = True
+            assert refused
+        assert calls == [], "the parser was invoked for a refused document"
+        xr.parse_document("<x/>")
+        assert calls == [4]
+    finally:
+        xr.ET.fromstring = real
+
+
 def test_rule_result_without_any_time_is_refused_by_the_contract_never_invented():
     doc = (f'<TestResult xmlns="{XCCDF_12}" id="xccdf_com.example_testresult_t2">'
            f'<rule-result idref="xccdf_com.example_rule_r0"><result>pass</result></rule-result>'

@@ -68,6 +68,9 @@ RECORD_FIELDS = ("rule_id", "result", "time", "target", "benchmark", "profile",
 
 _DOCTYPE_RE = re.compile(r"<!DOCTYPE", re.IGNORECASE)
 _NS_RE = re.compile(r"^\{([^}]*)\}(.*)$")
+# A results file for a benchmark of a few thousand rules is a few megabytes;
+# anything far beyond that is not scan output. Bounded before parsing.
+MAX_DOCUMENT_BYTES = 64 * 1024 * 1024
 
 
 class XccdfReadError(ValueError):
@@ -111,12 +114,20 @@ def parse_document(text):
         text = text.decode("utf-8")
     if not isinstance(text, str):
         raise XccdfReadError("xccdf export must be text")
+    if len(text) > MAX_DOCUMENT_BYTES:
+        raise XccdfReadError(f"xccdf export is {len(text)} characters, above the "
+                             f"{MAX_DOCUMENT_BYTES} bound for scan results; refused")
     if _DOCTYPE_RE.search(text):
         raise XccdfReadError("xccdf export carries a DOCTYPE declaration; refused "
                              "(scanner results never do, and a DOCTYPE enables entity "
                              "expansion attacks)")
     try:
-        return ET.fromstring(text)
+        # Bandit B314 warns about entity-expansion attacks on untrusted XML.
+        # Entities can only be declared in a DTD, and every document carrying a
+        # DOCTYPE was refused above, so no entity declaration reaches the
+        # parser; the size bound caps the remaining input. The test file proves
+        # a DOCTYPE document is refused before this line.
+        return ET.fromstring(text)  # nosec B314 - DOCTYPE refused above, size bounded
     except ET.ParseError as e:
         raise XccdfReadError(f"xccdf export is not well-formed XML: {e}")
 
