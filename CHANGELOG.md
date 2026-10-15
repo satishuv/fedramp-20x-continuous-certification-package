@@ -11,6 +11,48 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### On-premises XCCDF results adapter (MCE-07; AUD-F75, AUD-F76)
+
+A provider with no cloud turns a benchmark scan into KSI-bound facts through
+the mapping-driven adapter: `"export_format": "xccdf"` reads an XCCDF 1.1 or
+1.2 results document or an ARF result data stream (what an OpenSCAP scan
+writes) through the new `automation/collectors/xccdf_reader.py`, one record
+per `rule-result`, with the rule id as the check, the `TestResult` end time as
+the fallback observation time (never invented), DOCTYPE refused, and the
+`TestResult` matched by namespace and local name wherever it sits so one code
+path reads both output forms. The format is grounded in the NIST XCCDF 1.2
+schema and the OpenSCAP user manual, both cited with capture dates in the
+fixture header and the mapping; the fixture is fictional end to end. Building
+it exposed two defects. `AUD-F76` (High): the XCCDF result vocabulary is the
+standard's, not a vendor's, yet the generic mapping path let a provider table
+relabel `notchecked`, `error` or `fixed` (defined by the standard as "had
+failed, but was then fixed", no re-check implied) as `PASS`, or omit `fail`
+so failures read as `UNKNOWN`. Now only `pass` is `PASS` and only `fail` is
+`FAIL`, the other seven values are `UNKNOWN`, a table that relabels or
+misspells a standard value is refused naming the key, and the standard's full
+table applies regardless of what the mapping lists. The same story added an
+explicit `undeclared_checks` policy to the mapping schema (`refuse`, the MCE-02
+default, or `skip`): a benchmark scan reports every rule in the benchmark, and
+under `skip` an unbound rule yields no fact and is counted and named in the
+adapter's health record and by the apply driver, never exported unbound and
+never silent. `AUD-F75` (Medium): the fact contract's raw-scope list had no
+kind for a scan target, so a host-keyed fact would have been exported with
+its hostname silently dropped and every host sharing one pointer (the AUD-F27
+collision) instead of being refused without a scope key. `host` is now a raw
+scope kind in the contract and the mapping schema; `scope_id` derives
+`host:<name>` under the deployment key, so a host never shares a scope with
+an account of equal literal, and the reader never copies the target into a
+record's summary. Regression: `automation/collectors/test_xccdf_adapter.py`
+(18 checks: AC1 one fact per declared rule-result offline, ARF and 1.1 forms
+identical; AC2 every non-pass value UNKNOWN and relabelling refused; AC3 host
+only through the scope path, no host name or address in any evidence object;
+AC4 golden fixture byte for byte with the documentation header; the apply
+driver end to end, attaching each rule to exactly its declared KSIs) and the
+fact-contract test's raw-scope set. Mutations `MUT-F75` (host leaves the
+contract) and `MUT-F76` (relabelled standard values accepted) are killed.
+`THIRD_PARTY_NOTICE.md` updates the OpenSCAP row from a planned adapter to a
+present one; `examples/evidence-sources/README.md` gains the on-premises section.
+
 ### Pluggable signer contract, KMS as one implementation (MCE-08; AUD-F74)
 
 `automation/collectors/signers.py` defines one signer contract

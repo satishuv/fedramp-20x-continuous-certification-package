@@ -437,6 +437,16 @@
    "severity": "Medium",
    "component": "automation/collectors/signers.py (new: Signer contract, KmsSigner, ExternalCommandSigner, SoftwareKeySigner, check_key_reference, sign_entry, signer_administration_findings); sdr.py (package-preflight wiring); profiles/common/offering-profile.json (expected_evidence_signer.signer_kind); examples/sample-offering-class-c/build_class_c_sample.py (declared signer kind; software-key probe)"
   },
+  "ledger.AUD-F75": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "automation/collectors/fact-contract.schema.json (x-rawScopeFields, host property); automation/collectors/adapter-mapping.schema.json (fields.scope.kind); automation/collectors/evidence_wiring.py (scope_id kind, fact_to_evidence raw-scope refusal, unchanged code, new kind)"
+  },
+  "ledger.AUD-F76": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/collectors/xccdf_reader.py (new: XCCDF_RESULT_NORMALIZATION, normalization_disagreements, read_xccdf_results); automation/collectors/mapping_adapter.py (validate_mapping xccdf agreement check, canonical table applied, undeclared_checks policy); automation/collectors/adapter-mapping.schema.json (export_format xccdf, undeclared_checks)"
+  },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
    "severity": "medium",
@@ -1603,6 +1613,21 @@
      "in_test_suite": true
     },
     {
+     "gate_id": "ledger.AUD-F76",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/collectors/test_xccdf_adapter.py"
+     ],
+     "mutations": [
+      "MUT-F76"
+     ],
+     "mutated_files": [
+      "automation/collectors/xccdf_reader.py"
+     ],
+     "in_test_suite": true
+    },
+    {
      "gate_id": "scan.ksi_automation_verified",
      "mode": "readiness-scan",
      "classes": [
@@ -2492,6 +2517,21 @@
      ],
      "mutated_files": [
       "automation/collectors/thirdparty_adapters.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F76",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/collectors/test_xccdf_adapter.py"
+     ],
+     "mutations": [
+      "MUT-F76"
+     ],
+     "mutated_files": [
+      "automation/collectors/xccdf_reader.py"
      ],
      "in_test_suite": true
     },

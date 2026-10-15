@@ -33,7 +33,7 @@
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}"
     },
     "scope": {
-      "description": "OPTIONAL opaque scope identifier (an HMAC-derived scope-... id or a caller-supplied slug alias) that distinguishes one account, tenant, subscription, compartment or project of a deployment from another WITHOUT naming it. Never a raw identifier.",
+      "description": "OPTIONAL opaque scope identifier (an HMAC-derived scope-... id or a caller-supplied slug alias) that distinguishes one account, tenant, subscription, compartment, project or host of a deployment from another WITHOUT naming it. Never a raw identifier.",
       "$ref": "#/$defs/slug",
       "not": {"pattern": "^[0-9]{12}$"}
     },
@@ -46,10 +46,11 @@
     "subscription": {"$ref": "#/$defs/rawScopeIdentifier"},
     "compartment": {"$ref": "#/$defs/rawScopeIdentifier"},
     "project": {"$ref": "#/$defs/rawScopeIdentifier"},
-    "organization": {"$ref": "#/$defs/rawScopeIdentifier"}
+    "organization": {"$ref": "#/$defs/rawScopeIdentifier"},
+    "host": {"$ref": "#/$defs/rawScopeIdentifier"}
   },
   "additionalProperties": true,
-  "x-rawScopeFields": ["account", "tenant", "subscription", "compartment", "project", "organization"],
+  "x-rawScopeFields": ["account", "tenant", "subscription", "compartment", "project", "organization", "host"],
   "x-rawScopeRule": "A fact carrying any x-rawScopeFields value and no `scope` is exported ONLY when the caller supplies a deployment-private scope_key, from which an opaque scope id is derived; otherwise the fact is REFUSED with an explicit error naming the field. The raw value never enters an evidence object, a pointer or a hash input.",
   "$defs": {
     "slug": {
@@ -58,7 +59,7 @@
       "not": {"pattern": "\\.\\."}
     },
     "rawScopeIdentifier": {
-      "description": "A raw platform identifier of the scope an observation came from. Legitimate on an INPUT fact; it must be replaced by an opaque scope before export (see x-rawScopeRule).",
+      "description": "A raw platform identifier of the scope an observation came from (a cloud account, tenant, subscription, compartment, project or organization, or the host name of an on-premises scan target). Legitimate on an INPUT fact; it must be replaced by an opaque scope before export (see x-rawScopeRule).",
       "type": ["string", "integer"]
     }
   }

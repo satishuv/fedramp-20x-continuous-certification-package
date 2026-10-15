@@ -63,7 +63,8 @@ and enforced before any fact is converted:
 | `run_id` | no | slug-safe collection-run id |
 
 A fact may carry the raw identifier of the scope it came from (`account`,
-`tenant`, `subscription`, `compartment`, `project`, `organization`) on input.
+`tenant`, `subscription`, `compartment`, `project`, `organization`, or `host`
+for an on-premises scan target) on input.
 It is exported only when a deployment-private scope key is supplied (an opaque
 scope id is derived from it) or an opaque `scope` alias is set; otherwise the
 fact is refused with the field named. The raw value never enters an evidence
@@ -107,8 +108,9 @@ export; each one is bound to the `ksi_targets` (or to its own `check_bindings`
 list) in the source registry the provenance gate reads. Every binding is
 declared; nothing is inferred from a name.
 
-Exports may be JSON lines, CSV (header row; paths are column names) or a JSON
-document (an array, or an object with `records_path`). Then, in the offering
+Exports may be JSON lines, CSV (header row; paths are column names), a JSON
+document (an array, or an object with `records_path`), or an XCCDF results
+document (`"export_format": "xccdf"`, described below). Then, in the offering
 profile, declare the source with both paths; the key must equal the mapping's
 `name`:
 
@@ -139,14 +141,17 @@ test and a killed mutation:
   register, naming the id.
 - Each evidence entry is attached only to the KSIs its `(service, check)` pair
   is declared for, and the provenance gate accepts it only there: an export
-  record whose check is not in `checks` is refused naming it, and a signed
+  record whose check is not in `checks` is refused naming it (or, when the
+  mapping sets `"undeclared_checks": "skip"` for an export whose record set
+  the provider does not control, yields no fact and is counted and named in
+  the adapter's health record), and a signed
   entry claiming an undeclared check, or a declared check under a KSI it is
   not bound to, blocks under production-assurance and is a readiness finding
   under the development profile.
 - A record's raw scope identifier (`account`, `tenant`, `subscription`,
-  `compartment`, `project`, `organization`) rides on the fact under the kind
-  the mapping declares, so it is refused without `SDR_EVIDENCE_SCOPE_KEY` and
-  replaced by an opaque scope with it. It never enters the package.
+  `compartment`, `project`, `organization`, `host`) rides on the fact under the
+  kind the mapping declares, so it is refused without `SDR_EVIDENCE_SCOPE_KEY`
+  and replaced by an opaque scope with it. It never enters the package.
 
 Dry run without touching the record store:
 
@@ -159,6 +164,70 @@ live in `automation/collectors/fixtures/mapping/`; every value is fictional.
 A source owned by another organization also records `documentation` (the
 owner's public page for the export format and the date it was read) in the
 mapping, per `THIRD_PARTY_NOTICE.md`.
+
+## On-premises scan results (XCCDF or ARF)
+
+A provider with no cloud at all turns a benchmark scan into KSI-bound facts the
+same way: a mapping with `"export_format": "xccdf"`. The reader
+(`automation/collectors/xccdf_reader.py`) accepts an XCCDF 1.1 or 1.2 results
+document or an ARF result data stream, which is what an OpenSCAP scan writes,
+and yields one record per `rule-result` with the fields `rule_id`, `result`,
+`time`, `target`, `benchmark`, `profile`, `severity`, `weight`, `test_result`
+and `summary`. The mapping names them:
+
+```json
+{
+  "schema": "fedramp-adapter-mapping/v1",
+  "name": "example-openscap-xccdf",
+  "service": "openscap",
+  "export_format": "xccdf",
+  "undeclared_checks": "skip",
+  "fields": {
+    "check": "rule_id",
+    "status": "result",
+    "observed_at": "time",
+    "detail": "summary",
+    "scope": {"path": "target", "kind": "host"}
+  },
+  "status_normalization": {"pass": "PASS", "fail": "FAIL", "notchecked": "UNKNOWN", "fixed": "UNKNOWN"},
+  "ksi_targets": ["KSI-MLA-EVC"],
+  "checks": ["xccdf_com.example_rule_audit_logging_enabled"],
+  "check_bindings": {"xccdf_com.example_rule_audit_logging_enabled": ["KSI-MLA-LET", "KSI-MLA-EVC"]},
+  "documentation": {"url": "https://csrc.nist.gov/schema/xccdf/1.2/xccdf_1.2.xsd", "captured": "2026-10-15"}
+}
+```
+
+Three things differ from a vendor export, each with a regression test and a
+killed mutation:
+
+- The result vocabulary is the XCCDF standard's, not the provider's. Only
+  `pass` is `PASS` and only `fail` is `FAIL`; `error`, `unknown`,
+  `notapplicable`, `notchecked`, `notselected`, `informational` and `fixed`
+  (which the standard defines as "had failed, but was then fixed", with no
+  re-check implied) are `UNKNOWN`. A `status_normalization` table that relabels
+  any of these is refused naming the key, and the standard's full table applies
+  even when the mapping lists only some values, so an omitted `fail` is still
+  `FAIL`. The scanner's own result word is kept in `detail`.
+- A benchmark scan reports every rule in the benchmark, so the mapping sets
+  `"undeclared_checks": "skip"`: a rule the provider has not bound to a KSI
+  yields no fact, is counted and named in the adapter's health record, and is
+  printed by the apply driver. Nothing unbound is exported and nothing is
+  silent. Which rules are evidence toward which KSIs is the provider's
+  declaration in `checks` and `check_bindings`.
+- The scan target (the host name the `TestResult` records) rides on the fact
+  only as a raw `host` scope. It never appears in `detail`, conversion without
+  `SDR_EVIDENCE_SCOPE_KEY` is refused naming it, and with the key it becomes an
+  opaque scope in the pointer, so two hosts never share an evidence location
+  and no host name or address enters the package.
+
+A rule-result without its own `time` inherits the `TestResult` end time; a
+document with neither is refused by the fact contract rather than dated by the
+adapter. A document carrying a DOCTYPE is refused (scanner output never has
+one). The fixture `example-openscap-xccdf.results.xml` is fictional end to end
+(the `com.example` namespace, a host under the reserved `.example` domain, a
+documentation-range address) and is shaped from the NIST schema and the
+OpenSCAP user manual cited in its header. Running scans is out of scope: the
+adapter reads the file a scan already wrote.
 
 ## What each maps to (real CR26 KSI ids, verified against the dataset)
 

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Fixture (MCE-07): a FICTIONAL XCCDF 1.2 results document.
+  Shape source: NIST XCCDF 1.2 schema, https://csrc.nist.gov/schema/xccdf/1.2/xccdf_1.2.xsd
+  (captured 2026-10-15): Benchmark root with a TestResult child; TestResult carries
+  benchmark, profile, target, target-address, platform, rule-result and score; each
+  rule-result carries idref, severity, weight, time and a result from the standard's
+  enumeration (pass, fail, error, unknown, notapplicable, notchecked, notselected,
+  informational, fixed). Scanner output form per the OpenSCAP user manual,
+  https://static.open-scap.org/openscap-1.3/oscap_user_manual.html (captured 2026-10-15).
+  Every identifier is invented: the com.example namespace, the host name under the
+  reserved .example domain and the 203.0.113.0/24 documentation address range describe
+  no real system. No vendor content is reproduced.
+-->
+<Benchmark xmlns="http://checklists.nist.gov/xccdf/1.2" id="xccdf_com.example_benchmark_baseline-os" resolved="1" style="SCAP_1.3">
+  <status date="2026-09-01">draft</status>
+  <title>Example baseline for a fictional operating system</title>
+  <description>Fictional benchmark used only to exercise the XCCDF results adapter.</description>
+  <version>1.0.0</version>
+  <Profile id="xccdf_com.example_profile_hardened">
+    <title>Hardened (fictional)</title>
+    <select idref="xccdf_com.example_rule_audit_logging_enabled" selected="true"/>
+    <select idref="xccdf_com.example_rule_password_min_length" selected="true"/>
+    <select idref="xccdf_com.example_rule_file_integrity_tool_installed" selected="true"/>
+    <select idref="xccdf_com.example_rule_unused_services_disabled" selected="true"/>
+    <select idref="xccdf_com.example_rule_legacy_protocol_removed" selected="true"/>
+    <select idref="xccdf_com.example_rule_kernel_module_denylist" selected="true"/>
+    <select idref="xccdf_com.example_rule_installed_package_inventory" selected="true"/>
+    <select idref="xccdf_com.example_rule_login_banner_present" selected="true"/>
+  </Profile>
+  <Rule id="xccdf_com.example_rule_audit_logging_enabled" selected="false" severity="high" weight="10.0">
+    <title>Audit logging service is enabled</title>
+  </Rule>
+  <Rule id="xccdf_com.example_rule_password_min_length" selected="false" severity="medium" weight="5.0">
+    <title>Minimum password length is set</title>
+  </Rule>
+  <Rule id="xccdf_com.example_rule_file_integrity_tool_installed" selected="false" severity="medium" weight="5.0">
+    <title>A file integrity tool is installed</title>
+  </Rule>
+  <Rule id="xccdf_com.example_rule_unused_services_disabled" selected="false" severity="medium" weight="5.0">
+    <title>Unused network services are disabled</title>
+  </Rule>
+  <Rule id="xccdf_com.example_rule_legacy_protocol_removed" selected="false" severity="low" weight="1.0">
+    <title>Legacy remote-access protocol is not installed</title>
+  </Rule>
+  <Rule id="xccdf_com.example_rule_kernel_module_denylist" selected="false" severity="medium" weight="5.0">
+    <title>Unneeded kernel modules are on the denylist</title>
+  </Rule>
+  <Rule id="xccdf_com.example_rule_installed_package_inventory" selected="false" severity="info" weight="1.0">
+    <title>Installed package inventory is collected</title>
+  </Rule>
+  <Rule id="xccdf_com.example_rule_login_banner_present" selected="false" severity="low" weight="1.0">
+    <title>Login banner is present</title>
+  </Rule>
+  <TestResult id="xccdf_com.example_testresult_hardened-20261001" start-time="2026-10-01T02:00:00+00:00" end-time="2026-10-01T02:04:30+00:00" test-system="cpe:/a:example:fictional-scanner:1.0" version="1.0.0">
+    <benchmark href="baseline-os-ds.xml" id="xccdf_com.example_benchmark_baseline-os"/>
+    <title>Fictional hardened-profile scan</title>
+    <identity authenticated="true" privileged="true">scan-service</identity>
+    <profile idref="xccdf_com.example_profile_hardened"/>
+    <target>lab-host-01.example</target>
+    <target-address>203.0.113.10</target-address>
+    <platform idref="cpe:/o:example:fictional_os:1"/>
+    <rule-result idref="xccdf_com.example_rule_audit_logging_enabled" severity="high" weight="10.0" time="2026-10-01T02:01:10+00:00">
+      <result>pass</result>
+    </rule-result>
+    <rule-result idref="xccdf_com.example_rule_password_min_length" severity="medium" weight="5.0" time="2026-10-01T02:01:20+00:00">
+      <result>fail</result>
+    </rule-result>
+    <rule-result idref="xccdf_com.example_rule_file_integrity_tool_installed" severity="medium" weight="5.0" time="2026-10-01T02:01:30+00:00">
+      <result>notchecked</result>
+    </rule-result>
+    <rule-result idref="xccdf_com.example_rule_unused_services_disabled" severity="medium" weight="5.0" time="2026-10-01T02:01:40+00:00">
+      <result>fixed</result>
+    </rule-result>
+    <rule-result idref="xccdf_com.example_rule_legacy_protocol_removed" severity="low" weight="1.0" time="2026-10-01T02:01:50+00:00">
+      <result>notapplicable</result>
+    </rule-result>
+    <rule-result idref="xccdf_com.example_rule_kernel_module_denylist" severity="medium" weight="5.0">
+      <result>error</result>
+      <message severity="error">Fictional checking-engine message: probe did not complete</message>
+    </rule-result>
+    <rule-result idref="xccdf_com.example_rule_installed_package_inventory" severity="info" weight="1.0" time="2026-10-01T02:02:10+00:00">
+      <result>informational</result>
+    </rule-result>
+    <rule-result idref="xccdf_com.example_rule_login_banner_present" severity="low" weight="1.0" time="2026-10-01T02:02:20+00:00">
+      <result>pass</result>
+    </rule-result>
+    <score system="urn:xccdf:scoring:default" maximum="100.000000">62.500000</score>
+  </TestResult>
+</Benchmark>

@@ -73,7 +73,8 @@ def test_ac1_contract_is_committed_valid_json_schema():
     assert ew.required_fact_fields() == tuple(schema["required"])
     assert "scope" in schema["properties"] and "scope" not in schema["required"]
     assert set(ew.raw_scope_fields()) == {"account", "tenant", "subscription",
-                                          "compartment", "project", "organization"}
+                                          "compartment", "project", "organization",
+                                          "host"}
     # Every raw scope field is declared in the schema as an input property.
     for k in ew.raw_scope_fields():
         assert k in schema["properties"], k
