@@ -540,6 +540,16 @@ MUTATIONS = [
      '    checks = ("sensor_coverage", "open_detections", "prevention_policy")\n',
      '    checks = ("sensor_coverage", "prevention_policy")  # MUTATION one check binding removed\n',
      "validation/scripts/test_adapter_source_bindings.py"),
+    # AUD-F73 / MCE-09: the evidence store as attested PROPERTIES. The one
+    # blocker is a production-assurance declaration with neither versioning nor
+    # write-once attested. Mutation: that contradiction never fires, so a
+    # tamper-evident declaration with nothing behind it reaches READY. The
+    # regression's contradiction checks (and the Class C probe) must go RED.
+    ("MUT-F73",
+     "sdr.py",
+     '    if production and attested.get("versioned") is False and attested.get("write_once") is False:\n',
+     '    if False and production and attested.get("versioned") is False and attested.get("write_once") is False:  # MUTATION contradiction disabled\n',
+     "validation/scripts/test_evidence_store_properties.py"),
 ]
 
 

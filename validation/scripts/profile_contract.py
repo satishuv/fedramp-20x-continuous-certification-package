@@ -276,7 +276,7 @@ OPTIONAL_FIELDS = {
     "_selected_optional_rules_note", "selected_optional_ksis",
     "_selected_optional_ksis_note", "evidence_freshness_policy_days",
     "expected_evidence_signer", "telemetry_min_coverage", "mot_max_gap_days",
-    "evidence_store_profile", "_evidence_store_profile_note",
+    "evidence_store_profile", "_evidence_store_profile_note", "evidence_store",
     "metric_history_exception", "cpo_last_updated", "secure_config_guide_machine_uri",
     "application_prerequisites", "sdr_version", "sdr_last_updated", "schema_version",
     "dataset_version",

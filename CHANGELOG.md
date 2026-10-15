@@ -11,6 +11,33 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### Evidence store requirements as properties (MCE-09; AUD-F73)
+
+The evidence store the package expects is now stated as five PROPERTIES with
+one attestation each (`versioned`, `write_once`, `separately_administered`,
+`retention_days`, `access_logging`), no storage product or vendor named:
+`sdr.EVIDENCE_STORE_PROPERTIES` defines them once, the offering profile
+carries an `evidence_store` block (template values TBD; `implementation` is
+optional free text), and `docs/automation.md` states them in their own
+section, with the motivating identifiers verified in the pinned dataset,
+before an "AWS implementation of the store" heading that now holds the S3,
+`provision_store.py` and isolation-stack guidance. Building this exposed
+`AUD-F73` (Medium): `evidence_store_profile: production-assurance` was the
+provider's entire declaration of a tamper-evident store, one word with no
+field behind it, so a provider on another platform had nothing to attest and
+preflight could not tell a declaration from a hollow one.
+`sdr.evidence_store_attestation_findings` reads the block and
+`package-preflight` reports an absent or recorded-false attestation as a
+readiness finding worded as what the package expects, never as a compliance
+determination (the assessor assesses the store); the one blocker is a
+production-assurance declaration over a store attesting neither versioning
+nor write-once. Preflight does not verify the store against a live system.
+The fictional Class C sample attests every property and gains one attack
+probe (production-assurance with both tamper-evidence properties false blocks;
+50 probes). Regression: `validation/scripts/test_evidence_store_properties.py`
+(in the validate suite), red on the pre-change code; `MUT-F73` (contradiction
+disabled) killed.
+
 ### Source registry binding for adapter checks (MCE-03; AUD-F72)
 
 Adapters now bind exactly the `(service, check)` pairs they declare, per KSI
