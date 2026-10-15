@@ -75,9 +75,25 @@ What 20x specifies (verified against the pinned CR26 dataset `2026.09.13.02`):
 
 On a seven-year immutable bucket: 20x does **not** require seven-year retention for the metric history or facts store; the governing figure for that data is one year. A seven-year window is a general federal records-retention or audit-archive practice, not a 20x rule for this data, so treat it as a provider or agency policy choice rather than a 20x requirement.
 
-A sound way to meet the tamper-resistant and in-boundary requirements is an Amazon S3 bucket in the provider's own account with versioning enabled and, where write-once tamper-evidence is wanted, Object Lock (WORM), plus a lifecycle policy set to the retention the applicable rule requires (about a year for the metric history, longer only if a separate records-retention policy applies). This is one implementation of what the rules ask for; the rules name the property, and the provider chooses the mechanism.
+### The evidence store: properties the package expects
 
-`automation/storage/provision_store.py` provisions exactly that store at deploy time: it creates the bucket if absent and **enables bucket versioning** (optionally Object Lock and a lifecycle retention). It is the one deploy-time write step, opt-in, idempotent, and safety-additive — it never suspends versioning, deletes anything, or moves a status. See `automation/storage/DEPLOY.md`.
+The rules name properties, not products. A provider on any platform records what its store does in the offering profile's `evidence_store` block, one attestation per property, and never has to name a vendor (`implementation` is optional free text). The five properties, with the identifier that motivates each:
+
+| Property | Attestation field | What the package expects | Motivated by |
+|---|---|---|---|
+| Versioned | `versioned` (true or false) | Every object version is retained, so an overwrite leaves the prior version readable | AU-09 stored-integrity enhancements; tamper-evidence for `SDR-CSX-KMT` history |
+| Write-once | `write_once` (true or false) | An object, once written, cannot be altered or deleted for the retention period | AU-09; `KSI-MLA-OSM` tamper-resistant logging |
+| Separately administered | `separately_administered` (true or false) | The store is administered by a principal the collectors and the assessed environment cannot act as | AU-10 at the class where the profile requires it; the non-repudiation boundary below |
+| Retention period | `retention_days` (whole days) | Objects are retained at least as long as the applicable rule's window, about a year for the KSI metric history | `SDR-CSX-KMT`, `SCN-CSO-HIS`, `CDS-TRC-ACL`, AU-11 |
+| Access logging | `access_logging` (true or false) | Access to the store is logged to a destination the store's own writers cannot alter | AU-09 (03) and `KSI-MLA-ALA` |
+
+`package-preflight` reads the block (MCE-09, AUD-F73). An absent attestation, or one recorded as `false`, is a readiness finding worded as what the package expects; it is never a determination about the provider's compliance, because the attestation is the provider's statement and the assessor assesses it. One case blocks: under `evidence_store_profile` production-assurance, a store attested as neither versioned nor write-once contradicts the profile's own declaration of a tamper-evident store, so the declaration has nothing behind it. Preflight does not verify the store against a live system; that is the assessor's and the provider's work.
+
+### AWS implementation of the store
+
+A sound way to meet those properties on AWS is an Amazon S3 bucket in the provider's own account with versioning enabled and, where write-once tamper-evidence is wanted, Object Lock (WORM), plus a lifecycle policy set to the retention the applicable rule requires (about a year for the metric history, longer only if a separate records-retention policy applies). This is one implementation of what the rules ask for; the rules name the property, and the provider chooses the mechanism.
+
+`automation/storage/provision_store.py` provisions exactly that store at deploy time: it creates the bucket if absent and **enables bucket versioning** (optionally Object Lock and a lifecycle retention). It is the one deploy-time write step, opt-in, idempotent, and safety-additive: it never suspends versioning, deletes anything, or moves a status. See `automation/storage/DEPLOY.md`. The reference stack under `automation/evidence-store-isolation/` (below) is the AWS form of the separately-administered and access-logged properties.
 
 ### Tamper-evidence vs non-repudiation
 

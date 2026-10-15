@@ -77,6 +77,8 @@ too, so it is no longer a manual run. The tampers include:
 - a non-survivable availability service (`available_when_primary_unavailable` false)
 - `provider_verified_at` older than 7 days (FRC-APP-FCP freshness)
 - `provider_verified_at` dated in the FUTURE (must not count as fresh)
+- under production-assurance, an evidence store attested as NEITHER versioned nor
+  write-once (the tamper-evident declaration has nothing behind it, AUD-F73)
 - `certification_path` set to Agency (the engine resolves Program path only)
 - an FIA `completed_at` dated in the FUTURE (cannot complete in the future)
 - availability history shorter than 30 days (CDS-CSO-AVR)

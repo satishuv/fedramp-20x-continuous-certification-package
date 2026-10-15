@@ -320,6 +320,17 @@ def generate_profile():
                                    "and the trust-center certification data, all published at "
                                    "https://trust.bfc-demo.invalid/."),
         "provider_verified_at": recent + "T00:00:00+00:00",
+        # MCE-09 / AUD-F73: the evidence store as attested PROPERTIES (fictional;
+        # no product named, the package asks only what the store does).
+        "evidence_store": {
+            "versioned": True,
+            "write_once": True,
+            "separately_administered": True,
+            "retention_days": 400,
+            "access_logging": True,
+            "implementation": f"{FICT} write-once versioned object store in a separately "
+                              "administered audit account, access-logged to its own destination.",
+        },
         "overall_assessment_summary": (f"{FICT} The independent assessor's overall summary: "
                                        "no unresolved high findings; all in-scope KSIs validated."),
         "fedramp_independent_assessment": {
@@ -837,6 +848,18 @@ def attack():
     def _unknown_profile(st, pr, hi_):
         pr["evidence_store_profile"] = "prod"
     probe("unknown evidence_store_profile value blocks (no silent default)", _unknown_profile)
+
+    # MCE-09 / AUD-F73: production-assurance is the provider's declaration of a
+    # tamper-evident store. A store attested as neither versioned nor write-once
+    # leaves that declaration with nothing behind it, so it must block; a
+    # merely ABSENT attestation is a readiness finding, never a blocker.
+    def _production_store_attests_no_tamper_evidence(st, pr, hi_):
+        key, key_arn = _pin_signer_and_sign_history(pr, hi_)
+        _bind_sample_evidence(st, sign_with=(key, key_arn))  # otherwise READY
+        pr["evidence_store"]["versioned"] = False
+        pr["evidence_store"]["write_once"] = False
+    probe("production-assurance with a store attesting NEITHER versioning nor write-once blocks (AUD-F73)",
+          _production_store_attests_no_tamper_evidence, expect="AUD-F73")
 
     # AUD-F57 / AUD-F59 end to end. With a signer pinned (signing required) the
     # sample's own hand-written evidence has no digest and no signature: that is

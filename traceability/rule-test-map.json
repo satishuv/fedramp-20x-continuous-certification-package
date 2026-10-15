@@ -427,6 +427,11 @@
    "severity": "High",
    "component": "automation/collectors/evidence_wiring.py (EvidenceAdapter.checks, ksi_targets, source_bindings, declared_check; to_evidence refuses undeclared checks); automation/collectors/thirdparty_adapters.py (Falcon and Wiz declare their checks); automation/collectors/mapping_adapter.py (checks required, check_bindings, register_from_profile); automation/collectors/adapter-mapping.schema.json; validation/scripts/validate_evidence.py (load_source_bindings binds declared pairs only, _registered_adapters registers profile-declared mapping sources, classify_source_binding has no service-wide branch); automation/collectors/apply_third_party_evidence.py (attach per declared binding); automation/collectors/scaffold_adapter.py"
   },
+  "ledger.AUD-F73": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "sdr.py (EVIDENCE_STORE_PROPERTIES, evidence_store_attestation_findings, package-preflight wiring); profiles/common/offering-profile.json (evidence_store block); validation/scripts/profile_contract.py (OPTIONAL_FIELDS); docs/automation.md (properties section, AWS implementation heading); examples/sample-offering-class-c/build_class_c_sample.py (attested fictional store; contradiction probe)"
+  },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
    "severity": "medium",
@@ -1759,6 +1764,27 @@
     }
    ]
   },
+  "KSI-MLA-OSM": {
+   "kind": "ksi",
+   "name": "Operating SIEM Capability",
+   "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F73",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_evidence_store_properties.py"
+     ],
+     "mutations": [
+      "MUT-F73"
+     ],
+     "mutated_files": [
+      "sdr.py"
+     ],
+     "in_test_suite": true
+    }
+   ]
+  },
   "MAS-CSO-IIR": {
    "kind": "rule",
    "name": "Identify Information Resources",
@@ -2267,6 +2293,21 @@
      "in_test_suite": true
     },
     {
+     "gate_id": "ledger.AUD-F73",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_evidence_store_properties.py"
+     ],
+     "mutations": [
+      "MUT-F73"
+     ],
+     "mutated_files": [
+      "sdr.py"
+     ],
+     "in_test_suite": true
+    },
+    {
      "gate_id": "scan.ksi_metrics_30day_summary",
      "mode": "readiness-scan",
      "classes": [
@@ -2590,7 +2631,7 @@
   "b": {
    "applicable_rules": 157,
    "applicable_ksis": 41,
-   "with_automated_disposition": 20,
+   "with_automated_disposition": 21,
    "human_review_only": [
     "AFC-CSO-ACK",
     "AFC-CSO-CRA",
@@ -2752,7 +2793,6 @@
     "KSI-INR-RPI",
     "KSI-MLA-EVC",
     "KSI-MLA-LET",
-    "KSI-MLA-OSM",
     "KSI-MLA-RVL",
     "KSI-PIY-GIV",
     "KSI-PIY-RES",
@@ -2775,7 +2815,7 @@
   "c": {
    "applicable_rules": 157,
    "applicable_ksis": 46,
-   "with_automated_disposition": 20,
+   "with_automated_disposition": 21,
    "human_review_only": [
     "AFC-CSO-ACK",
     "AFC-CSO-CRA",
@@ -2939,7 +2979,6 @@
     "KSI-MLA-ALA",
     "KSI-MLA-EVC",
     "KSI-MLA-LET",
-    "KSI-MLA-OSM",
     "KSI-MLA-RVL",
     "KSI-PIY-GIV",
     "KSI-PIY-RES",

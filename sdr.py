@@ -394,6 +394,7 @@ TEST_SUITE = [
     "validation/scripts/test_evidence_freshness.py",
     "validation/scripts/test_evidence_integrity.py",
     "validation/scripts/test_production_evidence_linkage.py",
+    "validation/scripts/test_evidence_store_properties.py",
     "validation/scripts/test_provenance_mutations.py",
     "validation/scripts/test_class_support.py",
     "validation/scripts/test_rule_test_map.py",
@@ -773,6 +774,80 @@ def _evidence_observed_at(ev):
         return None
     return (ev.get("lastUpdated") or ev.get("collected_at")
             or ev.get("observed_at") or None)
+
+
+# AUD-F73 / MCE-09. The evidence store the package expects, stated as
+# PROPERTIES, one attestation each, with no storage product named. Each entry:
+# (profile key, expectation phrase, value kind). A provider on any platform
+# records what its store does; the package never asks which product does it.
+EVIDENCE_STORE_PROPERTIES = (
+    ("versioned", "every object version is retained, so an overwrite leaves the prior version "
+                  "readable", "bool"),
+    ("write_once", "an object, once written, cannot be altered or deleted for the retention "
+                   "period (write-once, immutable storage)", "bool"),
+    ("separately_administered", "the store is administered by a principal the collectors and the "
+                                "assessed environment cannot act as", "bool"),
+    ("retention_days", "objects are retained at least as long as the applicable rule's window "
+                       "(about a year for the KSI metric history under SDR-CSX-KMT)", "days"),
+    ("access_logging", "access to the store is logged to a destination the store's own writers "
+                       "cannot alter", "bool"),
+)
+
+
+def evidence_store_attestation_findings(offering, production=False):
+    """MCE-09 / AUD-F73. Read the offering profile's `evidence_store` block and
+    return (kind, key, message) tuples: kind 'absent' (no attestation recorded
+    for a property), 'unattested' (recorded as not holding), or 'contradiction'
+    (under production-assurance, neither versioning nor write-once is attested,
+    which contradicts the profile's own declaration of a tamper-evident store).
+
+    Every message is worded as what the PACKAGE EXPECTS of the store, never as
+    a determination about the provider's compliance: the attestation is the
+    provider's statement, and an assessor assesses it. A vendor or product name
+    is never required; `implementation` is a free-text note the provider may
+    leave empty. Pure: no I/O."""
+    out = []
+    block = offering.get("evidence_store") if isinstance(offering, dict) else None
+    if not isinstance(block, dict):
+        out.append(("absent", "evidence_store",
+                    "the package expects an evidence store that is versioned, write-once, "
+                    "separately administered, retained for the applicable window and "
+                    "access-logged; the profile records no `evidence_store` attestations "
+                    "(one field per property, no product name needed)"))
+        if production:
+            out.append(("contradiction", "evidence_store",
+                        "evidence_store_profile production-assurance declares a tamper-evident "
+                        "store, but no property of that store is attested"))
+        return out
+    attested = {}
+    for key, expectation, kind in EVIDENCE_STORE_PROPERTIES:
+        val = block.get(key)
+        if kind == "bool":
+            if val is True:
+                attested[key] = True
+                continue
+            if val is False:
+                attested[key] = False
+                out.append(("unattested", key,
+                            f"the package expects that {expectation}; the attestation records "
+                            f"that it does not hold (evidence_store.{key}: false)"))
+                continue
+        elif kind == "days":
+            if isinstance(val, bool):
+                val = None
+            if isinstance(val, int) and val >= 1:
+                attested[key] = True
+                continue
+        out.append(("absent", key,
+                    f"the package expects that {expectation}; no attestation is recorded "
+                    f"(set evidence_store.{key} to "
+                    f"{'true or false' if kind == 'bool' else 'the retention in whole days'})"))
+    if production and attested.get("versioned") is False and attested.get("write_once") is False:
+        out.append(("contradiction", "write_once",
+                    "evidence_store_profile production-assurance declares a tamper-evident store, "
+                    "but the attestations record neither versioning nor write-once protection; "
+                    "the declaration has nothing behind it"))
+    return out
 
 
 def classify_evidence_freshness(observed_at, now, policy_days=DEFAULT_EVIDENCE_FRESHNESS_DAYS):
@@ -2607,6 +2682,17 @@ def cmd_preflight(args):
     if _store_profile not in ("development", "production-assurance"):
         blockers.append(f"evidence_store_profile {_store_profile!r} is not 'development' or "
                         "'production-assurance' (AUD-F37)")
+    # MCE-09 / AUD-F73: the store the package expects, as per-property
+    # attestations. Absent or not-holding attestations are READINESS FINDINGS
+    # worded as expectations (never a compliance determination); only a
+    # production-assurance declaration with nothing behind it is a blocker.
+    for _kind, _key, _msg in evidence_store_attestation_findings(offering, production=_production):
+        if _kind == "contradiction":
+            blockers.append(f"evidence store: {_msg} (AUD-F73)")
+        else:
+            warnings.append(f"evidence store readiness: {_msg} (AUD-F73, advisory; "
+                            "the assessor assesses the store, this records the provider's "
+                            "attestation)")
     if cls in ("c", "d") and isinstance(_kmt_hist, dict) and _kmt_ksis:
         _problems = _hi.verify_history(_kmt_hist)
         _chained_any = any(all(k in o for k in _hi.CHAIN_FIELDS)
