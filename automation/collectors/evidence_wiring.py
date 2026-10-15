@@ -266,6 +266,34 @@ def scope_id(account, scope_key, kind="account"):
     return "scope-" + digest[:16]
 
 
+_RECORD_RE = re.compile(r"^rec-[0-9a-f]{16}$")
+
+
+def record_ref(record_id, scope_key):
+    """Opaque, non-reversible identity for ONE record of a check (a finding id,
+    a problem id), for sources that report one record per resource (AUD-F77).
+
+    HMAC-SHA256(scope_key, 'record:<record_id>'), truncated, prefixed 'rec-'.
+    Keyed like scope_id and for the same reason: a source's record name can
+    embed the organization, project or account it belongs to (a Security
+    Command Center finding name carries the organization id), and an unkeyed
+    digest of a low-entropy name is brute-forceable. Deterministic per
+    deployment, so the same finding keeps the same pointer across exports and
+    a later observation of it replaces the earlier one, while two findings of
+    one check never share a pointer."""
+    if not scope_key:
+        raise EvidenceExportError(
+            "scope_key is required to derive an opaque record id for a fact that carries "
+            "record_id (set SDR_EVIDENCE_SCOPE_KEY or pass scope_key)")
+    if isinstance(scope_key, str):
+        scope_key = scope_key.encode("utf-8")
+    rid = str(record_id).strip()
+    if not rid:
+        raise EvidenceExportError("record_id is empty; cannot derive a record id")
+    digest = hmac.new(bytes(scope_key), f"record:{rid}".encode("utf-8"), hashlib.sha256).hexdigest()
+    return "rec-" + digest[:16]
+
+
 def new_run_id():
     """A slug-safe identifier for one collection run."""
     return "run-" + uuid.uuid4().hex[:16]
@@ -362,7 +390,7 @@ def evidence_hash(artifact):
     return "sha256:" + hashlib.sha256(data).hexdigest()
 
 
-def _pointer(service, check, region, location_base=None, scope=None, run_id=None):
+def _pointer(service, check, region, location_base=None, scope=None, run_id=None, record=None):
     """Build the evidenceLocation.
 
     If the caller supplies a real evidence-store base URI, the pointer is a
@@ -370,15 +398,19 @@ def _pointer(service, check, region, location_base=None, scope=None, run_id=None
     that names the AWS source and is obviously a placeholder for a human to
     replace, never a fake https link.
 
-    The key embeds the opaque scope (when the fact is account-tagged) and the
-    run id (when the collector stamped one), so two accounts' observations of
-    the same service/check/region - or two runs of the same scope - never share
-    a pointer (AUD-F27). Every segment is slug-checked by the caller.
+    The key embeds the opaque scope (when the fact is account-tagged), the
+    opaque record (when the source reports one record per resource, AUD-F77)
+    and the run id (when the collector stamped one), so two accounts'
+    observations of the same service/check/region, two findings of one check,
+    or two runs of the same scope never share a pointer (AUD-F27). Every
+    segment is slug-checked by the caller.
     """
     parts = [service, check]
     if scope:
         parts.append(scope)
     parts.append(region)
+    if record:
+        parts.append(record)
     if run_id:
         parts.append(run_id)
     slug = "/".join(parts)
@@ -401,7 +433,7 @@ def _sanitize_fact_for_evidence(fact):
     scrubbed and bounded before it is kept (AUD-F28)."""
     if not isinstance(fact, dict):
         return {}
-    ALLOW = ("service", "check", "region", "scope", "run_id",
+    ALLOW = ("service", "check", "region", "scope", "record", "run_id",
              "collected_at", "observed_at", "timestamp")
     out = {k: fact[k] for k in ALLOW if k in fact}
     if "status" in fact:
@@ -465,6 +497,24 @@ def fact_to_evidence(fact, location_base=None, scope_key=None):
     if run_id is not None:
         run_id = _require_slug(run_id, "run_id")
 
+    # Per-record identity (AUD-F77): opaque if already stamped, else derived
+    # from the raw record_id under the same rule as a raw scope. Never raw.
+    record = fact.get("record")
+    raw_record = fact.get("record_id")
+    if record is not None:
+        record = str(record)
+        if not _RECORD_RE.match(record):
+            raise EvidenceExportError(
+                f"fact {service}:{check} carries record {record!r}, which is not an opaque "
+                "rec-... id; derive it with evidence_wiring.record_ref(record_id, scope_key)")
+    elif raw_record not in (None, ""):
+        if not scope_key:
+            raise EvidenceExportError(
+                f"fact {service}:{check} carries a raw record_id but no opaque record and "
+                "no scope_key was supplied; refusing to export it (dropping it collides "
+                "pointers, exporting it leaks it). Set SDR_EVIDENCE_SCOPE_KEY / pass scope_key.")
+        record = record_ref(raw_record, scope_key)
+
     ev_type, _kind = _SERVICE_EVIDENCE.get(service, (_DEFAULT_TYPE, service))
     status_text = scrub_text(status, STATUS_MAX)
     detail = scrub_text(fact.get("detail", ""), DETAIL_MAX)
@@ -475,14 +525,17 @@ def fact_to_evidence(fact, location_base=None, scope_key=None):
                 or fact.get("observed_at")
                 or fact.get("timestamp"))
 
-    # Sanitize once (with the derived scope/run stamped, never the account) and
-    # persist the projection, so a reviewer/CI recompute over the bound payload
-    # matches xEvidenceContentHash.
+    # Sanitize once (with the derived scope/record/run stamped, never the raw
+    # identifiers) and persist the projection, so a reviewer/CI recompute over
+    # the bound payload matches xEvidenceContentHash.
     projected = dict(fact)
     for k in raw_scope_fields():
         projected.pop(k, None)
+    projected.pop("record_id", None)
     if scope:
         projected["scope"] = scope
+    if record:
+        projected["record"] = record
     if run_id:
         projected["run_id"] = run_id
     sanitized = _sanitize_fact_for_evidence(projected)
@@ -490,7 +543,7 @@ def fact_to_evidence(fact, location_base=None, scope_key=None):
         "evidenceType": ev_type,
         "evidenceDescription": f"{service}:{check} = {status_text}. {detail}".strip(),
         "evidenceLocation": _pointer(service, check, region, location_base,
-                                     scope=scope, run_id=run_id),
+                                     scope=scope, run_id=run_id, record=record),
         "evidenceText": f"{service}:{check} status={status_text} region={region}"
                         + (f" scope={scope}" if scope else ""),
         # Persist a SANITIZED source fact. The full raw fact can identify a real
@@ -523,6 +576,19 @@ def facts_to_evidence(facts, location_base=None, scope_key=None):
         if ev is not None:
             out.append(ev)
     return out
+
+
+def pointer_collisions(evidence):
+    """{evidenceLocation: count} for every pointer that more than one entry of
+    `evidence` shares. Pure. Two entries at one pointer are two observations
+    the record store can hold only one of (the later replaces the earlier), so
+    a batch with collisions would lose records silently (AUD-F77)."""
+    counts = {}
+    for ev in evidence or []:
+        loc = ev.get("evidenceLocation") if isinstance(ev, dict) else None
+        if loc:
+            counts[loc] = counts.get(loc, 0) + 1
+    return {loc: n for loc, n in counts.items() if n > 1}
 
 
 def observation_identity(entry):
@@ -647,7 +713,12 @@ class EvidenceAdapter:
         non-conforming fact raises FactContractError naming the adapter, the
         fact index and the field; an undeclared check raises EvidenceExportError
         naming the check. No fact of that batch reaches fact_to_evidence
-        (MCE-01 / AUD-F68; MCE-03)."""
+        (MCE-01 / AUD-F68; MCE-03). A batch in which two facts resolve to ONE
+        evidence pointer is refused naming the pointer (AUD-F77): the record
+        store keeps one entry per pointer, so the later observation would
+        replace the earlier and a still-failing record could disappear behind
+        a resolved one. A source that reports one record per resource carries
+        record_id so each record keeps its own pointer."""
         facts = require_conforming_facts(self.collect(raw), who=f"adapter '{self.name}'")
         if self.checks:
             undeclared = sorted({f["check"] for f in facts if not self.declared_check(f["check"])})
@@ -657,7 +728,20 @@ class EvidenceAdapter:
                     f"{', '.join(undeclared)}; refusing to convert any of its facts. Declare each "
                     "check (and the KSIs it is evidence toward) so the source registry binds it; "
                     "an undeclared check would be evidence for no indicator (MCE-03)")
-        return facts_to_evidence(facts, location_base, scope_key=scope_key)
+        evidence = facts_to_evidence(facts, location_base, scope_key=scope_key)
+        shared = pointer_collisions(evidence)
+        if shared:
+            worst = sorted(shared.items(), key=lambda kv: (-kv[1], kv[0]))[:3]
+            named = "; ".join(f"{n} facts at {loc}" for loc, n in worst)
+            raise EvidenceExportError(
+                f"adapter '{self.name}' yielded facts that share an evidence pointer "
+                f"({len(shared)} pointer(s); {named}); refusing to convert any of its facts. "
+                "The record store keeps one entry per pointer, so the later observation would "
+                "replace the earlier and a still-failing record would disappear behind a "
+                "resolved one. Carry the source's per-record identity on each fact as "
+                "record_id (a mapping declares fields.record_id) so every record keeps its "
+                "own pointer (AUD-F77)")
+        return evidence
 
     def describe(self):
         """Adapter capability metadata (contract v2). Pure, no collection."""

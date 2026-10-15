@@ -327,6 +327,13 @@ class MappingAdapter(ew.EvidenceAdapter):
             raw_scope = get_path(rec, scope_spec["path"])
             if raw_scope not in (None, ""):
                 fact[scope_spec["kind"]] = raw_scope
+        if f.get("record_id"):
+            # AUD-F77: the source's own identity for this record rides raw on
+            # the fact and becomes an opaque rec-... id at conversion, so two
+            # records of one check never share an evidence pointer.
+            raw_record = get_path(rec, f["record_id"])
+            if raw_record not in (None, ""):
+                fact["record_id"] = raw_record
         return fact
 
     def collect(self, raw):
