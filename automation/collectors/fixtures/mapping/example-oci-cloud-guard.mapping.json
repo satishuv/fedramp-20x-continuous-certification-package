@@ -1,0 +1,49 @@
+{
+  "schema": "fedramp-adapter-mapping/v1",
+  "name": "example-oci-cloud-guard",
+  "service": "oci-cloud-guard",
+  "version": "1.0.0",
+  "source_type": "posture-findings",
+  "evidence_type": "Report",
+  "freshness_policy_days": 1,
+  "export_format": "json",
+  "records_path": "items",
+  "undeclared_checks": "skip",
+  "fields": {
+    "check": "detectorRuleId",
+    "status": "lifecycleDetail",
+    "observed_at": "timeLastDetected",
+    "location": "regions.0",
+    "detail": "riskLevel",
+    "scope": {"path": "compartmentId", "kind": "compartment"},
+    "record_id": "id"
+  },
+  "status_normalization": {
+    "OPEN": "FAIL",
+    "RESOLVED": "UNKNOWN",
+    "DISMISSED": "UNKNOWN",
+    "DELETED": "UNKNOWN"
+  },
+  "ksi_targets": ["KSI-MLA-EVC"],
+  "checks": [
+    "FICTIONAL_BUCKET_IS_PUBLIC",
+    "FICTIONAL_SECURITY_LIST_INGRESS_ANY",
+    "FICTIONAL_MFA_NOT_ENABLED",
+    "FICTIONAL_AUDIT_LOG_RETENTION_LOW",
+    "FICTIONAL_KEY_NOT_ROTATED",
+    "FICTIONAL_API_KEY_TOO_OLD"
+  ],
+  "check_bindings": {
+    "FICTIONAL_BUCKET_IS_PUBLIC": ["KSI-CNA-MAT", "KSI-MLA-EVC"],
+    "FICTIONAL_SECURITY_LIST_INGRESS_ANY": ["KSI-CNA-RNT"],
+    "FICTIONAL_MFA_NOT_ENABLED": ["KSI-IAM-APM"],
+    "FICTIONAL_AUDIT_LOG_RETENTION_LOW": ["KSI-MLA-LET"],
+    "FICTIONAL_KEY_NOT_ROTATED": ["KSI-SVC-ASM"],
+    "FICTIONAL_API_KEY_TOO_OLD": ["KSI-IAM-SNU"]
+  },
+  "documentation": {
+    "url": "https://docs.oracle.com/en-us/iaas/tools/typescript/latest/modules/_cloudguard_lib_model_problem_summary_.problemsummary.html",
+    "captured": "2026-10-15"
+  },
+  "note": "Reference mapping for an Oracle Cloud Infrastructure Cloud Guard problems export (MCE-06). Records have the published ProblemSummary shape (a ProblemCollection `items` array). The status is read from lifecycleDetail, the published substate: OPEN is a problem the source still reports (FAIL); RESOLVED, DISMISSED and DELETED are UNKNOWN, never PASS, because a problems export states no pass (a resolved problem is re-checked by the source, a dismissed one was closed by a person). The coarse lifecycleState (ACTIVE, INACTIVE) is not read. Each problem is one resource, so id is the per-record identity (AUD-F77); it and the compartment OCID become opaque ids before export. The first entry of `regions` is the location (the single `region` field is documented as deprecated). Rule-to-KSI bindings are the provider's declaration, for illustration only."
+}

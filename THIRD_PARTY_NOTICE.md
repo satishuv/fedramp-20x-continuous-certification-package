@@ -40,7 +40,7 @@ Adding a name means adding a row to this table in the same pull request.
 | Wiz | Wiz, Inc. | An optional offline adapter reads a customer-produced Wiz export as evidence toward vulnerability and configuration indicators. |
 | Google Cloud, Google Cloud Security Command Center, Security Command Center | Google LLC | An optional offline adapter (story MCE-04) reads a customer-produced findings export; the export shape is taken from Google's published API documentation, cited in the example mapping. |
 | Microsoft Azure, Azure, Microsoft Defender for Cloud, Azure Policy | Microsoft Corporation | An optional offline adapter (story MCE-05) reads a customer-produced Azure Policy compliance-states export; the export shape is taken from Microsoft's published API documentation, cited in the example mapping. |
-| Oracle Cloud Infrastructure, OCI Cloud Guard, Cloud Guard | Oracle Corporation | A planned optional offline adapter (story MCE-06) reads a customer-produced problems export. |
+| Oracle Cloud Infrastructure, OCI Cloud Guard, Cloud Guard | Oracle Corporation | An optional offline adapter (story MCE-06) reads a customer-produced Cloud Guard problems export; the export shape is taken from Oracle's published API documentation, cited in the example mapping. |
 | OpenSCAP | The OpenSCAP project (open source) | An optional offline adapter (story MCE-07) reads the XCCDF or ARF scan results file a customer's scan wrote; the results format itself is the NIST XCCDF standard. |
 
 ## Relationship to the LICENSE and README
