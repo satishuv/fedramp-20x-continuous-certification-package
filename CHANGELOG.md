@@ -11,6 +11,38 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### Microsoft Azure Policy compliance-states adapter (MCE-05)
+
+The second cloud source outside AWS, through the mapping-driven adapter and
+one reference mapping (`example-azure-policy-states.mapping.json`), no Python.
+Records have the Policy Insights REST API's published `PolicyState` shape (the
+`queryResults` response, a `value` array), read from the fixture envelope or a
+bare array; the state is read from the documented `complianceState` field, and
+the `isCompliant` flag, which the owner documents as deprecated, is never
+read (a record whose flag contradicts its state follows the state). Only
+`Compliant` is `PASS` and only `NonCompliant` is `FAIL`; `Exempt` and
+`Conflict` are `UNKNOWN`, and every other published state (`Error`,
+`Protected`, `Unknown`, `Not registered`, `Not started`) is `UNKNOWN` by the
+unmapped rule, never `PASS`, with the state kept in `detail`. The shape and
+vocabulary come from the owner's public API reference, compliance-states page
+and sample queries, cited with capture dates in the fixture header and the
+mapping; the fixture is fictional end to end (the all-zero subscription id,
+all-zero and all-one definition and assignment ids, `fictional-` names). One
+engine addition, needed because a policy state has no single id field: a
+mapping's `fields.record_id` may be an ordered list of paths forming a
+composite identity (`composite_record_id`, pure), joined with `|`, an absent
+component kept as an empty string so components keep their positions and two
+different identities can never join to the same string; proven by hand (the
+dropping variant goes red on the position check). The composite for a policy
+state is assignment, definition, reference id and resource, the grouping the
+owner's own sample queries use, so the two states of one definition on one
+resource under two assignments keep distinct pointers, and dropping
+`record_id` collapses the batch to the AUD-F77 pointer-collision refusal.
+Regression: `automation/collectors/test_azure_policy_adapter.py` (15 checks,
+red on the pre-change schema), registered in the validate suite.
+`THIRD_PARTY_NOTICE.md` moves the Microsoft Azure row from planned to present;
+the evidence-sources README documents the composite identity.
+
 ### Google Cloud Security Command Center findings adapter (MCE-04; AUD-F77)
 
 The first cloud findings source outside AWS, through the mapping-driven
