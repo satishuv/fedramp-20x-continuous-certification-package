@@ -11,6 +11,35 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### Oracle Cloud Infrastructure Cloud Guard problems adapter (MCE-06)
+
+The third cloud source outside AWS, through the mapping-driven adapter and one
+reference mapping (`example-oci-cloud-guard.mapping.json`), no Python and no
+engine change. Records have the published `ProblemSummary` shape (a
+`ProblemCollection` `items` array), read from the fixture envelope or a bare
+array. The state is read from `lifecycleDetail`, the published substate: only
+`OPEN` is `FAIL`; `RESOLVED`, `DISMISSED` and `DELETED` are `UNKNOWN`, never
+`PASS`, with the substate kept in `detail`, because a problems export states
+no pass; a substate outside the published enum is `UNKNOWN`; the coarse
+`lifecycleState` (`ACTIVE`, `INACTIVE`) is never read (a record whose state
+contradicts its substate follows the substate). The problem `id` is the
+per-record identity (AUD-F77 applied: two problems of one detector rule in one
+compartment and region keep distinct pointers, and dropping `record_id`
+collapses the batch to the collision refusal); the compartment OCID is a
+`compartment` scope; neither reaches an evidence object. The first entry of
+`regions` is the location (the single `region` field is documented as
+deprecated); a problem with no region lands in `global`. Field names and the
+wire values come from the owner's published SDK model reference and enum
+sources, cited with capture dates in the fixture header and the mapping; the
+fixture is fictional end to end (OCIDs of the form
+`ocid1.<type>.oc1..fictional<counter>`, `fictional-` names, `FICTIONAL_`
+detector rules). Regression: `automation/collectors/test_oci_cloud_guard_adapter.py`
+(12 checks; the fixture mutation relabelling `RESOLVED` as `PASS` goes red),
+registered in the validate suite. `THIRD_PARTY_NOTICE.md` moves the Oracle row
+from planned to present; the evidence-sources README documents the mapping.
+With this entry all four non-AWS sources of the epic (MCE-04 to MCE-07) are
+present.
+
 ### Microsoft Azure Policy compliance-states adapter (MCE-05)
 
 The second cloud source outside AWS, through the mapping-driven adapter and

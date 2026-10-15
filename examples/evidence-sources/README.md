@@ -315,6 +315,22 @@ end to end (the all-zero subscription id, all-zero and all-one definition and
 assignment ids, `fictional-` names) and is shaped from the owner's public API
 reference and compliance-states page, cited in its header and the mapping.
 
+The Cloud Guard reference mapping (`example-oci-cloud-guard.mapping.json`)
+reads a problems export in the published `ProblemSummary` shape (an `items`
+array), with the problem `id` as the record identity and the compartment OCID
+as a `compartment` scope. Its state is read from `lifecycleDetail`, the
+published substate: only `OPEN` is `FAIL`; `RESOLVED`, `DISMISSED` and
+`DELETED` are `UNKNOWN`, with the substate kept in `detail`, and nothing is
+`PASS`, because a problems export states no pass (a resolved problem is
+re-checked by the source, a dismissed one was closed by a person). The coarse
+`lifecycleState` is not read. The first entry of `regions` is the location
+(the single `region` field is documented as deprecated); a problem with no
+region, such as an identity resource, lands in `global`. The fixture
+`example-oci-cloud-guard.export.json` is fictional end to end (every OCID is
+of the form `ocid1.<type>.oc1..fictional<counter>`, every name `fictional-`,
+every detector rule `FICTIONAL_`) and is shaped from the owner's published SDK
+model reference and enum sources, cited in its header and the mapping.
+
 The state words are the source's published enum, and a findings export states
 no pass: `ACTIVE` is a problem the source still reports (`FAIL`); `INACTIVE`
 covers a fixed finding and one a person closed as not an issue, which the

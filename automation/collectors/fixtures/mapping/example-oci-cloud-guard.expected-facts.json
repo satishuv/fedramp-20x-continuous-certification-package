@@ -1,0 +1,85 @@
+{
+  "_about": "Golden facts (MCE-06): example-oci-cloud-guard.mapping.json applied to example-oci-cloud-guard.export.json must yield exactly these facts, in this order. Eight of the nine records: the undeclared FICTIONAL_SUSPICIOUS_LOGIN record is skipped. record_id and compartment are raw input-side values; conversion replaces them with an opaque rec-... and scope-... id. Fictional values only.",
+  "facts": [
+    {
+      "service": "oci-cloud-guard",
+      "check": "FICTIONAL_BUCKET_IS_PUBLIC",
+      "status": "FAIL",
+      "detail": "source state: OPEN. CRITICAL",
+      "region": "us-ashburn-1",
+      "observed_at": "2026-10-01T06:00:00.000Z",
+      "compartment": "ocid1.compartment.oc1..fictional0001",
+      "record_id": "ocid1.cloudguardproblem.oc1..fictional0001"
+    },
+    {
+      "service": "oci-cloud-guard",
+      "check": "FICTIONAL_BUCKET_IS_PUBLIC",
+      "status": "UNKNOWN",
+      "detail": "source state: RESOLVED. CRITICAL",
+      "region": "us-ashburn-1",
+      "observed_at": "2026-10-01T06:00:00.000Z",
+      "compartment": "ocid1.compartment.oc1..fictional0001",
+      "record_id": "ocid1.cloudguardproblem.oc1..fictional0002"
+    },
+    {
+      "service": "oci-cloud-guard",
+      "check": "FICTIONAL_BUCKET_IS_PUBLIC",
+      "status": "UNKNOWN",
+      "detail": "source state: DISMISSED. CRITICAL",
+      "region": "us-phoenix-1",
+      "observed_at": "2026-10-01T06:00:00.000Z",
+      "compartment": "ocid1.compartment.oc1..fictional0002",
+      "record_id": "ocid1.cloudguardproblem.oc1..fictional0003"
+    },
+    {
+      "service": "oci-cloud-guard",
+      "check": "FICTIONAL_SECURITY_LIST_INGRESS_ANY",
+      "status": "FAIL",
+      "detail": "source state: OPEN. HIGH",
+      "region": "us-ashburn-1",
+      "observed_at": "2026-10-01T06:00:00.000Z",
+      "compartment": "ocid1.compartment.oc1..fictional0001",
+      "record_id": "ocid1.cloudguardproblem.oc1..fictional0004"
+    },
+    {
+      "service": "oci-cloud-guard",
+      "check": "FICTIONAL_MFA_NOT_ENABLED",
+      "status": "FAIL",
+      "detail": "source state: OPEN. HIGH",
+      "region": "global",
+      "observed_at": "2026-10-01T06:00:00.000Z",
+      "compartment": "ocid1.compartment.oc1..fictional0001",
+      "record_id": "ocid1.cloudguardproblem.oc1..fictional0005"
+    },
+    {
+      "service": "oci-cloud-guard",
+      "check": "FICTIONAL_AUDIT_LOG_RETENTION_LOW",
+      "status": "UNKNOWN",
+      "detail": "source state: DELETED. MEDIUM",
+      "region": "us-ashburn-1",
+      "observed_at": "2026-10-01T06:00:00.000Z",
+      "compartment": "ocid1.compartment.oc1..fictional0001",
+      "record_id": "ocid1.cloudguardproblem.oc1..fictional0006"
+    },
+    {
+      "service": "oci-cloud-guard",
+      "check": "FICTIONAL_KEY_NOT_ROTATED",
+      "status": "FAIL",
+      "detail": "source state: OPEN. MEDIUM",
+      "region": "us-ashburn-1",
+      "observed_at": "2026-10-01T06:00:00.000Z",
+      "compartment": "ocid1.compartment.oc1..fictional0001",
+      "record_id": "ocid1.cloudguardproblem.oc1..fictional0007"
+    },
+    {
+      "service": "oci-cloud-guard",
+      "check": "FICTIONAL_API_KEY_TOO_OLD",
+      "status": "FAIL",
+      "detail": "source state: OPEN. LOW",
+      "region": "us-phoenix-1",
+      "observed_at": "2026-10-01T06:00:00.000Z",
+      "compartment": "ocid1.compartment.oc1..fictional0002",
+      "record_id": "ocid1.cloudguardproblem.oc1..fictional0008"
+    }
+  ]
+}
