@@ -60,6 +60,8 @@ and enforced before any fact is converted:
 | `region` | yes | where it was observed, or `global` (slug-safe) |
 | `observed_at` | yes | the source's real timestamp, ISO 8601 with a calendar-date prefix. Never invented |
 | `scope` | no | an opaque scope id (`scope-...` or a slug alias), never a raw identifier |
+| `record_id` | no | the source's own identity for one record of a check (a finding id), for sources that report one record per resource; converted to an opaque `record` before export, never exported raw |
+| `record` | no | an opaque per-record id (`rec-...`), derived from `record_id` under the scope key |
 | `run_id` | no | slug-safe collection-run id |
 
 A fact may carry the raw identifier of the scope it came from (`account`,
@@ -228,6 +230,70 @@ one). The fixture `example-openscap-xccdf.results.xml` is fictional end to end
 documentation-range address) and is shaped from the NIST schema and the
 OpenSCAP user manual cited in its header. Running scans is out of scope: the
 adapter reads the file a scan already wrote.
+
+## Cloud findings exports (one record per resource)
+
+A findings export reports one record per resource: one finding per bucket, per
+firewall rule, per key. The pointer identity above (service, check, opaque
+scope, region) would put every finding of one category in one project and
+region at one evidence location, and the record store keeps one entry per
+location, so a resolved finding would replace a still-active one (AUD-F77).
+A mapping for such a source therefore names the record's own identity:
+
+```json
+{
+  "schema": "fedramp-adapter-mapping/v1",
+  "name": "example-google-cloud-scc",
+  "service": "google-cloud-scc",
+  "export_format": "json",
+  "records_path": "findings",
+  "undeclared_checks": "skip",
+  "fields": {
+    "check": "finding.category",
+    "status": "finding.state",
+    "observed_at": "finding.eventTime",
+    "location": "resource.location",
+    "detail": "finding.description",
+    "scope": {"path": "resource.projectDisplayName", "kind": "project"},
+    "record_id": "finding.name"
+  },
+  "status_normalization": {"ACTIVE": "FAIL", "INACTIVE": "UNKNOWN", "STATE_UNSPECIFIED": "UNKNOWN"},
+  "ksi_targets": ["KSI-MLA-EVC"],
+  "checks": ["PUBLIC_BUCKET_ACL", "OPEN_FIREWALL", "MFA_NOT_ENFORCED"],
+  "check_bindings": {"PUBLIC_BUCKET_ACL": ["KSI-CNA-MAT", "KSI-MLA-EVC"], "OPEN_FIREWALL": ["KSI-CNA-RNT"], "MFA_NOT_ENFORCED": ["KSI-IAM-APM"]},
+  "documentation": {"url": "https://cloud.google.com/security-command-center/docs/reference/rest/v1/organizations.sources.findings", "captured": "2026-10-15"}
+}
+```
+
+What `record_id` adds, each with a regression test and a killed mutation:
+
+- The raw record identity (here `finding.name`, which carries the organization
+  id) never enters the package. With `SDR_EVIDENCE_SCOPE_KEY` it becomes an
+  opaque `rec-...` id, keyed like the scope id so it cannot be brute-forced
+  from a low-entropy name, stamped on the sanitized source fact and appended
+  to the pointer after the region. Without the key the fact is refused naming
+  the field: dropping the id would collide pointers, exporting it would leak
+  it.
+- The same finding keeps the same pointer across exports, so a later
+  observation of it replaces the earlier one, while two findings of one
+  category never share a pointer. After two exports in which one finding went
+  `INACTIVE`, the store holds both records and the still-active one still
+  reads `FAIL`.
+- A batch in which two facts resolve to one pointer is refused naming the
+  pointer and the `record_id` remedy. Nothing of that batch is attached.
+- Sources that report one value per check and scope (the AWS Config path)
+  carry no `record_id`, and their pointer form is unchanged.
+
+The state words are the source's published enum, and a findings export states
+no pass: `ACTIVE` is a problem the source still reports (`FAIL`); `INACTIVE`
+covers a fixed finding and one a person closed as not an issue, which the
+export cannot tell apart, so it is `UNKNOWN` with the state kept in `detail`.
+A muted `ACTIVE` finding stays `FAIL`; a state outside the enum is `UNKNOWN`.
+The fixture `example-google-cloud-scc.export.json` is fictional end to end
+(all-zero organization and source numbers, `fictional-` project names) and is
+shaped from the owner's public API reference cited in its header and in the
+mapping, per `THIRD_PARTY_NOTICE.md`. Category-to-KSI bindings in the example
+are the provider's declaration, for illustration only.
 
 ## What each maps to (real CR26 KSI ids, verified against the dataset)
 

@@ -41,6 +41,15 @@
       "description": "OPTIONAL slug-safe identifier of the collection run that produced the fact.",
       "$ref": "#/$defs/slug"
     },
+    "record_id": {
+      "description": "OPTIONAL raw per-record identity from the source (a finding id, a problem id) for sources that report one record PER RESOURCE within a check, so two records of one check in one scope and region keep distinct evidence pointers instead of replacing each other. Legitimate on an INPUT fact only: it is replaced by an opaque `record` before export under the same rule as a raw scope (refused without a scope_key; never enters an evidence object, a pointer or a hash input).",
+      "type": ["string", "integer"]
+    },
+    "record": {
+      "description": "OPTIONAL opaque per-record identity (HMAC-derived rec-... id) that distinguishes one record of a check from another WITHOUT naming it. Never a raw identifier.",
+      "type": "string",
+      "pattern": "^rec-[0-9a-f]{16}$"
+    },
     "account": {"$ref": "#/$defs/rawScopeIdentifier"},
     "tenant": {"$ref": "#/$defs/rawScopeIdentifier"},
     "subscription": {"$ref": "#/$defs/rawScopeIdentifier"},
@@ -52,6 +61,7 @@
   "additionalProperties": true,
   "x-rawScopeFields": ["account", "tenant", "subscription", "compartment", "project", "organization", "host"],
   "x-rawScopeRule": "A fact carrying any x-rawScopeFields value and no `scope` is exported ONLY when the caller supplies a deployment-private scope_key, from which an opaque scope id is derived; otherwise the fact is REFUSED with an explicit error naming the field. The raw value never enters an evidence object, a pointer or a hash input.",
+  "x-rawRecordRule": "A fact carrying `record_id` and no `record` is exported ONLY when the caller supplies the scope_key, from which an opaque rec-... id is derived; otherwise it is REFUSED naming the field. The raw value never enters an evidence object, a pointer or a hash input. An adapter whose facts share one evidence pointer within a batch is refused until it carries record_id (AUD-F77).",
   "$defs": {
     "slug": {
       "type": "string",
