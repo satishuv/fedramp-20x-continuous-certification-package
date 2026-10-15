@@ -33,6 +33,7 @@
     "sr-11.1"
    ],
    "how_to_comply_guidance": "Review all training content and completion on a defined cycle; keep the review dated and owned. Evidence: review records with reviewer, date, and outcome, plus the updated training register.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-CMT-LMC": {
@@ -57,6 +58,7 @@
     "cm-8.3"
    ],
    "how_to_comply_guidance": "Log and monitor every modification to the offering: CloudTrail organization trail (multi-region, log file validation), AWS Config recording all resource types, EventBridge alerting on out-of-pipeline writes. Evidence: trail status queries, Config recorder status, alert history.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-CMT-RMV": {
@@ -79,6 +81,7 @@
     "si-3"
    ],
    "how_to_comply_guidance": "Deploy changes by redeploying version-controlled resources (IaC through the pipeline) instead of modifying live resources. Evidence: pipeline deployment records diffed against CloudTrail write events; drift detection results.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-CMT-RVP": {
@@ -100,6 +103,7 @@
     "cm-9"
    ],
    "how_to_comply_guidance": "Review change management procedure effectiveness on a cycle: measure failed changes, rollbacks, and out-of-band changes, and adjust the procedure. Evidence: dated reviews with metrics and resulting changes.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-CMT-VTD": {
@@ -121,6 +125,7 @@
     "si-2"
    ],
    "how_to_comply_guidance": "Automate testing and validation of changes through the CI/CD pipeline: pre-deployment tests, policy-as-code checks, post-deployment verification. Evidence: pipeline run records showing gates passed per change.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-CNA-DFP": {
@@ -141,6 +146,7 @@
     "si-3"
    ],
    "how_to_comply_guidance": "Strictly define functionality and privileges for infrastructure and services: least-privilege IAM roles, permission boundaries, service control policies. Evidence: IAM Access Analyzer findings, SCP inventory, unused-permission reports.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-CNA-EIS": {
@@ -168,6 +174,7 @@
     "si-7.7"
    ],
    "how_to_comply_guidance": "Class-varying (optional/MAY at Class B, required at Class C): automated services persistently assess the security of all machine-based information resources and automatically enforce their intended operational state. Evidence: Config rules with auto-remediation, Systems Manager State Manager/associations, drift-detection and enforcement records over time.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-CNA-IBP": {
@@ -187,6 +194,7 @@
     "sc-7.18"
    ],
    "how_to_comply_guidance": "Persistently compare third-party machine-based resources against the original provider's best practices (for example CIS or vendor benchmarks via Security Hub standards and Config conformance packs). Evidence: benchmark compliance scores over time.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-CNA-MAT": {
@@ -217,6 +225,7 @@
     "si-16"
    ],
    "how_to_comply_guidance": "Minimize attack surface and lateral movement: private subnets by default, no unnecessary public endpoints, network segmentation, S3 Block Public Access. Evidence: Config rules for public exposure, VPC design records, Security Hub findings trend.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-CNA-OFA": {
@@ -234,6 +243,7 @@
     "sc-12.1"
    ],
    "how_to_comply_guidance": "Review resources for high availability and rapid recovery: multi-AZ deployment, health checks, auto scaling, tested recovery. Evidence: architecture inventory with AZ coverage, recovery test records.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-CNA-RNT": {
@@ -262,6 +272,7 @@
     "si-8"
    ],
    "how_to_comply_guidance": "Limit inbound and outbound network traffic: security groups and NACLs deny by default, egress control, WAF on public entry points. Evidence: Config rules on open security groups, reachability analysis, WAF coverage.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-CNA-RVP": {
@@ -282,6 +293,7 @@
     "si-8.2"
    ],
    "how_to_comply_guidance": "Review protection against denial of service and unwanted activity: AWS Shield, WAF rate rules, GuardDuty findings review. Evidence: protection coverage inventory and periodic effectiveness reviews.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-CNA-ULN": {
@@ -309,6 +321,7 @@
     "sc-8"
    ],
    "how_to_comply_guidance": "Use logical networking to enforce traffic flow controls: VPC segmentation, route tables, PrivateLink for service-to-service paths. Evidence: network architecture records, VPC flow log analysis, reachability tests.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-IAM-AAM": {
@@ -334,6 +347,7 @@
     "ia-8.4"
    ],
    "how_to_comply_guidance": "Automate the lifecycle and privileges of all accounts, roles, and groups: IAM Identity Center with SCIM provisioning from the identity provider, automated deprovisioning on termination. Evidence: provisioning logs, access review records, orphan-account checks.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-IAM-APM": {
@@ -366,6 +380,7 @@
     "sc-23"
    ],
    "how_to_comply_guidance": "Use passwordless authentication where feasible (FIDO2), otherwise strong passwords with phishing-resistant MFA. Block console login without MFA; eliminate long-lived access keys. Evidence: MFA enforcement queries, CloudTrail login analysis, IAM credential report.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-IAM-ELP": {
@@ -433,6 +448,7 @@
     "si-4.19"
    ],
    "how_to_comply_guidance": "Ensure each user and device can only access what it needs: periodic access reviews, least-privilege role design, Access Analyzer. Evidence: access review records, unused-access findings and their closure.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-IAM-JIT": {
@@ -499,6 +515,7 @@
     "sc-39"
    ],
    "how_to_comply_guidance": "Use a least-privileged, role-based, just-in-time authorization model: temporary elevated access with approval and expiry rather than standing privileges. Evidence: elevation request logs with approvals and automatic expiry.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-IAM-SNU": {
@@ -524,6 +541,7 @@
     "ra-5.5"
    ],
    "how_to_comply_guidance": "Use appropriately secure authentication for non-user accounts and services: IAM roles and short-lived STS credentials instead of static keys; rotate any unavoidable secrets. Evidence: credential inventory, key-age reports, Secrets Manager rotation status.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-IAM-SUS": {
@@ -559,6 +577,7 @@
     "si-4.4"
    ],
    "how_to_comply_guidance": "Disable or secure privileged accounts in response to suspicious activity: GuardDuty findings wired to automated response (disable keys, revoke sessions) with on-call escalation. Evidence: response runbooks plus executed-response records with timestamps.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-INR-AAR": {
@@ -580,6 +599,7 @@
     "ir-9.3"
    ],
    "how_to_comply_guidance": "Generate after action reports for incidents and incorporate lessons persistently. Evidence: after action reports linked to incidents, with tracked improvement actions and closure.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-INR-RIR": {
@@ -607,6 +627,7 @@
     "si-4.5"
    ],
    "how_to_comply_guidance": "Review incident response procedure effectiveness on a cycle, including exercises. Evidence: dated reviews, exercise records, and procedure updates that resulted.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-INR-RPI": {
@@ -631,6 +652,7 @@
     "ra-5.8"
    ],
    "how_to_comply_guidance": "Review past incidents for patterns and previously missed vulnerabilities. Evidence: periodic pattern-analysis reports referencing the incident register.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-MLA-ALA": {
@@ -649,6 +671,7 @@
     "si-11"
    ],
    "how_to_comply_guidance": "Class-varying (optional/MAY at Class B, required at Class C): a least-privileged, role/attribute-based, just-in-time authorization model governs access to log data by data sensitivity, and is persistently reviewed. Evidence: IAM/Access Analyzer for log-store access, JIT-access records, periodic access reviews of the log data store.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-MLA-EVC": {
@@ -671,6 +694,7 @@
     "si-7.7"
    ],
    "how_to_comply_guidance": "Persistently evaluate and test the configuration of machine-based resources, especially infrastructure as code: policy-as-code in the pipeline (cfn-guard, OPA, Checkov) plus AWS Config in runtime. Evidence: pipeline policy results per change and Config compliance over time.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-MLA-LET": {
@@ -702,6 +726,7 @@
     "si-7.7"
    ],
    "how_to_comply_guidance": "Maintain and review a list of resources and event types that will be logged, monitored, and audited, and confirm those activities occur. Evidence: the logging register plus coverage checks proving each listed source is actually emitting.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-MLA-OSM": {
@@ -739,6 +764,7 @@
     "si-4.4"
    ],
    "how_to_comply_guidance": "Operate a SIEM or similar for centralized, tamper-resistant logging: centralized log archive account, S3 object lock or equivalent integrity protection, restricted access. Evidence: log centralization architecture, integrity settings, access policies.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-MLA-RVL": {
@@ -764,6 +790,7 @@
     "si-4.4"
    ],
    "how_to_comply_guidance": "Persistently review and audit logs: automated detections (CloudWatch, Security Hub, GuardDuty) plus a documented human review cadence for what automation cannot judge. Evidence: detection inventory, alert dispositions, review records.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-PIY-GIV": {
@@ -788,6 +815,7 @@
     "cp-2.8"
    ],
    "how_to_comply_guidance": "Generate real-time inventories automatically from authoritative sources: AWS Config aggregator and Resource Explorer as the inventory of record, queryable on demand. Evidence: on-demand inventory exports with timestamps proving real-time generation.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-PIY-RES": {
@@ -802,6 +830,7 @@
    "evidence_source": "FedRAMP default artifact expectations for KSIs",
    "nist_controls": [],
    "how_to_comply_guidance": "Demonstrate and review executive support for security goals persistently: executive sponsorship in the charter, recurring leadership reviews of posture, funded remediation. Evidence: dated leadership review records and funding decisions tied to security goals.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-PIY-RIS": {
@@ -828,6 +857,7 @@
     "sr-2.1"
    ],
    "how_to_comply_guidance": "Review the effectiveness of security investments persistently: track spend against measurable outcomes (findings closed, coverage gained) and adjust. Evidence: periodic investment-effectiveness reviews with metrics and resulting decisions.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-PIY-RSD": {
@@ -857,6 +887,7 @@
     "si-16"
    ],
    "how_to_comply_guidance": "Review the effectiveness of security and privacy in the SDLC against CISA Secure By Design principles: pipeline security gates, secure defaults, threat modeling. Evidence: SDLC review records mapped to Secure By Design principles with improvement actions.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-PIY-RVD": {
@@ -873,6 +904,7 @@
     "ra-5.11"
    ],
    "how_to_comply_guidance": "Operate and persistently review a vulnerability disclosure program: a public intake channel, triage SLAs, and periodic effectiveness review. Evidence: the published policy, intake and triage records, dated program reviews.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-RPL-ABO": {
@@ -893,6 +925,7 @@
     "cp-10.2"
    ],
    "how_to_comply_guidance": "Keep backups aligned with defined recovery objectives: AWS Backup plans matching the stated RPO, cross-region copies where the objectives require. Evidence: backup plan configuration, job success history, restore points against objectives.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-RPL-ARP": {
@@ -924,6 +957,7 @@
     "cp-10.2"
    ],
    "how_to_comply_guidance": "Maintain a recovery plan aligned with objectives, covering roles, procedures, and dependencies. Evidence: the plan with review dates and alignment to the stated RTO and RPO.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-RPL-RRO": {
@@ -941,6 +975,7 @@
     "cp-10"
    ],
    "how_to_comply_guidance": "Define recovery time and recovery point objectives and keep them current. Evidence: documented RTO and RPO with rationale and review history.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-RPL-TRC": {
@@ -968,6 +1003,7 @@
     "sc-12.1"
    ],
    "how_to_comply_guidance": "Test the capability to recover from incidents and contingencies: restore tests, failover exercises, game days, measured against objectives. Evidence: test records with measured times versus objectives and corrective actions.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-SCR-MIT": {
@@ -1014,6 +1050,7 @@
     "sr-6"
    ],
    "how_to_comply_guidance": "Persistently identify, review, and mitigate supply chain risks: supplier vetting, dependency review, risk register entries with mitigations. Evidence: the supply chain risk register with review dates and mitigation status.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-SCR-MON": {
@@ -1043,6 +1080,7 @@
     "sr-8"
    ],
    "how_to_comply_guidance": "Automatically monitor third-party software for upstream vulnerabilities: dependency scanning (Inspector, SCA tooling), SBOM tracking, advisory feeds. Evidence: scan results over time, advisory response records, SBOM currency.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-SVC-ACM": {
@@ -1073,6 +1111,7 @@
     "sr-10"
    ],
    "how_to_comply_guidance": "Manage configuration with automation and review drift persistently: IaC as the source of truth, AWS Config drift detection, automated remediation where safe. Evidence: drift findings and their resolution over time.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-SVC-ASM": {
@@ -1094,6 +1133,7 @@
     "sc-17"
    ],
    "how_to_comply_guidance": "Automate management, protection, and rotation of keys, certificates, and secrets: KMS key rotation, ACM certificate renewal, Secrets Manager rotation. Evidence: rotation status queries across all three, alerts on failures.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-SVC-EIS": {
@@ -1121,6 +1161,7 @@
     "sr-10"
    ],
    "how_to_comply_guidance": "Persistently evaluate resources for security improvement opportunities and implement them: Security Hub findings triage, Trusted Advisor or Inspector recommendations with tracked adoption. Evidence: findings trend plus a record of improvements shipped.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-SVC-PRR": {
@@ -1141,6 +1182,7 @@
     "sc-7.18"
    ],
    "how_to_comply_guidance": "Class-varying (optional/MAY at Class B, required at Class C): plans, procedures, and resource state are persistently reviewed after changes to limit and remove unwanted residual elements that could affect confidentiality, integrity, or availability of federal customer data. Evidence: post-change review records, drift/residual-resource cleanup logs.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-SVC-RUD": {
@@ -1161,6 +1203,7 @@
     "si-8.2"
    ],
    "how_to_comply_guidance": "Class-varying (optional/MAY at Class B, required at Class C): unwanted federal customer data is removed promptly when an agency requests it per customer agreements, including from backups where appropriate (e.g. data spill or usage change). Evidence: data-removal request handling records, backup-scoped deletion procedures and logs.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-SVC-SIN": {
@@ -1195,6 +1238,7 @@
     "si-4.18"
    ],
    "how_to_comply_guidance": "Encrypt or otherwise secure information from unwanted access or modification: KMS customer managed keys at rest, TLS 1.2+ in transit, S3 Block Public Access, deny-unencrypted policies. Evidence: Config encryption rules, account-level default encryption status.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-SVC-VCM": {
@@ -1217,6 +1261,7 @@
     "si-7.1"
    ],
    "how_to_comply_guidance": "Class-varying (optional/MAY at Class B, required at Class C): the authenticity and integrity of communications between machine-based information resources is persistently validated using automation. Evidence: mutual-TLS/service-mesh identity validation, signed inter-service requests, automated integrity-verification records.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-SVC-VRI": {
@@ -1246,6 +1291,7 @@
     "sr-11"
    ],
    "how_to_comply_guidance": "Use cryptographic methods to validate the integrity of machine-based resources: signed artifacts, image digests pinned in deployment, CloudTrail log file validation. Evidence: signature or digest verification records in the pipeline.",
+   "guidance_platform": "AWS",
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   }
  }

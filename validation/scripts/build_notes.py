@@ -28,6 +28,14 @@ CANONICAL = os.path.join(BASE, "references", "fedramp-consolidated-rules.json")
 CATALOG = os.path.join(BASE, "traceability", "rule-catalog.json")
 KSI_CATALOG = os.path.join(BASE, "traceability", "ksi-catalog.json")
 
+# The platform the authored how-to-comply notes describe (MCE-16). Every note
+# carries it as a structured field so every document that copies a note can
+# label it as implementation guidance for THIS platform, never as the
+# provider's own statement. The notes layer is AWS-only until a provider on
+# another platform contributes grounded content; that content would carry its
+# own platform value, never this one.
+GUIDANCE_PLATFORM = "AWS"
+
 # Advisory guidance per FRR family. Labeled as guidance in output.
 FAMILY_GUIDANCE = {
     "AFC": "Stand up a dedicated, monitored FedRAMP security inbox as a distribution list reaching the security on-call rotation, separate from customer support. Test delivery and acknowledgement on a schedule (for example monthly synthetic emails) and keep membership current.",
@@ -151,6 +159,7 @@ def main():
             "how_to_comply_guidance": FAMILY_GUIDANCE.get(
                 r["family"],
                 "See the rule statement; no family guidance authored."),
+            "guidance_platform": GUIDANCE_PLATFORM,
             "guidance_label": (
                 "The compliance guidance is SAS advisory content naming typical "
                 "AWS approaches. It is not an official FedRAMP requirement; the "
@@ -170,6 +179,7 @@ def main():
             "nist_controls": k.get("controls", []),
             "how_to_comply_guidance": KSI_GUIDANCE.get(
                 kid, "No guidance authored yet for this indicator."),
+            "guidance_platform": GUIDANCE_PLATFORM,
             "guidance_label": (
                 "The compliance guidance is SAS advisory content naming typical "
                 "AWS approaches. It is not an official FedRAMP requirement; the "

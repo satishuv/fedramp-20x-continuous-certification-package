@@ -48,7 +48,7 @@
  },
  "inputs": {
   "profiles/common/offering-profile.json": "sha256:4f1de61a1a9db0936d2583d4ac425dbb1b9ca276da6a95e15de1cec8cd5942b2",
-  "sdr/records/records-store.json": "sha256:1b9b271c245634068375fa50b0ab25916771d08f777ca78355ed653fe4e85822"
+  "sdr/records/records-store.json": "sha256:41d10d4858d628569c11149490da301fdd51546b218463723ccc5f75dda4068d"
  },
  "artifacts": {
   "artifacts/mas-ksi-coverage-class-b.json": "sha256:7be01dae6b70e0971e4e9ae2c305d80f7301dbbb747dc0461c1c4e1ade935dc2",
@@ -68,9 +68,9 @@
   "package/ocr/ocr-example.json": "sha256:0828dd7a8eb692bec4e1ab60b975c1adf6d23dedf04b7125e88c936218454c03",
   "package/ocr/ocr-example.md": "sha256:ea4fe77fd76d617985b5b62224dc01d4fe8a34fc516092b3d4d5c29d4ce9f82d",
   "package/scg/secure-configuration-guide.md": "sha256:747c948b042a34e4118ac58a7e08a30cbe75f4c40a1085d19ee533d0c5ee2a4b",
-  "sdr/human-readable/sdr-class-b-authoring.docx": "sha256:0e26a1b06a3f237dc1f90e5144f6ef4fc05abfe464061f85f5d4bd2fbd2f53ed",
+  "sdr/human-readable/sdr-class-b-authoring.docx": "sha256:203f944a9ccdb473e0fbb46ba1980a1798734074b1f15d0043b55b5f4243af54",
   "sdr/human-readable/sdr-class-b.txt": "sha256:f760602d535764b49d97065d82e60ce86c55d4e3020448e7de3594097d5e7a44",
-  "sdr/json/sdr-class-b-extensions.json": "sha256:d066fda287d531b15036c48fdd04fd16694aca17c483f7a1d13f5c7f494380a0",
+  "sdr/json/sdr-class-b-extensions.json": "sha256:efc97a526ec5d0b8b0bc5fb5693168bef9200166e2ffedf0975106b2bfbe527c",
   "sdr/json/sdr-class-b.json": "sha256:bd9a4383874c43e8e8207a202bdaf453aa93d77a4f0aac785700a1782ae4e899",
   "traceability/applicability-decisions.json": "sha256:617d5244cfcbafc4e7d321dd723169638c91ef02fc03ab0e6a8cfc2d8c61327d",
   "traceability/assurance-graph.json": "sha256:7d18ab8786c3592df15d8744c9786c7f2e2731100c3705ed941bd364e4d8a6a1",

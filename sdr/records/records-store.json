@@ -37,6 +37,7 @@
     "rule_family": "AFC (Addressing FedRAMP Communication)",
     "what_it_looks_for": "Providers MUST establish and maintain an email address to receive messages from FedRAMP; this inbox is a FedRAMP Security Inbox (FSI).",
     "how_to_comply": "Stand up a dedicated, monitored FedRAMP security inbox as a distribution list reaching the security on-call rotation, separate from customer support. Test delivery and acknowledgement on a schedule (for example monthly synthetic emails) and keep membership current.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Email address to receive messages from FedRAMP"
     ]
@@ -78,6 +79,7 @@
     "rule_family": "AFC (Addressing FedRAMP Communication)",
     "what_it_looks_for": "Providers MUST immediately notify FedRAMP of any changes to the email address for their FedRAMP Security Inbox.",
     "how_to_comply": "Stand up a dedicated, monitored FedRAMP security inbox as a distribution list reaching the security on-call rotation, separate from customer support. Test delivery and acknowledgement on a schedule (for example monthly synthetic emails) and keep membership current.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Process, manual or automated, to notify FedRAMP of changes in the FedRAMP Security Inbox"
     ]
@@ -119,6 +121,7 @@
     "rule_family": "AFC (Addressing FedRAMP Communication)",
     "what_it_looks_for": "Providers MUST treat any email originating from an @fedramp.gov or @gsa.gov email address as if it was sent from FedRAMP by default; if such a message is confirmed to originate from someone other than FedRAMP then the FedRAMP Security Inbox rules no longer apply.",
     "how_to_comply": "Stand up a dedicated, monitored FedRAMP security inbox as a distribution list reaching the security on-call rotation, separate from customer support. Test delivery and acknowledgement on a schedule (for example monthly synthetic emails) and keep membership current.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Configuration settings for FSI mailbox",
      "Automated validation to check FSI mailbox configuration"
@@ -161,6 +164,7 @@
     "rule_family": "AFC (Addressing FedRAMP Communication)",
     "what_it_looks_for": "Providers MUST receive and react to email messages from FedRAMP without disruption and without requiring additional actions from FedRAMP.",
     "how_to_comply": "Stand up a dedicated, monitored FedRAMP security inbox as a distribution list reaching the security on-call rotation, separate from customer support. Test delivery and acknowledgement on a schedule (for example monthly synthetic emails) and keep membership current.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -206,6 +210,7 @@
     "rule_family": "AFC (Addressing FedRAMP Communication)",
     "what_it_looks_for": "Providers MUST complete the required actions in Emergency or Emergency Test designated messages sent by FedRAMP within the timeframe included in the message.",
     "how_to_comply": "Stand up a dedicated, monitored FedRAMP security inbox as a distribution list reaching the security on-call rotation, separate from customer support. Test delivery and acknowledgement on a schedule (for example monthly synthetic emails) and keep membership current.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -251,6 +256,7 @@
     "rule_family": "AFC (Addressing FedRAMP Communication)",
     "what_it_looks_for": "Providers MUST route Emergency designated messages sent by FedRAMP to a senior security official for their awareness.",
     "how_to_comply": "Stand up a dedicated, monitored FedRAMP security inbox as a distribution list reaching the security on-call rotation, separate from customer support. Test delivery and acknowledgement on a schedule (for example monthly synthetic emails) and keep membership current.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Configuration settings for FSI mailbox",
      "Automated validation to check FSI mailbox configuration"
@@ -293,6 +299,7 @@
     "rule_family": "AFC (Addressing FedRAMP Communication)",
     "what_it_looks_for": "Providers SHOULD complete the required actions in Important designated messages sent by FedRAMP within the timeframe specified in the message.",
     "how_to_comply": "Stand up a dedicated, monitored FedRAMP security inbox as a distribution list reaching the security on-call rotation, separate from customer support. Test delivery and acknowledgement on a schedule (for example monthly synthetic emails) and keep membership current.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -338,6 +345,7 @@
     "rule_family": "AFC (Addressing FedRAMP Communication)",
     "what_it_looks_for": "Providers SHOULD promptly and automatically acknowledge the receipt of messages received from FedRAMP in their FedRAMP Security Inbox.",
     "how_to_comply": "Stand up a dedicated, monitored FedRAMP security inbox as a distribution list reaching the security on-call rotation, separate from customer support. Test delivery and acknowledgement on a schedule (for example monthly synthetic emails) and keep membership current.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -383,6 +391,7 @@
     "rule_family": "CCM (Collaborative Continuous Monitoring)",
     "what_it_looks_for": "Providers MUST supply an Ongoing Certification Report to all necessary parties every 3 months, covering the entire period since the previous summary, in a consistent format that is human readable; this report MUST include high-level summaries of at least the following information (if applicable):",
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Most recent Ongoing Certification Report. If the report is not available, the provider MUST provide a sample report that includes all required information.",
      "How the report will be delivered"
@@ -425,6 +434,7 @@
     "rule_family": "CCM (Collaborative Continuous Monitoring)",
     "what_it_looks_for": "Providers MUST supply the target date for their next Ongoing Certification Report with other public FedRAMP Certification Data.",
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -470,6 +480,7 @@
     "rule_family": "CCM (Collaborative Continuous Monitoring)",
     "what_it_looks_for": "Providers MUST supply an asynchronous mechanism for all necessary parties to provide feedback or ask questions about each Ongoing Certification Report.",
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "How to access the feedback mechanism."
     ]
@@ -511,6 +522,7 @@
     "rule_family": "CCM (Collaborative Continuous Monitoring)",
     "what_it_looks_for": "Providers MUST supply an anonymized and desensitized summary of the feedback, questions, and answers about each Ongoing Certification Report as an addendum to the Ongoing Certification Report OR in the next Ongoing Certification Report.",
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "How the summary will be delivered"
     ]
@@ -552,6 +564,7 @@
     "rule_family": "CCM (Collaborative Continuous Monitoring)",
     "what_it_looks_for": "Providers MUST NOT irresponsibly disclose sensitive information in an Ongoing Certification Report that would likely have an adverse effect on the cloud service offering.",
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -597,6 +610,7 @@
     "rule_family": "CCM (Collaborative Continuous Monitoring)",
     "what_it_looks_for": "Providers SHOULD establish a regular 3 month cycle for Ongoing Certification Reports that is spread out from the beginning, middle, or end of each quarter.",
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -642,6 +656,7 @@
     "rule_family": "CCM (Collaborative Continuous Monitoring)",
     "what_it_looks_for": "Providers MAY responsibly supply some or all of the information an Ongoing Certification Report to the public or other parties if the provider determines doing so will NOT likely have an adverse effect on the cloud service offering.",
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -687,6 +702,7 @@
     "rule_family": "CCM (Collaborative Continuous Monitoring)",
     "what_it_looks_for": "Providers with Class B Certifications SHOULD host a synchronous Quarterly Review every 3 months, open to all necessary parties, to review aspects of the most recent Ongoing Certification Reports that the provider determines are of the most relevance to agencies.",
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -732,6 +748,7 @@
     "rule_family": "CCM (Collaborative Continuous Monitoring)",
     "what_it_looks_for": "Providers MUST supply either a registration link or a downloadable calendar file with meeting information for Quarterly Reviews to all necessary parties.",
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "URL to the registration page or calendar file."
     ]
@@ -773,6 +790,7 @@
     "rule_family": "CCM (Collaborative Continuous Monitoring)",
     "what_it_looks_for": "Providers MUST publicly supply the target date for their next Quarterly Review with other public FedRAMP Certification Data.",
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -818,6 +836,7 @@
     "rule_family": "CCM (Collaborative Continuous Monitoring)",
     "what_it_looks_for": "Providers MUST NOT irresponsibly disclose sensitive information in a Quarterly Review that would likely have an adverse effect on the cloud service offering.",
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -863,6 +882,7 @@
     "rule_family": "CCM (Collaborative Continuous Monitoring)",
     "what_it_looks_for": "Providers SHOULD regularly schedule Quarterly Reviews to occur at least 3 business days after releasing an Ongoing Certification Report AND within 10 business days of such release.",
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -908,6 +928,7 @@
     "rule_family": "CCM (Collaborative Continuous Monitoring)",
     "what_it_looks_for": "Providers SHOULD supply additional information in Quarterly Reviews that the provider determines is of interest, use, or otherwise relevant to agencies.",
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -953,6 +974,7 @@
     "rule_family": "CCM (Collaborative Continuous Monitoring)",
     "what_it_looks_for": "Providers SHOULD record or transcribe Quarterly Reviews and supply them to all necessary parties.",
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -998,6 +1020,7 @@
     "rule_family": "CCM (Collaborative Continuous Monitoring)",
     "what_it_looks_for": "Providers SHOULD NOT invite third parties to attend Quarterly Reviews intended for agencies unless they have specific relevance.",
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1043,6 +1066,7 @@
     "rule_family": "CCM (Collaborative Continuous Monitoring)",
     "what_it_looks_for": "Providers MAY responsibly supply recordings or transcriptions of Quarterly Reviews to the public or other parties ONLY if the provider removes all agency information (comments, questions, names, etc.) AND determines doing so will NOT likely have an adverse effect on the cloud service offering.",
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1088,6 +1112,7 @@
     "rule_family": "CCM (Collaborative Continuous Monitoring)",
     "what_it_looks_for": "Providers MAY responsibly supply content prepared for a Quarterly Review to the public or other parties if the provider determines doing so will NOT likely have an adverse effect on the cloud service offering.",
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1133,6 +1158,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Providers MUST publicly share up-to-date information about the cloud service offering in both human-readable and JSON formats, including at least the following information that is available and applicable:",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "URL to the human-readable data.",
      "URL to the machine-readable data."
@@ -1175,6 +1201,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Providers MUST publicly share a detailed list of specific services and their security categories that are included in the cloud service offering using clear feature or service names that align with standard public marketing materials; this list MUST be complete enough for a potential customer to determine which services are and are not included in the FedRAMP Minimum Assessment Scope without requesting access to underlying FedRAMP Certification Data.",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "URL to the human-readable data.",
      "URL to the machine-readable data (if applicable)."
@@ -1217,6 +1244,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Providers MUST always include the FedRAMP ID of the related cloud service offering in all FedRAMP Certification Data once assigned, including all reports, notifications, and other communication that results from FedRAMP rules.",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1262,6 +1290,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Providers MUST include FedRAMP Certification Reports with their FedRAMP Certification Data without inappropriate modifications, and make such reports available within 2 weeks of receiving the materials from FedRAMP.",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1307,6 +1336,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Providers with Class B Certifications MUST maintain a web service, available to all necessary parties, that indicates current and historical availability of core services within the cloud service offering over at least the past 30 days, including availability incidents, in both human-readable and machine-readable formats; this service MUST be available even if the primary cloud service offering is unavailable.",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1352,6 +1382,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Providers MUST use a FedRAMP-compatible trust center to store and share FedRAMP Certification Data with all necessary parties.",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1397,6 +1428,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Providers MUST use automation to ensure information remains consistent between human-readable and machine-readable formats when FedRAMP Certification Data is provided in both formats.",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1442,6 +1474,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Providers MUST provide sufficient information in FedRAMP Certification Data to support agency authorization decisions but SHOULD NOT include sensitive information that would likely enable a threat actor to gain unauthorized access, cause harm, disrupt operations, or otherwise have a negative adverse impact on the cloud service offering.",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1487,6 +1520,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Providers MUST supply all relevant policies and procedures in the FedRAMP Certification Data, including a human-readable and machine-readable reference that explains at least the following about each included policy and procedure:",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how to access this information."
     ]
@@ -1528,6 +1562,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Providers MUST supply snapshots of FedRAMP Certification Data aligned to Ongoing Certification Reports to all necessary parties; these snapshots MUST be available for the duration of FedRAMP Certification.",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how to access this information."
     ]
@@ -1569,6 +1604,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Providers with Class B Certifications MAY supply per-service FedRAMP Certification materials.",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1614,6 +1650,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Providers MAY responsibly share some or all of the information in a FedRAMP Certification Package publicly or with other parties if the provider determines doing so will NOT likely have an adverse effect on the cloud service offering.",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of if and how this information is shared with other parties."
     ]
@@ -1655,6 +1692,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Trust centers MUST share FedRAMP Certification Data with all necessary parties without interruption.",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1700,6 +1738,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Trust centers MUST provide documented programmatic access to all FedRAMP Certification Data, including programmatic access to human-readable materials.",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "URL to the documentation for programmatic access."
     ]
@@ -1741,6 +1780,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Trust centers MUST maintain an inventory and history of federal agency users or systems with access to FedRAMP Certification Data and MUST make this information available to FedRAMP upon request.",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how FedRAMP can obtain this information."
     ]
@@ -1782,6 +1822,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Trust centers MUST log access to FedRAMP Certification Data and store summaries of access for at least six months; such information, as it pertains to specific parties, SHOULD be made available upon request by those parties.",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the appropriate parties can obtain this log information."
     ]
@@ -1823,6 +1864,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Trust centers SHOULD make FedRAMP Certification Data available to view and download in both human-readable and machine-readable formats.",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1868,6 +1910,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Trust centers SHOULD include features that encourage all necessary parties to provision and manage access to FedRAMP Certification Data for their users and services directly.",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "URL or explanation how to access documentation of these features and capabilities."
     ]
@@ -1909,6 +1952,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Providers MUST notify FedRAMP within 5 business days of denying an agency access request for FedRAMP Certification Data.",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1954,6 +1998,7 @@
     "rule_family": "CDS (Certification Data Sharing)",
     "what_it_looks_for": "Providers SHOULD supply access to the FedRAMP Certification Package with agencies upon request.",
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "URL or explanation of how to request these materials.",
      "Explanation of how the provider decides whether or not to share these materials or other related policies."
@@ -1996,6 +2041,7 @@
     "rule_family": "CMU (Cryptographic Module Use)",
     "what_it_looks_for": "Providers MUST document the cryptographic modules used in each service (or groups of services that use the same modules) where cryptographic services are used to protect federal customer data, including whether these modules are validated under the NIST Cryptographic Module Validation Program or are update streams of such modules.",
     "how_to_comply": "Use FIPS-validated cryptographic modules for federal data: AWS KMS (validated HSM-backed) for keys, FIPS endpoints for service APIs where required, and TLS 1.2 or higher. Record module certificates and validation numbers; document any exception formally.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "List of cryptographic modules including whether these modules are validated under the NIST Cryptographic Module Validation Program or are update streams of such modules."
     ]
@@ -2037,6 +2083,7 @@
     "rule_family": "CMU (Cryptographic Module Use)",
     "what_it_looks_for": "Providers with Class B Certifications MAY use cryptographic modules or update streams of cryptographic modules with active validations under the NIST Cryptographic Module Validation Program when using cryptographic services to protect federal customer data.",
     "how_to_comply": "Use FIPS-validated cryptographic modules for federal data: AWS KMS (validated HSM-backed) for keys, FIPS endpoints for service APIs where required, and TLS 1.2 or higher. Record module certificates and validation numbers; document any exception formally.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2082,6 +2129,7 @@
     "rule_family": "CMU (Cryptographic Module Use)",
     "what_it_looks_for": "Providers SHOULD configure agency tenants by default to use cryptographic services that use cryptographic modules or update streams of cryptographic modules with active validations under the NIST Cryptographic Module Validation Program when such modules are available.",
     "how_to_comply": "Use FIPS-validated cryptographic modules for federal data: AWS KMS (validated HSM-backed) for keys, FIPS endpoints for service APIs where required, and TLS 1.2 or higher. Record module certificates and validation numbers; document any exception formally.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "List of cryptographic modules used by default including whether these modules are validated under the NIST Cryptographic Module Validation Program or are update streams of such modules."
     ]
@@ -2123,6 +2171,7 @@
     "rule_family": "CPO (Certification Package Overview)",
     "what_it_looks_for": "Providers MUST supply a Certification Package Overview within their FedRAMP Certification Package, in both human-readable and JSON formats, that includes at least all of the information required by the following rules:",
     "how_to_comply": "Keep the Certification Package Overview concise and current. At Class C the package must be maintained at least every 2 weeks; put the maintenance run on a calendar with a named owner and generate as much as possible from the pipeline.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2168,6 +2217,7 @@
     "rule_family": "CPO (Certification Package Overview)",
     "what_it_looks_for": "Providers MUST also include the following basic metadata in their Certification Package Overview:",
     "how_to_comply": "Keep the Certification Package Overview concise and current. At Class C the package must be maintained at least every 2 weeks; put the maintenance run on a calendar with a named owner and generate as much as possible from the pipeline.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2213,6 +2263,7 @@
     "rule_family": "CPO (Certification Package Overview)",
     "what_it_looks_for": "Providers seeking Class B Certification MUST also include the overall summary of their FedRAMP independent assessment, supplied by the assessor per IVV-IAS-OSA (Overall Summary of Assessment), in their Certification Package Overview.",
     "how_to_comply": "Keep the Certification Package Overview concise and current. At Class C the package must be maintained at least every 2 weeks; put the maintenance run on a calendar with a named owner and generate as much as possible from the pipeline.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2258,6 +2309,7 @@
     "rule_family": "CPO (Certification Package Overview)",
     "what_it_looks_for": "Providers with 20x Class B Certifications MUST persistently maintain their FedRAMP Certification Package to ensure it is up to date and complete at least once every month.",
     "how_to_comply": "Keep the Certification Package Overview concise and current. At Class C the package must be maintained at least every 2 weeks; put the maintenance run on a calendar with a named owner and generate as much as possible from the pipeline.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2303,6 +2355,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "Providers MUST identify a target FedRAMP Certification Profile and apply all relevant FedRAMP Practices to the cloud service offering.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2348,6 +2401,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "Providers seeking a Certification MUST supply a complete FedRAMP Certification Package to FedRAMP for initial certification; the FedRAMP Certification Package MUST include at least the following information:",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2393,6 +2447,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "Providers MUST supply machine-readable information in JSON documents that are valid against the corresponding JSON schema when a rule contains a FedRAMP JSON schema, UNLESS otherwise specified in the rule; public JSON data MUST be supplied in a manner compatible with modern web frameworks, including:",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2438,6 +2493,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "Providers MUST maintain responsibility and accountability for the accuracy and completeness of all information in the FedRAMP Certification Package, especially when they engage a third party (such as an independent assessor, advisory service, or external tools) to supply information on their behalf.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2483,6 +2539,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "Providers MUST NOT seek both FedRAMP Rev5 Program Certification and FedRAMP 20x Program Certification for the same cloud service offering; pick one type.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2528,6 +2585,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "Providers MUST be listed in the FedRAMP Marketplace before applying for FedRAMP Certification, including:",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2573,6 +2631,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "Providers MUST complete the FedRAMP Certification Application Form in full to request an initial assessment by FedRAMP.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2618,6 +2677,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "Providers MUST supply a fresh initial FedRAMP Certification Package that shows the current status of the cloud service offering as verified and validated by the provider within the previous 7 days.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2663,6 +2723,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "Providers seeking Class B Certification MUST supply a fresh initial FedRAMP independent assessment that was completed by a FedRAMP Recognized independent assessment service within the previous 3 months.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2708,6 +2769,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "Providers MUST NOT use a third party to apply for a FedRAMP Certification on their behalf; this includes independent assessment services.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2753,6 +2815,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "Providers MAY freshen a stale initial independent verification and validation assessment by having a FedRAMP Recognized independent assessment service review any changes between the original assessment and the current status of the cloud service offering in place of a full re-assessment, UNLESS the stale assessment is more than 9 months old.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2793,6 +2856,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "See rule catalog.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2833,6 +2897,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "See rule catalog.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2873,6 +2938,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "See rule catalog.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2913,6 +2979,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "See rule catalog.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -2958,6 +3025,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "Providers seeking 20x Class B Certification SHOULD implement automated methods to persistently verify and validate the accuracy and completeness of Key Security Indicators with at least 1 automated method for each Key Security Indicator.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -3003,6 +3071,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "Providers seeking 20x Class B Certification SHOULD implement automated methods to persistently verify and validate the accuracy and completeness of the Security Decision Record for FedRAMP rules when applicable.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -3048,6 +3117,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "Providers SHOULD apply ALL Key Security Indicators to ALL aspects of their cloud service offering that are within the FedRAMP Minimum Assessment Scope.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -3093,6 +3163,7 @@
     "rule_family": "IEC (Incident Evaluation and Communication)",
     "what_it_looks_for": "Providers MUST promptly evaluate incidents to determine if they affect confidentiality or integrity of federal customer data or are likely to affect confidentiality or integrity of federal customer data; such incidents are FedRAMP Reportable Incidents and must be reported following the FedRAMP Incident Evaluation and Communication rules.",
     "how_to_comply": "Define incident evaluation and reporting procedures with the FedRAMP Reportable Incident test, the Potential Agency Impact N-rating scale, and the class-specific reporting timeframes. Wire detection (GuardDuty, Security Hub) to an on-call process that can meet the clock.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "An incident log showing an example of one or more incidents being evaluated including the reason for the determination. The log can be from real incidents, simulated incidents, or a combination of sources."
     ]
@@ -3134,6 +3205,7 @@
     "rule_family": "IEC (Incident Evaluation and Communication)",
     "what_it_looks_for": "Providers MUST treat FedRAMP Reportable Incidents as if they have a Potential Agency Impact N-rating (PAIN) of 5 UNLESS they promptly estimate the PAIN rating following the rule in IEC-CSO-EFI (Estimate Federal Impact).",
     "how_to_comply": "Define incident evaluation and reporting procedures with the FedRAMP Reportable Incident test, the Potential Agency Impact N-rating scale, and the class-specific reporting timeframes. Wire detection (GuardDuty, Security Hub) to an on-call process that can meet the clock.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -3179,6 +3251,7 @@
     "rule_family": "IEC (Incident Evaluation and Communication)",
     "what_it_looks_for": "Providers with Class B Certifications MUST responsibly notify all affected parties after identifying FedRAMP Reportable Incidents by providing an Initial Incident Report with as much of the following information that is available at the time of reporting and/or the current relevant status for each item:",
     "how_to_comply": "Define incident evaluation and reporting procedures with the FedRAMP Reportable Incident test, the Potential Agency Impact N-rating scale, and the class-specific reporting timeframes. Wire detection (GuardDuty, Security Hub) to an on-call process that can meet the clock.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -3224,6 +3297,7 @@
     "rule_family": "IEC (Incident Evaluation and Communication)",
     "what_it_looks_for": "Providers with Class B Certifications MUST responsibly notify all affected parties of ongoing activity as new information becomes available during incident response for FedRAMP Reportable Incidents, including updates (or lack of updates) to all previously reported information and as much of the following additional information that is available and/or the current relevant status for each item:",
     "how_to_comply": "Define incident evaluation and reporting procedures with the FedRAMP Reportable Incident test, the Potential Agency Impact N-rating scale, and the class-specific reporting timeframes. Wire detection (GuardDuty, Security Hub) to an on-call process that can meet the clock.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -3269,6 +3343,7 @@
     "rule_family": "IEC (Incident Evaluation and Communication)",
     "what_it_looks_for": "Providers with Class B Certifications MUST responsibly notify all affected parties by providing a Final Incident Report once the incident has been resolved and recovery is complete, including final updates to all previously reported information.",
     "how_to_comply": "Define incident evaluation and reporting procedures with the FedRAMP Reportable Incident test, the Potential Agency Impact N-rating scale, and the class-specific reporting timeframes. Wire detection (GuardDuty, Security Hub) to an on-call process that can meet the clock.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -3314,6 +3389,7 @@
     "rule_family": "IEC (Incident Evaluation and Communication)",
     "what_it_looks_for": "Providers SHOULD promptly estimate the likely adverse impact of an incident on agency customers to assign a Potential Agency Impact N-rating; this step is called Incident Rating.",
     "how_to_comply": "Define incident evaluation and reporting procedures with the FedRAMP Reportable Incident test, the Potential Agency Impact N-rating scale, and the class-specific reporting timeframes. Wire detection (GuardDuty, Security Hub) to an on-call process that can meet the clock.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "An incident log showing an example of one or more incidents being evaluated including the reason for the determination. The log can be from real incidents, simulated incidents, or a combination of sources."
     ]
@@ -3355,6 +3431,7 @@
     "rule_family": "IEC (Incident Evaluation and Communication)",
     "what_it_looks_for": "Providers SHOULD use automation to minimize human intervention in the process of reporting FedRAMP Reportable Incidents to all affected parties.",
     "how_to_comply": "Define incident evaluation and reporting procedures with the FedRAMP Reportable Incident test, the Potential Agency Impact N-rating scale, and the class-specific reporting timeframes. Wire detection (GuardDuty, Security Hub) to an on-call process that can meet the clock.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -3400,6 +3477,7 @@
     "rule_family": "IVV (Independent Verification and Validation)",
     "what_it_looks_for": "Providers with Class B Certifications MUST persistently complete an independent verification and validation assessment of all applicable FedRAMP rules with a FedRAMP Recognized independent assessment service OR FedRAMP at least once per year; this is a FedRAMP independent assessment.",
     "how_to_comply": "Engage a FedRAMP Recognized Assessor with documented independence (no advisory work on this offering in the past 2 years). Give the assessor access to the SDR and read access to live evidence; supply evidence of implementation (verification) and effectiveness (validation).",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -3445,6 +3523,7 @@
     "rule_family": "IVV (Independent Verification and Validation)",
     "what_it_looks_for": "Providers MUST supply evidence to all necessary assessors of the implementation of the measures that have been documented to meet FedRAMP Practices; this evidence is the result of verification.",
     "how_to_comply": "Engage a FedRAMP Recognized Assessor with documented independence (no advisory work on this offering in the past 2 years). Give the assessor access to the SDR and read access to live evidence; supply evidence of implementation (verification) and effectiveness (validation).",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -3490,6 +3569,7 @@
     "rule_family": "IVV (Independent Verification and Validation)",
     "what_it_looks_for": "Providers MUST supply evidence to all necessary assessors of the effectiveness of the measures that have been implemented to meet FedRAMP Practices; this evidence is the result of validation.",
     "how_to_comply": "Engage a FedRAMP Recognized Assessor with documented independence (no advisory work on this offering in the past 2 years). Give the assessor access to the SDR and read access to live evidence; supply evidence of implementation (verification) and effectiveness (validation).",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -3535,6 +3615,7 @@
     "rule_family": "IVV (Independent Verification and Validation)",
     "what_it_looks_for": "Providers MUST supply the results of FedRAMP independent assessments in their FedRAMP Certification Package without inappropriate modification.",
     "how_to_comply": "Engage a FedRAMP Recognized Assessor with documented independence (no advisory work on this offering in the past 2 years). Give the assessor access to the SDR and read access to live evidence; supply evidence of implementation (verification) and effectiveness (validation).",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -3580,6 +3661,7 @@
     "rule_family": "IVV (Independent Verification and Validation)",
     "what_it_looks_for": "Providers MUST document and explain the use of representative samples during verification and validation when using representative samples as allowed by IVV-CSO-USR (Use Representative Samples).",
     "how_to_comply": "Engage a FedRAMP Recognized Assessor with documented independence (no advisory work on this offering in the past 2 years). Give the assessor access to the SDR and read access to live evidence; supply evidence of implementation (verification) and effectiveness (validation).",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -3625,6 +3707,7 @@
     "rule_family": "IVV (Independent Verification and Validation)",
     "what_it_looks_for": "Providers SHOULD supply all necessary assessors with technical explanations, demonstrations, and other relevant supporting information about the technical capabilities they employ to address FedRAMP rules; this SHOULD be supplied as necessary to ensure the assessor can effectively complete verification and validation.",
     "how_to_comply": "Engage a FedRAMP Recognized Assessor with documented independence (no advisory work on this offering in the past 2 years). Give the assessor access to the SDR and read access to live evidence; supply evidence of implementation (verification) and effectiveness (validation).",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -3670,6 +3753,7 @@
     "rule_family": "IVV (Independent Verification and Validation)",
     "what_it_looks_for": "Providers MAY use representative samples as appropriate during verification and validation.",
     "how_to_comply": "Engage a FedRAMP Recognized Assessor with documented independence (no advisory work on this offering in the past 2 years). Give the assessor access to the SDR and read access to live evidence; supply evidence of implementation (verification) and effectiveness (validation).",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -3715,6 +3799,7 @@
     "rule_family": "IVV (Independent Verification and Validation)",
     "what_it_looks_for": "Providers MAY ask for and accept advice from their assessor during assessment regarding techniques and procedures that will improve their security posture or the effectiveness, clarity, and accuracy of their verification, validation and reporting procedures, UNLESS doing so is likely to compromise the objectivity and integrity of the assessment.",
     "how_to_comply": "Engage a FedRAMP Recognized Assessor with documented independence (no advisory work on this offering in the past 2 years). Give the assessor access to the SDR and read access to live evidence; supply evidence of implementation (verification) and effectiveness (validation).",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -3760,6 +3845,7 @@
     "rule_family": "IVV (Independent Verification and Validation)",
     "what_it_looks_for": "Providers with 20x Class B Certifications MUST include all Key Security Indicators in a FedRAMP independent assessment at least once per year.",
     "how_to_comply": "Engage a FedRAMP Recognized Assessor with documented independence (no advisory work on this offering in the past 2 years). Give the assessor access to the SDR and read access to live evidence; supply evidence of implementation (verification) and effectiveness (validation).",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -3805,6 +3891,7 @@
     "rule_family": "MAS (Minimum Assessment Scope)",
     "what_it_looks_for": "Providers MUST identify a set of information resources to assess for FedRAMP Certification that includes all information resources that are likely to handle federal customer data or likely to impact the confidentiality, integrity, or availability of federal customer data handled by the cloud service offering; this set of information resources is the cloud service offering.",
     "how_to_comply": "Define the Minimum Assessment Scope narrowly and defensibly: identify every information resource that handles federal data or whose compromise would affect it, justify each exclusion, and keep the inventory machine-generated (AWS Config, Resource Explorer) so it stays current.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "A machine readable output containing all required data of the components of the cloud service offering that are likely to handle federal customer data or likely to impact the confidentiality, integrity, or availability of federal customer data handled by the cloud service offering.",
      "A human readable explanation of how the machine readable output is derived.",
@@ -3848,6 +3935,7 @@
     "rule_family": "MAS (Minimum Assessment Scope)",
     "what_it_looks_for": "Providers MUST clearly identify, document, and explain information flows and security categories for ALL information resources or sets of information resources in the cloud service offering.",
     "how_to_comply": "Define the Minimum Assessment Scope narrowly and defensibly: identify every information resource that handles federal data or whose compromise would affect it, justify each exclusion, and keep the inventory machine-generated (AWS Config, Resource Explorer) so it stays current.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "A machine readable output containing all required data of the permitted connections between components of the cloud service offering that are likely to handle federal customer data or likely to impact the confidentiality, integrity, or availability of federal customer data handled by the cloud service offering.",
      "A human readable explanation of how the machine readable output is derived.",
@@ -3891,6 +3979,7 @@
     "rule_family": "MAS (Minimum Assessment Scope)",
     "what_it_looks_for": "Providers MUST address the potential impact to federal customer data from third-party information resources used by the cloud service offering, ONLY IF MAS-CSO-IIR (Identify Information Resources) APPLIES, by documenting the following information about each applicable third-party information resource:",
     "how_to_comply": "Define the Minimum Assessment Scope narrowly and defensibly: identify every information resource that handles federal data or whose compromise would affect it, justify each exclusion, and keep the inventory machine-generated (AWS Config, Resource Explorer) so it stays current.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "A machine readable output containing all required data of the third-party information resources of the cloud service offering that are likely to handle federal customer data or likely to impact the confidentiality, integrity, or availability of federal customer data handled by the cloud service offering.",
      "A human readable explanation of how the machine readable output is derived.",
@@ -3934,6 +4023,7 @@
     "rule_family": "MAS (Minimum Assessment Scope)",
     "what_it_looks_for": "Providers MUST include metadata (including metadata about federal customer data) in the Minimum Assessment Scope ONLY IF MAS-CSO-IIR (Identify Information Resources) APPLIES.",
     "how_to_comply": "Define the Minimum Assessment Scope narrowly and defensibly: identify every information resource that handles federal data or whose compromise would affect it, justify each exclusion, and keep the inventory machine-generated (AWS Config, Resource Explorer) so it stays current.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "A machine readable output containing all required data of the metadata collected or maintained by the cloud service offering that are likely to handle federal customer data or likely to impact the confidentiality, integrity, or availability of federal customer data handled by the cloud service offering.",
      "A human readable explanation of how the machine readable output is derived.",
@@ -3977,6 +4067,7 @@
     "rule_family": "MAS (Minimum Assessment Scope)",
     "what_it_looks_for": "Providers MAY include additional materials about other information resources that are not part of the cloud service offering in a FedRAMP Certification Package supplement; these resources will not be FedRAMP Certified and MUST be clearly marked and separated from the cloud service offering.",
     "how_to_comply": "Define the Minimum Assessment Scope narrowly and defensibly: identify every information resource that handles federal data or whose compromise would affect it, justify each exclusion, and keep the inventory machine-generated (AWS Config, Resource Explorer) so it stays current.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -4022,6 +4113,7 @@
     "rule_family": "MKT (Marketplace Listing)",
     "what_it_looks_for": "Providers MUST address at least these FedRAMP rules to apply for a new FedRAMP Marketplace listing OR to request updates to an existing listing:",
     "how_to_comply": "Maintain an accurate FedRAMP Marketplace listing. If listing during Initial Implementation, schedule the assessment within 2 years (MKT-IIP-DLA). Keep listing data consistent with the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -4067,6 +4159,7 @@
     "rule_family": "MKT (Marketplace Listing)",
     "what_it_looks_for": "Providers MUST notify FedRAMP using the FedRAMP Marketplace Providing Listing Request Form to request a listing in the FedRAMP Marketplace.",
     "how_to_comply": "Maintain an accurate FedRAMP Marketplace listing. If listing during Initial Implementation, schedule the assessment within 2 years (MKT-IIP-DLA). Keep listing data consistent with the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -4112,6 +4205,7 @@
     "rule_family": "MKT (Marketplace Listing)",
     "what_it_looks_for": "Providers MUST demonstrate that a cloud service offering is intended for one of the following use cases:",
     "how_to_comply": "Maintain an accurate FedRAMP Marketplace listing. If listing during Initial Implementation, schedule the assessment within 2 years (MKT-IIP-DLA). Keep listing data consistent with the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -4157,6 +4251,7 @@
     "rule_family": "MKT (Marketplace Listing)",
     "what_it_looks_for": "Providers MUST demonstrate continuous progress towards a FedRAMP Certification, documented in their Trust Center or website and updated at least quarterly; progress is measured by the provider against documented goals and milestones.",
     "how_to_comply": "Maintain an accurate FedRAMP Marketplace listing. If listing during Initial Implementation, schedule the assessment within 2 years (MKT-IIP-DLA). Keep listing data consistent with the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -4202,6 +4297,7 @@
     "rule_family": "MKT (Marketplace Listing)",
     "what_it_looks_for": "Providers MUST demonstrate that an assessment for a FedRAMP Certification Class B, C, or D has been scheduled within 2 years of initial listing in the Initial Implementation Phase.",
     "how_to_comply": "Maintain an accurate FedRAMP Marketplace listing. If listing during Initial Implementation, schedule the assessment within 2 years (MKT-IIP-DLA). Keep listing data consistent with the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -4247,6 +4343,7 @@
     "rule_family": "SCG (Secure Configuration Guide)",
     "what_it_looks_for": "Providers MUST create, maintain, and make available recommendations for securely configuring their cloud services (the Secure Configuration Guide) that includes at least the following information:",
     "how_to_comply": "Write the Secure Configuration Guide for the agency customer, not the provider: the settings the customer controls, secure defaults, consequences of insecure choices, and machine-readable guidance where practical.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "URL to the human-readable data.",
      "URL to the machine-readable data."
@@ -4289,6 +4386,7 @@
     "rule_family": "SCG (Secure Configuration Guide)",
     "what_it_looks_for": "Providers MUST include instructions in the FedRAMP Certification Package that explain how to obtain and use the Secure Configuration Guide.",
     "how_to_comply": "Write the Secure Configuration Guide for the agency customer, not the provider: the settings the customer controls, secure defaults, consequences of insecure choices, and machine-readable guidance where practical.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "URL or explanation of how to request these materials.",
      "Explanation of how the provider decides whether or not to share these materials or other related policies."
@@ -4331,6 +4429,7 @@
     "rule_family": "SCG (Secure Configuration Guide)",
     "what_it_looks_for": "Providers SHOULD make the Secure Configuration Guide available publicly.",
     "how_to_comply": "Write the Secure Configuration Guide for the agency customer, not the provider: the settings the customer controls, secure defaults, consequences of insecure choices, and machine-readable guidance where practical.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how to access this information",
      "or explanation why this functionality is not available"
@@ -4373,6 +4472,7 @@
     "rule_family": "SCG (Secure Configuration Guide)",
     "what_it_looks_for": "Providers SHOULD set all settings to their recommended secure defaults for top-level administrative accounts and privileged accounts when initially provisioned.",
     "how_to_comply": "Write the Secure Configuration Guide for the agency customer, not the provider: the settings the customer controls, secure defaults, consequences of insecure choices, and machine-readable guidance where practical.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how to access this information",
      "or explanation why this functionality is not available"
@@ -4415,6 +4515,7 @@
     "rule_family": "SCG (Secure Configuration Guide)",
     "what_it_looks_for": "Providers SHOULD offer the capability to compare all current settings for top-level administrative accounts and privileged accounts to the recommended secure defaults.",
     "how_to_comply": "Write the Secure Configuration Guide for the agency customer, not the provider: the settings the customer controls, secure defaults, consequences of insecure choices, and machine-readable guidance where practical.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how to access this information",
      "or explanation why this functionality is not available"
@@ -4457,6 +4558,7 @@
     "rule_family": "SCG (Secure Configuration Guide)",
     "what_it_looks_for": "Providers SHOULD offer the capability to export all security settings in a machine-readable format.",
     "how_to_comply": "Write the Secure Configuration Guide for the agency customer, not the provider: the settings the customer controls, secure defaults, consequences of insecure choices, and machine-readable guidance where practical.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how to access this information",
      "or explanation why this functionality is not available"
@@ -4499,6 +4601,7 @@
     "rule_family": "SCG (Secure Configuration Guide)",
     "what_it_looks_for": "Providers SHOULD offer the capability to view and adjust security settings via an API or similar capability.",
     "how_to_comply": "Write the Secure Configuration Guide for the agency customer, not the provider: the settings the customer controls, secure defaults, consequences of insecure choices, and machine-readable guidance where practical.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how to access this information",
      "or explanation why this functionality is not available"
@@ -4541,6 +4644,7 @@
     "rule_family": "SCG (Secure Configuration Guide)",
     "what_it_looks_for": "Providers SHOULD also provide the Secure Configuration Guide in a machine-readable format that can be used by customers or third-party tools to compare against current settings.",
     "how_to_comply": "Write the Secure Configuration Guide for the agency customer, not the provider: the settings the customer controls, secure defaults, consequences of insecure choices, and machine-readable guidance where practical.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how to access this information",
      "or explanation why this functionality is not available"
@@ -4583,6 +4687,7 @@
     "rule_family": "SCG (Secure Configuration Guide)",
     "what_it_looks_for": "Providers SHOULD provide versioning and a release history for recommended secure default settings for top-level administrative accounts and privileged accounts as they are adjusted over time.",
     "how_to_comply": "Write the Secure Configuration Guide for the agency customer, not the provider: the settings the customer controls, secure defaults, consequences of insecure choices, and machine-readable guidance where practical.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how to access this information",
      "or explanation why this functionality is not available"
@@ -4625,6 +4730,7 @@
     "rule_family": "SCN (Significant Change Notification)",
     "what_it_looks_for": "Providers MUST evaluate all potential significant changes to determine the type of significant change and follow the appropriate Significant Change Notification rules.",
     "how_to_comply": "Classify changes (routine recurring, adaptive, transformative, impact categorization) and automate the notification workflow with the class timeframes. Keep 12 months of notification history in human-readable and JSON form; log every evaluation.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Evidence of significant change evaluation including a description fo the change, the determined type, and an explanation for the decision. At least one example must be provided for each type of change. Real examples are prefered but the provider may use fictitious examples as long as the example provides evidence of the decision making process."
     ]
@@ -4666,6 +4772,7 @@
     "rule_family": "SCN (Significant Change Notification)",
     "what_it_looks_for": "Providers MUST maintain auditable records of the significant change evaluation activities required by SCN-CSO-EVA (Evaluate Changes) and make them available to FedRAMP as requested.",
     "how_to_comply": "Classify changes (routine recurring, adaptive, transformative, impact categorization) and automate the notification workflow with the class timeframes. Keep 12 months of notification history in human-readable and JSON form; log every evaluation.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how FedRAMP can obtain this information."
     ]
@@ -4707,6 +4814,7 @@
     "rule_family": "SCN (Significant Change Notification)",
     "what_it_looks_for": "Providers MUST include at least the following information in Significant Change Notifications:",
     "how_to_comply": "Classify changes (routine recurring, adaptive, transformative, impact categorization) and automate the notification workflow with the class timeframes. Keep 12 months of notification history in human-readable and JSON form; log every evaluation.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "A recent Significant Change Notification or sample Significant Change Notification"
     ]
@@ -4748,6 +4856,7 @@
     "rule_family": "SCN (Significant Change Notification)",
     "what_it_looks_for": "Providers MUST keep 12 months of historical Significant Change Notifications available with their FedRAMP Certification Data.",
     "how_to_comply": "Classify changes (routine recurring, adaptive, transformative, impact categorization) and automate the notification workflow with the class timeframes. Keep 12 months of notification history in human-readable and JSON form; log every evaluation.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how FedRAMP can obtain this information."
     ]
@@ -4789,6 +4898,7 @@
     "rule_family": "SCN (Significant Change Notification)",
     "what_it_looks_for": "Providers MUST make ALL Significant Change Notifications and related audit records available in human-readable and JSON formats.",
     "how_to_comply": "Classify changes (routine recurring, adaptive, transformative, impact categorization) and automate the notification workflow with the class timeframes. Keep 12 months of notification history in human-readable and JSON form; log every evaluation.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "URL or explanation of how to request these materials.",
      "Explanation of how the provider decides whether or not to share these materials or other related policies."
@@ -4831,6 +4941,7 @@
     "rule_family": "SCN (Significant Change Notification)",
     "what_it_looks_for": "Providers MAY include additional relevant information in Significant Change Notifications.",
     "how_to_comply": "Classify changes (routine recurring, adaptive, transformative, impact categorization) and automate the notification workflow with the class timeframes. Keep 12 months of notification history in human-readable and JSON form; log every evaluation.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -4876,6 +4987,7 @@
     "rule_family": "SCN (Significant Change Notification)",
     "what_it_looks_for": "Providers MAY notify necessary parties in a variety of ways as long as the mechanism for notification is clearly documented in the FedRAMP Certification Package and easily accessible.",
     "how_to_comply": "Classify changes (routine recurring, adaptive, transformative, impact categorization) and automate the notification workflow with the class timeframes. Keep 12 months of notification history in human-readable and JSON form; log every evaluation.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Current list of available notification mechanisms"
     ]
@@ -4917,6 +5029,7 @@
     "rule_family": "SCN (Significant Change Notification)",
     "what_it_looks_for": "Providers MAY execute significant changes (including transformative changes) during an emergency or incident without following the Significant Change Notification rules in advance. In such emergencies, providers MUST follow all relevant procedures, notify all necessary parties, retroactively provide all Significant Change Notification materials, and complete appropriate assessment after the incident.",
     "how_to_comply": "Classify changes (routine recurring, adaptive, transformative, impact categorization) and automate the notification workflow with the class timeframes. Keep 12 months of notification history in human-readable and JSON form; log every evaluation.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -4962,6 +5075,7 @@
     "rule_family": "SCN (Significant Change Notification)",
     "what_it_looks_for": "Providers MUST notify all necessary parties within 10 business days after finishing adaptive changes, also including the following information:",
     "how_to_comply": "Classify changes (routine recurring, adaptive, transformative, impact categorization) and automate the notification workflow with the class timeframes. Keep 12 months of notification history in human-readable and JSON form; log every evaluation.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "At least the most recent SCN notification including the date it was sent and the date the change was applied. Additional examples may be provided. If no SCN notifications have been sent then this artifact is not required."
     ]
@@ -5003,6 +5117,7 @@
     "rule_family": "SCN (Significant Change Notification)",
     "what_it_looks_for": "Providers SHOULD NOT make formal Significant Change Notifications for routine recurring changes; this type of change is exempted from notification requirements.",
     "how_to_comply": "Classify changes (routine recurring, adaptive, transformative, impact categorization) and automate the notification workflow with the class timeframes. Keep 12 months of notification history in human-readable and JSON form; log every evaluation.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -5048,6 +5163,7 @@
     "rule_family": "SCN (Significant Change Notification)",
     "what_it_looks_for": "Providers MUST notify all necessary parties of initial plans for transformative changes at least 30 business days before starting transformative changes, including a summary of any likely security impacts or changes in risk.",
     "how_to_comply": "Classify changes (routine recurring, adaptive, transformative, impact categorization) and automate the notification workflow with the class timeframes. Keep 12 months of notification history in human-readable and JSON form; log every evaluation.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "At least the most recent initial SCN notification for a transformative change including the date it was sent and the date the change was applied. Additional examples may be provided. If no transformative SCN notifications have been sent then this artifact is not required."
     ]
@@ -5089,6 +5205,7 @@
     "rule_family": "SCN (Significant Change Notification)",
     "what_it_looks_for": "Providers MUST notify all necessary parties of final plans for transformative changes at least 10 business days before starting transformative changes, including updates to all previously sent information.",
     "how_to_comply": "Classify changes (routine recurring, adaptive, transformative, impact categorization) and automate the notification workflow with the class timeframes. Keep 12 months of notification history in human-readable and JSON form; log every evaluation.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "At least the most recent final SCN notification for a transformative change including the date it was sent and the date the change was applied. Additional examples may be provided. If no transformative SCN notifications have been sent then this artifact is not required."
     ]
@@ -5130,6 +5247,7 @@
     "rule_family": "SCN (Significant Change Notification)",
     "what_it_looks_for": "Providers MUST notify all necessary parties within 5 business days after finishing transformative changes, including updates to all previously sent information.",
     "how_to_comply": "Classify changes (routine recurring, adaptive, transformative, impact categorization) and automate the notification workflow with the class timeframes. Keep 12 months of notification history in human-readable and JSON form; log every evaluation.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "At least the most recent post deployment SCN notification for a transformative change including the date it was sent and the date the change was applied. Additional examples may be provided. If no transformative SCN notifications have been sent then this artifact is not required."
     ]
@@ -5171,6 +5289,7 @@
     "rule_family": "SCN (Significant Change Notification)",
     "what_it_looks_for": "Providers MUST notify all necessary parties within 5 business days after completing the verification, assessment, and/or validation of transformative changes, also including the following information:",
     "how_to_comply": "Classify changes (routine recurring, adaptive, transformative, impact categorization) and automate the notification workflow with the class timeframes. Keep 12 months of notification history in human-readable and JSON form; log every evaluation.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "At least the most recent after verification SCN notification for a transformative change including the date it was sent and the date the change was applied. Additional examples may be provided. If no transformative SCN notifications have been sent then this artifact is not required."
     ]
@@ -5212,6 +5331,7 @@
     "rule_family": "SCN (Significant Change Notification)",
     "what_it_looks_for": "Providers MUST publish updated service documentation and other materials to reflect transformative changes within 30 business days after finishing transformative changes.",
     "how_to_comply": "Classify changes (routine recurring, adaptive, transformative, impact categorization) and automate the notification workflow with the class timeframes. Keep 12 months of notification history in human-readable and JSON form; log every evaluation.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Date of the most recent transformative change and the date of the corresponding documentation update. If no documentation updates were required as the result of this change, explain how this was determined."
     ]
@@ -5253,6 +5373,7 @@
     "rule_family": "SCN (Significant Change Notification)",
     "what_it_looks_for": "Providers SHOULD engage a third-party assessor to review the scope and impact of the planned change before starting transformative changes if human validation is necessary; such reviews SHOULD be limited to security decisions that require human validation.",
     "how_to_comply": "Classify changes (routine recurring, adaptive, transformative, impact categorization) and automate the notification workflow with the class timeframes. Keep 12 months of notification history in human-readable and JSON form; log every evaluation.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Third Party assesment report OR explanation why a third party assessor was not engaged"
     ]
@@ -5294,6 +5415,7 @@
     "rule_family": "SDR (Security Decision Record)",
     "what_it_looks_for": "Providers MUST supply a Security Decision Record, in both human-readable and JSON formats, that includes at least all of the following information for each applicable FedRAMP rule:",
     "how_to_comply": "Maintain the Security Decision Record in both human-readable and JSON form, schema-valid, with an entry for every applicable rule and KSI, metadata (version, last updated, update source), and the per-class historical metrics.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -5339,6 +5461,7 @@
     "rule_family": "SDR (Security Decision Record)",
     "what_it_looks_for": "Providers MUST also include the following basic metadata in their Security Decision Record:",
     "how_to_comply": "Maintain the Security Decision Record in both human-readable and JSON form, schema-valid, with an entry for every applicable rule and KSI, metadata (version, last updated, update source), and the per-class historical metrics.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -5384,6 +5507,7 @@
     "rule_family": "SDR (Security Decision Record)",
     "what_it_looks_for": "Providers MUST also include short and simple high-level summaries of at least the following for each applicable Key Security Indicator:",
     "how_to_comply": "Maintain the Security Decision Record in both human-readable and JSON form, schema-valid, with an entry for every applicable rule and KSI, metadata (version, last updated, update source), and the per-class historical metrics.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -5429,6 +5553,7 @@
     "rule_family": "SDR (Security Decision Record)",
     "what_it_looks_for": "Providers with 20x Class B Certifications SHOULD also include historical metrics in their Security Decision Record, supplying at least the following information for each applicable Key Security Indicator:",
     "how_to_comply": "Maintain the Security Decision Record in both human-readable and JSON form, schema-valid, with an entry for every applicable rule and KSI, metadata (version, last updated, update source), and the per-class historical metrics.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -5474,6 +5599,7 @@
     "rule_family": "VDR (Vulnerability Detection and Response)",
     "what_it_looks_for": "Providers MUST systematically, persistently, and promptly discover and identify vulnerabilities within their cloud service offering using appropriate techniques such as assessment, scanning, threat intelligence, vulnerability disclosure mechanisms, bug bounties, penetration testing, incident response, automated control testing, supply chain monitoring, and other relevant capabilities; this process is called vulnerability detection. Vulnerability detection includes persistently verifying and validating that information resources and processes are operating as intended and documented for FedRAMP Practices.",
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -5519,6 +5645,7 @@
     "rule_family": "VDR (Vulnerability Detection and Response)",
     "what_it_looks_for": "Providers MUST systematically, persistently, and promptly track, evaluate, monitor, mitigate, remediate, assess exploitation of, report, and otherwise manage all detected vulnerabilities within their cloud service offering; this process is called vulnerability response.",
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -5564,6 +5691,7 @@
     "rule_family": "VDR (Vulnerability Detection and Response)",
     "what_it_looks_for": "Providers MUST treat problems or failures with their vulnerability detection and response processes as vulnerabilities.",
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -5609,6 +5737,7 @@
     "rule_family": "VDR (Vulnerability Detection and Response)",
     "what_it_looks_for": "Providers SHOULD make design and architecture decisions for their cloud service offering that mitigate the risk of vulnerabilities by default AND decrease the risk and complexity of vulnerability detection and response.",
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -5654,6 +5783,7 @@
     "rule_family": "VDR (Vulnerability Detection and Response)",
     "what_it_looks_for": "Providers SHOULD use automated services to improve and streamline vulnerability detection and response.",
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -5699,6 +5829,7 @@
     "rule_family": "VDR (Vulnerability Detection and Response)",
     "what_it_looks_for": "Providers SHOULD automatically perform vulnerability detection on representative samples of new or significantly changed information resources.",
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -5744,6 +5875,7 @@
     "rule_family": "VDR (Vulnerability Detection and Response)",
     "what_it_looks_for": "Providers SHOULD NOT weaken the security of information resources to facilitate vulnerability scanning, detection, or assessment activities.",
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -5789,6 +5921,7 @@
     "rule_family": "VDR (Vulnerability Detection and Response)",
     "what_it_looks_for": "Providers SHOULD NOT deploy or otherwise activate new machine-based information resources with Known Exploited Vulnerabilities.",
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -5834,6 +5967,7 @@
     "rule_family": "VDR (Vulnerability Detection and Response)",
     "what_it_looks_for": "Providers MAY sample effectively identical information resources, especially machine-based information resources, when performing vulnerability detection UNLESS doing so would decrease the efficiency or effectiveness of vulnerability detection.",
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -5879,6 +6013,7 @@
     "rule_family": "VDR (Vulnerability Detection and Response)",
     "what_it_looks_for": "Providers MUST verify and validate the status of non-machine-based information resources at least once every 3 months.",
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -5924,6 +6059,7 @@
     "rule_family": "VDR (Vulnerability Detection and Response)",
     "what_it_looks_for": "Providers with Class B Certifications SHOULD persistently perform vulnerability detection on all information resources that are likely to drift, at least once every month.",
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -5969,6 +6105,7 @@
     "rule_family": "VDR (Vulnerability Detection and Response)",
     "what_it_looks_for": "Providers with Class B Certifications SHOULD persistently perform vulnerability detection on all information resources that are NOT likely to drift, at least once every 6 months.",
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6014,6 +6151,7 @@
     "rule_family": "VDR (Vulnerability Detection and Response)",
     "what_it_looks_for": "Providers with Class B Certifications SHOULD partially mitigate vulnerabilities, fully mitigate vulnerabilities, or remediate vulnerabilities to a lower potential agency impact within the timeframes from evaluation shown below, factoring for the current Potential Agency Impact N-rating as defined in VER-EVA-EPA (Estimate Potential Agency Impact), internet reachability, and likely exploitability:",
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6059,6 +6197,7 @@
     "rule_family": "VDR (Vulnerability Detection and Response)",
     "what_it_looks_for": "Providers SHOULD mitigate or remediate remaining vulnerabilities during routine operations as determined necessary by the provider.",
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6104,6 +6243,7 @@
     "rule_family": "VDR (Vulnerability Detection and Response)",
     "what_it_looks_for": "Providers SHOULD remediate Known Exploited Vulnerabilities according to the due dates in the CISA Known Exploited Vulnerabilities Catalog (even if the vulnerability has been fully mitigated) as required by CISA Binding Operational Directive (BOD) 26-04 or any successor guidance from CISA.",
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6149,6 +6289,7 @@
     "rule_family": "VDR (Vulnerability Detection and Response)",
     "what_it_looks_for": "Providers with Class B Certifications SHOULD persistently perform vulnerability detection on representative samples of similar machine-based information resources, at least once every 7 days.",
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6194,6 +6335,7 @@
     "rule_family": "VDR (Vulnerability Detection and Response)",
     "what_it_looks_for": "Providers of FedRAMP 20x Class B offerings MUST verify and validate the status of machine-based information resources at least once every 7 days.",
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6239,6 +6381,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers MUST evaluate detected vulnerabilities, considering the context of the cloud service offering, to determine if they are likely exploitable vulnerabilities.",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6284,6 +6427,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers MUST evaluate detected vulnerabilities, considering the context of the cloud service offering, to determine if they are internet-reachable vulnerabilities.",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6329,6 +6473,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers MUST evaluate detected vulnerabilities, considering the context of the cloud service offering, to estimate the likely potential agency impact of exploitation on government customers AND assign one of the following Potential Agency Impact N-ratings (PAIN):",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6374,6 +6519,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers MUST assume the exploitation of vulnerabilities can be automated UNLESS they have evidence proving otherwise.",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6419,6 +6565,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers SHOULD evaluate detected vulnerabilities, considering the context of the cloud service offering, to identify logical groupings of affected information resources that may improve the efficiency and effectiveness of vulnerability response by consolidating further activity; FedRAMP Vulnerability Detection and Response rules are then applied to these consolidated groupings of vulnerabilities instead of each individual detected instance.",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6464,6 +6611,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers SHOULD evaluate detected vulnerabilities, considering the context of the cloud service offering, to determine if they are false positive vulnerabilities.",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6509,6 +6657,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers SHOULD consider at least the following factors when considering the context of the cloud service offering to evaluate detected vulnerabilities:",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6554,6 +6703,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers MUST report vulnerability detection and response activity (including persistent verification and validation) to all necessary parties persistently, summarizing ALL activity since the previous report; these reports are FedRAMP Certification Data and are subject to FedRAMP Certification Data Sharing rules.",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6599,6 +6749,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers MUST include the following information (if applicable) on detected vulnerabilities when reporting on vulnerability detection and response activity, UNLESS it is an accepted vulnerability:",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "A recent vulnerability report or a sample vulnerability report"
     ]
@@ -6640,6 +6791,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers MUST include the following information on accepted vulnerabilities when reporting on vulnerability detection and response activity:",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "A recent vulnerability report or a sample vulnerability report"
     ]
@@ -6681,6 +6833,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers MUST NOT irresponsibly disclose specific sensitive information about vulnerabilities that would likely lead to exploitation, but MUST disclose sufficient information for informed risk-based decision-making to all necessary parties.",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6726,6 +6879,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers SHOULD include high-level overviews of ALL vulnerability detection and response activities conducted during this period for the cloud service offering; this includes vulnerability disclosure programs, bug bounty programs, penetration testing, assessments, etc.",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6771,6 +6925,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers MAY responsibly disclose vulnerabilities publicly or with other parties if the provider determines doing so will NOT likely lead to exploitation.",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6816,6 +6971,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers MUST report vulnerability detection and response activity to all necessary parties in a consistent format that is human readable at least monthly.",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "A recent vulnerability report or a sample vulnerability report"
     ]
@@ -6857,6 +7013,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers MUST categorize any vulnerability that is not or will not be fully mitigated or remediated within 192 days of evaluation as an accepted vulnerability.",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6902,6 +7059,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers with Class B Certifications SHOULD make all recent historical vulnerability detection and response activity available in JSON format for automated retrieval by all necessary parties (e.g. using an API service or similar); this information SHOULD be updated persistently, at least once every month.",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6947,6 +7105,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers with Class B Certifications SHOULD evaluate ALL vulnerabilities as required by VER-EVA (Evaluation) within 7 days of detection.",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -6992,6 +7151,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers with Class B Certifications MAY treat internet-reachable likely exploitable vulnerabilities where Potential Agency Impact N-rating > 3 as a FedRAMP Reportable Incident until they are partially mitigated vulnerabilities at N3 or below.",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -7037,6 +7197,7 @@
     "rule_family": "VER (Vulnerability Evaluation and Reporting)",
     "what_it_looks_for": "Providers with Class B Certifications MAY treat likely exploitable vulnerabilities that are NOT internet-reachable where Potential Agency Impact N-rating = 5 as a FedRAMP Reportable Incident until they are partially mitigated vulnerabilities at N4 or below.",
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -7082,6 +7243,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "See rule catalog.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -7127,6 +7289,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "See rule catalog.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -7172,6 +7335,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "See rule catalog.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -7217,6 +7381,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "See rule catalog.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -7262,6 +7427,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "See rule catalog.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -7307,6 +7473,7 @@
     "rule_family": "FRC (FedRAMP Certification)",
     "what_it_looks_for": "See rule catalog.",
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -7354,6 +7521,7 @@
     "ksi_family": "CED (Cybersecurity Education)",
     "what_it_looks_for": "The effectiveness of relevant cybersecurity education and training is persistently reviewed, including at least general training for all employees, role-specific training for employees in high risk roles, training for development and engineering staff on secure software delivery, and training for staff involved with incident response or disaster recovery.",
     "how_to_comply": "Review all training content and completion on a defined cycle; keep the review dated and owned. Evidence: review records with reviewer, date, and outcome, plus the updated training register.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -7404,6 +7572,7 @@
     "ksi_family": "CMT (Change Management)",
     "what_it_looks_for": "Modifications to the cloud service offering are logged and monitored.",
     "how_to_comply": "Log and monitor every modification to the offering: CloudTrail organization trail (multi-region, log file validation), AWS Config recording all resource types, EventBridge alerting on out-of-pipeline writes. Evidence: trail status queries, Config recorder status, alert history.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -7454,6 +7623,7 @@
     "ksi_family": "CMT (Change Management)",
     "what_it_looks_for": "Changes to machine-based information resources are executed through the redeployment of version controlled resources rather than direct modification wherever reasonable.",
     "how_to_comply": "Deploy changes by redeploying version-controlled resources (IaC through the pipeline) instead of modifying live resources. Evidence: pipeline deployment records diffed against CloudTrail write events; drift detection results.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -7504,6 +7674,7 @@
     "ksi_family": "CMT (Change Management)",
     "what_it_looks_for": "The effectiveness of documented change management procedures is persistently reviewed.",
     "how_to_comply": "Review change management procedure effectiveness on a cycle: measure failed changes, rollbacks, and out-of-band changes, and adjust the procedure. Evidence: dated reviews with metrics and resulting changes.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -7554,6 +7725,7 @@
     "ksi_family": "CMT (Change Management)",
     "what_it_looks_for": "Persistent testing and validation of changes throughout deployment is automated.",
     "how_to_comply": "Automate testing and validation of changes through the CI/CD pipeline: pre-deployment tests, policy-as-code checks, post-deployment verification. Evidence: pipeline run records showing gates passed per change.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -7604,6 +7776,7 @@
     "ksi_family": "CNA (Cloud Native Architecture)",
     "what_it_looks_for": "The functionality and privileges for infrastructure and services are strictly defined.",
     "how_to_comply": "Strictly define functionality and privileges for infrastructure and services: least-privilege IAM roles, permission boundaries, service control policies. Evidence: IAM Access Analyzer findings, SCP inventory, unused-permission reports.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -7654,6 +7827,7 @@
     "ksi_family": "CNA (Cloud Native Architecture)",
     "what_it_looks_for": "FedRAMP pending: no statement published yet for this indicator.",
     "how_to_comply": "Class-varying (optional/MAY at Class B, required at Class C): automated services persistently assess the security of all machine-based information resources and automatically enforce their intended operational state. Evidence: Config rules with auto-remediation, Systems Manager State Manager/associations, drift-detection and enforcement records over time.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -7704,6 +7878,7 @@
     "ksi_family": "CNA (Cloud Native Architecture)",
     "what_it_looks_for": "The use and configuration of third-party machine-based information resources is persistently compared against the original provider's best practices and guidance.",
     "how_to_comply": "Persistently compare third-party machine-based resources against the original provider's best practices (for example CIS or vendor benchmarks via Security Hub standards and Config conformance packs). Evidence: benchmark compliance scores over time.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -7754,6 +7929,7 @@
     "ksi_family": "CNA (Cloud Native Architecture)",
     "what_it_looks_for": "Machine-based information resources are persistently reviewed to ensure they have a minimal attack surface and that lateral movement is minimized if compromised.",
     "how_to_comply": "Minimize attack surface and lateral movement: private subnets by default, no unnecessary public endpoints, network segmentation, S3 Block Public Access. Evidence: Config rules for public exposure, VPC design records, Security Hub findings trend.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -7804,6 +7980,7 @@
     "ksi_family": "CNA (Cloud Native Architecture)",
     "what_it_looks_for": "Machine-based information resources are persistently reviewed to ensure they are appropriately optimized for high availability and rapid recovery.",
     "how_to_comply": "Review resources for high availability and rapid recovery: multi-AZ deployment, health checks, auto scaling, tested recovery. Evidence: architecture inventory with AZ coverage, recovery test records.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -7854,6 +8031,7 @@
     "ksi_family": "CNA (Cloud Native Architecture)",
     "what_it_looks_for": "Machine-based information resources are persistently reviewed to ensure they are appropriately configured to limit inbound and outbound network traffic.",
     "how_to_comply": "Limit inbound and outbound network traffic: security groups and NACLs deny by default, egress control, WAF on public entry points. Evidence: Config rules on open security groups, reachability analysis, WAF coverage.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -7904,6 +8082,7 @@
     "ksi_family": "CNA (Cloud Native Architecture)",
     "what_it_looks_for": "The effectiveness of protection against denial of service attacks and other unwanted activity for machine-based information resources is persistently reviewed.",
     "how_to_comply": "Review protection against denial of service and unwanted activity: AWS Shield, WAF rate rules, GuardDuty findings review. Evidence: protection coverage inventory and periodic effectiveness reviews.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -7954,6 +8133,7 @@
     "ksi_family": "CNA (Cloud Native Architecture)",
     "what_it_looks_for": "Logical networking and related capabilities are used and persistently reviewed to enforce traffic flow controls.",
     "how_to_comply": "Use logical networking to enforce traffic flow controls: VPC segmentation, route tables, PrivateLink for service-to-service paths. Evidence: network architecture records, VPC flow log analysis, reachability tests.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8004,6 +8184,7 @@
     "ksi_family": "IAM (Identity and Access Management)",
     "what_it_looks_for": "The lifecycle and privileges of all accounts, roles, and groups are securely managed using automation.",
     "how_to_comply": "Automate the lifecycle and privileges of all accounts, roles, and groups: IAM Identity Center with SCIM provisioning from the identity provider, automated deprovisioning on termination. Evidence: provisioning logs, access review records, orphan-account checks.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8054,6 +8235,7 @@
     "ksi_family": "IAM (Identity and Access Management)",
     "what_it_looks_for": "Secure passwordless methods are used for user authentication and authorization when feasible, otherwise strong passwords with phishing-resistant MFA is used.",
     "how_to_comply": "Use passwordless authentication where feasible (FIDO2), otherwise strong passwords with phishing-resistant MFA. Block console login without MFA; eliminate long-lived access keys. Evidence: MFA enforcement queries, CloudTrail login analysis, IAM credential report.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8104,6 +8286,7 @@
     "ksi_family": "IAM (Identity and Access Management)",
     "what_it_looks_for": "Identity and access management measures are used and persistently reviewed to ensure each user or device can only access the resources they need.",
     "how_to_comply": "Ensure each user and device can only access what it needs: periodic access reviews, least-privilege role design, Access Analyzer. Evidence: access review records, unused-access findings and their closure.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8154,6 +8337,7 @@
     "ksi_family": "IAM (Identity and Access Management)",
     "what_it_looks_for": "A least-privileged, role and attribute-based, and just-in-time security authorization model is used and persistently reviewed for all user and non-user accounts and services.",
     "how_to_comply": "Use a least-privileged, role-based, just-in-time authorization model: temporary elevated access with approval and expiry rather than standing privileges. Evidence: elevation request logs with approvals and automatic expiry.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8204,6 +8388,7 @@
     "ksi_family": "IAM (Identity and Access Management)",
     "what_it_looks_for": "Appropriately secure authentication methods are used and persistently reviewed for non-user accounts and services.",
     "how_to_comply": "Use appropriately secure authentication for non-user accounts and services: IAM roles and short-lived STS credentials instead of static keys; rotate any unavoidable secrets. Evidence: credential inventory, key-age reports, Secrets Manager rotation status.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8254,6 +8439,7 @@
     "ksi_family": "IAM (Identity and Access Management)",
     "what_it_looks_for": "Accounts with privileged access are disabled or otherwise secured in response to suspicious activity.",
     "how_to_comply": "Disable or secure privileged accounts in response to suspicious activity: GuardDuty findings wired to automated response (disable keys, revoke sessions) with on-call escalation. Evidence: response runbooks plus executed-response records with timestamps.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8304,6 +8490,7 @@
     "ksi_family": "INR (Incident Response)",
     "what_it_looks_for": "Incident after action reports are generated and lessons learned are persistently incorporated.",
     "how_to_comply": "Generate after action reports for incidents and incorporate lessons persistently. Evidence: after action reports linked to incidents, with tracked improvement actions and closure.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8354,6 +8541,7 @@
     "ksi_family": "INR (Incident Response)",
     "what_it_looks_for": "The effectiveness of documented incident response procedures is persistently reviewed.",
     "how_to_comply": "Review incident response procedure effectiveness on a cycle, including exercises. Evidence: dated reviews, exercise records, and procedure updates that resulted.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8404,6 +8592,7 @@
     "ksi_family": "INR (Incident Response)",
     "what_it_looks_for": "Past incidents are persistently reviewed for patterns or vulnerabilities that were not previously apparent or identified.",
     "how_to_comply": "Review past incidents for patterns and previously missed vulnerabilities. Evidence: periodic pattern-analysis reports referencing the incident register.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8454,6 +8643,7 @@
     "ksi_family": "MLA (Monitoring, Logging, and Auditing)",
     "what_it_looks_for": "FedRAMP pending: no statement published yet for this indicator.",
     "how_to_comply": "Class-varying (optional/MAY at Class B, required at Class C): a least-privileged, role/attribute-based, just-in-time authorization model governs access to log data by data sensitivity, and is persistently reviewed. Evidence: IAM/Access Analyzer for log-store access, JIT-access records, periodic access reviews of the log data store.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8504,6 +8694,7 @@
     "ksi_family": "MLA (Monitoring, Logging, and Auditing)",
     "what_it_looks_for": "The configuration of machine-based information resources, especially infrastructure as code, is persistently evaluated and tested.",
     "how_to_comply": "Persistently evaluate and test the configuration of machine-based resources, especially infrastructure as code: policy-as-code in the pipeline (cfn-guard, OPA, Checkov) plus AWS Config in runtime. Evidence: pipeline policy results per change and Config compliance over time.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8554,6 +8745,7 @@
     "ksi_family": "MLA (Monitoring, Logging, and Auditing)",
     "what_it_looks_for": "A list of information resources and event types that will be logged, monitored, and audited is maintained and persistently reviewed to ensure these activities occur.",
     "how_to_comply": "Maintain and review a list of resources and event types that will be logged, monitored, and audited, and confirm those activities occur. Evidence: the logging register plus coverage checks proving each listed source is actually emitting.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8604,6 +8796,7 @@
     "ksi_family": "MLA (Monitoring, Logging, and Auditing)",
     "what_it_looks_for": "A Security Information and Event Management (SIEM) or similar system(s) is used and persistently reviewed for centralized, tamper-resistant logging of events, activities, and changes.",
     "how_to_comply": "Operate a SIEM or similar for centralized, tamper-resistant logging: centralized log archive account, S3 object lock or equivalent integrity protection, restricted access. Evidence: log centralization architecture, integrity settings, access policies.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8654,6 +8847,7 @@
     "ksi_family": "MLA (Monitoring, Logging, and Auditing)",
     "what_it_looks_for": "Logs are persistently reviewed and audited.",
     "how_to_comply": "Persistently review and audit logs: automated detections (CloudWatch, Security Hub, GuardDuty) plus a documented human review cadence for what automation cannot judge. Evidence: detection inventory, alert dispositions, review records.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8704,6 +8898,7 @@
     "ksi_family": "PIY (Policy and Inventory)",
     "what_it_looks_for": "Authoritative sources are used to automatically generate real-time inventories of all information resources when needed.",
     "how_to_comply": "Generate real-time inventories automatically from authoritative sources: AWS Config aggregator and Resource Explorer as the inventory of record, queryable on demand. Evidence: on-demand inventory exports with timestamps proving real-time generation.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8754,6 +8949,7 @@
     "ksi_family": "PIY (Policy and Inventory)",
     "what_it_looks_for": "Executive support for achieving the provider's security goals is persistently reviewed and demonstrated.",
     "how_to_comply": "Demonstrate and review executive support for security goals persistently: executive sponsorship in the charter, recurring leadership reviews of posture, funded remediation. Evidence: dated leadership review records and funding decisions tied to security goals.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8804,6 +9000,7 @@
     "ksi_family": "PIY (Policy and Inventory)",
     "what_it_looks_for": "The effectiveness of the provider's investments in achieving security goals is persistently reviewed.",
     "how_to_comply": "Review the effectiveness of security investments persistently: track spend against measurable outcomes (findings closed, coverage gained) and adjust. Evidence: periodic investment-effectiveness reviews with metrics and resulting decisions.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8854,6 +9051,7 @@
     "ksi_family": "PIY (Policy and Inventory)",
     "what_it_looks_for": "The effectiveness of building security and privacy considerations into the Software Development Lifecycle and aligning with CISA Secure By Design principles is persistently reviewed.",
     "how_to_comply": "Review the effectiveness of security and privacy in the SDLC against CISA Secure By Design principles: pipeline security gates, secure defaults, threat modeling. Evidence: SDLC review records mapped to Secure By Design principles with improvement actions.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8904,6 +9102,7 @@
     "ksi_family": "PIY (Policy and Inventory)",
     "what_it_looks_for": "The effectiveness of the provider's vulnerability disclosure program is persistently reviewed.",
     "how_to_comply": "Operate and persistently review a vulnerability disclosure program: a public intake channel, triage SLAs, and periodic effectiveness review. Evidence: the published policy, intake and triage records, dated program reviews.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -8954,6 +9153,7 @@
     "ksi_family": "RPL (Recovery Planning)",
     "what_it_looks_for": "The alignment of machine-based information resource backups with defined recovery objectives is persistently reviewed.",
     "how_to_comply": "Keep backups aligned with defined recovery objectives: AWS Backup plans matching the stated RPO, cross-region copies where the objectives require. Evidence: backup plan configuration, job success history, restore points against objectives.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -9004,6 +9204,7 @@
     "ksi_family": "RPL (Recovery Planning)",
     "what_it_looks_for": "The alignment of recovery plans with defined recovery objectives is persistently reviewed.",
     "how_to_comply": "Maintain a recovery plan aligned with objectives, covering roles, procedures, and dependencies. Evidence: the plan with review dates and alignment to the stated RTO and RPO.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -9054,6 +9255,7 @@
     "ksi_family": "RPL (Recovery Planning)",
     "what_it_looks_for": "The desired Recovery Time Objectives (RTO) and Recovery Point Objectives (RPO) are defined and persistently reviewed for alignment with the provider's business needs and capabilities.",
     "how_to_comply": "Define recovery time and recovery point objectives and keep them current. Evidence: documented RTO and RPO with rationale and review history.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -9104,6 +9306,7 @@
     "ksi_family": "RPL (Recovery Planning)",
     "what_it_looks_for": "The capability to recover from incidents and contingencies aligned with defined recovery objectives is persistently tested.",
     "how_to_comply": "Test the capability to recover from incidents and contingencies: restore tests, failover exercises, game days, measured against objectives. Evidence: test records with measured times versus objectives and corrective actions.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -9154,6 +9357,7 @@
     "ksi_family": "SCR (Supply Chain Risk)",
     "what_it_looks_for": "Persistently identify, review, and mitigate potential supply chain risks.",
     "how_to_comply": "Persistently identify, review, and mitigate supply chain risks: supplier vetting, dependency review, risk register entries with mitigations. Evidence: the supply chain risk register with review dates and mitigation status.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -9204,6 +9408,7 @@
     "ksi_family": "SCR (Supply Chain Risk)",
     "what_it_looks_for": "Third party software information resources are automatically monitored for upstream vulnerabilities using mechanisms that may include contractual notification requirements or active monitoring services.",
     "how_to_comply": "Automatically monitor third-party software for upstream vulnerabilities: dependency scanning (Inspector, SCA tooling), SBOM tracking, advisory feeds. Evidence: scan results over time, advisory response records, SBOM currency.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -9254,6 +9459,7 @@
     "ksi_family": "SVC (Service Configuration)",
     "what_it_looks_for": "The configuration of machine-based information resources is managed using automation and persistently reviewed for drift.",
     "how_to_comply": "Manage configuration with automation and review drift persistently: IaC as the source of truth, AWS Config drift detection, automated remediation where safe. Evidence: drift findings and their resolution over time.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -9304,6 +9510,7 @@
     "ksi_family": "SVC (Service Configuration)",
     "what_it_looks_for": "Management, protection, and regular rotation of digital keys, certificates, and other secrets is automated and persistently reviewed.",
     "how_to_comply": "Automate management, protection, and rotation of keys, certificates, and secrets: KMS key rotation, ACM certificate renewal, Secrets Manager rotation. Evidence: rotation status queries across all three, alerts on failures.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -9354,6 +9561,7 @@
     "ksi_family": "SVC (Service Configuration)",
     "what_it_looks_for": "Information resources are persistently evaluated for opportunities to improve security and those improvements are persistently made.",
     "how_to_comply": "Persistently evaluate resources for security improvement opportunities and implement them: Security Hub findings triage, Trusted Advisor or Inspector recommendations with tracked adoption. Evidence: findings trend plus a record of improvements shipped.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -9404,6 +9612,7 @@
     "ksi_family": "SVC (Service Configuration)",
     "what_it_looks_for": "FedRAMP pending: no statement published yet for this indicator.",
     "how_to_comply": "Class-varying (optional/MAY at Class B, required at Class C): plans, procedures, and resource state are persistently reviewed after changes to limit and remove unwanted residual elements that could affect confidentiality, integrity, or availability of federal customer data. Evidence: post-change review records, drift/residual-resource cleanup logs.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -9454,6 +9663,7 @@
     "ksi_family": "SVC (Service Configuration)",
     "what_it_looks_for": "FedRAMP pending: no statement published yet for this indicator.",
     "how_to_comply": "Class-varying (optional/MAY at Class B, required at Class C): unwanted federal customer data is removed promptly when an agency requests it per customer agreements, including from backups where appropriate (e.g. data spill or usage change). Evidence: data-removal request handling records, backup-scoped deletion procedures and logs.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -9504,6 +9714,7 @@
     "ksi_family": "SVC (Service Configuration)",
     "what_it_looks_for": "Information is encrypted or otherwise secured from unwanted access or modification.",
     "how_to_comply": "Encrypt or otherwise secure information from unwanted access or modification: KMS customer managed keys at rest, TLS 1.2+ in transit, S3 Block Public Access, deny-unencrypted policies. Evidence: Config encryption rules, account-level default encryption status.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -9554,6 +9765,7 @@
     "ksi_family": "SVC (Service Configuration)",
     "what_it_looks_for": "FedRAMP pending: no statement published yet for this indicator.",
     "how_to_comply": "Class-varying (optional/MAY at Class B, required at Class C): the authenticity and integrity of communications between machine-based information resources is persistently validated using automation. Evidence: mutual-TLS/service-mesh identity validation, signed inter-service requests, automated integrity-verification records.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -9604,6 +9816,7 @@
     "ksi_family": "SVC (Service Configuration)",
     "what_it_looks_for": "Use cryptographic methods to validate the integrity of machine-based information resources.",
     "how_to_comply": "Use cryptographic methods to validate the integrity of machine-based resources: signed artifacts, image digests pinned in deployment, CloudTrail log file validation. Evidence: signature or digest verification records in the pipeline.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",

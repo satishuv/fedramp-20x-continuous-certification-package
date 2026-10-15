@@ -27,6 +27,7 @@
      "Timeframes may vary by FedRAMP Certification class."
     ],
     "how_to_comply": "Stand up a dedicated, monitored FedRAMP security inbox as a distribution list reaching the security on-call rotation, separate from customer support. Test delivery and acknowledgement on a schedule (for example monthly synthetic emails) and keep membership current.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -35,7 +36,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -69,11 +70,12 @@
      "If a provider establishes a new inbox in reaction to this guidance that is different from the Security Email then they must follow the AFC-CSO-NOC (Notification of Changes) rules to notify FedRAMP."
     ],
     "how_to_comply": "Stand up a dedicated, monitored FedRAMP security inbox as a distribution list reaching the security on-call rotation, separate from customer support. Test delivery and acknowledgement on a schedule (for example monthly synthetic emails) and keep membership current.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Email address to receive messages from FedRAMP"
     ],
     "evidence_source": "rule-specific artifacts list",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -106,6 +108,7 @@
      "This requirement is intended to prevent cloud service providers from requiring FedRAMP to complete a CAPTCHA, log into a customer portal, or otherwise take service-specific actions that might prevent the security team from receiving the message."
     ],
     "how_to_comply": "Stand up a dedicated, monitored FedRAMP security inbox as a distribution list reaching the security on-call rotation, separate from customer support. Test delivery and acknowledgement on a schedule (for example monthly synthetic emails) and keep membership current.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -114,7 +117,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -145,12 +148,13 @@
     "what_it_looks_for": "Providers MUST supply an Ongoing Certification Report to all necessary parties every 3 months, covering the entire period since the previous summary, in a consistent format that is human readable; this report MUST include high-level summaries of at least the following information (if applicable):",
     "official_notes": [],
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Most recent Ongoing Certification Report. If the report is not available, the provider MUST provide a sample report that includes all required information.",
      "How the report will be delivered"
     ],
     "evidence_source": "rule-specific artifacts list",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -181,6 +185,7 @@
     "what_it_looks_for": "Providers MUST supply the target date for their next Ongoing Certification Report with other public FedRAMP Certification Data.",
     "official_notes": [],
     "how_to_comply": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -189,7 +194,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -220,6 +225,7 @@
     "what_it_looks_for": "Providers with Class A Certifications SHOULD maintain a web service, available to all necessary parties, that indicates current and historical availability of core services within the cloud service offering over at least the past 30 days, including availability incidents, in both human-readable and machine-readable formats; this service SHOULD be available even if the primary cloud service offering is unavailable.",
     "official_notes": [],
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -228,7 +234,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -262,12 +268,13 @@
      "The JSON data for this rule will be consumed by FedRAMP and agency GRC tools using automation with web-based tools. Do not expect FedRAMP or your customers to download this data directly, it should be accessible for common web frameworks. FedRAMP strongly recommends that application engineering experts be involved in making public JSON data and the related information available in a way that can work with web-based applications."
     ],
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "URL to the human-readable data.",
      "URL to the machine-readable data."
     ],
     "evidence_source": "rule-specific artifacts list",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -300,6 +307,7 @@
      "Rules for FedRAMP-Compatible Trust Centers are explained in the Certification Data Sharing Rules under the FedRAMP-Compatible Trust Centers section (id: CDS-TRC)."
     ],
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -308,7 +316,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -339,6 +347,7 @@
     "what_it_looks_for": "Providers MUST notify FedRAMP within 5 business days of denying an agency access request for FedRAMP Certification Data.",
     "official_notes": [],
     "how_to_comply": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -347,7 +356,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -381,6 +390,7 @@
      "This rule does not require or expect persistent human review of all materials in this cadence."
     ],
     "how_to_comply": "Keep the Certification Package Overview concise and current. At Class C the package must be maintained at least every 2 weeks; put the maintenance run on a calendar with a named owner and generate as much as possible from the pipeline.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -389,7 +399,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -420,6 +430,7 @@
     "what_it_looks_for": "Providers seeking a FedRAMP Class A Certification MUST have completed a certification or equivalent process, including an independent assessment if applicable, from one of the following alternative security frameworks within the past 12 months:",
     "official_notes": [],
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -428,7 +439,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -459,6 +470,7 @@
     "what_it_looks_for": "Providers seeking a FedRAMP Class A Certification MUST supply the following materials from their alternative security framework assessment to all necessary parties:",
     "official_notes": [],
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -467,7 +479,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -498,6 +510,7 @@
     "what_it_looks_for": "Providers seeking a FedRAMP Class A Certification MAY have the FedRAMP Certification Package independently verified and validated by a FedRAMP Recognized assessor before submission to FedRAMP.",
     "official_notes": [],
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -506,7 +519,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -541,6 +554,7 @@
      "Information about how the provider addresses the included Key Security Indicators are required to receive a class A certification even if the provider intends to pursue a Rev 5 Program Certification path in the future."
     ],
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -549,7 +563,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -580,6 +594,7 @@
     "what_it_looks_for": "Providers seeking a Class A FedRAMP Certification MAY address the following additional optional FedRAMP Class A rules (if applicable):",
     "official_notes": [],
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -588,7 +603,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -619,6 +634,7 @@
     "what_it_looks_for": "Providers seeking a Class A FedRAMP Certification SHOULD address the following additional recommended FedRAMP Class A rules (if applicable):",
     "official_notes": [],
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -627,7 +643,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -662,6 +678,7 @@
      "The Schema Validator available at fedramp.gov will not work properly if Cross-Origin Resource Sharing is not properly configured."
     ],
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -670,7 +687,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -701,6 +718,7 @@
     "what_it_looks_for": "Providers seeking a Certification MUST supply a complete FedRAMP Certification Package to FedRAMP for initial certification; the FedRAMP Certification Package MUST include at least the following information:",
     "official_notes": [],
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -709,7 +727,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -742,6 +760,7 @@
      "This rule does not prevent a provider from seeking and maintaining a FedRAMP Rev5 Agency Certification and a FedRAMP 20x Program Certification for the same cloud service offering, however, doing so is strongly discouraged due to the increased complexity and risk of confusion for all parties."
     ],
     "how_to_comply": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -750,7 +769,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -781,11 +800,12 @@
     "what_it_looks_for": "Providers MUST promptly evaluate incidents to determine if they affect confidentiality or integrity of federal customer data or are likely to affect confidentiality or integrity of federal customer data; such incidents are FedRAMP Reportable Incidents and must be reported following the FedRAMP Incident Evaluation and Communication rules.",
     "official_notes": [],
     "how_to_comply": "Define incident evaluation and reporting procedures with the FedRAMP Reportable Incident test, the Potential Agency Impact N-rating scale, and the class-specific reporting timeframes. Wire detection (GuardDuty, Security Hub) to an on-call process that can meet the clock.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "An incident log showing an example of one or more incidents being evaluated including the reason for the determination. The log can be from real incidents, simulated incidents, or a combination of sources."
     ],
     "evidence_source": "rule-specific artifacts list",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -816,6 +836,7 @@
     "what_it_looks_for": "Providers with Class A Certifications MUST responsibly notify all affected parties by providing a Final Incident Report once the incident has been resolved and recovery is complete, including final updates to all previously reported information.",
     "official_notes": [],
     "how_to_comply": "Define incident evaluation and reporting procedures with the FedRAMP Reportable Incident test, the Potential Agency Impact N-rating scale, and the class-specific reporting timeframes. Wire detection (GuardDuty, Security Hub) to an on-call process that can meet the clock.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -824,7 +845,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -855,6 +876,7 @@
     "what_it_looks_for": "Providers with Class A Certifications SHOULD responsibly notify all affected parties after identifying FedRAMP Reportable Incidents by providing an Initial Incident Report with as much of the following information that is available at the time of reporting and/or the current relevant status for each item:",
     "official_notes": [],
     "how_to_comply": "Define incident evaluation and reporting procedures with the FedRAMP Reportable Incident test, the Potential Agency Impact N-rating scale, and the class-specific reporting timeframes. Wire detection (GuardDuty, Security Hub) to an on-call process that can meet the clock.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -863,7 +885,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -894,6 +916,7 @@
     "what_it_looks_for": "Providers with Class A Certifications SHOULD responsibly notify all affected parties of ongoing activity as new information becomes available during incident response for FedRAMP Reportable Incidents, including updates (or lack of updates) to all previously reported information and as much of the following additional information that is available and/or the current relevant status for each item:",
     "official_notes": [],
     "how_to_comply": "Define incident evaluation and reporting procedures with the FedRAMP Reportable Incident test, the Potential Agency Impact N-rating scale, and the class-specific reporting timeframes. Wire detection (GuardDuty, Security Hub) to an on-call process that can meet the clock.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -902,7 +925,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -933,6 +956,7 @@
     "what_it_looks_for": "Providers with 20x Class A Certifications MUST meet the expectations of their underlying alternative security framework as part of their persistent independent verification and validation assessment.",
     "official_notes": [],
     "how_to_comply": "Engage a FedRAMP Recognized Assessor with documented independence (no advisory work on this offering in the past 2 years). Give the assessor access to the SDR and read access to live evidence; supply evidence of implementation (verification) and effectiveness (validation).",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -941,7 +965,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -976,13 +1000,14 @@
      "All aspects of the cloud service offering are determined and maintained by the cloud service provider in accordance with related FedRAMP Certification rules and documented by the cloud service provider in their FedRAMP Certification Package."
     ],
     "how_to_comply": "Define the Minimum Assessment Scope narrowly and defensibly: identify every information resource that handles federal data or whose compromise would affect it, justify each exclusion, and keep the inventory machine-generated (AWS Config, Resource Explorer) so it stays current.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "A machine readable output containing all required data of the components of the cloud service offering that are likely to handle federal customer data or likely to impact the confidentiality, integrity, or availability of federal customer data handled by the cloud service offering.",
      "A human readable explanation of how the machine readable output is derived.",
      "The code for the automated process used to generate the machine readable output."
     ],
     "evidence_source": "rule-specific artifacts list",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -1016,6 +1041,7 @@
      "Providers are encouraged to leverage their existing holistic security review, architecture review, and similar processes to meet these requirements. FedRAMP strongly discourages providers from implementing separate vulnerability detection and response processes for FedRAMP reporting that are operated by independent compliance branches unless these processes are consuming data directly from the areas of the cloud service that actively maintain it."
     ],
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1024,7 +1050,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -1055,6 +1081,7 @@
     "what_it_looks_for": "Providers of FedRAMP 20x Class A offerings SHOULD verify and validate the status of machine-based information resources at least once every month.",
     "official_notes": [],
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1063,7 +1090,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -1094,6 +1121,7 @@
     "what_it_looks_for": "Providers with Class A Certifications SHOULD persistently perform vulnerability detection on all information resources that are NOT likely to drift, at least once every 6 months.",
     "official_notes": [],
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1102,7 +1130,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -1133,6 +1161,7 @@
     "what_it_looks_for": "Providers with Class A Certifications SHOULD persistently perform vulnerability detection on all information resources that are likely to drift, at least once every 3 months.",
     "official_notes": [],
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1141,7 +1170,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -1172,6 +1201,7 @@
     "what_it_looks_for": "Providers with Class A Certifications SHOULD persistently perform vulnerability detection on representative samples of similar machine-based information resources, at least once every 14 days.",
     "official_notes": [],
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1180,7 +1210,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -1211,6 +1241,7 @@
     "what_it_looks_for": "Providers with Class A Certifications SHOULD partially mitigate vulnerabilities, fully mitigate vulnerabilities, or remediate vulnerabilities to a lower potential agency impact within the timeframes from evaluation shown below, factoring for the current Potential Agency Impact N-rating as defined in VER-EVA-EPA (Estimate Potential Agency Impact), internet reachability, and likely exploitability.",
     "official_notes": [],
     "how_to_comply": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1219,7 +1250,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -1250,6 +1281,7 @@
     "what_it_looks_for": "Providers with Class A Certifications SHOULD evaluate ALL vulnerabilities as required by VER-EVA (Evaluation) within 14 days of detection.",
     "official_notes": [],
     "how_to_comply": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
      "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
@@ -1258,7 +1290,7 @@
      "Independent validation."
     ],
     "evidence_source": "FedRAMP default artifact expectations for rules",
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "verification": "TBD: Information has not been provided.",
@@ -1292,6 +1324,7 @@
    "guidance": {
     "what_it_looks_for": "The effectiveness of relevant cybersecurity education and training is persistently reviewed, including at least general training for all employees, role-specific training for employees in high risk roles, training for development and engineering staff on secure software delivery, and training for staff involved with incident response or disaster recovery.",
     "how_to_comply": "Review all training content and completion on a defined cycle; keep the review dated and owned. Evidence: review records with reviewer, date, and outcome, plus the updated training register.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -1320,7 +1353,7 @@
      "ps-6",
      "sr-11.1"
     ],
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, tests, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, tests, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "measures": "TBD: Information has not been provided.",
@@ -1349,6 +1382,7 @@
    "guidance": {
     "what_it_looks_for": "Modifications to the cloud service offering are logged and monitored.",
     "how_to_comply": "Log and monitor every modification to the offering: CloudTrail organization trail (multi-region, log file validation), AWS Config recording all resource types, EventBridge alerting on out-of-pipeline writes. Evidence: trail status queries, Config recorder status, alert history.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -1367,7 +1401,7 @@
      "cm-6",
      "cm-8.3"
     ],
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, tests, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, tests, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "measures": "TBD: Information has not been provided.",
@@ -1396,6 +1430,7 @@
    "guidance": {
     "what_it_looks_for": "Machine-based information resources are persistently reviewed to ensure they are appropriately configured to limit inbound and outbound network traffic.",
     "how_to_comply": "Limit inbound and outbound network traffic: security groups and NACLs deny by default, egress control, WAF on public entry points. Evidence: Config rules on open security groups, reachability analysis, WAF coverage.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -1418,7 +1453,7 @@
      "si-4.4",
      "si-8"
     ],
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, tests, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, tests, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "measures": "TBD: Information has not been provided.",
@@ -1447,6 +1482,7 @@
    "guidance": {
     "what_it_looks_for": "The lifecycle and privileges of all accounts, roles, and groups are securely managed using automation.",
     "how_to_comply": "Automate the lifecycle and privileges of all accounts, roles, and groups: IAM Identity Center with SCIM provisioning from the identity provider, automated deprovisioning on termination. Evidence: provisioning logs, access review records, orphan-account checks.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -1466,7 +1502,7 @@
      "ia-4.4",
      "ia-8.4"
     ],
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, tests, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, tests, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "measures": "TBD: Information has not been provided.",
@@ -1495,6 +1531,7 @@
    "guidance": {
     "what_it_looks_for": "Secure passwordless methods are used for user authentication and authorization when feasible, otherwise strong passwords with phishing-resistant MFA is used.",
     "how_to_comply": "Use passwordless authentication where feasible (FIDO2), otherwise strong passwords with phishing-resistant MFA. Block console login without MFA; eliminate long-lived access keys. Evidence: MFA enforcement queries, CloudTrail login analysis, IAM credential report.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -1521,7 +1558,7 @@
      "ia-8.4",
      "sc-23"
     ],
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, tests, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, tests, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "measures": "TBD: Information has not been provided.",
@@ -1550,6 +1587,7 @@
    "guidance": {
     "what_it_looks_for": "The effectiveness of documented incident response procedures is persistently reviewed.",
     "how_to_comply": "Review incident response procedure effectiveness on a cycle, including exercises. Evidence: dated reviews, exercise records, and procedure updates that resulted.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -1571,7 +1609,7 @@
      "ir-9.3",
      "si-4.5"
     ],
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, tests, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, tests, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "measures": "TBD: Information has not been provided.",
@@ -1600,6 +1638,7 @@
    "guidance": {
     "what_it_looks_for": "Information is encrypted or otherwise secured from unwanted access or modification.",
     "how_to_comply": "Encrypt or otherwise secure information from unwanted access or modification: KMS customer managed keys at rest, TLS 1.2+ in transit, S3 Block Public Access, deny-unencrypted policies. Evidence: Config encryption rules, account-level default encryption status.",
+    "how_to_comply_platform": "AWS",
     "evidence_required": [
      "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
      "Explanation of the cycle for any measures that are implemented persistently (if applicable).",
@@ -1628,7 +1667,7 @@
      "sc-8.1",
      "si-4.18"
     ],
-    "note": "How to comply is SAS advisory guidance, not FedRAMP text. Fill the TBD fields below with the provider's real implementation, validation, tests, and owner."
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, tests, and owner."
    },
    "owner": "TBD: Information has not been provided.",
    "measures": "TBD: Information has not been provided.",

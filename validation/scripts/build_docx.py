@@ -89,6 +89,15 @@ def load(*parts):
         return json.load(f)
 
 
+def _how_to_comply_label(note):
+    """MCE-16 AC1: the human-readable SDR labels every copied how-to-comply
+    note as implementation guidance for the platform the notes layer names,
+    so a reader never takes it for the provider's own statement. The platform
+    comes from the note, never from the offering profile."""
+    platform = (note or {}).get("guidance_platform") or "the platform named in the notes layer"
+    return f"How to comply (SAS guidance, {platform} implementation examples, not the provider's statement):"
+
+
 def label_para(doc, label, text, italic=False):
     p = doc.add_paragraph()
     r = p.add_run(label + " ")
@@ -126,9 +135,12 @@ def main():
     doc.add_paragraph(
         f"Certification: FedRAMP 20x, Class {cls.upper()}, "
         f"{profile['certification_path']} path")
-    doc.add_paragraph(
-        f"AWS partition: {profile['aws_partition']} | regions: "
-        f"{profile['primary_region']}, {profile['dr_region']}")
+    # MCE-16: platform metadata is optional; a provider on another platform
+    # declares none of it and no line is invented.
+    if all(profile.get(k) not in (None, "") for k in ("aws_partition", "primary_region", "dr_region")):
+        doc.add_paragraph(
+            f"AWS partition: {profile['aws_partition']} | regions: "
+            f"{profile['primary_region']}, {profile['dr_region']}")
     doc.add_paragraph(
         f"Generated from dataset {class_profile['meta']['dataset_version']}")
 
@@ -174,7 +186,7 @@ def main():
         label_para(doc, "What it looks for:", r["statement"])
         for n in note.get("official_notes", []):
             label_para(doc, "Official note:", n, italic=True)
-        label_para(doc, "How to comply (SAS guidance):",
+        label_para(doc, _how_to_comply_label(note),
                    note.get("how_to_comply_guidance", ""))
         ev = note.get("evidence_required", [])
         label_para(doc, "Evidence required "
@@ -200,7 +212,7 @@ def main():
         doc.add_heading(f"{kid} {k['name'] or ''}", level=2)
         doc.add_paragraph(f"Family: {k['family']} ({k['family_name']})")
         label_para(doc, "What it looks for:", note.get("what_it_looks_for", ""))
-        label_para(doc, "How to comply (SAS guidance):",
+        label_para(doc, _how_to_comply_label(note),
                    note.get("how_to_comply_guidance", ""))
         controls = note.get("nist_controls", [])
         if controls:
