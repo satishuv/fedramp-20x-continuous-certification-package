@@ -5,9 +5,299 @@
  "modes": {
   "readiness-scan": "advisory per-resource scanner check; reports what is still missing before an assessor signs, never gates the build",
   "regression-test+mutation": "a closed defect raised under this rule, guarded by a regression test that a re-introduced mutation turns red (anti-circular proof)",
-  "regression-test": "a closed defect raised under this rule, guarded by a regression test; no mutation verified yet"
+  "regression-test": "a closed defect raised under this rule, guarded by a regression test; no mutation verified yet",
+  "evidence-adapter": "an evidence source adapter whose declared checks the source registry binds to this indicator; its facts are proven against a golden export by the adapter conformance suite and its own regression test. Counted toward a class's automated disposition only when the offering profile enables the source; a disabled or example source is listed under gates but counts for nothing"
  },
  "gates": {
+  "adapter.crowdstrike-falcon": {
+   "kind": "evidence-adapter",
+   "adapter_kind": "python",
+   "service": "crowdstrike",
+   "mode": "evidence-adapter",
+   "enabled_in_profile": false,
+   "illustrative": false,
+   "checks": [
+    "open_detections",
+    "prevention_policy",
+    "sensor_coverage"
+   ],
+   "ksi_targets": [
+    "KSI-INR-RIR",
+    "KSI-MLA-LET",
+    "KSI-MLA-OSM",
+    "KSI-MLA-RVL"
+   ],
+   "tests": [
+    "automation/collectors/test_adapter_conformance.py",
+    "automation/collectors/test_fact_contract.py",
+    "automation/collectors/test_thirdparty_adapters.py",
+    "validation/scripts/test_adapter_source_bindings.py"
+   ],
+   "mutations": [
+    "MUT-F68",
+    "MUT-F69",
+    "MUT-F72"
+   ],
+   "mutated_files": [
+    "automation/collectors/evidence_wiring.py",
+    "automation/collectors/thirdparty_adapters.py"
+   ],
+   "fixture": null
+  },
+  "adapter.csv-count": {
+   "kind": "evidence-adapter",
+   "adapter_kind": "python",
+   "service": "scan",
+   "mode": "evidence-adapter",
+   "enabled_in_profile": false,
+   "illustrative": true,
+   "checks": [],
+   "ksi_targets": [],
+   "tests": [
+    "automation/collectors/test_adapter_conformance.py",
+    "automation/collectors/test_evidence_lifecycle.py",
+    "automation/collectors/test_evidence_wiring.py",
+    "automation/collectors/test_fact_contract.py"
+   ],
+   "mutations": [
+    "MUT-F27",
+    "MUT-F28",
+    "MUT-F68",
+    "MUT-F69"
+   ],
+   "mutated_files": [
+    "automation/collectors/evidence_wiring.py"
+   ],
+   "fixture": null
+  },
+  "adapter.example-azure-policy-states": {
+   "kind": "evidence-adapter",
+   "adapter_kind": "mapping",
+   "service": "azure-policy",
+   "mode": "evidence-adapter",
+   "enabled_in_profile": false,
+   "illustrative": false,
+   "checks": [
+    "fictional-diagnostic-logs-enabled",
+    "fictional-key-rotation-enabled",
+    "fictional-managed-identity-required",
+    "fictional-mfa-required-for-owner-role",
+    "fictional-nsg-no-inbound-from-any",
+    "fictional-storage-public-network-access-denied"
+   ],
+   "ksi_targets": [
+    "KSI-CNA-MAT",
+    "KSI-CNA-RNT",
+    "KSI-IAM-APM",
+    "KSI-IAM-SNU",
+    "KSI-MLA-EVC",
+    "KSI-MLA-LET",
+    "KSI-SVC-ASM"
+   ],
+   "tests": [
+    "automation/collectors/test_adapter_conformance.py",
+    "automation/collectors/test_azure_policy_adapter.py"
+   ],
+   "mutations": [],
+   "mutated_files": [],
+   "fixture": "automation/collectors/fixtures/mapping/example-azure-policy-states.mapping.json"
+  },
+  "adapter.example-google-cloud-scc": {
+   "kind": "evidence-adapter",
+   "adapter_kind": "mapping",
+   "service": "google-cloud-scc",
+   "mode": "evidence-adapter",
+   "enabled_in_profile": false,
+   "illustrative": false,
+   "checks": [
+    "API_KEY_EXISTS",
+    "AUDIT_LOGGING_DISABLED",
+    "BUCKET_LOGGING_DISABLED",
+    "FLOW_LOGS_DISABLED",
+    "KMS_KEY_NOT_ROTATED",
+    "MFA_NOT_ENFORCED",
+    "OPEN_FIREWALL",
+    "OPEN_SSH_PORT",
+    "OS_LOGIN_DISABLED",
+    "PUBLIC_BUCKET_ACL",
+    "SQL_PUBLIC_IP"
+   ],
+   "ksi_targets": [
+    "KSI-CNA-MAT",
+    "KSI-CNA-RNT",
+    "KSI-IAM-AAM",
+    "KSI-IAM-APM",
+    "KSI-IAM-SNU",
+    "KSI-MLA-EVC",
+    "KSI-MLA-LET",
+    "KSI-SVC-ASM"
+   ],
+   "tests": [
+    "automation/collectors/test_adapter_conformance.py",
+    "automation/collectors/test_scc_adapter.py",
+    "validation/scripts/test_rule_test_map.py"
+   ],
+   "mutations": [
+    "MUT-F67",
+    "MUT-F77"
+   ],
+   "mutated_files": [
+    "automation/collectors/evidence_wiring.py",
+    "validation/scripts/build_rule_test_map.py"
+   ],
+   "fixture": "automation/collectors/fixtures/mapping/example-google-cloud-scc.mapping.json"
+  },
+  "adapter.example-oci-cloud-guard": {
+   "kind": "evidence-adapter",
+   "adapter_kind": "mapping",
+   "service": "oci-cloud-guard",
+   "mode": "evidence-adapter",
+   "enabled_in_profile": false,
+   "illustrative": false,
+   "checks": [
+    "FICTIONAL_API_KEY_TOO_OLD",
+    "FICTIONAL_AUDIT_LOG_RETENTION_LOW",
+    "FICTIONAL_BUCKET_IS_PUBLIC",
+    "FICTIONAL_KEY_NOT_ROTATED",
+    "FICTIONAL_MFA_NOT_ENABLED",
+    "FICTIONAL_SECURITY_LIST_INGRESS_ANY"
+   ],
+   "ksi_targets": [
+    "KSI-CNA-MAT",
+    "KSI-CNA-RNT",
+    "KSI-IAM-APM",
+    "KSI-IAM-SNU",
+    "KSI-MLA-EVC",
+    "KSI-MLA-LET",
+    "KSI-SVC-ASM"
+   ],
+   "tests": [
+    "automation/collectors/test_adapter_conformance.py",
+    "automation/collectors/test_oci_cloud_guard_adapter.py"
+   ],
+   "mutations": [],
+   "mutated_files": [],
+   "fixture": "automation/collectors/fixtures/mapping/example-oci-cloud-guard.mapping.json"
+  },
+  "adapter.example-openscap-xccdf": {
+   "kind": "evidence-adapter",
+   "adapter_kind": "mapping",
+   "service": "openscap",
+   "mode": "evidence-adapter",
+   "enabled_in_profile": false,
+   "illustrative": false,
+   "checks": [
+    "xccdf_com.example_rule_audit_logging_enabled",
+    "xccdf_com.example_rule_file_integrity_tool_installed",
+    "xccdf_com.example_rule_installed_package_inventory",
+    "xccdf_com.example_rule_kernel_module_denylist",
+    "xccdf_com.example_rule_legacy_protocol_removed",
+    "xccdf_com.example_rule_password_min_length",
+    "xccdf_com.example_rule_unused_services_disabled"
+   ],
+   "ksi_targets": [
+    "KSI-CNA-MAT",
+    "KSI-MLA-EVC",
+    "KSI-MLA-LET",
+    "KSI-PIY-GIV",
+    "KSI-SVC-VRI"
+   ],
+   "tests": [
+    "automation/collectors/test_adapter_conformance.py",
+    "automation/collectors/test_xccdf_adapter.py"
+   ],
+   "mutations": [
+    "MUT-F75",
+    "MUT-F76"
+   ],
+   "mutated_files": [
+    "automation/collectors/fact-contract.schema.json",
+    "automation/collectors/xccdf_reader.py"
+   ],
+   "fixture": "automation/collectors/fixtures/mapping/example-openscap-xccdf.mapping.json"
+  },
+  "adapter.example-posture-scanner": {
+   "kind": "evidence-adapter",
+   "adapter_kind": "mapping",
+   "service": "example-posture",
+   "mode": "evidence-adapter",
+   "enabled_in_profile": false,
+   "illustrative": false,
+   "checks": [
+    "MFA_NOT_ENFORCED",
+    "OPEN_FIREWALL",
+    "PUBLIC_BUCKET_ACL",
+    "policies-custom-rule-7-draft-4e082b91"
+   ],
+   "ksi_targets": [
+    "KSI-MLA-EVC",
+    "KSI-MLA-OSM"
+   ],
+   "tests": [
+    "automation/collectors/test_adapter_conformance.py",
+    "automation/collectors/test_mapping_adapter.py",
+    "validation/scripts/test_adapter_source_bindings.py"
+   ],
+   "mutations": [
+    "MUT-F70",
+    "MUT-F71",
+    "MUT-F72"
+   ],
+   "mutated_files": [
+    "automation/collectors/mapping_adapter.py",
+    "automation/collectors/thirdparty_adapters.py"
+   ],
+   "fixture": "automation/collectors/fixtures/mapping/example-posture-scanner.mapping.json"
+  },
+  "adapter.wiz": {
+   "kind": "evidence-adapter",
+   "adapter_kind": "python",
+   "service": "wiz",
+   "mode": "evidence-adapter",
+   "enabled_in_profile": false,
+   "illustrative": false,
+   "checks": [
+    "config_findings",
+    "issues_critical_high",
+    "vulnerabilities"
+   ],
+   "ksi_targets": [
+    "KSI-MLA-EVC",
+    "KSI-MLA-OSM",
+    "KSI-SCR-MON"
+   ],
+   "tests": [
+    "automation/collectors/test_adapter_conformance.py",
+    "automation/collectors/test_fact_contract.py",
+    "automation/collectors/test_thirdparty_adapters.py",
+    "validation/scripts/test_adapter_source_bindings.py",
+    "validation/scripts/test_init_wizard.py",
+    "validation/scripts/test_profile_traceability.py",
+    "validation/scripts/test_provenance_mutations.py",
+    "validation/scripts/test_rule_test_map.py",
+    "validation/scripts/test_third_party_names.py"
+   ],
+   "mutations": [
+    "MUT-F45",
+    "MUT-F50",
+    "MUT-F62",
+    "MUT-F63",
+    "MUT-F64",
+    "MUT-F67",
+    "MUT-F68",
+    "MUT-F69",
+    "MUT-F72"
+   ],
+   "mutated_files": [
+    "automation/collectors/evidence_wiring.py",
+    "automation/collectors/thirdparty_adapters.py",
+    "sdr.py",
+    "validation/scripts/build_cpo.py",
+    "validation/scripts/build_rule_test_map.py",
+    "validation/scripts/validate_evidence.py"
+   ],
+   "fixture": null
+  },
   "attack.class-c-attack-harness": {
    "kind": "release-gate-step",
    "section": "attack",

@@ -164,6 +164,59 @@ def main():
     check("the Class B KSI set honours selected_optional_ksis (41 + 1 selected)",
           len(bmc.applicable_ksis_for_class("b", ksi_profile, {}, {"selected_optional_ksis": ["KSI-CNA-EIS"]})) == 42)
 
+    print("== non-AWS resources and adapter-sourced evidence (MCE-13)")
+    adapter_records = {"ksi": {
+        "KSI-CNA-RNT": {"tests": [], "evidence": [
+            {"evidenceLocation": "https://evidence.example.gov/store/google-cloud-scc/OPEN_FIREWALL/"
+                                 "scope-0123456789abcdef/us-central1/rec-0123456789abcdef.json",
+             "xSourceFact": {"service": "google-cloud-scc", "check": "OPEN_FIREWALL",
+                             "scope": "scope-0123456789abcdef", "record": "rec-0123456789abcdef"}}]},
+        "KSI-IAM-AAM": {"tests": [], "evidence": [
+            {"evidenceLocation": "https://evidence.example.gov/store/google-cloud-scc/OPEN_FIREWALL/"
+                                 "scope-0123456789abcdef/us-central1/rec-fedcba9876543210.json",
+             "xSourceFact": {"service": "google-cloud-scc", "check": "OPEN_FIREWALL"}}]},
+        "KSI-CED-RAT": {"tests": [], "evidence": []},
+    }}
+    bindings = {"KSI-CNA-RNT": {"keys": {"google-cloud-scc:OPEN_FIREWALL"}, "config": set()}}
+    inv3 = inventory({
+        "id": "vpc-firewall", "name": "Project firewall rules", "kind": "cloud-service",
+        "in_mas": True, "handles_federal_data": True,
+        "ksi_coverage": {
+            "KSI-CNA-RNT": {"demonstrated_by": ["google-cloud-scc:OPEN_FIREWALL"]},
+            "KSI-IAM-AAM": {"demonstrated_by": ["google-cloud-scc:OPEN_FIREWALL"]},
+            "KSI-CED-RAT": {"demonstrated_by": ["google-cloud-scc:MFA_NOT_ENFORCED"]},
+        }})
+    try:
+        rep3 = bmc.coverage_for_class(inv3, adapter_records, APPLICABLE, "c", "2026.10.13.01", RULE,
+                                      bindings=bindings)
+        raised = False
+    except Exception as e:  # noqa: BLE001
+        raised, rep3 = True, {"cells": [], "resources_in_mas": [], "problems": [str(e)]}
+    check("a resource of a non-AWS kind with no aws_service does not raise and is classified",
+          not raised and rep3["summary"]["resources_in_mas"] == 1
+          and rep3["resources_in_mas"][0]["kind"] == "cloud-service"
+          and rep3["resources_in_mas"][0]["aws_service"] is None)
+    check("a service:check reference to adapter evidence in the record, bound to the KSI: demonstrated",
+          not raised and cell(rep3, "vpc-firewall", "KSI-CNA-RNT")["status"] == "demonstrated")
+    check("the same pair under a KSI the source registry does not bind it to: unresolved, naming the pair",
+          not raised and cell(rep3, "vpc-firewall", "KSI-IAM-AAM")["status"] == "unresolved"
+          and "not bound" in cell(rep3, "vpc-firewall", "KSI-IAM-AAM")["note"]
+          and "google-cloud-scc:OPEN_FIREWALL" in cell(rep3, "vpc-firewall", "KSI-IAM-AAM")["note"])
+    check("a pair with no such evidence in the record: unresolved as missing, not as unbound",
+          not raised and cell(rep3, "vpc-firewall", "KSI-CED-RAT")["status"] == "unresolved"
+          and "does not resolve" in cell(rep3, "vpc-firewall", "KSI-CED-RAT")["note"])
+    rep4 = bmc.coverage_for_class(inv3, adapter_records, APPLICABLE, "c", "2026.10.13.01", RULE)
+    check("without a registry the pair resolves against the record only (never counted as bound elsewhere)",
+          cell(rep4, "vpc-firewall", "KSI-CNA-RNT")["status"] == "demonstrated"
+          and cell(rep4, "vpc-firewall", "KSI-IAM-AAM")["status"] == "demonstrated")
+    check("a method_id or URL reference is never subjected to the binding check",
+          bmc.unbound_pairs("KSI-CNA-RNT", ["KSI-CNA-RNT:verify:config:x", "https://e.example/x.json"],
+                            {"KSI-CNA-RNT": {"keys": set()}}) == [])
+    live = bmc.load_bindings()
+    check("the live source bindings load and carry the registered adapters' declared pairs",
+          isinstance(live, dict) and any(k.startswith("crowdstrike:") for v in live.values()
+                                         for k in v.get("keys", set())))
+
     print(f"\n{PASS} passed, {FAIL} failed")
     return 1 if FAIL else 0
 

@@ -426,7 +426,7 @@ MUTATIONS = [
     # nothing must read as unresolved, never as coverage.
     ("MUT-F56",
      "validation/scripts/build_mas_coverage.py",
-     "                    if refs and not missing:\n                        cell[\"status\"] = \"demonstrated\"",
+     "                    if refs and not missing and not unbound:\n                        cell[\"status\"] = \"demonstrated\"",
      "                    if refs:  # MUTATION any reference counts as coverage\n                        cell[\"status\"] = \"demonstrated\"",
      "validation/scripts/test_mas_coverage.py"),
     # AUD-F57: under a signing-required signer a hashless entry is a HARD

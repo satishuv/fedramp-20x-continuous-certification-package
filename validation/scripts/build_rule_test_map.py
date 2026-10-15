@@ -21,6 +21,12 @@ from machine-readable inputs only. Nothing is curated or inferred from prose:
     id; mode "regression-test+mutation" when the mutation is verified,
     otherwise "regression-test".
   - the mutation runner (audit/mutation_tests.py): id -> mutated file -> test.
+  - the evidence adapters (automation/collectors: the registered Python
+    adapters and every fixtures/mapping/*.mapping.json): each is a gate
+    `adapter.<name>` with its declared source bindings (service:check -> KSI),
+    the validate-suite tests whose source names it, and the runner mutations
+    whose test is one of those; mode "evidence-adapter". Only a source the
+    offering profile ENABLES contributes per-KSI entries (MCE-13).
   - the validation gate and test suite (sdr.py VALIDATION_GATE, TEST_SUITE)
     and the release gate sections (audit/release_gate.py SECTIONS): the gate
     registry every gate_id must resolve to.
@@ -43,6 +49,7 @@ need provider, FedRAMP or assessor judgment.
     python validation/scripts/build_rule_test_map.py --check  # compare, exit 1 on drift
 """
 
+import glob
 import importlib.util
 import json
 import os
@@ -77,7 +84,73 @@ MODE_NOTE = {
                                 "that a re-introduced mutation turns red (anti-circular proof)",
     "regression-test": "a closed defect raised under this rule, guarded by a regression test; no "
                        "mutation verified yet",
+    "evidence-adapter": "an evidence source adapter whose declared checks the source registry binds to "
+                        "this indicator; its facts are proven against a golden export by the adapter "
+                        "conformance suite and its own regression test. Counted toward a class's "
+                        "automated disposition only when the offering profile enables the source; a "
+                        "disabled or example source is listed under gates but counts for nothing",
 }
+
+CONFORMANCE_TEST = "automation/collectors/test_adapter_conformance.py"
+MAPPING_FIXTURES = os.path.join(BASE, "automation", "collectors", "fixtures", "mapping")
+
+
+def adapter_gates(sdr_mod, runner, suite, offering):
+    """Every evidence adapter as a gate (MCE-13 AC2): the Python adapters the
+    repository registers and every mapping fixture under fixtures/mapping.
+    Deterministic from machine-readable inputs only: the adapter's declared
+    source bindings (service:check -> KSI ids), the test files in the validate
+    suite whose source names the adapter (its registered name or its mapping
+    fixture stem), the runner mutations whose test is one of those files, and
+    whether the offering profile enables the source. Returns
+    ({gate_id: gate}, {gate_id: set(ksi_ids)}, [enabled gate_ids])."""
+    sys.path.insert(0, os.path.join(BASE, "automation", "collectors"))
+    import evidence_wiring as ew  # noqa: E402
+    import mapping_adapter as ma  # noqa: E402
+    try:
+        import thirdparty_adapters  # noqa: E402,F401
+    except Exception:
+        pass
+    enabled = {name for name, cfg in ((offering.get("evidence_sources") or {}).items())
+               if isinstance(cfg, dict) and cfg.get("enabled") is True}
+    known_ksis = ma.load_ksi_ids()
+    adapters = {}  # name -> (adapter, kind, fixture_stem)
+    for name in sorted(ew.list_adapters()):
+        adapters[name] = (ew.get_adapter(name), "python", None)
+    for mp in sorted(glob.glob(os.path.join(MAPPING_FIXTURES, "*.mapping.json"))):
+        stem = os.path.basename(mp)[: -len(".mapping.json")]
+        mapping = load(mp, {}) or {}
+        try:
+            adapter = ma.build_adapter(mapping, ksi_ids=known_ksis)
+        except Exception:
+            continue  # an invalid fixture is the conformance suite's finding, not a gate
+        adapters[adapter.name] = (adapter, "mapping", stem)
+    suite_sources = {}
+    for t in sorted(suite):
+        p = os.path.join(BASE, t)
+        if os.path.exists(p):
+            with open(p, encoding="utf-8") as f:
+                suite_sources[t] = f.read()
+    gates, targets = {}, {}
+    for name, (adapter, kind, stem) in sorted(adapters.items()):
+        bindings = adapter.source_bindings() if callable(getattr(adapter, "source_bindings", None)) else {}
+        kids = sorted({k for ks in bindings.values() for k in (ks or [])})
+        needles = [name] + ([stem] if stem else [])
+        tests = sorted(t for t, src in suite_sources.items()
+                       if any(n in src for n in needles) or t == CONFORMANCE_TEST)
+        mutations = sorted(m for m, r in runner.items() if r["test"] in tests)
+        gid = f"adapter.{name}"
+        gates[gid] = {
+            "kind": "evidence-adapter", "adapter_kind": kind, "service": getattr(adapter, "service", None),
+            "mode": "evidence-adapter", "enabled_in_profile": name in enabled,
+            "illustrative": getattr(adapter, "illustrative", False) is True,
+            "checks": sorted(adapter.checks or ()) if getattr(adapter, "checks", None) else [],
+            "ksi_targets": kids, "tests": tests, "mutations": mutations,
+            "mutated_files": sorted({runner[m]["file"] for m in mutations}),
+            "fixture": f"automation/collectors/fixtures/mapping/{stem}.mapping.json" if stem else None,
+        }
+        targets[gid] = set(kids)
+    return gates, targets, sorted(g for g in gates if gates[g]["enabled_in_profile"])
 
 
 def load(path, default=None):
@@ -187,6 +260,31 @@ def build():
         gates[f"ledger.{d.get('id')}"] = {"kind": "closed-defect", "severity": d.get("severity"),
                                            "component": d.get("component")}
 
+    # 2b. Evidence adapters (MCE-13): every adapter is a gate, listed with its
+    #     mode, tests and mutations. Only a source the offering profile ENABLES
+    #     contributes a per-KSI entry, so an example or disabled source never
+    #     inflates the coverage figure.
+    offering = load(OFFERING, {}) or {}
+    a_gates, a_targets, a_enabled = adapter_gates(sdr_mod, runner, suite, offering)
+    gates.update(a_gates)
+    for gid in a_enabled:
+        g = a_gates[gid]
+        entry = {"gate_id": gid, "mode": "evidence-adapter", "tests": g["tests"],
+                 "mutations": g["mutations"], "mutated_files": g["mutated_files"],
+                 "in_test_suite": all(t in suite for t in g["tests"])}
+        for kid in sorted(a_targets[gid]):
+            if kid not in known:
+                unresolved["rule_ids"].append({"id": kid, "source": gid})
+                continue
+            add(kid, entry)
+    for gid, g in a_gates.items():
+        for t in g["tests"]:
+            if not os.path.exists(os.path.join(BASE, t)):
+                unresolved["tests"].append({"path": t, "source": gid})
+        for m in g["mutations"]:
+            if m not in runner:
+                unresolved["mutations"].append({"id": m, "source": gid})
+
     # 3. Coverage per class: applicable rule ids (class profiles) and all KSIs
     #    at the classes that submit them, split into automated-disposition and
     #    human-review-only. KSI scope follows the one resolver (sdr.submitted_ksi_ids).
@@ -218,7 +316,6 @@ def build():
             "enforcement": entries,
         }
 
-    offering = load(OFFERING, {}) or {}
     return {
         "schema": SCHEMA,
         "dataset_version": offering.get("dataset_version"),

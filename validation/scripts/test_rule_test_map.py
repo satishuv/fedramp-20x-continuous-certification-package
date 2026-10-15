@@ -154,9 +154,68 @@ def test_unresolved_are_reported_not_dropped():
           "FRC-CSX-MOT" in ids and all(u["source"].startswith("AUD-F") for u in unres["rule_ids"] if u["id"] == "FRC-CSX-MOT"))
 
 
+def test_adapter_gates_are_listed_and_honest():
+    """MCE-13 AC2: every evidence adapter is a gate with mode, tests and
+    mutations; every reference resolves; a dangling reference fails; and only a
+    source the offering profile enables counts toward coverage."""
+    doc = brm.build()
+    gates = {k: v for k, v in doc["gates"].items() if k.startswith("adapter.")}
+    sys.path.insert(0, os.path.join(BASE, "automation", "collectors"))
+    import evidence_wiring as ew  # noqa: E402
+    import thirdparty_adapters  # noqa: E402,F401
+    import glob
+    fixtures = sorted(glob.glob(os.path.join(BASE, "automation", "collectors", "fixtures", "mapping",
+                                             "*.mapping.json")))
+    fixture_names = {_load(p)["name"] for p in fixtures}
+    expected = set(ew.list_adapters()) | fixture_names
+    check("every registered Python adapter and every mapping fixture is a gate",
+          {k[len("adapter."):] for k in gates} == expected and len(gates) >= 8)
+    sdr_mod = brm._module("sdr_for_adapter_test", os.path.join(BASE, "sdr.py"))
+    suite = set(sdr_mod.TEST_SUITE)
+    spec = importlib.util.spec_from_file_location("mt_for_adapter_test", os.path.join(BASE, "audit", "mutation_tests.py"))
+    mt = importlib.util.module_from_spec(spec); spec.loader.exec_module(mt)
+    runner = {m[0]: m[4] for m in mt.MUTATIONS}
+    _, ksis, _ = brm.known_ids()
+    check("every adapter gate carries mode evidence-adapter, tests, mutations and ksi_targets",
+          all(g["mode"] == "evidence-adapter" and isinstance(g["tests"], list) and isinstance(g["mutations"], list)
+              and isinstance(g["ksi_targets"], list) for g in gates.values()))
+    check("every adapter gate's tests exist and are in the validate suite, including the conformance suite",
+          all(os.path.exists(os.path.join(BASE, t)) and t in suite for g in gates.values() for t in g["tests"])
+          and all(brm.CONFORMANCE_TEST in g["tests"] for g in gates.values()))
+    check("every adapter gate's mutations exist in the runner and target one of the gate's tests",
+          all(m in runner and runner[m] in g["tests"] for g in gates.values() for m in g["mutations"]))
+    check("every adapter gate's KSI targets exist in the pinned KSI catalog",
+          all(k in ksis for g in gates.values() for k in g["ksi_targets"]))
+    check("a non-illustrative adapter declares checks and binds at least one KSI; the illustrative one binds none",
+          all((g["illustrative"] and not g["ksi_targets"]) or (not g["illustrative"] and g["checks"] and g["ksi_targets"])
+              for g in gates.values()))
+    check("the SCC adapter gate lists its own regression test and the AUD-F77 mutation",
+          "automation/collectors/test_scc_adapter.py" in gates["adapter.example-google-cloud-scc"]["tests"]
+          and "MUT-F77" in gates["adapter.example-google-cloud-scc"]["mutations"])
+    offering = _load(os.path.join(BASE, "profiles", "common", "offering-profile.json"))
+    enabled = {n for n, c in (offering.get("evidence_sources") or {}).items() if isinstance(c, dict) and c.get("enabled") is True}
+    check("enabled_in_profile mirrors the offering profile exactly",
+          all(g["enabled_in_profile"] == (k[len('adapter.'):] in enabled) for k, g in gates.items()))
+    adapter_entries = [(rid, e) for rid, v in doc["rules"].items() for e in v["enforcement"]
+                       if e["gate_id"].startswith("adapter.")]
+    check("a disabled or example source contributes no per-KSI entry (coverage is not inflated)",
+          all(e["gate_id"][len("adapter."):] in enabled for _, e in adapter_entries))
+    # The enablement path is live, not vacuous: with an offering that enables
+    # the SCC fixture, adapter_gates reports it enabled with its KSI targets, so
+    # build() would add per-KSI entries for exactly that source.
+    runner_full = {m[0]: {"file": m[1], "test": m[4]} for m in mt.MUTATIONS}
+    g2, t2, en2 = brm.adapter_gates(sdr_mod, runner_full, suite,
+                                    {"evidence_sources": {"example-google-cloud-scc": {"enabled": True}}})
+    check("enabling a source in the offering profile makes it, and only it, count",
+          en2 == ["adapter.example-google-cloud-scc"] and "KSI-CNA-RNT" in t2["adapter.example-google-cloud-scc"]
+          and g2["adapter.example-google-cloud-scc"]["enabled_in_profile"] is True
+          and g2["adapter.wiz"]["enabled_in_profile"] is False)
+
+
 def main():
     for t in (test_deterministic_and_current, test_every_reference_resolves,
-              test_coverage_is_honest, test_unresolved_are_reported_not_dropped):
+              test_coverage_is_honest, test_unresolved_are_reported_not_dropped,
+              test_adapter_gates_are_listed_and_honest):
         print(t.__name__)
         t()
     print(f"\n{'PASS' if _fail == 0 else 'FAIL'}: rule-test map ({_fail} failures)")

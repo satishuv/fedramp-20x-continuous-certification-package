@@ -787,10 +787,18 @@ class CsvCountAdapter(EvidenceAdapter):
     """Reference adapter: turns a metric name and an observed/total count into a
     single evidence fact (e.g. a vulnerability-scan patch-coverage row). Pure,
     offline, illustrative. `raw` is a dict:
-        {check, observed, total, region?, observed_at?, detail?}"""
+        {check, observed, total, region?, observed_at?, detail?}
+
+    Illustrative means: it declares no check vocabulary (the check is whatever
+    the caller passes), so the source registry binds its evidence to no KSI and
+    the provenance gate treats that evidence as unbound (a finding under the
+    development profile, a block under production-assurance). The adapter
+    conformance suite (MCE-13) requires every registered adapter to either
+    declare its checks or carry this flag; nothing in between."""
 
     name = "csv-count"
     service = "scan"
+    illustrative = True
 
     def collect(self, raw):
         observed = raw.get("observed", 0)
