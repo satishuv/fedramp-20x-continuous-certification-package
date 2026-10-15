@@ -11,6 +11,48 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### Google Cloud Security Command Center findings adapter (MCE-04; AUD-F77)
+
+The first cloud findings source outside AWS, through the mapping-driven
+adapter and one reference mapping (`example-google-cloud-scc.mapping.json`),
+no Python. Records have the published `ListFindingsResult` shape (a `finding`
+and a `resource` object, the form the command-line listing prints), read from
+either the fixture envelope or a bare array; the states are the published
+`Finding.State` enum: `ACTIVE` is a problem the source still reports (`FAIL`),
+`INACTIVE` covers a fixed finding and one a person closed as not an issue,
+which the export cannot tell apart, so it is `UNKNOWN` with the state kept in
+`detail`, never `PASS`; a muted `ACTIVE` finding stays `FAIL`; a state outside
+the enum is `UNKNOWN`. The shape comes from the owner's public API reference,
+cited with capture dates in the fixture header and the mapping; the fixture is
+fictional end to end (all-zero organization and source numbers, `fictional-`
+project names). Building it exposed one defect, reproduced against the
+unmodified engine before anything was changed. `AUD-F77` (High): a findings
+export carries one record per resource, while the evidence pointer was derived
+from service, check, opaque scope and region only, so two findings of one
+category in one project and region resolved to one pointer and the record
+store, which keeps one entry per pointer, kept only the later observation: a
+resolved finding replaced a still-active one and the package showed nothing
+wrong. The fact contract now carries `record_id` (the source's own identity for
+one record) and the mapping schema `fields.record_id`; `fact_to_evidence`
+derives an opaque `record` from it as an HMAC under the deployment scope key
+(`record_ref`, keyed like the scope id because a finding name embeds the
+organization id and an unkeyed digest of a low-entropy name is brute-forceable),
+appends it to the pointer after the region, stamps it on the sanitized source
+fact and never exports the raw id; a raw `record_id` with no scope key is
+refused naming the field, and a caller-stamped record that is not an opaque
+`rec-` id is refused. `EvidenceAdapter.to_evidence` refuses any batch in which
+two facts resolve to one pointer, naming the pointer and the `record_id`
+remedy, through the new pure `pointer_collisions`. The same finding keeps the
+same pointer across exports, so a later observation replaces the earlier one
+while two findings never share a pointer; the AWS pointer form is unchanged
+when no `record_id` is present, so no committed artifact moved. Regression:
+`automation/collectors/test_scc_adapter.py` (16 checks, red on the pre-change
+engine), registered in the validate suite; MUT-F77 (collision refusal
+disabled) killed in the runner, the keyed-id guarantee proven red by hand
+(unkeyed digest fails the two-keys-two-ids check). `THIRD_PARTY_NOTICE.md`
+moves the Google Cloud row from planned to present; the evidence-sources README
+gains the per-record section and the two contract fields.
+
 ### On-premises XCCDF results adapter (MCE-07; AUD-F75, AUD-F76)
 
 A provider with no cloud turns a benchmark scan into KSI-bound facts through

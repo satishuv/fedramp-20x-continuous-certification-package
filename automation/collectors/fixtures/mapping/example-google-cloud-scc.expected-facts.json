@@ -1,0 +1,95 @@
+{
+  "_about": "Golden facts (MCE-04): example-google-cloud-scc.mapping.json applied to example-google-cloud-scc.export.json must yield exactly these facts, in this order. Nine of the ten records: the undeclared DEFAULT_NETWORK record is skipped. record_id and project are raw input-side values; conversion replaces them with an opaque rec-... and scope-... id. Fictional values only.",
+  "facts": [
+    {
+      "check": "PUBLIC_BUCKET_ACL",
+      "detail": "source state: ACTIVE. Fictional: a storage bucket policy grants a public role.",
+      "observed_at": "2026-10-01T06:00:00Z",
+      "project": "fictional-project-0001",
+      "record_id": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000001",
+      "region": "us-central1",
+      "service": "google-cloud-scc",
+      "status": "FAIL"
+    },
+    {
+      "check": "PUBLIC_BUCKET_ACL",
+      "detail": "source state: INACTIVE. Fictional: a storage bucket policy grants a public role.",
+      "observed_at": "2026-10-03T09:15:00.250Z",
+      "project": "fictional-project-0001",
+      "record_id": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000002",
+      "region": "us-central1",
+      "service": "google-cloud-scc",
+      "status": "UNKNOWN"
+    },
+    {
+      "check": "OPEN_FIREWALL",
+      "detail": "source state: ACTIVE. Fictional: a firewall rule allows ingress from any address.",
+      "observed_at": "2026-10-01T06:00:01.000000Z",
+      "project": "fictional-project-0001",
+      "record_id": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000003",
+      "region": "global",
+      "service": "google-cloud-scc",
+      "status": "FAIL"
+    },
+    {
+      "check": "MFA_NOT_ENFORCED",
+      "detail": "source state: ACTIVE. Fictional: multi-factor authentication is not enforced for every user of the project.",
+      "observed_at": "2026-10-01T06:05:00.123456789Z",
+      "project": "fictional-project-0002",
+      "record_id": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000004",
+      "region": "global",
+      "service": "google-cloud-scc",
+      "status": "FAIL"
+    },
+    {
+      "check": "AUDIT_LOGGING_DISABLED",
+      "detail": "source state: INACTIVE. Fictional: data access audit logging is not enabled for the project.",
+      "observed_at": "2026-10-02T14:20:00Z",
+      "project": "fictional-project-0002",
+      "record_id": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000005",
+      "region": "global",
+      "service": "google-cloud-scc",
+      "status": "UNKNOWN"
+    },
+    {
+      "check": "KMS_KEY_NOT_ROTATED",
+      "detail": "source state: ACTIVE. Fictional: a key has no rotation period set.",
+      "observed_at": "2026-10-01T06:10:00Z",
+      "project": "fictional-project-0002",
+      "record_id": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000006",
+      "region": "europe-west1",
+      "service": "google-cloud-scc",
+      "status": "FAIL"
+    },
+    {
+      "check": "FLOW_LOGS_DISABLED",
+      "detail": "source state: ACTIVE. Fictional: flow logs are off for a subnetwork.",
+      "observed_at": "2026-10-01T06:10:30Z",
+      "project": "fictional-project-0002",
+      "record_id": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000007",
+      "region": "europe-west1",
+      "service": "google-cloud-scc",
+      "status": "FAIL"
+    },
+    {
+      "check": "API_KEY_EXISTS",
+      "detail": "source state: ACTIVE. Fictional: an API key exists in the project.",
+      "observed_at": "2026-10-01T06:11:00Z",
+      "project": "fictional-project-0002",
+      "record_id": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000008",
+      "region": "global",
+      "service": "google-cloud-scc",
+      "status": "FAIL"
+    },
+    {
+      "check": "OS_LOGIN_DISABLED",
+      "detail": "source state: INACTIVE. Fictional: OS Login is not enabled on an instance.",
+      "observed_at": "2026-10-04T07:45:12.000Z",
+      "project": "fictional-project-0001",
+      "record_id": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000009",
+      "region": "us-central1-a",
+      "service": "google-cloud-scc",
+      "status": "UNKNOWN"
+    }
+  ]
+}

@@ -579,6 +579,21 @@ MUTATIONS = [
      '        elif given != expected:\n',
      '        elif False and given != expected:  # MUTATION relabelled standard values accepted\n',
      "automation/collectors/test_xccdf_adapter.py"),
+    # AUD-F77 / MCE-04: a findings export carries one record PER RESOURCE, so
+    # two findings of one category in one scope and region resolved to ONE
+    # evidence pointer and the record store kept only the later observation (a
+    # resolved finding replaced a still-active one). Mutation: the adapter path
+    # stops refusing a batch whose facts share a pointer; the regression's
+    # refusal check goes RED (the batch converts, two entries at one pointer).
+    ("MUT-F77",
+     "automation/collectors/evidence_wiring.py",
+     '        shared = pointer_collisions(evidence)\n        if shared:\n',
+     '        shared = pointer_collisions(evidence)\n        if False and shared:  # MUTATION colliding batch converts silently\n',
+     "automation/collectors/test_scc_adapter.py"),
+    # (Second AUD-F77 guarantee, the KEYED record id, is proven by hand in the
+    # PR: record_ref switched to a plain SHA-256 of the name fails the
+    # regression's two-keys-two-ids check. Not a runner entry: one runner id per
+    # defect is the ledger rule.)
 ]
 
 

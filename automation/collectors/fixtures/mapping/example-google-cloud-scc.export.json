@@ -1,0 +1,271 @@
+{
+  "_fixture": {
+    "about": "Fictional Google Cloud Security Command Center findings export for the MCE-04 adapter tests and the quickstart. Every value is invented: organization, source and project numbers are all zeros, project ids and resource names start with fictional-, finding ids are counters. No real organization, project, resource or person is described. The `findings` array has the shape the command-line listing prints as JSON (one ListFindingsResult per element: a `finding` object, a `resource` object, `stateChange`); the mapping reads a bare array of the same elements identically. This envelope is the repository's fixture header, not part of the vendor's format.",
+    "documentation": [
+      {"what": "Finding and ListFindingsResult.Resource messages (field names, State, Severity, Mute and FindingClass enums)", "url": "https://cloud.google.com/security-command-center/docs/reference/rest/v1/organizations.sources.findings", "captured": "2026-10-15"},
+      {"what": "Finding message source (google.cloud.securitycenter.v1)", "url": "https://github.com/googleapis/googleapis/blob/master/google/cloud/securitycenter/v1/finding.proto", "captured": "2026-10-15"},
+      {"what": "Category names in the API for the categories declared in the mapping", "url": "https://cloud.google.com/security-command-center/docs/concepts-vulnerabilities-findings", "captured": "2026-10-15"}
+    ],
+    "timestamps": "eventTime values follow the protobuf JSON mapping of Timestamp: RFC 3339, UTC, with 0, 3, 6 or 9 fractional digits; all four appear below."
+  },
+  "findings": [
+    {
+      "finding": {
+        "name": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000001",
+        "parent": "organizations/000000000000/sources/0000000000000000000",
+        "resourceName": "//storage.googleapis.com/projects/_/buckets/fictional-bucket-0001",
+        "state": "ACTIVE",
+        "category": "PUBLIC_BUCKET_ACL",
+        "severity": "HIGH",
+        "findingClass": "MISCONFIGURATION",
+        "mute": "UNDEFINED",
+        "eventTime": "2026-10-01T06:00:00Z",
+        "createTime": "2026-09-20T11:30:00Z",
+        "canonicalName": "projects/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000001",
+        "description": "Fictional: a storage bucket policy grants a public role."
+      },
+      "resource": {
+        "name": "//storage.googleapis.com/projects/_/buckets/fictional-bucket-0001",
+        "displayName": "fictional-bucket-0001",
+        "projectName": "//cloudresourcemanager.googleapis.com/projects/000000000000",
+        "projectDisplayName": "fictional-project-0001",
+        "parentName": "//cloudresourcemanager.googleapis.com/projects/000000000000",
+        "parentDisplayName": "fictional-project-0001",
+        "location": "us-central1"
+      },
+      "stateChange": "UNUSED"
+    },
+    {
+      "finding": {
+        "name": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000002",
+        "parent": "organizations/000000000000/sources/0000000000000000000",
+        "resourceName": "//storage.googleapis.com/projects/_/buckets/fictional-bucket-0002",
+        "state": "INACTIVE",
+        "category": "PUBLIC_BUCKET_ACL",
+        "severity": "HIGH",
+        "findingClass": "MISCONFIGURATION",
+        "mute": "UNDEFINED",
+        "eventTime": "2026-10-03T09:15:00.250Z",
+        "createTime": "2026-09-20T11:30:00Z",
+        "canonicalName": "projects/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000002",
+        "description": "Fictional: a storage bucket policy grants a public role."
+      },
+      "resource": {
+        "name": "//storage.googleapis.com/projects/_/buckets/fictional-bucket-0002",
+        "displayName": "fictional-bucket-0002",
+        "projectName": "//cloudresourcemanager.googleapis.com/projects/000000000000",
+        "projectDisplayName": "fictional-project-0001",
+        "parentName": "//cloudresourcemanager.googleapis.com/projects/000000000000",
+        "parentDisplayName": "fictional-project-0001",
+        "location": "us-central1"
+      },
+      "stateChange": "UNUSED"
+    },
+    {
+      "finding": {
+        "name": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000003",
+        "parent": "organizations/000000000000/sources/0000000000000000000",
+        "resourceName": "//compute.googleapis.com/projects/fictional-project-0001/global/firewalls/fictional-allow-all",
+        "state": "ACTIVE",
+        "category": "OPEN_FIREWALL",
+        "severity": "CRITICAL",
+        "findingClass": "MISCONFIGURATION",
+        "mute": "MUTED",
+        "eventTime": "2026-10-01T06:00:01.000000Z",
+        "createTime": "2026-09-22T08:00:00Z",
+        "canonicalName": "projects/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000003",
+        "description": "Fictional: a firewall rule allows ingress from any address."
+      },
+      "resource": {
+        "name": "//compute.googleapis.com/projects/fictional-project-0001/global/firewalls/fictional-allow-all",
+        "displayName": "fictional-allow-all",
+        "projectName": "//cloudresourcemanager.googleapis.com/projects/000000000000",
+        "projectDisplayName": "fictional-project-0001",
+        "parentName": "//cloudresourcemanager.googleapis.com/projects/000000000000",
+        "parentDisplayName": "fictional-project-0001",
+        "location": "global"
+      },
+      "stateChange": "UNUSED"
+    },
+    {
+      "finding": {
+        "name": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000004",
+        "parent": "organizations/000000000000/sources/0000000000000000000",
+        "resourceName": "//cloudresourcemanager.googleapis.com/projects/000000000001",
+        "state": "ACTIVE",
+        "category": "MFA_NOT_ENFORCED",
+        "severity": "HIGH",
+        "findingClass": "MISCONFIGURATION",
+        "mute": "UNDEFINED",
+        "eventTime": "2026-10-01T06:05:00.123456789Z",
+        "createTime": "2026-09-01T00:00:00Z",
+        "canonicalName": "projects/000000000001/sources/0000000000000000000/findings/00000000000000000000000000000004",
+        "description": "Fictional: multi-factor authentication is not enforced for every user of the project."
+      },
+      "resource": {
+        "name": "//cloudresourcemanager.googleapis.com/projects/000000000001",
+        "displayName": "fictional-project-0002",
+        "projectName": "//cloudresourcemanager.googleapis.com/projects/000000000001",
+        "projectDisplayName": "fictional-project-0002",
+        "parentName": "//cloudresourcemanager.googleapis.com/organizations/000000000000",
+        "parentDisplayName": "fictional-org"
+      },
+      "stateChange": "UNUSED"
+    },
+    {
+      "finding": {
+        "name": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000005",
+        "parent": "organizations/000000000000/sources/0000000000000000000",
+        "resourceName": "//cloudresourcemanager.googleapis.com/projects/000000000001",
+        "state": "INACTIVE",
+        "category": "AUDIT_LOGGING_DISABLED",
+        "severity": "LOW",
+        "findingClass": "MISCONFIGURATION",
+        "mute": "UNDEFINED",
+        "eventTime": "2026-10-02T14:20:00Z",
+        "createTime": "2026-09-01T00:00:00Z",
+        "canonicalName": "projects/000000000001/sources/0000000000000000000/findings/00000000000000000000000000000005",
+        "description": "Fictional: data access audit logging is not enabled for the project."
+      },
+      "resource": {
+        "name": "//cloudresourcemanager.googleapis.com/projects/000000000001",
+        "displayName": "fictional-project-0002",
+        "projectName": "//cloudresourcemanager.googleapis.com/projects/000000000001",
+        "projectDisplayName": "fictional-project-0002",
+        "parentName": "//cloudresourcemanager.googleapis.com/organizations/000000000000",
+        "parentDisplayName": "fictional-org"
+      },
+      "stateChange": "UNUSED"
+    },
+    {
+      "finding": {
+        "name": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000006",
+        "parent": "organizations/000000000000/sources/0000000000000000000",
+        "resourceName": "//cloudkms.googleapis.com/projects/fictional-project-0002/locations/europe-west1/keyRings/fictional-ring/cryptoKeys/fictional-key-01",
+        "state": "ACTIVE",
+        "category": "KMS_KEY_NOT_ROTATED",
+        "severity": "MEDIUM",
+        "findingClass": "MISCONFIGURATION",
+        "mute": "UNDEFINED",
+        "eventTime": "2026-10-01T06:10:00Z",
+        "createTime": "2026-09-15T00:00:00Z",
+        "canonicalName": "projects/000000000001/sources/0000000000000000000/findings/00000000000000000000000000000006",
+        "description": "Fictional: a key has no rotation period set."
+      },
+      "resource": {
+        "name": "//cloudkms.googleapis.com/projects/fictional-project-0002/locations/europe-west1/keyRings/fictional-ring/cryptoKeys/fictional-key-01",
+        "displayName": "fictional-key-01",
+        "projectName": "//cloudresourcemanager.googleapis.com/projects/000000000001",
+        "projectDisplayName": "fictional-project-0002",
+        "parentName": "//cloudresourcemanager.googleapis.com/projects/000000000001",
+        "parentDisplayName": "fictional-project-0002",
+        "location": "europe-west1"
+      },
+      "stateChange": "UNUSED"
+    },
+    {
+      "finding": {
+        "name": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000007",
+        "parent": "organizations/000000000000/sources/0000000000000000000",
+        "resourceName": "//compute.googleapis.com/projects/fictional-project-0002/regions/europe-west1/subnetworks/fictional-subnet-a",
+        "state": "ACTIVE",
+        "category": "FLOW_LOGS_DISABLED",
+        "severity": "LOW",
+        "findingClass": "MISCONFIGURATION",
+        "mute": "UNDEFINED",
+        "eventTime": "2026-10-01T06:10:30Z",
+        "createTime": "2026-09-15T00:00:00Z",
+        "canonicalName": "projects/000000000001/sources/0000000000000000000/findings/00000000000000000000000000000007",
+        "description": "Fictional: flow logs are off for a subnetwork."
+      },
+      "resource": {
+        "name": "//compute.googleapis.com/projects/fictional-project-0002/regions/europe-west1/subnetworks/fictional-subnet-a",
+        "displayName": "fictional-subnet-a",
+        "projectName": "//cloudresourcemanager.googleapis.com/projects/000000000001",
+        "projectDisplayName": "fictional-project-0002",
+        "parentName": "//cloudresourcemanager.googleapis.com/projects/000000000001",
+        "parentDisplayName": "fictional-project-0002",
+        "location": "europe-west1"
+      },
+      "stateChange": "UNUSED"
+    },
+    {
+      "finding": {
+        "name": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000008",
+        "parent": "organizations/000000000000/sources/0000000000000000000",
+        "resourceName": "//apikeys.googleapis.com/projects/000000000001/locations/global/keys/fictional-api-key-01",
+        "state": "ACTIVE",
+        "category": "API_KEY_EXISTS",
+        "severity": "MEDIUM",
+        "findingClass": "MISCONFIGURATION",
+        "mute": "UNDEFINED",
+        "eventTime": "2026-10-01T06:11:00Z",
+        "createTime": "2026-09-15T00:00:00Z",
+        "canonicalName": "projects/000000000001/sources/0000000000000000000/findings/00000000000000000000000000000008",
+        "description": "Fictional: an API key exists in the project."
+      },
+      "resource": {
+        "name": "//apikeys.googleapis.com/projects/000000000001/locations/global/keys/fictional-api-key-01",
+        "displayName": "fictional-api-key-01",
+        "projectName": "//cloudresourcemanager.googleapis.com/projects/000000000001",
+        "projectDisplayName": "fictional-project-0002",
+        "parentName": "//cloudresourcemanager.googleapis.com/projects/000000000001",
+        "parentDisplayName": "fictional-project-0002",
+        "location": "global"
+      },
+      "stateChange": "UNUSED"
+    },
+    {
+      "finding": {
+        "name": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000009",
+        "parent": "organizations/000000000000/sources/0000000000000000000",
+        "resourceName": "//compute.googleapis.com/projects/fictional-project-0001/zones/us-central1-a/instances/fictional-vm-01",
+        "state": "INACTIVE",
+        "category": "OS_LOGIN_DISABLED",
+        "severity": "MEDIUM",
+        "findingClass": "MISCONFIGURATION",
+        "mute": "UNDEFINED",
+        "eventTime": "2026-10-04T07:45:12.000Z",
+        "createTime": "2026-09-22T08:00:00Z",
+        "canonicalName": "projects/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000009",
+        "description": "Fictional: OS Login is not enabled on an instance."
+      },
+      "resource": {
+        "name": "//compute.googleapis.com/projects/fictional-project-0001/zones/us-central1-a/instances/fictional-vm-01",
+        "displayName": "fictional-vm-01",
+        "projectName": "//cloudresourcemanager.googleapis.com/projects/000000000000",
+        "projectDisplayName": "fictional-project-0001",
+        "parentName": "//cloudresourcemanager.googleapis.com/projects/000000000000",
+        "parentDisplayName": "fictional-project-0001",
+        "location": "us-central1-a"
+      },
+      "stateChange": "UNUSED"
+    },
+    {
+      "finding": {
+        "name": "organizations/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000010",
+        "parent": "organizations/000000000000/sources/0000000000000000000",
+        "resourceName": "//compute.googleapis.com/projects/fictional-project-0001/global/networks/default",
+        "state": "ACTIVE",
+        "category": "DEFAULT_NETWORK",
+        "severity": "MEDIUM",
+        "findingClass": "MISCONFIGURATION",
+        "mute": "UNDEFINED",
+        "eventTime": "2026-10-01T06:12:00Z",
+        "createTime": "2026-09-22T08:00:00Z",
+        "canonicalName": "projects/000000000000/sources/0000000000000000000/findings/00000000000000000000000000000010",
+        "description": "Fictional: the default network exists in the project. This category is not declared in the mapping and must be skipped."
+      },
+      "resource": {
+        "name": "//compute.googleapis.com/projects/fictional-project-0001/global/networks/default",
+        "displayName": "default",
+        "projectName": "//cloudresourcemanager.googleapis.com/projects/000000000000",
+        "projectDisplayName": "fictional-project-0001",
+        "parentName": "//cloudresourcemanager.googleapis.com/projects/000000000000",
+        "parentDisplayName": "fictional-project-0001",
+        "location": "global"
+      },
+      "stateChange": "UNUSED"
+    }
+  ]
+}

@@ -447,6 +447,11 @@
    "severity": "High",
    "component": "automation/collectors/xccdf_reader.py (new: XCCDF_RESULT_NORMALIZATION, normalization_disagreements, read_xccdf_results); automation/collectors/mapping_adapter.py (validate_mapping xccdf agreement check, canonical table applied, undeclared_checks policy); automation/collectors/adapter-mapping.schema.json (export_format xccdf, undeclared_checks)"
   },
+  "ledger.AUD-F77": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/collectors/evidence_wiring.py (new: record_ref, pointer_collisions; _pointer record segment; fact_to_evidence record derivation and raw record_id refusal; EvidenceAdapter.to_evidence batch collision refusal); automation/collectors/fact-contract.schema.json (record_id, record); automation/collectors/adapter-mapping.schema.json (fields.record_id); automation/collectors/mapping_adapter.py (record_id field routing)"
+  },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
    "severity": "medium",
@@ -1628,6 +1633,21 @@
      "in_test_suite": true
     },
     {
+     "gate_id": "ledger.AUD-F77",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/collectors/test_scc_adapter.py"
+     ],
+     "mutations": [
+      "MUT-F77"
+     ],
+     "mutated_files": [
+      "automation/collectors/evidence_wiring.py"
+     ],
+     "in_test_suite": true
+    },
+    {
      "gate_id": "scan.ksi_automation_verified",
      "mode": "readiness-scan",
      "classes": [
@@ -2532,6 +2552,21 @@
      ],
      "mutated_files": [
       "automation/collectors/xccdf_reader.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F77",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/collectors/test_scc_adapter.py"
+     ],
+     "mutations": [
+      "MUT-F77"
+     ],
+     "mutated_files": [
+      "automation/collectors/evidence_wiring.py"
      ],
      "in_test_suite": true
     },

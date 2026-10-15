@@ -1,0 +1,58 @@
+{
+  "schema": "fedramp-adapter-mapping/v1",
+  "name": "example-google-cloud-scc",
+  "service": "google-cloud-scc",
+  "version": "1.0.0",
+  "source_type": "posture-findings",
+  "evidence_type": "Report",
+  "freshness_policy_days": 1,
+  "export_format": "json",
+  "records_path": "findings",
+  "undeclared_checks": "skip",
+  "fields": {
+    "check": "finding.category",
+    "status": "finding.state",
+    "observed_at": "finding.eventTime",
+    "location": "resource.location",
+    "detail": "finding.description",
+    "scope": {"path": "resource.projectDisplayName", "kind": "project"},
+    "record_id": "finding.name"
+  },
+  "status_normalization": {
+    "ACTIVE": "FAIL",
+    "INACTIVE": "UNKNOWN",
+    "STATE_UNSPECIFIED": "UNKNOWN"
+  },
+  "ksi_targets": ["KSI-MLA-EVC"],
+  "checks": [
+    "PUBLIC_BUCKET_ACL",
+    "OPEN_FIREWALL",
+    "OPEN_SSH_PORT",
+    "SQL_PUBLIC_IP",
+    "MFA_NOT_ENFORCED",
+    "OS_LOGIN_DISABLED",
+    "API_KEY_EXISTS",
+    "AUDIT_LOGGING_DISABLED",
+    "BUCKET_LOGGING_DISABLED",
+    "FLOW_LOGS_DISABLED",
+    "KMS_KEY_NOT_ROTATED"
+  ],
+  "check_bindings": {
+    "PUBLIC_BUCKET_ACL": ["KSI-CNA-MAT", "KSI-MLA-EVC"],
+    "OPEN_FIREWALL": ["KSI-CNA-RNT"],
+    "OPEN_SSH_PORT": ["KSI-CNA-RNT"],
+    "SQL_PUBLIC_IP": ["KSI-CNA-RNT"],
+    "MFA_NOT_ENFORCED": ["KSI-IAM-APM"],
+    "OS_LOGIN_DISABLED": ["KSI-IAM-AAM"],
+    "API_KEY_EXISTS": ["KSI-IAM-SNU"],
+    "AUDIT_LOGGING_DISABLED": ["KSI-MLA-LET"],
+    "BUCKET_LOGGING_DISABLED": ["KSI-MLA-LET"],
+    "FLOW_LOGS_DISABLED": ["KSI-MLA-LET"],
+    "KMS_KEY_NOT_ROTATED": ["KSI-SVC-ASM"]
+  },
+  "documentation": {
+    "url": "https://cloud.google.com/security-command-center/docs/reference/rest/v1/organizations.sources.findings",
+    "captured": "2026-10-15"
+  },
+  "note": "Reference mapping for a Google Cloud Security Command Center findings export (MCE-04). Records have the REST API's ListFindingsResult shape (a `finding` and a `resource` object), which the command-line listing prints as JSON. States are the published Finding.State enum: ACTIVE is a problem the source still reports (FAIL); INACTIVE covers a fixed finding and one a person closed as not an issue, which the export cannot tell apart, so it is UNKNOWN with the state kept in detail, never PASS. A muted ACTIVE finding stays FAIL. Each finding is one resource, so finding.name is the per-record identity (AUD-F77); it carries the organization id and becomes an opaque record id before export, as the project id becomes an opaque scope. Category-to-KSI bindings are the provider's declaration, for illustration only. Undeclared categories are skipped and counted, never exported unbound."
+}
