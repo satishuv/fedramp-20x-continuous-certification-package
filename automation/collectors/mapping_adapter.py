@@ -31,8 +31,19 @@ Check identifiers that are not slug-safe (paths, GUIDs with braces, spaces) are
 made slug-safe deterministically, with a short digest of the original appended
 so two different identifiers never collapse onto one check.
 
+export_format "xccdf" (MCE-07) reads an XCCDF 1.1/1.2 results document or an
+ARF result data stream through xccdf_reader.py: one record per rule-result,
+the rule id as the check, the standard's result vocabulary normalized by the
+standard's own semantics (only `pass` is PASS, only `fail` is FAIL; a mapping
+table that relabels a standard value is refused), and the scan target carried
+only as a raw `host` scope so it is replaced by an opaque scope before export.
+A benchmark scan reports every rule in the benchmark, so such a mapping sets
+undeclared_checks to "skip": rule-results the provider has not bound yield no
+fact and are counted in health(), never exported unbound and never silent.
+
 Run the tests:
     python automation/collectors/test_mapping_adapter.py
+    python automation/collectors/test_xccdf_adapter.py
 """
 
 import csv
@@ -45,6 +56,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import evidence_wiring as ew  # noqa: E402
+import xccdf_reader  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 MAPPING_SCHEMA_PATH = os.path.join(HERE, "adapter-mapping.schema.json")
@@ -86,6 +98,11 @@ def validate_mapping(mapping):
     for err in sorted(validator.iter_errors(mapping), key=lambda e: list(e.absolute_path)):
         where = "/".join(str(p) for p in err.absolute_path) or "(mapping)"
         problems.append(f"field '{where}': {err.message}")
+    if not problems and mapping.get("export_format") == "xccdf":
+        # MCE-07 AC2: the XCCDF result vocabulary is the standard's, not the
+        # provider's. notchecked / error / fixed can never be relabelled PASS.
+        for p in xccdf_reader.normalization_disagreements(mapping.get("status_normalization")):
+            problems.append(f"field 'status_normalization/{p}")
     return problems
 
 
@@ -160,6 +177,11 @@ def read_export(text, export_format, records_path=None):
         if bad:
             raise MappingError(f"json export record(s) {bad[:5]} are not objects")
         return doc
+    if export_format == "xccdf":
+        try:
+            return xccdf_reader.read_xccdf_results(text)
+        except xccdf_reader.XccdfReadError as e:
+            raise MappingError(str(e))
     raise MappingError(f"unsupported export_format {export_format!r}")
 
 
@@ -216,6 +238,13 @@ class MappingAdapter(ew.EvidenceAdapter):
         self.freshness_policy_days = int(mapping.get("freshness_policy_days", 1))
         self._fields = mapping["fields"]
         self._table = dict(mapping["status_normalization"])
+        if mapping["export_format"] == "xccdf":
+            # The provider's table has been checked to agree with the standard
+            # (validate_mapping); the standard's full table is what applies, so
+            # a value the provider omitted (e.g. `fail`) is never left to the
+            # generic unmapped -> UNKNOWN rule, which would hide a failure.
+            self._table = xccdf_reader.canonical_normalization()
+        self._undeclared = mapping.get("undeclared_checks", "refuse")
         self._targets = list(mapping["ksi_targets"])
         # MCE-03: declared check vocabulary, kept in the slug form facts carry,
         # and the per-check KSI bindings (check_bindings narrows ksi_targets).
@@ -227,6 +256,7 @@ class MappingAdapter(ew.EvidenceAdapter):
             narrowed = (mapping.get("check_bindings") or {}).get(raw_check)
             self._bindings[f"{self.service}:{slug}"] = set(narrowed if narrowed else self._targets)
         self._last = {"status": "not-run", "records": 0, "facts": 0,
+                      "skipped_undeclared": 0, "undeclared_checks": [],
                       "last_error": None, "last_success": None}
 
     # contract v2 metadata
@@ -240,6 +270,7 @@ class MappingAdapter(ew.EvidenceAdapter):
     def describe(self):
         d = super().describe()
         d["export_format"] = self.mapping["export_format"]
+        d["undeclared_checks"] = self._undeclared
         d["ksi_targets"] = self.ksi_targets()
         d["checks"] = list(self.checks)
         d["source_bindings"] = {k: sorted(v) for k, v in sorted(self._bindings.items())}
@@ -300,7 +331,8 @@ class MappingAdapter(ew.EvidenceAdapter):
 
     def collect(self, raw):
         records = self.records(raw)
-        self._last.update({"records": len(records), "facts": 0, "last_error": None})
+        self._last.update({"records": len(records), "facts": 0, "skipped_undeclared": 0,
+                           "undeclared_checks": [], "last_error": None})
         if not records:
             # AC4: an empty export is a collection that did not run, not a clean
             # posture. No facts, and health says so.
@@ -308,8 +340,18 @@ class MappingAdapter(ew.EvidenceAdapter):
                                "last_error": "export contained no records"})
             return
         facts = [self.fact_for(i, rec) for i, rec in enumerate(records)]
+        if self._undeclared == "skip":
+            # A record whose check the provider has not declared yields no fact.
+            # It is counted and its check named in health(), so a scan whose
+            # rules are mostly unbound is visible as such, and nothing unbound
+            # is ever exported (MCE-03; MCE-07 for benchmark scans).
+            declared = set(self.checks)
+            skipped = sorted({f["check"] for f in facts if f["check"] not in declared})
+            facts = [f for f in facts if f["check"] in declared]
+            self._last.update({"skipped_undeclared": len(skipped),
+                               "undeclared_checks": skipped})
         self._last.update({"status": "collected", "facts": len(facts),
-                           "last_success": facts[-1].get("observed_at")})
+                           "last_success": facts[-1].get("observed_at") if facts else None})
         for fact in facts:
             yield fact
 
@@ -398,7 +440,7 @@ def main(argv=None):
         text = f.read()
     facts = ew.require_conforming_facts(adapter.collect(text), who=f"adapter '{adapter.name}'")
     print(json.dumps({"adapter": adapter.describe(), "outcome": adapter.collection_outcome(),
-                      "facts": facts}, indent=2, sort_keys=True))
+                      "health": adapter.health(), "facts": facts}, indent=2, sort_keys=True))
     return 0
 
 

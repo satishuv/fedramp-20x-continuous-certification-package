@@ -560,6 +560,25 @@ MUTATIONS = [
      'NOT_SEPARATELY_ADMINISTERED = ("software-key",)\n',
      'NOT_SEPARATELY_ADMINISTERED = ()  # MUTATION software key treated as separately administered\n',
      "automation/collectors/test_signers.py"),
+    # AUD-F75 / MCE-07: the fact contract's raw-scope list had no kind for an
+    # on-premises scan target, so a host-keyed fact would have been exported
+    # with its hostname silently dropped (one shared scope for every host,
+    # the AUD-F27 collision) instead of refused without a scope key. Mutation:
+    # `host` leaves x-rawScopeFields; the regression's refusal check goes RED.
+    ("MUT-F75",
+     "automation/collectors/fact-contract.schema.json",
+     '"x-rawScopeFields": ["account", "tenant", "subscription", "compartment", "project", "organization", "host"],\n',
+     '"x-rawScopeFields": ["account", "tenant", "subscription", "compartment", "project", "organization"],\n',
+     "automation/collectors/test_xccdf_adapter.py"),
+    # AUD-F76 / MCE-07: the XCCDF result vocabulary is the standard's. Mutation:
+    # the agreement check never reports a disagreement, so a provider table that
+    # relabels notchecked / error / fixed as PASS registers; the regression's
+    # AC2 refusal checks go RED.
+    ("MUT-F76",
+     "automation/collectors/xccdf_reader.py",
+     '        elif given != expected:\n',
+     '        elif False and given != expected:  # MUTATION relabelled standard values accepted\n',
+     "automation/collectors/test_xccdf_adapter.py"),
 ]
 
 

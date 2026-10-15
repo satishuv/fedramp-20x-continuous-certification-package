@@ -1,0 +1,68 @@
+{
+  "_about": "Golden facts (MCE-07): example-openscap-xccdf.mapping.json applied to example-openscap-xccdf.results.xml must yield exactly these facts, one per rule-result whose rule the mapping declares (the undeclared login-banner rule yields none and is counted in health). Fictional values only; the host rides as a raw scope and never reaches an evidence object.",
+  "facts": [
+    {
+      "check": "xccdf_com.example_rule_audit_logging_enabled",
+      "detail": "source state: pass. severity high; profile xccdf_com.example_profile_hardened; benchmark xccdf_com.example_benchmark_baseline-os",
+      "host": "lab-host-01.example",
+      "observed_at": "2026-10-01T02:01:10+00:00",
+      "region": "global",
+      "service": "openscap",
+      "status": "PASS"
+    },
+    {
+      "check": "xccdf_com.example_rule_password_min_length",
+      "detail": "source state: fail. severity medium; profile xccdf_com.example_profile_hardened; benchmark xccdf_com.example_benchmark_baseline-os",
+      "host": "lab-host-01.example",
+      "observed_at": "2026-10-01T02:01:20+00:00",
+      "region": "global",
+      "service": "openscap",
+      "status": "FAIL"
+    },
+    {
+      "check": "xccdf_com.example_rule_file_integrity_tool_installed",
+      "detail": "source state: notchecked. severity medium; profile xccdf_com.example_profile_hardened; benchmark xccdf_com.example_benchmark_baseline-os",
+      "host": "lab-host-01.example",
+      "observed_at": "2026-10-01T02:01:30+00:00",
+      "region": "global",
+      "service": "openscap",
+      "status": "UNKNOWN"
+    },
+    {
+      "check": "xccdf_com.example_rule_unused_services_disabled",
+      "detail": "source state: fixed. severity medium; profile xccdf_com.example_profile_hardened; benchmark xccdf_com.example_benchmark_baseline-os",
+      "host": "lab-host-01.example",
+      "observed_at": "2026-10-01T02:01:40+00:00",
+      "region": "global",
+      "service": "openscap",
+      "status": "UNKNOWN"
+    },
+    {
+      "check": "xccdf_com.example_rule_legacy_protocol_removed",
+      "detail": "source state: notapplicable. severity low; profile xccdf_com.example_profile_hardened; benchmark xccdf_com.example_benchmark_baseline-os",
+      "host": "lab-host-01.example",
+      "observed_at": "2026-10-01T02:01:50+00:00",
+      "region": "global",
+      "service": "openscap",
+      "status": "UNKNOWN"
+    },
+    {
+      "check": "xccdf_com.example_rule_kernel_module_denylist",
+      "detail": "source state: error. severity medium; profile xccdf_com.example_profile_hardened; benchmark xccdf_com.example_benchmark_baseline-os",
+      "host": "lab-host-01.example",
+      "observed_at": "2026-10-01T02:04:30+00:00",
+      "region": "global",
+      "service": "openscap",
+      "status": "UNKNOWN"
+    },
+    {
+      "check": "xccdf_com.example_rule_installed_package_inventory",
+      "detail": "source state: informational. severity info; profile xccdf_com.example_profile_hardened; benchmark xccdf_com.example_benchmark_baseline-os",
+      "host": "lab-host-01.example",
+      "observed_at": "2026-10-01T02:02:10+00:00",
+      "region": "global",
+      "service": "openscap",
+      "status": "UNKNOWN"
+    }
+  ]
+}

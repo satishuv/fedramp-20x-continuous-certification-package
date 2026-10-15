@@ -170,6 +170,13 @@ def main():
             print(f"'{name}': export at {export_rel} contained no records; collection outcome "
                   "not-run. Nothing attached: an empty export is not a clean posture.")
             continue
+        if mapping_rel:
+            skipped = adapter.health().get("skipped_undeclared") or 0
+            if skipped:
+                names = adapter.health().get("undeclared_checks") or []
+                shown = ", ".join(names[:10]) + (" ..." if len(names) > 10 else "")
+                print(f"'{name}': {skipped} record(s) whose check is not declared in the mapping "
+                      f"yielded no fact (undeclared_checks: skip): {shown}")
         # MCE-03: an entry is attached ONLY to the KSIs its (service, check)
         # pair is declared for, the same bindings the provenance gate reads. An
         # entry whose pair binds nothing is reported and not attached.

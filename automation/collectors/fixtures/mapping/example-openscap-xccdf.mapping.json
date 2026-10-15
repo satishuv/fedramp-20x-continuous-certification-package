@@ -1,0 +1,51 @@
+{
+  "schema": "fedramp-adapter-mapping/v1",
+  "name": "example-openscap-xccdf",
+  "service": "openscap",
+  "version": "1.0.0",
+  "source_type": "scan-results",
+  "evidence_type": "Report",
+  "freshness_policy_days": 7,
+  "export_format": "xccdf",
+  "undeclared_checks": "skip",
+  "fields": {
+    "check": "rule_id",
+    "status": "result",
+    "observed_at": "time",
+    "detail": "summary",
+    "scope": {"path": "target", "kind": "host"}
+  },
+  "status_normalization": {
+    "pass": "PASS",
+    "fail": "FAIL",
+    "error": "UNKNOWN",
+    "unknown": "UNKNOWN",
+    "notapplicable": "UNKNOWN",
+    "notchecked": "UNKNOWN",
+    "notselected": "UNKNOWN",
+    "informational": "UNKNOWN",
+    "fixed": "UNKNOWN"
+  },
+  "ksi_targets": ["KSI-MLA-EVC"],
+  "checks": [
+    "xccdf_com.example_rule_audit_logging_enabled",
+    "xccdf_com.example_rule_password_min_length",
+    "xccdf_com.example_rule_file_integrity_tool_installed",
+    "xccdf_com.example_rule_unused_services_disabled",
+    "xccdf_com.example_rule_legacy_protocol_removed",
+    "xccdf_com.example_rule_kernel_module_denylist",
+    "xccdf_com.example_rule_installed_package_inventory"
+  ],
+  "check_bindings": {
+    "xccdf_com.example_rule_audit_logging_enabled": ["KSI-MLA-LET", "KSI-MLA-EVC"],
+    "xccdf_com.example_rule_file_integrity_tool_installed": ["KSI-SVC-VRI"],
+    "xccdf_com.example_rule_unused_services_disabled": ["KSI-CNA-MAT"],
+    "xccdf_com.example_rule_legacy_protocol_removed": ["KSI-CNA-MAT"],
+    "xccdf_com.example_rule_installed_package_inventory": ["KSI-PIY-GIV"]
+  },
+  "documentation": {
+    "url": "https://csrc.nist.gov/schema/xccdf/1.2/xccdf_1.2.xsd",
+    "captured": "2026-10-15"
+  },
+  "note": "Fictional example mapping for the XCCDF results reader (MCE-07). The results fixture beside it is invented in the com.example namespace; the results file an OpenSCAP scan writes has the same TestResult shape. Which benchmark rules are evidence toward which KSIs is the provider's declaration, made here for illustration only. The scan target reaches a fact only as a raw host scope, which becomes an opaque scope before export."
+}

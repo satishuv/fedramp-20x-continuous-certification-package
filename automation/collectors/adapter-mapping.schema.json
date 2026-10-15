@@ -28,8 +28,13 @@
     },
     "freshness_policy_days": {"type": "integer", "minimum": 1, "default": 1},
     "export_format": {
-      "description": "jsonl: one JSON object per line. csv: header row then one record per row. json: a JSON array, or an object whose records_path names the array.",
-      "enum": ["jsonl", "csv", "json"]
+      "description": "jsonl: one JSON object per line. csv: header row then one record per row. json: a JSON array, or an object whose records_path names the array. xccdf: an XCCDF 1.1 or 1.2 results document or an ARF result data stream; one record per rule-result with fields rule_id, result, time, target, benchmark, profile, severity, weight, test_result, summary (see xccdf_reader.py). For xccdf the status_normalization must agree with the XCCDF standard's result semantics (only pass is PASS, only fail is FAIL); a table that relabels a standard value is refused.",
+      "enum": ["jsonl", "csv", "json", "xccdf"]
+    },
+    "undeclared_checks": {
+      "description": "What collect() does with a record whose check is not in `checks`. refuse (default): the whole batch is refused naming the check, so an export the provider controls cannot smuggle an unbound check. skip: the record yields no fact and is counted in health() as skipped_undeclared with the ids listed, for exports whose check set the provider does not control (a benchmark scan reports every rule in the benchmark). Skipped records are never exported unbound; they are reported, never silent.",
+      "enum": ["refuse", "skip"],
+      "default": "refuse"
     },
     "records_path": {
       "description": "For export_format json when the document is an object: dotted path to the array of records.",
@@ -52,7 +57,7 @@
           "additionalProperties": false,
           "properties": {
             "path": {"$ref": "#/$defs/path"},
-            "kind": {"enum": ["account", "tenant", "subscription", "compartment", "project", "organization"]}
+            "kind": {"enum": ["account", "tenant", "subscription", "compartment", "project", "organization", "host"]}
           }
         }
       }
