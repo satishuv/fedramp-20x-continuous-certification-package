@@ -79,6 +79,8 @@ too, so it is no longer a manual run. The tampers include:
 - `provider_verified_at` dated in the FUTURE (must not count as fresh)
 - under production-assurance, an evidence store attested as NEITHER versioned nor
   write-once (the tamper-evident declaration has nothing behind it, AUD-F73)
+- under production-assurance, a SOFTWARE-KEY signer declared (a PEM key held by
+  the collecting pipeline is not separately administered, AUD-F74)
 - `certification_path` set to Agency (the engine resolves Program path only)
 - an FIA `completed_at` dated in the FUTURE (cannot complete in the future)
 - availability history shorter than 30 days (CDS-CSO-AVR)

@@ -59,6 +59,7 @@ sys.path.insert(0, os.path.join(BASE, "automation", "collectors"))
 sys.path.insert(0, os.path.join(BASE, "validation", "scripts"))
 import history_integrity as _hi  # noqa: E402
 import sign_evidence as _se  # noqa: E402
+import signers as _signers  # noqa: E402  (MCE-08 / AUD-F74: signer administration boundary)
 import class_support  # noqa: E402  (AUD-F65: the one class-support state)
 # AUD-F38: a labelled proposal (DRAFT / Example) is unanswered until a human
 # accepts it; the one definition lives in validation/scripts/unreviewed_text.py.
@@ -398,7 +399,8 @@ TEST_SUITE = [
     "validation/scripts/test_provenance_mutations.py",
     "validation/scripts/test_class_support.py",
     "validation/scripts/test_rule_test_map.py",
-    "automation/collectors/test_sign_evidence.py",    "validation/scripts/test_applicability.py",
+    "automation/collectors/test_sign_evidence.py",
+    "automation/collectors/test_signers.py",    "validation/scripts/test_applicability.py",
     "automation/exporters/test_oscal_export.py",
     "automation/collectors/test_evidence_wiring.py",
     "automation/collectors/test_thirdparty_adapters.py",
@@ -2693,6 +2695,14 @@ def cmd_preflight(args):
             warnings.append(f"evidence store readiness: {_msg} (AUD-F73, advisory; "
                             "the assessor assesses the store, this records the provider's "
                             "attestation)")
+    # MCE-08 / AUD-F74: the signer's administration boundary, declared in the
+    # profile as expected_evidence_signer.signer_kind. A software key under
+    # production-assurance is a blocker (not separately administered); an
+    # undeclared kind is a warning; an unknown kind is a blocker under both.
+    for _level, _msg in _signers.signer_administration_findings(
+            offering.get("expected_evidence_signer"), production=_production):
+        (blockers if _level == "hard" else warnings).append(
+            f"evidence signer: {_msg} (AUD-F74{'' if _level == 'hard' else ', advisory'})")
     if cls in ("c", "d") and isinstance(_kmt_hist, dict) and _kmt_ksis:
         _problems = _hi.verify_history(_kmt_hist)
         _chained_any = any(all(k in o for k in _hi.CHAIN_FIELDS)

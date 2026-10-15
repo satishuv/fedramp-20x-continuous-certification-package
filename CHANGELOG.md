@@ -11,6 +11,36 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### Pluggable signer contract, KMS as one implementation (MCE-08; AUD-F74)
+
+`automation/collectors/signers.py` defines one signer contract
+(`sign(content_hash) -> xEvidenceSignature`) with three implementations:
+`KmsSigner` (the existing AWS path, delegating to `sign_hash` unchanged, same
+KMS call, same block, key id never the ARN), `ExternalCommandSigner` (a
+separately administered signing service behind an operator-supplied command
+that receives ONLY the canonical hash on stdin and returns the ECDSA P-256
+signature; non-zero exit, empty or non-base64 output fail closed) and
+`SoftwareKeySigner` (a PEM key, development and fixtures). The verifier is
+unchanged: `validate_evidence.py` has no signer branch, and a software- or
+externally-signed entry classifies `verified` under the pinned key through the
+same offline path as KMS. Non-KMS key references are labels checked by shape:
+an ARN, a URL or path, any 12-digit run or any GUID (a tenant, subscription,
+compartment or project identifier) is refused before a block exists, because
+the downstream `no_sensitive_patterns` gate cannot tell a tenant GUID from the
+KMS key id the AWS path legitimately records. Building this exposed `AUD-F74`
+(Medium): the profile pinned the verifier key but declared nothing about who
+administers the signing key, so a PEM key held by the collecting pipeline
+could sign under a production-assurance declaration of a separately
+administered signer and preflight could not tell. New
+`expected_evidence_signer.signer_kind` (`managed-key-service`,
+`external-command`, `software-key`; neutral names); `package-preflight` warns
+when undeclared, blocks an unknown value under both profiles, and blocks
+`software-key` under production-assurance naming the signer as not separately
+administered. The Class C sample declares its fictional signer and gains one
+attack probe (51 probes). Regression `automation/collectors/test_signers.py`
+(in the validate suite), red on the pre-change tree; `MUT-F74` killed; the
+GUID-refusal mutation shown by hand to fail two checks.
+
 ### Evidence store requirements as properties (MCE-09; AUD-F73)
 
 The evidence store the package expects is now stated as five PROPERTIES with

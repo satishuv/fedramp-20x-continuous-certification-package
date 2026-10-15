@@ -550,6 +550,16 @@ MUTATIONS = [
      '    if production and attested.get("versioned") is False and attested.get("write_once") is False:\n',
      '    if False and production and attested.get("versioned") is False and attested.get("write_once") is False:  # MUTATION contradiction disabled\n',
      "validation/scripts/test_evidence_store_properties.py"),
+    # AUD-F74 / MCE-08: the pluggable signer contract. The software-key signer
+    # is no longer treated as not-separately-administered, so a PEM key held by
+    # the collecting pipeline passes production-assurance; the regression's AC4
+    # checks and the Class C probe go RED. (The key-reference GUID refusal is
+    # proven by hand in the PR: one runner id per defect is the ledger rule.)
+    ("MUT-F74",
+     "automation/collectors/signers.py",
+     'NOT_SEPARATELY_ADMINISTERED = ("software-key",)\n',
+     'NOT_SEPARATELY_ADMINISTERED = ()  # MUTATION software key treated as separately administered\n',
+     "automation/collectors/test_signers.py"),
 ]
 
 
