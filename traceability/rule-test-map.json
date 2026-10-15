@@ -432,6 +432,11 @@
    "severity": "Medium",
    "component": "sdr.py (EVIDENCE_STORE_PROPERTIES, evidence_store_attestation_findings, package-preflight wiring); profiles/common/offering-profile.json (evidence_store block); validation/scripts/profile_contract.py (OPTIONAL_FIELDS); docs/automation.md (properties section, AWS implementation heading); examples/sample-offering-class-c/build_class_c_sample.py (attested fictional store; contradiction probe)"
   },
+  "ledger.AUD-F74": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "automation/collectors/signers.py (new: Signer contract, KmsSigner, ExternalCommandSigner, SoftwareKeySigner, check_key_reference, sign_entry, signer_administration_findings); sdr.py (package-preflight wiring); profiles/common/offering-profile.json (expected_evidence_signer.signer_kind); examples/sample-offering-class-c/build_class_c_sample.py (declared signer kind; software-key probe)"
+  },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
    "severity": "medium",

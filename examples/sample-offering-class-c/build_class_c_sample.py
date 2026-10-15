@@ -780,7 +780,8 @@ def attack():
                                             "signedHash": digest,
                                             "signature": base64.b64encode(sig).decode("ascii")}
         pr["evidence_store_profile"] = "production-assurance"
-        pr["expected_evidence_signer"] = {"key_arn": key_arn, "public_key_pem": pub_pem}
+        pr["expected_evidence_signer"] = {"key_arn": key_arn, "public_key_pem": pub_pem,
+                                          "signer_kind": "managed-key-service"}
         return key, key_arn
 
     def _bind_sample_evidence(st, sign_with=None):
@@ -860,6 +861,16 @@ def attack():
         pr["evidence_store"]["write_once"] = False
     probe("production-assurance with a store attesting NEITHER versioning nor write-once blocks (AUD-F73)",
           _production_store_attests_no_tamper_evidence, expect="AUD-F73")
+
+    # MCE-08 / AUD-F74: a software PEM key is held by the pipeline that runs
+    # it, so it is not separately administered; declaring it under
+    # production-assurance contradicts the declaration and must block.
+    def _production_software_key_signer(st, pr, hi_):
+        key, key_arn = _pin_signer_and_sign_history(pr, hi_)
+        _bind_sample_evidence(st, sign_with=(key, key_arn))  # otherwise READY
+        pr["expected_evidence_signer"]["signer_kind"] = "software-key"
+    probe("production-assurance with a SOFTWARE-KEY signer declared blocks (AUD-F74, not separately administered)",
+          _production_software_key_signer, expect="AUD-F74")
 
     # AUD-F57 / AUD-F59 end to end. With a signer pinned (signing required) the
     # sample's own hand-written evidence has no digest and no signature: that is
