@@ -217,6 +217,15 @@ class MappingAdapter(ew.EvidenceAdapter):
         self._fields = mapping["fields"]
         self._table = dict(mapping["status_normalization"])
         self._targets = list(mapping["ksi_targets"])
+        # MCE-03: declared check vocabulary, kept in the slug form facts carry,
+        # and the per-check KSI bindings (check_bindings narrows ksi_targets).
+        self._raw_checks = list(mapping["checks"])
+        self.checks = tuple(slug_for(c) for c in self._raw_checks)
+        self._bindings = {}
+        for raw_check in self._raw_checks:
+            slug = slug_for(raw_check)
+            narrowed = (mapping.get("check_bindings") or {}).get(raw_check)
+            self._bindings[f"{self.service}:{slug}"] = set(narrowed if narrowed else self._targets)
         self._last = {"status": "not-run", "records": 0, "facts": 0,
                       "last_error": None, "last_success": None}
 
@@ -224,10 +233,16 @@ class MappingAdapter(ew.EvidenceAdapter):
     def ksi_targets(self):
         return list(self._targets)
 
+    def source_bindings(self):
+        """{'service:check': set(ksi_ids)}: exactly the declared pairs."""
+        return {k: set(v) for k, v in self._bindings.items()}
+
     def describe(self):
         d = super().describe()
         d["export_format"] = self.mapping["export_format"]
         d["ksi_targets"] = self.ksi_targets()
+        d["checks"] = list(self.checks)
+        d["source_bindings"] = {k: sorted(v) for k, v in sorted(self._bindings.items())}
         d["documentation"] = self.mapping.get("documentation")
         return d
 
@@ -304,16 +319,26 @@ class MappingAdapter(ew.EvidenceAdapter):
 
 
 def build_adapter(mapping, ksi_ids=None, ksi_profile_path=None):
-    """Validate the mapping, verify every KSI target against the pinned KSI
-    profile, and return an UNREGISTERED MappingAdapter. Refuses, naming the
-    problem, rather than building a partially-correct adapter."""
+    """Validate the mapping, verify every KSI id it binds (ksi_targets and
+    check_bindings) against the pinned KSI profile and every check_bindings key
+    against the declared checks, and return an UNREGISTERED MappingAdapter.
+    Refuses, naming the problem, rather than building a partially-correct
+    adapter."""
     adapter = MappingAdapter(mapping)
     known = ksi_ids if ksi_ids is not None else load_ksi_ids(ksi_profile_path)
-    unknown = [k for k in adapter.ksi_targets() if k not in known]
+    bound_ids = set(adapter.ksi_targets())
+    for kids in adapter.source_bindings().values():
+        bound_ids |= set(kids)
+    unknown = sorted(k for k in bound_ids if k not in known)
     if unknown:
         raise MappingError(
             f"mapping {mapping.get('name')!r} names KSI id(s) not in the pinned KSI "
             f"profile: {', '.join(unknown)}; refusing to register the adapter")
+    undeclared = sorted(k for k in (mapping.get("check_bindings") or {}) if k not in mapping["checks"])
+    if undeclared:
+        raise MappingError(
+            f"mapping {mapping.get('name')!r} binds check(s) it does not declare in `checks`: "
+            f"{', '.join(undeclared)}; refusing to register the adapter")
     return adapter
 
 
@@ -323,6 +348,36 @@ def register_mapping_adapter(mapping, ksi_ids=None, ksi_profile_path=None):
     adapter = build_adapter(mapping, ksi_ids=ksi_ids, ksi_profile_path=ksi_profile_path)
     ew.register_service_evidence_type(adapter.service, adapter.evidence_type)
     return ew.register_adapter(adapter)
+
+
+def register_from_profile(profile, base):
+    """Register every ENABLED mapping-driven source the offering profile
+    declares (evidence_sources entries carrying mapping_path), so the
+    provenance gate and preflight see the same bindings the apply driver used.
+    Returns {name: adapter}. A source whose mapping cannot be loaded or whose
+    key does not equal the mapping's name raises MappingError: a gate that
+    silently skipped it would read that source's evidence as unbound without
+    saying why."""
+    out = {}
+    sources = (profile or {}).get("evidence_sources") or {}
+    for name, cfg in sorted(sources.items()):
+        if not isinstance(cfg, dict) or not cfg.get("enabled") or not cfg.get("mapping_path"):
+            continue
+        path = os.path.join(base, cfg["mapping_path"])
+        try:
+            mapping = load_mapping(path)
+        except (OSError, ValueError) as e:
+            raise MappingError(f"evidence source {name!r}: mapping at {cfg['mapping_path']} "
+                               f"cannot be read: {e}")
+        if mapping.get("name") != name:
+            raise MappingError(f"evidence source {name!r}: the mapping at {cfg['mapping_path']} "
+                               f"declares name {mapping.get('name')!r}; the key must match")
+        existing = ew.get_adapter(name)
+        if isinstance(existing, MappingAdapter) and existing.mapping == mapping:
+            out[name] = existing
+            continue
+        out[name] = register_mapping_adapter(mapping)
+    return out
 
 
 def load_mapping(path):

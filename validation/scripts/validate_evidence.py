@@ -174,20 +174,25 @@ def iter_evidence(records):
 #   - the provider-deployed Config custom rules in
 #     automation/config-rules/rules-manifest.json (the 11 KSIs whose only
 #     automated method is an artifact-existence rule), as service "config";
-#   - a registered third-party adapter (thirdparty_adapters.py) whose
-#     ksi_targets() names the KSI, as that adapter's service (any check).
+#   - a registered evidence adapter (thirdparty_adapters.py, or a mapping-driven
+#     adapter the offering profile enables), for exactly the (service, check)
+#     pairs it DECLARES against each of its KSI targets (adapter
+#     source_bindings(), MCE-03). Nothing is inferred from a service name: an
+#     undeclared check under a registered service is unbound.
 # An entry WITHOUT xSourceFact makes no source claim (human-authored or
 # file-backed evidence) and is out of scope here: its review is a human's.
 # FRR rule artifacts have no machine-readable source map (the registry is per
 # KSI), so only the pointer check applies to them.
 REGISTRY = os.path.join(BASE, "automation", "collectors", "registry.json")
 RULES_MANIFEST = os.path.join(BASE, "automation", "config-rules", "rules-manifest.json")
+OFFERING_PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 
 
 def load_source_bindings(registry=None, rules_manifest=None, adapters=None):
-    """Build {ksi_id: {"keys": set, "config": set, "services": set}} from the
-    collector registry, the config-rules manifest and the registered adapters.
-    Each argument may be injected (tests); None loads the repository's own."""
+    """Build {ksi_id: {"keys": set, "config": set}} from the collector
+    registry, the config-rules manifest and the registered adapters' declared
+    (service, check) bindings. Each argument may be injected (tests); None
+    loads the repository's own."""
     if registry is None:
         registry = (load(REGISTRY, {}) or {}).get("ksis", {}) or {}
     if rules_manifest is None:
@@ -197,7 +202,7 @@ def load_source_bindings(registry=None, rules_manifest=None, adapters=None):
     out = {}
 
     def _slot(kid):
-        return out.setdefault(kid, {"keys": set(), "config": set(), "services": set()})
+        return out.setdefault(kid, {"keys": set(), "config": set()})
 
     for kid, entry in (registry or {}).items():
         slot = _slot(kid)
@@ -210,21 +215,24 @@ def load_source_bindings(registry=None, rules_manifest=None, adapters=None):
     for rule in rules or []:
         if isinstance(rule, dict) and rule.get("ksi_id") and rule.get("rule_name"):
             _slot(rule["ksi_id"])["config"].add(str(rule["rule_name"]))
+    # Adapters bind exactly the pairs they declare (MCE-03). An adapter without
+    # source_bindings() (or with none declared) binds nothing.
     for adapter in adapters or []:
-        targets = getattr(adapter, "ksi_targets", None)
-        service = getattr(adapter, "service", None)
-        if not callable(targets) or not service:
+        bindings = getattr(adapter, "source_bindings", None)
+        if not callable(bindings):
             continue
-        for kid in targets() or []:
-            _slot(kid)["services"].add(str(service))
+        for key, kids in (bindings() or {}).items():
+            for kid in kids or []:
+                _slot(kid)["keys"].add(str(key))
     return out
 
 
 def _registered_adapters():
     """Every registered EvidenceAdapter instance, after importing the optional
-    third-party adapters module so its registrations are present. An import
-    failure contributes nothing (fail closed: an adapter-derived entry is then
-    unbound, never silently bound)."""
+    third-party adapters module and registering the mapping-driven sources the
+    offering profile enables, so their declared bindings are present. An import
+    or mapping failure contributes nothing (fail closed: an adapter-derived
+    entry is then unbound, never silently bound) and is printed once."""
     try:
         import evidence_wiring as _ew
     except Exception:
@@ -233,6 +241,11 @@ def _registered_adapters():
         import thirdparty_adapters  # noqa: F401  (registers on import)
     except Exception:
         pass
+    try:
+        import mapping_adapter as _ma
+        _ma.register_from_profile(load(OFFERING_PROFILE, {}) or {}, BASE)
+    except Exception as e:  # a bad mapping is reported, never bound
+        print(f"NOTE: mapping-driven evidence sources not registered: {e}")
     return [_ew.get_adapter(n) for n in _ew.list_adapters()]
 
 
@@ -257,14 +270,13 @@ def classify_source_binding(ksi_id, e, bindings):
         return ("bound", "")
     if f"{service}:{check}" in slot["keys"]:
         return ("bound", "")
-    if service in slot["services"]:
-        return ("bound", "")
     return ("unbound", f"SOURCE NOT BOUND - {service}:{check} is not a registered source "
                        f"for {ksi_id} (registry metric_service_keys / config rules, "
-                       "config-rules manifest, adapter ksi_targets); a valid digest "
+                       "config-rules manifest, adapter declared checks); a valid digest "
                        "over the wrong observation does not make it evidence for this "
                        "indicator. Derive the entry from a source this KSI registers, or "
-                       "register the source (customer overlay / rules manifest) (AUD-F62)")
+                       "register the source (customer overlay / rules manifest / adapter "
+                       "checks) (AUD-F62)")
 
 
 def classify_pointer_binding(e):

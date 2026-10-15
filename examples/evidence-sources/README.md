@@ -96,9 +96,16 @@ normalize to `PASS`, `FAIL` or `UNKNOWN`, and which KSIs the facts support:
     "scope": {"path": "resource.project", "kind": "project"}
   },
   "status_normalization": {"ACTIVE": "FAIL", "INACTIVE": "PASS", "MUTED": "UNKNOWN"},
-  "ksi_targets": ["KSI-MLA-EVC", "KSI-MLA-OSM"]
+  "ksi_targets": ["KSI-MLA-EVC", "KSI-MLA-OSM"],
+  "checks": ["PUBLIC_BUCKET_ACL", "OPEN_FIREWALL", "MFA_NOT_ENFORCED"],
+  "check_bindings": {"MFA_NOT_ENFORCED": ["KSI-MLA-OSM"]}
 }
 ```
+
+`checks` lists every check value the export can carry, as it appears in the
+export; each one is bound to the `ksi_targets` (or to its own `check_bindings`
+list) in the source registry the provenance gate reads. Every binding is
+declared; nothing is inferred from a name.
 
 Exports may be JSON lines, CSV (header row; paths are column names) or a JSON
 document (an array, or an object with `records_path`). Then, in the offering
@@ -130,6 +137,12 @@ test and a killed mutation:
   posture.
 - A mapping naming a KSI id that is not in the pinned KSI profile refuses to
   register, naming the id.
+- Each evidence entry is attached only to the KSIs its `(service, check)` pair
+  is declared for, and the provenance gate accepts it only there: an export
+  record whose check is not in `checks` is refused naming it, and a signed
+  entry claiming an undeclared check, or a declared check under a KSI it is
+  not bound to, blocks under production-assurance and is a readiness finding
+  under the development profile.
 - A record's raw scope identifier (`account`, `tenant`, `subscription`,
   `compartment`, `project`, `organization`) rides on the fact under the kind
   the mapping declares, so it is refused without `SDR_EVIDENCE_SCOPE_KEY` and

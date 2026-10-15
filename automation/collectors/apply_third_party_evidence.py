@@ -170,18 +170,35 @@ def main():
             print(f"'{name}': export at {export_rel} contained no records; collection outcome "
                   "not-run. Nothing attached: an empty export is not a clean posture.")
             continue
-        targets = adapter.ksi_targets()
+        # MCE-03: an entry is attached ONLY to the KSIs its (service, check)
+        # pair is declared for, the same bindings the provenance gate reads. An
+        # entry whose pair binds nothing is reported and not attached.
+        bindings = adapter.source_bindings()
+        per_ksi = {}
+        unbound = []
+        for ev in evidence:
+            sf = ev.get("xSourceFact") or {}
+            key = f"{sf.get('service')}:{sf.get('check')}"
+            kids = bindings.get(key) or set()
+            if not kids:
+                unbound.append(key)
+                continue
+            for kid in sorted(kids):
+                per_ksi.setdefault(kid, []).append(ev)
+        if unbound:
+            print(f"'{name}': {len(unbound)} evidence entr{'y' if len(unbound) == 1 else 'ies'} "
+                  f"with no declared KSI binding not attached: {', '.join(sorted(set(unbound)))}")
         attached = 0
-        for kid in targets:
+        for kid, evs in sorted(per_ksi.items()):
             rec = records.get("ksi", {}).get(kid)
             if rec is None:
                 continue
             existing = rec.get("evidence", []) or []
-            rec["evidence"], n = _upsert_evidence(existing, evidence)
+            rec["evidence"], n = _upsert_evidence(existing, evs)
             attached += n
         total_attached += attached
         print(f"'{name}': {len(evidence)} evidence entries applied to "
-              f"{len(targets)} KSI(s) ({attached} attached after de-dup).")
+              f"{len(per_ksi)} KSI(s) by declared binding ({attached} attached after de-dup).")
     if total_attached:
         with open(RECORDS, "w", encoding="utf-8", newline="\n") as f:
             json.dump(records, f, indent=1)

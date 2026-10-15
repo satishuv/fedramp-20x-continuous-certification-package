@@ -927,6 +927,39 @@ def attack():
           "at Class C (AUD-F64, freshness)", _production_stale_resigned,
           expect="backed only by EXPIRED evidence")
 
+    # MCE-03: adapters bind exactly the (service, check) pairs they DECLARE,
+    # per KSI target. The Falcon adapter declares open_detections for four
+    # MLA/INR indicators; the same signed entry elsewhere, or an undeclared
+    # check under its own target, is a valid digest over an observation that
+    # maps to no indicator.
+    _FALCON_TARGETS = ("KSI-MLA-OSM", "KSI-MLA-RVL", "KSI-MLA-LET", "KSI-INR-RIR")
+
+    def _production_adapter_pair_wrong_ksi(st, pr, hi_):
+        key, key_arn = _pin_signer_and_sign_history(pr, hi_)
+        one = _bind_sample_evidence(st, sign_with=(key, key_arn))
+        victim = next(k for k in sorted(st["ksi"])
+                      if k not in _FALCON_TARGETS and st["ksi"][k].get("evidence"))
+        st["ksi"][victim]["evidence"] = [one("crowdstrike", "open_detections", victim)]
+    probe("production-assurance: an ADAPTER's declared pair (crowdstrike:open_detections), signed, under a "
+          "KSI the adapter does not target blocks (MCE-03, declared binding)", _production_adapter_pair_wrong_ksi,
+          expect="not PROVENANCE-BOUND (1 source (e.g.")
+
+    def _production_adapter_undeclared_check(st, pr, hi_):
+        key, key_arn = _pin_signer_and_sign_history(pr, hi_)
+        one = _bind_sample_evidence(st, sign_with=(key, key_arn))
+        st["ksi"]["KSI-MLA-OSM"]["evidence"] = [one("crowdstrike", "made_up_check", "KSI-MLA-OSM")]
+    probe("production-assurance: an UNDECLARED check under the adapter's own service and target KSI, "
+          "signed, blocks (MCE-03: nothing is inferred from a service name)", _production_adapter_undeclared_check,
+          expect="not PROVENANCE-BOUND (1 source (e.g.")
+
+    def _production_adapter_declared_pair(st, pr, hi_):
+        key, key_arn = _pin_signer_and_sign_history(pr, hi_)
+        one = _bind_sample_evidence(st, sign_with=(key, key_arn))
+        st["ksi"]["KSI-MLA-OSM"]["evidence"] = [one("crowdstrike", "open_detections", "KSI-MLA-OSM")]
+    _probe_ready("production-assurance: the adapter's declared pair (crowdstrike:open_detections) under its "
+                 "target KSI-MLA-OSM stays READY (MCE-03 positive control; MUT-F72 removes this binding)",
+                 _production_adapter_declared_pair)
+
     print(f"\n{passed}/{passed + failed} assessor-attack probes passed "
           "(each tamper must be BLOCKED; baseline + justified-narrative combo must be READY)")
     return 0 if failed == 0 else 1

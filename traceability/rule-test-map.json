@@ -422,6 +422,11 @@
    "severity": "Medium",
    "component": "automation/collectors/mapping_adapter.py (MappingAdapter.collect, collection_outcome, health); automation/collectors/apply_third_party_evidence.py (not-run message, nothing attached)"
   },
+  "ledger.AUD-F72": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/collectors/evidence_wiring.py (EvidenceAdapter.checks, ksi_targets, source_bindings, declared_check; to_evidence refuses undeclared checks); automation/collectors/thirdparty_adapters.py (Falcon and Wiz declare their checks); automation/collectors/mapping_adapter.py (checks required, check_bindings, register_from_profile); automation/collectors/adapter-mapping.schema.json; validation/scripts/validate_evidence.py (load_source_bindings binds declared pairs only, _registered_adapters registers profile-declared mapping sources, classify_source_binding has no service-wide branch); automation/collectors/apply_third_party_evidence.py (attach per declared binding); automation/collectors/scaffold_adapter.py"
+  },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
    "severity": "medium",
@@ -1572,6 +1577,22 @@
      "in_test_suite": true
     },
     {
+     "gate_id": "ledger.AUD-F72",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "validation/scripts/test_adapter_source_bindings.py",
+      "validation/scripts/test_provenance_mutations.py"
+     ],
+     "mutations": [
+      "MUT-F72"
+     ],
+     "mutated_files": [
+      "automation/collectors/thirdparty_adapters.py"
+     ],
+     "in_test_suite": true
+    },
+    {
      "gate_id": "scan.ksi_automation_verified",
      "mode": "readiness-scan",
      "classes": [
@@ -2409,6 +2430,22 @@
      ],
      "mutated_files": [
       "automation/collectors/mapping_adapter.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F72",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "validation/scripts/test_adapter_source_bindings.py",
+      "validation/scripts/test_provenance_mutations.py"
+     ],
+     "mutations": [
+      "MUT-F72"
+     ],
+     "mutated_files": [
+      "automation/collectors/thirdparty_adapters.py"
      ],
      "in_test_suite": true
     },

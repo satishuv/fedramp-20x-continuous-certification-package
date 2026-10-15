@@ -612,17 +612,51 @@ class EvidenceAdapter:
     source_type = "generic"
     supported_evidence_types = ["Report"]
     freshness_policy_days = 1
+    # Declared check vocabulary (MCE-03): the `check` values this adapter can
+    # yield. Every (service, check) pair is registered against the adapter's
+    # KSI targets in the source registry the provenance gate (AUD-F62) reads;
+    # a pair that is not declared is not bound, so a valid digest over an
+    # undeclared check cannot ride into any KSI. Nothing is inferred from a
+    # service name: an adapter with no declared checks binds nothing.
+    checks = ()
 
     def collect(self, raw):  # pragma: no cover - abstract
         raise NotImplementedError
 
+    def ksi_targets(self):
+        """KSI ids this adapter's facts are evidence toward. The base adapter
+        targets nothing; a real adapter declares its targets."""
+        return []
+
+    def source_bindings(self):
+        """{'service:check': set(ksi_ids)} for every declared check: the exact
+        pairs the source registry binds for this adapter. Default: each declared
+        check binds to every KSI target. An adapter with per-check targets
+        overrides this (MappingAdapter does, from its check_bindings)."""
+        targets = set(self.ksi_targets() or [])
+        return {f"{self.service}:{c}": set(targets) for c in (self.checks or ())}
+
+    def declared_check(self, check):
+        """True when `check` is in the declared vocabulary (slug form)."""
+        return check in set(self.checks or ())
+
     def to_evidence(self, raw, location_base=None, scope_key=None):
         """Run collect(), check EVERY fact against the published fact contract
-        (FACT_CONTRACT_PATH), then map the conforming facts to SDR evidence
-        objects. A non-conforming fact raises FactContractError naming the
-        adapter, the fact index and the field; no fact of that batch reaches
-        fact_to_evidence (MCE-01 / AUD-F68)."""
+        (FACT_CONTRACT_PATH) and against this adapter's declared check
+        vocabulary, then map the conforming facts to SDR evidence objects. A
+        non-conforming fact raises FactContractError naming the adapter, the
+        fact index and the field; an undeclared check raises EvidenceExportError
+        naming the check. No fact of that batch reaches fact_to_evidence
+        (MCE-01 / AUD-F68; MCE-03)."""
         facts = require_conforming_facts(self.collect(raw), who=f"adapter '{self.name}'")
+        if self.checks:
+            undeclared = sorted({f["check"] for f in facts if not self.declared_check(f["check"])})
+            if undeclared:
+                raise EvidenceExportError(
+                    f"adapter '{self.name}' yielded check(s) outside its declared vocabulary: "
+                    f"{', '.join(undeclared)}; refusing to convert any of its facts. Declare each "
+                    "check (and the KSIs it is evidence toward) so the source registry binds it; "
+                    "an undeclared check would be evidence for no indicator (MCE-03)")
         return facts_to_evidence(facts, location_base, scope_key=scope_key)
 
     def describe(self):

@@ -4,7 +4,7 @@
   "title": "Declarative evidence adapter mapping",
   "description": "A provider adds an evidence source by writing this file, not Python. It names where in a customer-produced export (JSON lines, CSV, or a JSON document) the check id, the source's status, the observation time and the location live; how the source's status vocabulary normalizes to PASS / FAIL / UNKNOWN; and which KSIs the source's facts support. The adapter built from it is offline by construction (it reads a file the customer already exported), yields facts that meet fact-contract.schema.json, and never decides a compliance status. Loaded and enforced by automation/collectors/mapping_adapter.py.",
   "type": "object",
-  "required": ["schema", "name", "service", "export_format", "fields", "status_normalization", "ksi_targets"],
+  "required": ["schema", "name", "service", "export_format", "fields", "status_normalization", "ksi_targets", "checks"],
   "additionalProperties": false,
   "properties": {
     "schema": {"const": "fedramp-adapter-mapping/v1"},
@@ -63,9 +63,22 @@
       "additionalProperties": {"enum": ["PASS", "FAIL", "UNKNOWN"]}
     },
     "ksi_targets": {
-      "description": "KSI ids this source's facts are evidence toward. Every id must exist in the pinned KSI profile or registration is refused naming it.",
+      "description": "KSI ids this source's facts are evidence toward by default (every declared check, unless check_bindings narrows it). Every id must exist in the pinned KSI profile or registration is refused naming it.",
       "type": "array", "minItems": 1, "uniqueItems": true,
       "items": {"type": "string", "pattern": "^KSI-[A-Z]{3}-[A-Z]{3}$"}
+    },
+    "checks": {
+      "description": "The check / rule / finding-type values the export can carry, written as they appear in the export (slug-safe or not). Every (service, check) pair is registered against its KSIs in the source registry the provenance gate reads; a record whose check is not listed here is refused, never exported unbound. Nothing is inferred from names: every binding is declared.",
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1, "maxLength": 200}
+    },
+    "check_bindings": {
+      "description": "Optional per-check narrowing: check value (as in checks) -> the KSI ids that check is evidence toward, replacing ksi_targets for that check. Keys must be declared in checks; ids must exist in the pinned KSI profile.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "array", "minItems": 1, "uniqueItems": true,
+        "items": {"type": "string", "pattern": "^KSI-[A-Z]{3}-[A-Z]{3}$"}
+      }
     },
     "documentation": {
       "description": "Where the export format is documented by its owner, and when that page was read. Required by the third-party naming constitution for any source owned by another organization.",
