@@ -117,9 +117,14 @@ def _template(evidence):
 
 class _FakeAdapter:
     service = "wiz"
+    checks = ("vulnerabilities",)
 
     def ksi_targets(self):
         return ["KSI-A"]
+
+    def source_bindings(self):
+        # MCE-03: adapters bind the (service, check) pairs they declare.
+        return {f"{self.service}:{c}": set(self.ksi_targets()) for c in self.checks}
 
 
 SYNTH_REGISTRY = {
@@ -195,14 +200,19 @@ def test_query_family_bindings_from_the_repository():
     cross = ve.classify_source_binding(rules[0]["ksi_id"],
                                        _entry("config", rules[1]["rule_name"], signed=False), bindings)
     check("a manifest rule attached to a DIFFERENT manifest KSI is unbound", cross[0] == "unbound")
-    # Third-party adapters register their targets.
+    # Third-party adapters register exactly their declared (service, check)
+    # pairs against their targets (MCE-03); nothing is bound service-wide.
     import thirdparty_adapters as tpa  # noqa: F401
     bindings = ve.load_source_bindings()
-    check("Falcon adapter binds service crowdstrike to its KSI targets",
-          all("crowdstrike" in bindings.get(k, {}).get("services", set())
+    falcon_pairs = {f"crowdstrike:{c}" for c in ("sensor_coverage", "open_detections", "prevention_policy")}
+    check("Falcon adapter binds each declared check to each of its KSI targets",
+          all(falcon_pairs <= bindings.get(k, {}).get("keys", set())
               for k in ("KSI-MLA-OSM", "KSI-MLA-RVL", "KSI-MLA-LET", "KSI-INR-RIR")))
-    check("Falcon's service is NOT bound to a KSI it does not target",
-          "crowdstrike" not in bindings.get("KSI-CNA-NET", {}).get("services", set()))
+    check("Falcon's checks are NOT bound to a KSI it does not target",
+          not (falcon_pairs & bindings.get("KSI-CNA-NET", {}).get("keys", set())))
+    check("an UNDECLARED check under Falcon's service is unbound even on a target KSI",
+          ve.classify_source_binding("KSI-MLA-OSM", _entry("crowdstrike", "made_up_check", region="global"),
+                                     bindings)[0] == "unbound")
 
 
 def test_query_family_wrong_ksi_is_unbound_while_cryptographically_verified():

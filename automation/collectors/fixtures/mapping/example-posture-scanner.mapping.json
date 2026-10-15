@@ -21,5 +21,7 @@
     "MUTED": "UNKNOWN"
   },
   "ksi_targets": ["KSI-MLA-EVC", "KSI-MLA-OSM"],
+  "checks": ["PUBLIC_BUCKET_ACL", "OPEN_FIREWALL", "MFA_NOT_ENFORCED", "policies/custom rule #7 (draft)"],
+  "check_bindings": {"MFA_NOT_ENFORCED": ["KSI-MLA-OSM"]},
   "note": "Fictional example source for tests and the quickstart. Every value is invented; no real product, project or organization is described."
 }

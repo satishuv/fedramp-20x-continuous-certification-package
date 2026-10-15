@@ -472,9 +472,9 @@ MUTATIONS = [
     # digest, so the generic hash tripwire cannot be what kills it.
     ("MUT-F62",
      "validation/scripts/validate_evidence.py",
-     '    if service in slot["services"]:\n        return ("bound", "")\n'
+     '    if f"{service}:{check}" in slot["keys"]:\n        return ("bound", "")\n'
      '    return ("unbound", f"SOURCE NOT BOUND - {service}:{check} is not',
-     '    if service in slot["services"]:\n        return ("bound", "")\n'
+     '    if f"{service}:{check}" in slot["keys"]:\n        return ("bound", "")\n'
      '    return ("bound", "")  # MUTATION any source binds to any KSI\n'
      '    return ("unbound", f"SOURCE NOT BOUND - {service}:{check} is not',
      "validation/scripts/test_provenance_mutations.py"),
@@ -532,6 +532,14 @@ MUTATIONS = [
      '            self._last.update({"status": "collected",  # MUTATION empty export counts as collected\n'
      '                               "last_error": None})\n',
      "automation/collectors/test_mapping_adapter.py"),
+    # MCE-03 (AUD-F72): adapters bind exactly the (service, check) pairs they
+    # declare. Removing one check's registry binding must fail the regression
+    # (and the Class C attack probe that attaches that check under its KSI).
+    ("MUT-F72",
+     "automation/collectors/thirdparty_adapters.py",
+     '    checks = ("sensor_coverage", "open_detections", "prevention_policy")\n',
+     '    checks = ("sensor_coverage", "prevention_policy")  # MUTATION one check binding removed\n',
+     "validation/scripts/test_adapter_source_bindings.py"),
 ]
 
 

@@ -34,14 +34,24 @@ class {cls}Adapter(EvidenceAdapter):
     source_type = "{source_type}"
     supported_evidence_types = ["Report"]
     freshness_policy_days = 1
+    # Declare the exact `check` values collect() can yield and the KSI ids they
+    # are evidence toward (verify each against profiles/common/ksi-profile.json).
+    # Every (service, check) pair is bound to every target in the source
+    # registry the provenance gate reads; an undeclared check is refused.
+    checks = ("example-check",)
+    KSI_TARGETS = []  # e.g. ["KSI-MLA-OSM"]
+
+    def ksi_targets(self):
+        return list(self.KSI_TARGETS)
 
     def collect(self, raw):
         """Map the source payload `raw` to collector-shaped facts.
 
         Each yielded dict MUST have: service, check, status, detail, region,
-        observed_at. `status` is the source's own observation string, not a
-        compliance verdict. Do not invent an observed_at; carry the source's
-        real timestamp so freshness is honest.
+        observed_at (the published fact contract, fact-contract.schema.json).
+        `status` is the source's own observation string, not a compliance
+        verdict. Do not invent an observed_at; carry the source's real
+        timestamp so freshness is honest. `check` must be one of `checks`.
         """
         for item in raw.get("findings", []):
             yield {{

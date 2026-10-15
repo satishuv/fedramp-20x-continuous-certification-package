@@ -379,8 +379,12 @@ def test_apply_driver_end_to_end_with_a_mapping_source():
                 assert ap.main() == 0
             with open(rec_path, encoding="utf-8") as f:
                 after = json.load(f)
-            assert len(after["ksi"]["KSI-MLA-EVC"]["evidence"]) == 4
+            # Attached by DECLARED binding (MCE-03): MFA_NOT_ENFORCED is narrowed
+            # to KSI-MLA-OSM by check_bindings, the other three go to both.
+            assert len(after["ksi"]["KSI-MLA-EVC"]["evidence"]) == 3
             assert len(after["ksi"]["KSI-MLA-OSM"]["evidence"]) == 4
+            assert not any("MFA_NOT_ENFORCED" in e["evidenceText"]
+                           for e in after["ksi"]["KSI-MLA-EVC"]["evidence"])
             assert after["ksi"]["KSI-SCR-MON"]["evidence"] == []
             blob = json.dumps(after)
             assert "fictional-project" not in blob and "scope-" in blob

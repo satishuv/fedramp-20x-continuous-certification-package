@@ -11,6 +11,34 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### Source registry binding for adapter checks (MCE-03; AUD-F72)
+
+Adapters now bind exactly the `(service, check)` pairs they declare, per KSI
+target, in the source registry the AUD-F62 provenance gate reads. Building
+this exposed `AUD-F72` (High): the gate bound an adapter SERVICE-WIDE, so a
+valid, signed entry claiming `crowdstrike:made_up_check` under `KSI-MLA-OSM`
+classified bound, and the apply driver attached every entry of an adapter to
+every one of its targets regardless of check. `EvidenceAdapter` gains
+`checks`, `ksi_targets()`, `source_bindings()` and `declared_check()`;
+`to_evidence` refuses a fact whose check is outside the declared vocabulary,
+naming it. Falcon and Wiz declare their checks. The mapping schema requires
+`checks` (as written in the export) and accepts per-check `check_bindings`
+that narrow `ksi_targets`; both are verified against the pinned KSI profile
+and the declared checks at build time. `validate_evidence.load_source_bindings`
+records the declared pairs only (no `services` set any more) and registers
+the mapping-driven sources the offering profile enables
+(`mapping_adapter.register_from_profile`), so the gate, preflight and the
+apply driver read one set of bindings; `classify_source_binding` loses its
+service-wide branch (`MUT-F62` retargeted to the surviving branch and
+re-killed). The apply driver attaches each entry only to the KSIs its pair
+binds to and reports entries with no binding. Three Class C attack probes:
+a declared pair under a non-target KSI blocks, an undeclared check under the
+adapter's own target blocks, the declared pair under its target stays READY
+(49 probes). The scaffold stub starts in the declared shape. Regression:
+`validation/scripts/test_adapter_source_bindings.py` (in the validate suite);
+`MUT-F72` (one Falcon check removed from the vocabulary) killed, and shown by
+hand to fail the positive-control probe as well.
+
 ### Declarative export adapter, offline, mapping-driven (MCE-02; AUD-F70, AUD-F71)
 
 A provider adds an evidence source by writing one JSON file against

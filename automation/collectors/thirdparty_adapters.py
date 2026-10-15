@@ -56,6 +56,10 @@ class FalconAdapter(ew.EvidenceAdapter):
 
     # Verified against the pinned KSI profile.
     KSI_TARGETS = ["KSI-MLA-OSM", "KSI-MLA-RVL", "KSI-MLA-LET", "KSI-INR-RIR"]
+    # The exact checks collect() can yield; each is registered against every
+    # target in the source registry (MCE-03). A fact outside this vocabulary is
+    # refused by to_evidence, never exported unbound.
+    checks = ("sensor_coverage", "open_detections", "prevention_policy")
 
     def ksi_targets(self):
         return list(self.KSI_TARGETS)
@@ -105,6 +109,7 @@ class WizAdapter(ew.EvidenceAdapter):
     service = "wiz"
 
     KSI_TARGETS = ["KSI-MLA-EVC", "KSI-MLA-OSM", "KSI-SCR-MON"]
+    checks = ("issues_critical_high", "config_findings", "vulnerabilities")
 
     def ksi_targets(self):
         return list(self.KSI_TARGETS)
