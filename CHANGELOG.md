@@ -41,6 +41,24 @@ attack probe (51 probes). Regression `automation/collectors/test_signers.py`
 (in the validate suite), red on the pre-change tree; `MUT-F74` killed; the
 GUID-refusal mutation shown by hand to fail two checks.
 
+### Cloud-neutral SCG and CPO scaffolds, pinned (MCE-10)
+
+Reading the generators corrected the story's premise: `build_scg.render` and
+`build_cpo.build_cpo` / `render_md` already take every fact from the offering
+profile and the pinned dataset and name no cloud product; the committed
+`package/scg` and `package/cpo` outputs contain zero AWS or Amazon mentions.
+No production change. New pinning test
+`validation/scripts/test_scaffold_platform_neutral.py` (in the validate suite)
+renders both scaffolds for the template profile and for the non-AWS shape the
+profile can express today (no `aws_partition`, no AWS regions, a neutral
+`iac_technology`): neither names a cloud product or a registered third-party
+vendor, the CPO is valid against the pinned CPO schema for both shapes with the
+same members, and the AWS outputs are byte-identical to the committed
+artifacts. The AWS-flavoured generated text lives in the explainer notes layer
+that `build_sdr.build_extensions` copies into the SDR extension companion (and
+that hard-reads `aws_partition`, `primary_region`, `dr_region`); that is a
+separate story, not widened into this one.
+
 ### Evidence store requirements as properties (MCE-09; AUD-F73)
 
 The evidence store the package expects is now stated as five PROPERTIES with
