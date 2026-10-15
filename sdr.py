@@ -411,6 +411,7 @@ TEST_SUITE = [
     "automation/collectors/test_scc_adapter.py",
     "automation/collectors/test_azure_policy_adapter.py",
     "automation/collectors/test_oci_cloud_guard_adapter.py",
+    "automation/collectors/test_adapter_conformance.py",
     "validation/scripts/test_adapter_source_bindings.py",
     "automation/importers/test_import_findings.py",
     "automation/importers/test_import_oscal_ssp.py",

@@ -11,6 +11,43 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### Adapter conformance suite, traceability and MAS coverage (MCE-13)
+
+Three closures of the adapter layer, no production path changed. (1)
+`automation/collectors/test_adapter_conformance.py`, in the validate suite,
+proves every evidence adapter by discovery: every mapping fixture under
+`fixtures/mapping` must have an export and a golden expected-facts file and
+must reproduce the golden byte for byte offline, with every fact meeting the
+contract, every bound KSI in the pinned profile, a documentation citation for
+a third-party source and every declared check bound to a KSI; every Python
+adapter `thirdparty_adapters` registers must have a golden case and reproduce
+it; a fixture or adapter without a golden fails naming it, so a source cannot
+be added without conformance. Its first run found that the `csv-count`
+reference adapter declared no checks and said nothing about it; it now
+declares `illustrative = True`, which the suite reports, and the provenance
+gate's treatment of its evidence as unbound is stated in its docstring rather
+than implied. Baseline: 5 mapping fixtures and 3 Python adapters, 0 problems;
+a tampered golden goes red naming the first differing fact. (2) Every adapter
+is a gate `adapter.<name>` in `traceability/rule-test-map.json` (mode
+`evidence-adapter`) with its declared checks, the KSIs its source bindings
+target, the validate-suite tests whose source names it and the runner
+mutations those tests kill, joined deterministically; only a source the
+offering profile enables contributes per-KSI entries, so the eight new gates
+leave the coverage figure unchanged (Class C still 21 of 203) instead of
+letting example fixtures inflate it. `test_rule_test_map.py` checks every
+adapter gate's tests, mutations and KSI targets resolve, that
+`enabled_in_profile` mirrors the profile, that no disabled source contributes
+an entry, and that enabling one makes it, and only it, count. (3) The MAS
+coverage report accepts a `service:check` reference to adapter-sourced
+evidence (the opaque pointer of such an entry is not something a person
+writes): it resolves only when such evidence sits in that KSI's record and
+the source registry binds the pair to that KSI, the same binding the
+provenance gate enforces, otherwise the cell is unresolved naming the pair; a
+resource of a non-AWS kind with no `aws_service` is classified by the same
+rules without raising. Both new test blocks were run red against the
+pre-change builders. Docs: `docs/validation.md` and the evidence-sources
+README.
+
 ### Oracle Cloud Infrastructure Cloud Guard problems adapter (MCE-06)
 
 The third cloud source outside AWS, through the mapping-driven adapter and one

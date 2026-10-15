@@ -154,6 +154,15 @@ test and a killed mutation:
   `compartment`, `project`, `organization`, `host`) rides on the fact under the
   kind the mapping declares, so it is refused without `SDR_EVIDENCE_SCOPE_KEY`
   and replaced by an opaque scope with it. It never enters the package.
+- Every adapter is proven in CI by discovery, not by remembering to add a
+  test: `automation/collectors/test_adapter_conformance.py` finds every
+  mapping fixture and every registered Python adapter, requires a golden
+  expected-facts file for each, runs the adapter offline against its export
+  and fails naming the adapter and the first differing fact. A mapping fixture
+  with no golden, a registered adapter with no golden case, a third-party
+  source without a documentation citation, or a declared check bound to no
+  KSI all fail the suite. Each adapter is also a gate in
+  `traceability/rule-test-map.json` with its tests and mutations.
 
 Dry run without touching the record store:
 

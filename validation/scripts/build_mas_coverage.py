@@ -30,7 +30,15 @@ Input (optional, provider-authored): profiles/common/mas-inventory.json
     ]
   }
 A demonstrated_by reference resolves when it equals a tests[].method_id or an
-evidence[].evidenceLocation of that KSI's record. An out-of-scope resource must
+evidence[].evidenceLocation of that KSI's record, or the `service:check` pair
+of an adapter-sourced evidence entry in that record (MCE-13: the opaque
+pointer of adapter evidence is not something a person writes; the source and
+check are). A `service:check` reference must also be bound to the KSI in the
+source registry, the same binding the provenance gate enforces; otherwise the
+cell is unresolved, naming the pair. A resource's `kind` and `aws_service` are
+free text the provider chooses; a resource on another platform names its own
+kind (for example "cloud-service" with no aws_service) and is classified by
+exactly the same rules. An out-of-scope resource must
 carry an exclusion_reason. The report never changes a status and never blocks
 submission (the rule is SHOULD); preflight surfaces its counts as an advisory.
 
@@ -100,7 +108,12 @@ def applicable_ksis_for_class(cls, ksi_profile, class_profile, offering):
 
 def record_references(rec):
     """Every reference a demonstrated_by entry may resolve to in one KSI record:
-    tests[].method_id and evidence[].evidenceLocation."""
+    tests[].method_id, evidence[].evidenceLocation, and for adapter-sourced
+    evidence the `service:check` pair its sanitized source fact carries
+    (MCE-13). A provider on any platform can name the source and check that
+    produced the evidence, since the opaque pointer of an adapter entry is not
+    something a person writes by hand; the pair resolves only when such an
+    entry exists in THIS KSI's record."""
     refs = set()
     for t in (rec or {}).get("tests") or []:
         if isinstance(t, dict) and _text(t.get("method_id")):
@@ -110,11 +123,42 @@ def record_references(rec):
             loc = e.get("evidenceLocation") or e.get("evidence_location")
             if _text(loc):
                 refs.add(_text(loc))
+            pair = source_pair(e)
+            if pair:
+                refs.add(pair)
     return refs
 
 
-def coverage_for_class(inventory, records, applicable, cls, dataset_version, rule=None):
-    """The report for one class. Pure: no file access."""
+def source_pair(entry):
+    """'service:check' of an adapter- or collector-sourced evidence entry, from
+    its sanitized source fact; None when the entry carries no source fact.
+    Pure."""
+    sf = (entry or {}).get("xSourceFact") if isinstance(entry, dict) else None
+    if not isinstance(sf, dict):
+        return None
+    service, check = _text(sf.get("service")), _text(sf.get("check"))
+    return f"{service}:{check}" if service and check else None
+
+
+def unbound_pairs(kid, refs, bindings):
+    """Of the `service:check` references in `refs`, those the source registry
+    does NOT bind to `kid` (MCE-13 / AUD-F62, AUD-F72). A reference to evidence
+    that sits in the record but whose source is not declared for this KSI is
+    not a demonstration: the provenance gate blocks that entry under
+    production-assurance, so the coverage report must not count it. `bindings`
+    is {ksi_id: {"keys": set(...)}} as validate_evidence.load_source_bindings
+    returns; None means no binding check (the caller has no registry)."""
+    if bindings is None:
+        return []
+    keys = (bindings.get(kid) or {}).get("keys") or set()
+    return [r for r in refs if ":" in r and not r.startswith(("http://", "https://", "KSI-"))
+            and r not in keys]
+
+
+def coverage_for_class(inventory, records, applicable, cls, dataset_version, rule=None, bindings=None):
+    """The report for one class. Pure: no file access. `bindings` (optional) is
+    the source registry's {ksi_id: {"keys": set("service:check")}}; when given,
+    a `service:check` reference must also be bound to the KSI it demonstrates."""
     resources = (inventory or {}).get("resources") or []
     ksi_records = (records or {}).get("ksi") or {}
     problems = []
@@ -164,14 +208,20 @@ def coverage_for_class(inventory, records, applicable, cls, dataset_version, rul
                     refs = [_text(r) for r in (refs if isinstance(refs, list) else [refs]) if _text(r)]
                     known = record_references(ksi_records.get(kid))
                     missing = [r for r in refs if r not in known]
+                    unbound = unbound_pairs(kid, [r for r in refs if r in known], bindings)
                     cell["references"] = refs
-                    if refs and not missing:
+                    if refs and not missing and not unbound:
                         cell["status"] = "demonstrated"
+                    elif missing:
+                        cell["status"] = "unresolved"
+                        cell["note"] = ("demonstrated_by does not resolve to a tests[].method_id, an "
+                                        "evidence[].evidenceLocation or a source:check pair of the "
+                                        + kid + " record: " + ", ".join(missing or ["(empty)"]))
                     else:
                         cell["status"] = "unresolved"
-                        cell["note"] = ("demonstrated_by does not resolve to a tests[].method_id or "
-                                        "evidence[].evidenceLocation of the " + kid + " record: "
-                                        + ", ".join(missing or ["(empty)"]))
+                        cell["note"] = ("demonstrated_by names evidence whose source is not bound to "
+                                        + kid + " in the source registry (the provenance gate would not "
+                                        "accept it there): " + ", ".join(unbound))
                 elif "not_applicable" in decl:
                     if _text(na):
                         cell["status"] = "not_applicable"
@@ -250,6 +300,22 @@ def render_md(report):
     return "\n".join(L) + "\n"
 
 
+def load_bindings():
+    """The source registry's bindings ({ksi_id: {"keys": set("service:check")}}),
+    from validate_evidence, so a `service:check` reference in the inventory is
+    held to the same binding the provenance gate enforces. None when the gate
+    module is unavailable (the reference is then resolved against the record
+    only, never counted as bound)."""
+    try:
+        sys.path.insert(0, HERE)
+        import validate_evidence  # noqa: E402
+        return validate_evidence.load_source_bindings()
+    except Exception as e:  # noqa: BLE001  (reported, never fabricated)
+        print(f"NOTE: source bindings unavailable for the MAS report ({e}); "
+              "source:check references are resolved against the record only")
+        return None
+
+
 def build_all():
     inventory = load(INVENTORY, {"resources": []})
     offering = load(OFFERING, {})
@@ -257,11 +323,13 @@ def build_all():
     ksi_profile = load(KSI_PROFILE, {"indicators": []})
     dataset_version = (ksi_profile.get("meta") or {}).get("dataset_version")
     rule = _find_rule(load(DATASET, {}), RULE_ID)
+    bindings = load_bindings()
     os.makedirs(OUT_DIR, exist_ok=True)
     for cls in CLASSES:
         class_profile = load(os.path.join(BASE, "profiles", f"class-{cls}", "profile.json"), {})
         applicable = applicable_ksis_for_class(cls, ksi_profile, class_profile, offering)
-        report = coverage_for_class(inventory, records, applicable, cls, dataset_version, rule)
+        report = coverage_for_class(inventory, records, applicable, cls, dataset_version, rule,
+                                    bindings=bindings)
         with open(os.path.join(OUT_DIR, f"mas-ksi-coverage-class-{cls}.json"), "w",
                   encoding="utf-8", newline="\n") as f:
             json.dump(report, f, indent=1)
