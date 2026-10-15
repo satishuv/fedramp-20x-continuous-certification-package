@@ -409,6 +409,7 @@ TEST_SUITE = [
     "automation/collectors/test_mapping_adapter.py",
     "automation/collectors/test_xccdf_adapter.py",
     "automation/collectors/test_scc_adapter.py",
+    "automation/collectors/test_azure_policy_adapter.py",
     "validation/scripts/test_adapter_source_bindings.py",
     "automation/importers/test_import_findings.py",
     "automation/importers/test_import_oscal_ssp.py",

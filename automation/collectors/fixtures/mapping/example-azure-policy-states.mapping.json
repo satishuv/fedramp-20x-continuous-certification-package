@@ -1,0 +1,49 @@
+{
+  "schema": "fedramp-adapter-mapping/v1",
+  "name": "example-azure-policy-states",
+  "service": "azure-policy",
+  "version": "1.0.0",
+  "source_type": "compliance-states",
+  "evidence_type": "Report",
+  "freshness_policy_days": 1,
+  "export_format": "json",
+  "records_path": "value",
+  "undeclared_checks": "skip",
+  "fields": {
+    "check": "policyDefinitionName",
+    "status": "complianceState",
+    "observed_at": "timestamp",
+    "location": "resourceLocation",
+    "detail": "policyDefinitionAction",
+    "scope": {"path": "subscriptionId", "kind": "subscription"},
+    "record_id": ["policyAssignmentId", "policyDefinitionId", "policyDefinitionReferenceId", "resourceId"]
+  },
+  "status_normalization": {
+    "NonCompliant": "FAIL",
+    "Compliant": "PASS",
+    "Exempt": "UNKNOWN",
+    "Conflict": "UNKNOWN"
+  },
+  "ksi_targets": ["KSI-MLA-EVC"],
+  "checks": [
+    "fictional-storage-public-network-access-denied",
+    "fictional-nsg-no-inbound-from-any",
+    "fictional-mfa-required-for-owner-role",
+    "fictional-diagnostic-logs-enabled",
+    "fictional-key-rotation-enabled",
+    "fictional-managed-identity-required"
+  ],
+  "check_bindings": {
+    "fictional-storage-public-network-access-denied": ["KSI-CNA-MAT", "KSI-MLA-EVC"],
+    "fictional-nsg-no-inbound-from-any": ["KSI-CNA-RNT"],
+    "fictional-mfa-required-for-owner-role": ["KSI-IAM-APM"],
+    "fictional-diagnostic-logs-enabled": ["KSI-MLA-LET"],
+    "fictional-key-rotation-enabled": ["KSI-SVC-ASM"],
+    "fictional-managed-identity-required": ["KSI-IAM-SNU"]
+  },
+  "documentation": {
+    "url": "https://learn.microsoft.com/en-us/rest/api/policyinsights/policy-states/list-query-results-for-subscription",
+    "captured": "2026-10-15"
+  },
+  "note": "Reference mapping for a Microsoft Azure Policy compliance-states export (MCE-05). Records have the Policy Insights REST API PolicyState shape (queryResults: a `value` array). complianceState is the documented field; isCompliant is documented as deprecated and is not read. The table maps the published spellings NonCompliant (FAIL), Compliant (PASS), Exempt and Conflict (UNKNOWN); every other published state (Error, Protected, Unknown, Not registered, Not started) falls to UNKNOWN by the unmapped rule, never PASS, with the state kept in detail. One record is one resource under one assignment, and one definition can be evaluated against one resource under two assignments or twice within a policy set, so the record identity is the composite the owner's sample queries group by: assignment, definition, reference id, resource (AUD-F77). It and the subscription id become opaque ids before export. Bindings are the provider's declaration, for illustration only."
+}

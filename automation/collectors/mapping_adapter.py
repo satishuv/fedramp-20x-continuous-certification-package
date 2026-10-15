@@ -216,6 +216,30 @@ def normalize_status(value, table):
     return lowered.get(s.lower(), UNMAPPED_STATUS)
 
 
+def composite_record_id(record, spec):
+    """The raw per-record identity named by a mapping's fields.record_id: one
+    path, or an ordered list of paths whose values are joined with '|'. An
+    absent component is kept as the empty string between separators, never
+    dropped, so components keep their positions: an identity with a null
+    middle component followed by a value can never read as the identity whose
+    earlier component holds that value (a policy state outside a policy set has
+    a null policyDefinitionReferenceId; the component after it must stay the
+    resource). Returns None when every component is absent. Pure."""
+    if isinstance(spec, (list, tuple)):
+        parts = []
+        present = False
+        for path in spec:
+            value = get_path(record, path)
+            if value in (None, ""):
+                parts.append("")
+            else:
+                parts.append(str(value))
+                present = True
+        return "|".join(parts) if present else None
+    value = get_path(record, spec)
+    return None if value in (None, "") else value
+
+
 # --- the adapter ------------------------------------------------------------------
 
 class MappingAdapter(ew.EvidenceAdapter):
@@ -330,8 +354,12 @@ class MappingAdapter(ew.EvidenceAdapter):
         if f.get("record_id"):
             # AUD-F77: the source's own identity for this record rides raw on
             # the fact and becomes an opaque rec-... id at conversion, so two
-            # records of one check never share an evidence pointer.
-            raw_record = get_path(rec, f["record_id"])
+            # records of one check never share an evidence pointer. A list of
+            # paths is a composite identity: components joined in order with
+            # '|', an absent component kept as the empty string so components
+            # keep their positions and two different identities can never
+            # join to the same string.
+            raw_record = composite_record_id(rec, f["record_id"])
             if raw_record not in (None, ""):
                 fact["record_id"] = raw_record
         return fact

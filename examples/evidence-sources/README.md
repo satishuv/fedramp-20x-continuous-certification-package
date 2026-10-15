@@ -284,6 +284,37 @@ What `record_id` adds, each with a regression test and a killed mutation:
 - Sources that report one value per check and scope (the AWS Config path)
   carry no `record_id`, and their pointer form is unchanged.
 
+A source whose records have no single id field names the identity as an
+ordered list of paths, and the components are joined with `|`; an absent
+component is kept as an empty string so components keep their positions and
+two different identities can never join to the same string. The Azure Policy
+reference mapping (`example-azure-policy-states.mapping.json`) does this,
+because one policy definition is evaluated against one resource once per
+assignment and once per reference inside a policy set:
+
+```json
+"fields": {
+  "check": "policyDefinitionName",
+  "status": "complianceState",
+  "observed_at": "timestamp",
+  "location": "resourceLocation",
+  "scope": {"path": "subscriptionId", "kind": "subscription"},
+  "record_id": ["policyAssignmentId", "policyDefinitionId", "policyDefinitionReferenceId", "resourceId"]
+},
+"status_normalization": {"NonCompliant": "FAIL", "Compliant": "PASS", "Exempt": "UNKNOWN", "Conflict": "UNKNOWN"}
+```
+
+Its state words are the owner's published compliance states, read from the
+documented `complianceState` field (the `isCompliant` flag is documented as
+deprecated and is not read): only `Compliant` is `PASS` and only
+`NonCompliant` is `FAIL`; `Exempt` and `Conflict` are `UNKNOWN`, and every
+other published state (`Error`, `Protected`, `Unknown`, `Not registered`,
+`Not started`) is `UNKNOWN` by the unmapped rule, with the state kept in
+`detail`. The fixture `example-azure-policy-states.export.json` is fictional
+end to end (the all-zero subscription id, all-zero and all-one definition and
+assignment ids, `fictional-` names) and is shaped from the owner's public API
+reference and compliance-states page, cited in its header and the mapping.
+
 The state words are the source's published enum, and a findings export states
 no pass: `ACTIVE` is a problem the source still reports (`FAIL`); `INACTIVE`
 covers a fixed finding and one a person closed as not an issue, which the
