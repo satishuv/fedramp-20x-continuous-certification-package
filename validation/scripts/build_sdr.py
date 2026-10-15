@@ -618,6 +618,36 @@ def expand_family(code, names):
     return f"{code} ({full})" if full and full != code else code
 
 
+def _platform_metadata(profile):
+    """The optional platform metadata members (MCE-16 AC2/AC3). A profile that
+    declares `aws_partition`, `primary_region` and `dr_region` yields exactly
+    the members it always did, in the same order; a profile on another
+    platform omits them and nothing is invented. `regions` is emitted only
+    when both region fields are present, so a half-declared pair cannot read
+    as a one-region deployment."""
+    out = {}
+    partition = profile.get("aws_partition")
+    if partition not in (None, ""):
+        out["aws_partition"] = partition
+    primary, dr = profile.get("primary_region"), profile.get("dr_region")
+    if primary not in (None, "") and dr not in (None, ""):
+        out["regions"] = [primary, dr]
+    return out
+
+
+def _guidance_note(note, what):
+    """The label every copied how_to_comply note carries (MCE-16 AC1): the
+    note is SAS advisory implementation guidance for the platform the notes
+    layer names (`guidance_platform`), not FedRAMP text and not the provider's
+    own statement. The platform comes from the note itself, never from the
+    profile, so a non-AWS provider's package still labels AWS guidance as AWS."""
+    platform = note.get("guidance_platform") or "the platform named in the notes layer"
+    return (f"How to comply is SAS advisory guidance describing typical {platform} "
+            "implementation approaches. It is not FedRAMP text and not the provider's "
+            f"own statement; a provider on another platform reads it as an example only. "
+            f"Fill the TBD fields below with the provider's real {what}.")
+
+
 def build_extensions(profile, rules, ksis, records, cls):
     rule_notes, ksi_notes = load_notes()
     fam_names = load_family_names()
@@ -631,8 +661,7 @@ def build_extensions(profile, rules, ksis, records, cls):
             "offering": profile["offering_name"],
             "certification_class": cls.upper(),
             "certification_path": profile["certification_path"],
-            "aws_partition": profile["aws_partition"],
-            "regions": [profile["primary_region"], profile["dr_region"]],
+            **_platform_metadata(profile),
             "sdr_version": profile["sdr_version"],
             "schema_version": profile["schema_version"],
             "dataset_version": profile["dataset_version"],
@@ -654,11 +683,10 @@ def build_extensions(profile, rules, ksis, records, cls):
                 "what_it_looks_for": r["statement"],
                 "official_notes": note.get("official_notes", []),
                 "how_to_comply": note.get("how_to_comply_guidance", ""),
+                "how_to_comply_platform": note.get("guidance_platform"),
                 "evidence_required": note.get("evidence_required", []),
                 "evidence_source": note.get("evidence_source", ""),
-                "note": ("How to comply is SAS advisory guidance, not FedRAMP "
-                         "text. Fill the TBD fields below with the provider's "
-                         "real implementation, validation, and owner."),
+                "note": _guidance_note(note, "implementation, validation, and owner"),
             },
             **rec.get("extension", {}),
         }
@@ -678,11 +706,10 @@ def build_extensions(profile, rules, ksis, records, cls):
             "guidance": {
                 "what_it_looks_for": note.get("what_it_looks_for", ""),
                 "how_to_comply": note.get("how_to_comply_guidance", ""),
+                "how_to_comply_platform": note.get("guidance_platform"),
                 "evidence_required": note.get("evidence_required", []),
                 "nist_controls": note.get("nist_controls", []),
-                "note": ("How to comply is SAS advisory guidance, not FedRAMP "
-                         "text. Fill the TBD fields below with the provider's "
-                         "real implementation, validation, tests, and owner."),
+                "note": _guidance_note(note, "implementation, validation, tests, and owner"),
             },
             **rec.get("extension", {}),
         }
@@ -699,9 +726,12 @@ def render_human(profile, rules, ksis, records, cls, metric_history=None):
     a(f"Certification type: {profile['certification_type']}")
     a(f"Certification class: Class {cls.upper()}")
     a(f"Certification path: {profile['certification_path']} Certification")
-    a(f"AWS partition: {profile['aws_partition']}")
-    a(f"Primary region: {profile['primary_region']}")
-    a(f"Disaster recovery region: {profile['dr_region']}")
+    if profile.get("aws_partition") not in (None, ""):
+        a(f"AWS partition: {profile['aws_partition']}")
+    if profile.get("primary_region") not in (None, ""):
+        a(f"Primary region: {profile['primary_region']}")
+    if profile.get("dr_region") not in (None, ""):
+        a(f"Disaster recovery region: {profile['dr_region']}")
     a(f"SDR version: {profile['sdr_version']}")
     a(f"Generated from dataset version: {profile['dataset_version']}")
     a("Source of update: build_sdr.py generator")
@@ -966,6 +996,7 @@ def main():
             "rule_family": expand_family(fam, fam_names["frr"]),
             "what_it_looks_for": (rule["statement"] if rule else "See rule catalog."),
             "how_to_comply": note.get("how_to_comply_guidance", ""),
+            "how_to_comply_platform": note.get("guidance_platform"),
             "evidence_required": note.get("evidence_required", []),
         }
     for kid, entry in records["ksi"].items():
@@ -979,6 +1010,7 @@ def main():
             "ksi_family": f"{fam_code} ({fam_name})" if fam_name else fam_code,
             "what_it_looks_for": note.get("what_it_looks_for", ""),
             "how_to_comply": note.get("how_to_comply_guidance", ""),
+            "how_to_comply_platform": note.get("guidance_platform"),
             "evidence_required": note.get("evidence_required", []),
         }
     dump(records, RECORDS)

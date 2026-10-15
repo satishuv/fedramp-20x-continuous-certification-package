@@ -594,6 +594,16 @@ MUTATIONS = [
     # PR: record_ref switched to a plain SHA-256 of the name fails the
     # regression's two-keys-two-ids check. Not a runner entry: one runner id per
     # defect is the ledger rule.)
+    # AUD-F78 / MCE-16: every how_to_comply note copied into the SDR extension,
+    # the records store and the human-readable SDR is labelled as implementation
+    # guidance for the platform the notes layer names, never as the provider's
+    # own statement. Mutation: the guidance note stops reading the platform
+    # from the note; the regression's label checks go RED.
+    ("MUT-F78",
+     "validation/scripts/build_sdr.py",
+     '    platform = note.get("guidance_platform") or "the platform named in the notes layer"\n',
+     '    platform = "the platform named in the notes layer"  # MUTATION platform label dropped\n',
+     "validation/scripts/test_platform_labelled_notes.py"),
 ]
 
 

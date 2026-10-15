@@ -12,7 +12,7 @@ No. FedRAMP publishes the rules as a versioned dataset at [github.com/FedRAMP/ru
 
 The core is not. The pipeline, the record store, the validator, and the scanner care about FedRAMP rules, not about which cloud you run on.
 
-Two parts are AWS-flavoured: `traceability/aws-service-ksi-map.json` gives AWS examples for each indicator, and the Layer 1 collector queries AWS Config. Both are optional. Replace the map with your own provider's equivalents and the rest works unchanged. The GitHub Actions path needs no cloud account at all.
+Two parts are AWS-flavoured: `traceability/aws-service-ksi-map.json` gives AWS examples for each indicator, and the Layer 1 collector queries AWS Config. Both are optional. Replace the map with your own provider's equivalents and the rest works unchanged. The GitHub Actions path needs no cloud account at all. The authored how-to-comply notes also describe AWS approaches; every copy of them in the SDR extension, the records store and the human-readable SDR is labelled with the platform they describe and states that they are not the provider's own statement, so a provider on another platform reads them as examples. The profile's `aws_partition`, `primary_region` and `dr_region` are optional: leave them out and the extension metadata and the human-readable header omit them rather than inventing values.
 
 ## Why is the readiness scanner reporting thousands of failures?
 

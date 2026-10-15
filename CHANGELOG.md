@@ -11,6 +11,36 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### Platform-labelled implementation notes and optional AWS metadata (MCE-16; AUD-F78)
+
+Sequenced before the non-AWS Class C sample (MCE-12), because a non-AWS
+package cannot honestly declare `aws_partition`. `AUD-F78` (Medium): every
+how-to-comply note the notes layer authors describes AWS implementation
+approaches (15 of 46 KSI notes name an AWS product outright), and the notes
+carried that fact only in a free-text label that the SDR extension, the
+records store's `fill_guidance` and the DOCX did not copy, so a provider on
+another platform met AWS implementation steps presented as how to comply with
+no statement of which platform they describe or that they are not the
+provider's own words; separately, the extension, the human-readable SDR and
+the DOCX read `aws_partition`, `primary_region` and `dr_region` with
+`profile[...]` and failed with a `KeyError` on a profile without them, which
+the profile contract allows. Now `build_notes` stamps a structured
+`guidance_platform` (`AWS`) on every rule and KSI note; `build_extensions`
+copies it as `how_to_comply_platform` beside every `how_to_comply` and the
+guidance note names the platform and says the text is not the provider's own
+statement (the platform is read from the note, never from the profile, so a
+non-AWS package still labels AWS guidance as AWS); the records store's
+`fill_guidance` carries the same member; the DOCX label reads "How to comply
+(SAS guidance, AWS implementation examples, not the provider's statement)";
+the platform metadata members and header lines are emitted only when the
+profile declares them (`regions` only when both region fields are present),
+and a profile that declares them yields the same members in the same order.
+All three classes' extensions, the records store and the three DOCX files
+regenerated; the official SDR JSON did not move. Regression:
+`validation/scripts/test_platform_labelled_notes.py` (red on the pre-change
+builders), registered in the validate suite; MUT-F78 (the note stops naming
+the platform) killed. `docs/faq.md` states both behaviours.
+
 ### Adapter conformance suite, traceability and MAS coverage (MCE-13)
 
 Three closures of the adapter layer, no production path changed. (1)

@@ -742,6 +742,11 @@
    "severity": "High",
    "component": "automation/collectors/evidence_wiring.py (new: record_ref, pointer_collisions; _pointer record segment; fact_to_evidence record derivation and raw record_id refusal; EvidenceAdapter.to_evidence batch collision refusal); automation/collectors/fact-contract.schema.json (record_id, record); automation/collectors/adapter-mapping.schema.json (fields.record_id); automation/collectors/mapping_adapter.py (record_id field routing)"
   },
+  "ledger.AUD-F78": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "validation/scripts/build_sdr.py (build_extensions guidance blocks, fill_guidance, render_human header; new _platform_metadata, _guidance_note); validation/scripts/build_docx.py (header line, how-to-comply label; new _how_to_comply_label); validation/scripts/build_notes.py (guidance_platform on every note)"
+  },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
    "severity": "medium",
@@ -1476,6 +1481,21 @@
    "kind": "rule",
    "name": "FedRAMP JSON Schemas",
    "enforcement": [
+    {
+     "gate_id": "ledger.AUD-F78",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_platform_labelled_notes.py"
+     ],
+     "mutations": [
+      "MUT-F78"
+     ],
+     "mutated_files": [
+      "validation/scripts/build_sdr.py"
+     ],
+     "in_test_suite": true
+    },
     {
      "gate_id": "scan.frr_statement_fidelity",
      "mode": "readiness-scan",
@@ -2857,6 +2877,21 @@
      ],
      "mutated_files": [
       "automation/collectors/evidence_wiring.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F78",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_platform_labelled_notes.py"
+     ],
+     "mutations": [
+      "MUT-F78"
+     ],
+     "mutated_files": [
+      "validation/scripts/build_sdr.py"
      ],
      "in_test_suite": true
     },
