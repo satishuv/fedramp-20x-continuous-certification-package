@@ -65,7 +65,10 @@ python automation/collectors/test_adapter_conformance.py
 In `profiles/common/offering-profile.json`, enable each source with its
 mapping and export path (the key must equal the mapping's `name`), declare
 no AWS platform (leave `aws_partition`, `primary_region` and `dr_region`
-out), and state the evidence store as properties:
+out), select the platform whose how-to-comply notes your package should carry
+(`"guidance_platform": "Google Cloud"`; `Microsoft Azure` and
+`Oracle Cloud Infrastructure` also ship, see `guidance/platforms/README.md`),
+and state the evidence store as properties:
 
 ```json
 "evidence_sources": {

@@ -47,6 +47,27 @@ WATCHLIST = [
     "Microsoft Azure", "Azure", "Microsoft Defender", "Azure Policy",
     "Oracle Cloud", "OCI Cloud Guard", "Cloud Guard",
     "OpenSCAP",
+    # Service names the platform guidance notes use (MCE-17, guidance/platforms/).
+    "Cloud Audit Logs", "Cloud Logging", "Cloud Monitoring", "Cloud Key Management Service",
+    "Secret Manager", "Certificate Manager", "Certificate Authority Service", "VPC Service Controls",
+    "Google Cloud Armor", "Cloud Next Generation Firewall", "Binary Authorization", "Artifact Registry",
+    "Artifact Analysis", "Cloud Build", "Cloud Deploy", "Cloud Asset Inventory", "Organization Policy",
+    "Privileged Access Manager", "Identity-Aware Proxy", "Cloud Identity", "Backup and DR", "VM Manager",
+    "Infrastructure Manager", "Config Connector", "Policy Intelligence", "Sensitive Data Protection",
+    "Google Security Operations", "Assured Workloads", "Cloud Service Mesh", "Cloud Storage",
+    "Compute Engine", "Google Kubernetes Engine",
+    "Microsoft Entra", "Privileged Identity Management", "Microsoft Sentinel", "Azure Monitor",
+    "Log Analytics", "Azure Key Vault", "Azure Firewall", "Azure DDoS Protection", "Azure Private Link",
+    "Azure Network Watcher", "Azure Backup", "Azure Site Recovery", "Azure Update Manager",
+    "Azure Automation", "Azure Pipelines", "Bicep", "Azure Container Registry", "Azure Chaos Studio",
+    "Azure Blob Storage", "Azure Attestation", "Azure Resource Graph", "Azure Machine Configuration",
+    "OCI Audit", "OCI Logging", "OCI Log Analytics", "OCI Monitoring", "OCI Notifications", "OCI Events",
+    "OCI Security Zones", "OCI Vault", "OCI Certificates", "OCI Vulnerability Scanning", "OCI Bastion",
+    "OCI Resource Manager", "OCI OS Management Hub", "OCI Full Stack Disaster Recovery",
+    "OCI Object Storage", "OCI IAM with Identity Domains", "OCI Access Governance",
+    "OCI Web Application Firewall", "OCI Network Firewall", "OCI Zero Trust Packet Routing",
+    "OCI DevOps", "OCI Container Registry", "OCI Threat Intelligence",
+    "OCI Application Dependency Management", "OCI Search",
     "IBM Cloud", "Alibaba Cloud", "Okta", "Splunk", "Datadog", "Palo Alto",
     "Prisma Cloud", "Tenable", "Qualys", "Rapid7", "Snyk", "SentinelOne",
     "Fortinet", "Zscaler", "Lacework", "Orca Security", "Trend Micro",
@@ -266,7 +287,28 @@ def self_test() -> list[str]:
     return fails
 
 
+def inventory(files: dict[str, str], registered: list[str]) -> dict[str, list[str]]:
+    """Registered name -> sorted tracked files whose text names it. The live
+    answer to 'what would I remove to withdraw this third party': computed from
+    the tree, never maintained by hand, so it cannot drift. Read-only."""
+    out: dict[str, list[str]] = {}
+    for name in registered:
+        rx = _word_re(name)
+        hits = sorted(p for p, t in files.items() if t and p != SELF and rx.search(t))
+        if hits:
+            out[name] = hits
+    return out
+
+
 def main() -> int:
+    if "--inventory" in sys.argv[1:]:
+        files, registered = load_repo(BASE)
+        inv = inventory(files, registered)
+        for name in registered:
+            print(f"{name}: {len(inv.get(name, []))} file(s)")
+            for p in inv.get(name, []):
+                print(f"  {p}")
+        return 0
     fails = self_test()
     if fails:
         print("SELF-TEST FAIL:")

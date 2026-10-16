@@ -272,6 +272,7 @@ CLASS_CONDITIONAL = [
 OPTIONAL_FIELDS = {
     "profile_note", "evidence_sources", "provider_verified_at", "dr_region",
     "primary_region", "aws_partition", "iac_technology", "incident_contact",
+    "guidance_platform", "_guidance_platform_note",
     "materials_item_schema", "note", "selected_optional_rules",
     "_selected_optional_rules_note", "selected_optional_ksis",
     "_selected_optional_ksis_note", "evidence_freshness_policy_days",

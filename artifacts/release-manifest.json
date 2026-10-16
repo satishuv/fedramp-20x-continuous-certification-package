@@ -47,7 +47,7 @@
   }
  },
  "inputs": {
-  "profiles/common/offering-profile.json": "sha256:470076c6d3a2f69b081410492c92977bdcaddcf8166a4c5661f7d988aacb34bb",
+  "profiles/common/offering-profile.json": "sha256:41b95ec0042feaa09bdfeaaaf9b8974374e2eb8ff71e937f3bfac13e80c4070e",
   "sdr/records/records-store.json": "sha256:41d10d4858d628569c11149490da301fdd51546b218463723ccc5f75dda4068d"
  },
  "artifacts": {
