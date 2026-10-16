@@ -11,6 +11,25 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### Provider quickstart for a platform other than AWS (MCE-14)
+
+`docs/quickstart-non-aws.md` walks a provider from an export its tooling
+already writes, through a mapping, the facts in the one contract, hashed
+evidence with bound pointers, a signer pinned by label, to `package-preflight`
+READY, with every fenced command runnable offline against the committed
+fixtures and no credential anywhere. The new
+`validation/scripts/test_quickstart_non_aws.py` makes it executable
+documentation: it runs every `bash` fence from the repository root and
+requires exit 0 (the three mapping dry runs print facts and a collected
+outcome, the conformance suite reports 0 problems, the non-AWS sample reports
+READY under production-assurance), checks that every repository path the
+document names exists, that the files the sample overwrites are restored byte
+for byte, that no fence carries an access-key-looking token or a literal
+secret, that the scope key is shown as a placeholder, and that the document
+states its outputs are expectations and readiness findings, never compliance
+determinations. Linked from the documentation index. Closes the multi-cloud
+evidence epic's last story.
+
 ### Fictional non-AWS Class C sample through READY and the attack harness (MCE-12; AUD-F81)
 
 `examples/sample-offering-class-c-non-aws`: a fictional provider hosted on
