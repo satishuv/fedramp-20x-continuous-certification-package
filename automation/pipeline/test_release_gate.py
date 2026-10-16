@@ -331,6 +331,18 @@ def main():
           and "--attack" in attack_argv)
     check("attack section is in the default section order (a bare run executes it)",
           "attack" in rg.SECTION_ORDER)
+    # MCE-12: the non-AWS twin of the harness is its own section, with the
+    # same shape (harness step, then tree-clean), in the default order.
+    non_aws_steps = [name for name, _argv in rg.SECTIONS.get("attack-non-aws", [])]
+    for required in ("class-c-non-aws-attack-harness", "tree-clean-after-non-aws-attack"):
+        check(f"release gate attack-non-aws section includes {required}",
+              required in non_aws_steps)
+    non_aws_argv = dict(rg.SECTIONS.get("attack-non-aws", [])).get("class-c-non-aws-attack-harness", [])
+    check("non-AWS attack harness step runs build_non_aws_class_c_sample.py --attack",
+          any(a.endswith("build_non_aws_class_c_sample.py") for a in non_aws_argv)
+          and "--attack" in non_aws_argv)
+    check("attack-non-aws section is in the default section order",
+          "attack-non-aws" in rg.SECTION_ORDER)
     check("release gate security section includes bandit",
           "bandit" in security_steps)
     check("release gate refuses an unknown section (fails closed, not silently empty)",
@@ -409,7 +421,7 @@ def main():
           all(p in open(os.path.join(BASE, ".gitignore"), encoding="utf-8").read()
               for p in ("validation/reports/gate-results.json", "validation/reports/gate-results.run.json")))
     wf_text = open(os.path.join(BASE, ".github", "workflows", "validate.yml"), encoding="utf-8").read()
-    for sec in ("audit", "attack", "security"):
+    for sec in ("audit", "attack", "attack-non-aws", "security"):
         check(f"CI uploads the {sec} section's gate results as an artifact",
               f"name: gate-results-{sec}" in wf_text)
     # Every argv must name an existing script or a module the gate can run.
@@ -434,14 +446,18 @@ def main():
           "release_gate.py security" in job_text.get("security-scan", ""))
     check("CI has an attack-gate job that runs the shared release gate (attack)",
           "release_gate.py attack" in job_text.get("attack-gate", ""))
+    check("CI has an attack-gate-non-aws job that runs the shared release gate (attack-non-aws)",
+          "release_gate.py attack-non-aws" in job_text.get("attack-gate-non-aws", ""))
     agg = job_text.get("release-gate", "")
     check("CI has a release-gate aggregate job", bool(agg))
     needs = re.search(r'needs:\s*\[([^\]]*)\]', agg)
     needs_set = {n.strip() for n in needs.group(1).split(",")} if needs else set()
-    check("release-gate needs validate + audit-gate + attack-gate + security-scan",
-          needs_set == {"validate", "audit-gate", "attack-gate", "security-scan"})
+    check("release-gate needs validate + audit-gate + attack-gate + attack-gate-non-aws + security-scan",
+          needs_set == {"validate", "audit-gate", "attack-gate", "attack-gate-non-aws", "security-scan"})
     check("release-gate checks the attack-gate result (not just listed in needs)",
           "needs.attack-gate.result" in agg and "attack-gate:$ATTACK" in agg)
+    check("release-gate checks the attack-gate-non-aws result (not just listed in needs)",
+          "needs.attack-gate-non-aws.result" in agg and "attack-gate-non-aws:$ATTACK_NON_AWS" in agg)
     check("release-gate runs even when a dependency failed (if: always())",
           re.search(r'if:\s*always\(\)', agg) is not None)
     check("release-gate fails unless every section result is success",
@@ -450,16 +466,16 @@ def main():
           re.search(r'^\s+workflow_call:', wf, re.MULTILINE) is not None)
 
     # (c) AWS RELEASE_MODE executes the same definition.
-    check("RELEASE_MODE build runs the shared release gate (audit + attack + security)",
-          "release_gate.py audit attack security" in rel_branch)
+    check("RELEASE_MODE build runs the shared release gate (audit + attack + attack-non-aws + security)",
+          "release_gate.py audit attack attack-non-aws security" in rel_branch)
 
     # (d) `sdr.py release` executes the same definition and instructs a SIGNED
     #     tag (docs/versioning.md), not a plain unsigned one.
     sdr_src = open(os.path.join(BASE, "sdr.py"), encoding="utf-8").read()
     m_rel_fn = re.search(r'^def cmd_release\(.*?(?=^def )', sdr_src, re.MULTILINE | re.DOTALL)
     rel_fn = m_rel_fn.group(0) if m_rel_fn else ""
-    check("sdr.py release runs the shared release gate (audit + attack + security)",
-          "release_gate.py" in rel_fn and '["audit", "attack", "security"]' in rel_fn)
+    check("sdr.py release runs the shared release gate (audit + attack + attack-non-aws + security)",
+          "release_gate.py" in rel_fn and '["audit", "attack", "attack-non-aws", "security"]' in rel_fn)
     check("sdr.py release runs the gate BEFORE the reproducibility check",
           0 < rel_fn.find("release_gate.py") < rel_fn.find("cmd_reproducibility()"))
     check("sdr.py release instructs a signed tag (git tag -s)",

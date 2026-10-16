@@ -85,6 +85,19 @@ SECTIONS = {
         ("tree-clean-after-attack",
          ["git", "diff", "--exit-code"]),
     ],
+    # MCE-12: the SAME probe list against a fictional Class C offering on a
+    # platform other than AWS, whose evidence comes through the adapter path
+    # (three enabled mapping-driven sources, hashed and signed) and whose
+    # profile declares no AWS platform, plus that platform's own probes. Its
+    # own section so CI runs it in parallel with the AWS harness (each about
+    # 20 minutes); a provider on another platform gets the same proof.
+    "attack-non-aws": [
+        ("class-c-non-aws-attack-harness",
+         [sys.executable,
+          "examples/sample-offering-class-c-non-aws/build_non_aws_class_c_sample.py", "--attack"]),
+        ("tree-clean-after-non-aws-attack",
+         ["git", "diff", "--exit-code"]),
+    ],
     "security": [
         ("bandit",
          [sys.executable, "-m", "bandit", "-r", ".",
@@ -108,7 +121,7 @@ SECTIONS = {
 # path installs the same auditor (CI workflow, AWS buildspec, local release).
 SECURITY_TOOL_PINS = {"bandit": "1.8.6", "pip-audit": "2.10.1"}
 
-SECTION_ORDER = ["audit", "attack", "security"]
+SECTION_ORDER = ["audit", "attack", "attack-non-aws", "security"]
 
 # AUD-F66: machine-readable results. The deterministic file carries only what
 # the run decided (gate ids, argv, exit codes, statuses, the active class and

@@ -629,6 +629,16 @@ MUTATIONS = [
      '            evidence = adapter.to_evidence(raw, location_base=location_base, scope_key=scope_key)\n',
      '            evidence = adapter.to_evidence(raw, scope_key=scope_key)  # MUTATION base dropped\n',
      "validation/scripts/test_offering_scoped_sources.py"),
+    # AUD-F81 / MCE-12: the AUD-F63 pointer check predated the AUD-F77 record
+    # segment, so every entry from a source that reports one record per
+    # resource was pointer-unbound and production-assurance was unsatisfiable
+    # for it. Mutation: the classifier ignores the record again; the
+    # regression's per-record pointer check goes RED.
+    ("MUT-F81",
+     "validation/scripts/validate_evidence.py",
+     '    if sf.get("record"):\n        parts.append(sf.get("record"))\n',
+     '    if False and sf.get("record"):  # MUTATION record segment ignored by the pointer check\n        parts.append(sf.get("record"))\n',
+     "validation/scripts/test_provenance_mutations.py"),
 ]
 
 

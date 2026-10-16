@@ -45,7 +45,8 @@
     "MUT-F69",
     "MUT-F72",
     "MUT-F79",
-    "MUT-F80"
+    "MUT-F80",
+    "MUT-F81"
    ],
    "mutated_files": [
     "automation/collectors/apply_third_party_evidence.py",
@@ -267,6 +268,96 @@
    ],
    "fixture": "automation/collectors/fixtures/mapping/example-posture-scanner.mapping.json"
   },
+  "adapter.example-provider-collector": {
+   "kind": "evidence-adapter",
+   "adapter_kind": "mapping",
+   "service": "provider-collector",
+   "mode": "evidence-adapter",
+   "enabled_in_profile": false,
+   "illustrative": false,
+   "checks": [
+    "aligning-backups-with-objectives",
+    "aligning-recovery-plan",
+    "authorizing-just-in-time",
+    "authorizing-log-access",
+    "automating-configuration-management",
+    "defining-functionality-and-privileges",
+    "enforcing-intended-state",
+    "ensuring-least-privilege",
+    "evaluating-and-improving-security",
+    "generating-after-action-reports",
+    "implementing-best-practices",
+    "logging-changes",
+    "mitigating-supply-chain-risk",
+    "monitoring-supply-chain-risk",
+    "operating-siem-capability",
+    "optimizing-for-availability",
+    "preventing-residual-risk",
+    "redeploying-vs-modifying",
+    "removing-unwanted-data",
+    "responding-to-suspicious-activity",
+    "reviewing-all-training",
+    "reviewing-change-procedures",
+    "reviewing-executive-support",
+    "reviewing-incident-response-procedures",
+    "reviewing-investments-in-security",
+    "reviewing-logs",
+    "reviewing-past-incidents",
+    "reviewing-protections",
+    "reviewing-recovery-objectives",
+    "reviewing-security-in-the-sdlc",
+    "reviewing-vulnerability-disclosures",
+    "securing-information",
+    "testing-recovery-capabilities",
+    "using-logical-networking",
+    "validating-communications",
+    "validating-throughout-deployment"
+   ],
+   "ksi_targets": [
+    "KSI-CED-RAT",
+    "KSI-CMT-LMC",
+    "KSI-CMT-RMV",
+    "KSI-CMT-RVP",
+    "KSI-CMT-VTD",
+    "KSI-CNA-DFP",
+    "KSI-CNA-EIS",
+    "KSI-CNA-IBP",
+    "KSI-CNA-OFA",
+    "KSI-CNA-RVP",
+    "KSI-CNA-ULN",
+    "KSI-IAM-ELP",
+    "KSI-IAM-JIT",
+    "KSI-IAM-SUS",
+    "KSI-INR-AAR",
+    "KSI-INR-RIR",
+    "KSI-INR-RPI",
+    "KSI-MLA-ALA",
+    "KSI-MLA-OSM",
+    "KSI-MLA-RVL",
+    "KSI-PIY-RES",
+    "KSI-PIY-RIS",
+    "KSI-PIY-RSD",
+    "KSI-PIY-RVD",
+    "KSI-RPL-ABO",
+    "KSI-RPL-ARP",
+    "KSI-RPL-RRO",
+    "KSI-RPL-TRC",
+    "KSI-SCR-MIT",
+    "KSI-SCR-MON",
+    "KSI-SVC-ACM",
+    "KSI-SVC-EIS",
+    "KSI-SVC-PRR",
+    "KSI-SVC-RUD",
+    "KSI-SVC-SIN",
+    "KSI-SVC-VCM"
+   ],
+   "tests": [
+    "automation/collectors/test_adapter_conformance.py"
+   ],
+   "mutations": [],
+   "mutated_files": [],
+   "fixture": "automation/collectors/fixtures/mapping/example-provider-collector.mapping.json"
+  },
   "adapter.wiz": {
    "kind": "evidence-adapter",
    "adapter_kind": "python",
@@ -307,7 +398,8 @@
     "MUT-F69",
     "MUT-F72",
     "MUT-F79",
-    "MUT-F80"
+    "MUT-F80",
+    "MUT-F81"
    ],
    "mutated_files": [
     "automation/collectors/apply_third_party_evidence.py",
@@ -319,6 +411,24 @@
     "validation/scripts/validate_evidence.py"
    ],
    "fixture": null
+  },
+  "attack-non-aws.class-c-non-aws-attack-harness": {
+   "kind": "release-gate-step",
+   "section": "attack-non-aws",
+   "argv": [
+    "python",
+    "examples/sample-offering-class-c-non-aws/build_non_aws_class_c_sample.py",
+    "--attack"
+   ]
+  },
+  "attack-non-aws.tree-clean-after-non-aws-attack": {
+   "kind": "release-gate-step",
+   "section": "attack-non-aws",
+   "argv": [
+    "git",
+    "diff",
+    "--exit-code"
+   ]
   },
   "attack.class-c-attack-harness": {
    "kind": "release-gate-step",
@@ -778,6 +888,11 @@
    "kind": "closed-defect",
    "severity": "Medium",
    "component": "automation/collectors/apply_third_party_evidence.py (new apply_sources; main reads --location-base and SDR_EVIDENCE_LOCATION_BASE)"
+  },
+  "ledger.AUD-F81": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "validation/scripts/validate_evidence.py (classify_pointer_binding)"
   },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
@@ -2024,6 +2139,21 @@
      "in_test_suite": true
     },
     {
+     "gate_id": "ledger.AUD-F81",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_provenance_mutations.py"
+     ],
+     "mutations": [
+      "MUT-F81"
+     ],
+     "mutated_files": [
+      "validation/scripts/validate_evidence.py"
+     ],
+     "in_test_suite": true
+    },
+    {
      "gate_id": "scan.ksi_automation_verified",
      "mode": "readiness-scan",
      "classes": [
@@ -2973,6 +3103,21 @@
      ],
      "mutations": [
       "MUT-F79"
+     ],
+     "mutated_files": [
+      "validation/scripts/validate_evidence.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F81",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_provenance_mutations.py"
+     ],
+     "mutations": [
+      "MUT-F81"
      ],
      "mutated_files": [
       "validation/scripts/validate_evidence.py"

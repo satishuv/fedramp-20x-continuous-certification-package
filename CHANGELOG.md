@@ -11,6 +11,45 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### Fictional non-AWS Class C sample through READY and the attack harness (MCE-12; AUD-F81)
+
+`examples/sample-offering-class-c-non-aws`: a fictional provider hosted on
+Google Cloud with on-premises XCCDF scans, driven to Submission ready under
+`production-assurance` with every evidence entry behind every populated KSI
+coming through the ADAPTER PATH a real provider uses. The profile enables
+three mapping-driven sources (the Security Command Center and XCCDF reference
+mappings, and a new `example-provider-collector` reference mapping that
+declares the provider's own collector the same way, one check per KSI the
+posture sources do not bind, so first-party and third-party evidence meet one
+binding rule); `apply_sources` attaches 55 entries to the 46 KSIs by declared
+binding; every entry is hashed and signed by a stand-in managed key pinned by
+label (`key_reference`); the profile declares no AWS platform, so the gate
+binds only those three sources. The exports are produced in memory from the
+committed fixtures with today's observation times and exist on disk only for
+the apply step; the sample fails if the folder outlives a run. The AWS Class C
+harness's `attack()` is now parametrized by a `SamplePlatform` (AWS the
+default, behaviour proven identical: 52 probes with the same names, kinds,
+pins and tamper digests before and after the change); the non-AWS sample runs
+the same 48 shared probes with the same gate pinned per probe plus four of its
+own (an adapter fact re-pointed at a KSI its source does not bind, blocked by
+the provenance gate; a signed AWS Config-rule claim the offering cannot make,
+blocked, AUD-F79; a populated KSI stripped of evidence, blocked by the
+validation gate; the same adapter entry under the second KSI its check binds,
+READY). New `validation/scripts/test_attack_harness_probes.py` pins both
+probe lists against `examples/sample-offering-class-c/attack-probes.golden.json`
+and asserts the shared probes are identical across platforms (AC2). The
+harness is the new `attack-non-aws` section of the one release gate: CI runs
+it as `attack-gate-non-aws` in parallel with `attack-gate`, the aggregate
+requires it, and the AWS build and `sdr.py release` run it. `AUD-F81`
+(Medium), found by the sample's first dry run: the AUD-F63 pointer check
+predated the AUD-F77 per-record pointer segment, so every entry from a source
+that reports one record per resource (all 11 Security Command Center entries
+here) was pointer-unbound and production-assurance was unsatisfiable for such
+a source; `classify_pointer_binding` now mirrors the factory's form, the
+SOURCE family of `test_provenance_mutations.py` carries a per-record pointer
+(bound), a pointer moved to another record (unbound) and a record segment
+stripped (unbound), red on the pre-fix classifier; `MUT-F81` killed.
+
 ### Evidence sources scoped to the offering, and concrete adapter pointers (MCE-12 groundwork; AUD-F79, AUD-F80)
 
 Found while designing the non-AWS Class C sample (MCE-12). `AUD-F79`

@@ -60,15 +60,21 @@ review had missed:
 
 The remaining assessor probes were already correctly blocked, confirming the
 readiness gating is robust against those vectors. The `--attack` harness runs
-49 checks: those that must stay READY (the complete baseline, a
+52 checks: those that must stay READY (the complete baseline, a
 justified-`N/A: <reason>` on NARRATIVE fields, a hollowed override the
 AUD-F39 derivation ignores, production-assurance with a valid signed digest
 and signed evidence, and an adapter's declared check under its target KSI)
-plus the hollowing tampers that must each be BLOCKED.
+plus the hollowing tampers that must each be BLOCKED. The probe list (name,
+block or ready, gate pin) is pinned in `attack-probes.golden.json` by
+`validation/scripts/test_attack_harness_probes.py`.
 Since AUD-F61 the harness is the `attack` section of the one release gate
 (`audit/release_gate.py`): CI runs it as the `attack-gate` job on every push
 and pull request, and the AWS `RELEASE_MODE` build and `sdr.py release` run it
-too, so it is no longer a manual run. The tampers include:
+too, so it is no longer a manual run. Since MCE-12 the harness is one
+function parametrized by a `SamplePlatform` (this sample is the default); the
+non-AWS Class C sample (`examples/sample-offering-class-c-non-aws`) runs the
+same probe list with the same gate pinned per probe against a package whose
+evidence comes through the adapter path on another platform. The tampers include:
 
 - empty SDR-CSX-KMT historical-metric summaries (the gap above)
 - an `sdr://placeholder/` evidence URI in an applicable record

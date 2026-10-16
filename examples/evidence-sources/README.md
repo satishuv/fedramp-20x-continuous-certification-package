@@ -363,6 +363,26 @@ shaped from the owner's public API reference cited in its header and in the
 mapping, per `THIRD_PARTY_NOTICE.md`. Category-to-KSI bindings in the example
 are the provider's declaration, for illustration only.
 
+## The provider's own collector, declared the same way
+
+A provider's first-party collection is a source like any other: the
+`example-provider-collector` reference mapping
+(`example-provider-collector.mapping.json`, service `provider-collector`,
+JSON lines) declares one check per KSI, each bound to its indicator through
+`check_bindings`, with the usual `pass` / `fail` / `error` / `not-run` table
+(anything else is `UNKNOWN`, never `PASS`) and `undeclared_checks: refuse`.
+The provenance gate then holds first-party and third-party evidence to one
+binding rule: an entry claims a `service:check` the offering declares, or it is
+unbound. The checks in the fixture are named after the indicators for
+illustration; a real provider declares the checks its collector actually runs.
+
+The fictional non-AWS Class C sample
+(`examples/sample-offering-class-c-non-aws`) enables this mapping beside the
+Security Command Center and XCCDF ones, drives the exports through
+`apply_sources`, signs every entry, and reaches Submission ready under
+`production-assurance` with no AWS source declared or claimed; the same
+assessor-attack probe list as the AWS sample then runs against it (MCE-12).
+
 ## What each maps to (real CR26 KSI ids, verified against the dataset)
 
 | Source | Signal | KSIs it supports |

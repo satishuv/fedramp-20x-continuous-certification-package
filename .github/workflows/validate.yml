@@ -160,6 +160,34 @@ jobs:
             validation/reports/gate-results.run.json
           if-no-files-found: ignore
 
+  attack-gate-non-aws:
+    # The same assessor-attack probe list against the fictional Class C sample
+    # on a platform other than AWS (MCE-12): evidence through the adapter path
+    # (three enabled mapping-driven sources, hashed and signed), no AWS platform
+    # declared, plus that platform's own probes (an adapter fact re-pointed at
+    # an unbound KSI, an AWS Config-rule claim the offering cannot make). HARD
+    # GATE; its own job so it runs in parallel with attack-gate (about 20
+    # minutes).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install --quiet --require-hashes -r requirements.lock
+      - name: Non-AWS attack section of the release gate (HARD GATE)
+        run: python audit/release_gate.py attack-non-aws
+      - name: Upload gate results (attack-non-aws)
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: gate-results-attack-non-aws
+          path: |
+            validation/reports/gate-results.json
+            validation/reports/gate-results.run.json
+          if-no-files-found: ignore
+
   security-scan:
     # Static security analysis of ALL executable Python (root, automation,
     # validation), not just automation/. Runs in CI on every PR so a security
@@ -206,7 +234,7 @@ jobs:
     # `if: always()` makes this job run (and FAIL) even when a dependency
     # failed or was cancelled; without it the job would be skipped and a
     # skipped required check blocks nothing.
-    needs: [validate, audit-gate, attack-gate, security-scan]
+    needs: [validate, audit-gate, attack-gate, attack-gate-non-aws, security-scan]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -215,11 +243,12 @@ jobs:
           VALIDATE: ${{ needs.validate.result }}
           AUDIT: ${{ needs.audit-gate.result }}
           ATTACK: ${{ needs.attack-gate.result }}
+          ATTACK_NON_AWS: ${{ needs.attack-gate-non-aws.result }}
           SECURITY: ${{ needs.security-scan.result }}
         run: |
-          echo "validate=$VALIDATE audit-gate=$AUDIT attack-gate=$ATTACK security-scan=$SECURITY"
+          echo "validate=$VALIDATE audit-gate=$AUDIT attack-gate=$ATTACK attack-gate-non-aws=$ATTACK_NON_AWS security-scan=$SECURITY"
           rc=0
-          for pair in "validate:$VALIDATE" "audit-gate:$AUDIT" "attack-gate:$ATTACK" "security-scan:$SECURITY"; do
+          for pair in "validate:$VALIDATE" "audit-gate:$AUDIT" "attack-gate:$ATTACK" "attack-gate-non-aws:$ATTACK_NON_AWS" "security-scan:$SECURITY"; do
             job="${pair%%:*}"; result="${pair#*:}"
             if [ "$result" != "success" ]; then
               echo "FAIL. Release gate section '$job' result: $result"
@@ -227,7 +256,7 @@ jobs:
             fi
           done
           if [ "$rc" -ne 0 ]; then exit 1; fi
-          echo "release-gate: PASS (validate, audit-gate, attack-gate, security-scan all succeeded)."
+          echo "release-gate: PASS (validate, audit-gate, attack-gate, attack-gate-non-aws, security-scan all succeeded)."
 
 
 
