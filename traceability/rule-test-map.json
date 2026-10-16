@@ -31,16 +31,29 @@
     "automation/collectors/test_adapter_conformance.py",
     "automation/collectors/test_fact_contract.py",
     "automation/collectors/test_thirdparty_adapters.py",
-    "validation/scripts/test_adapter_source_bindings.py"
+    "validation/scripts/test_adapter_source_bindings.py",
+    "validation/scripts/test_mas_coverage.py",
+    "validation/scripts/test_offering_scoped_sources.py",
+    "validation/scripts/test_provenance_mutations.py"
    ],
    "mutations": [
+    "MUT-F56",
+    "MUT-F62",
+    "MUT-F63",
+    "MUT-F64",
     "MUT-F68",
     "MUT-F69",
-    "MUT-F72"
+    "MUT-F72",
+    "MUT-F79",
+    "MUT-F80"
    ],
    "mutated_files": [
+    "automation/collectors/apply_third_party_evidence.py",
     "automation/collectors/evidence_wiring.py",
-    "automation/collectors/thirdparty_adapters.py"
+    "automation/collectors/thirdparty_adapters.py",
+    "sdr.py",
+    "validation/scripts/build_mas_coverage.py",
+    "validation/scripts/validate_evidence.py"
    ],
    "fixture": null
   },
@@ -236,16 +249,21 @@
    "tests": [
     "automation/collectors/test_adapter_conformance.py",
     "automation/collectors/test_mapping_adapter.py",
-    "validation/scripts/test_adapter_source_bindings.py"
+    "validation/scripts/test_adapter_source_bindings.py",
+    "validation/scripts/test_offering_scoped_sources.py"
    ],
    "mutations": [
     "MUT-F70",
     "MUT-F71",
-    "MUT-F72"
+    "MUT-F72",
+    "MUT-F79",
+    "MUT-F80"
    ],
    "mutated_files": [
+    "automation/collectors/apply_third_party_evidence.py",
     "automation/collectors/mapping_adapter.py",
-    "automation/collectors/thirdparty_adapters.py"
+    "automation/collectors/thirdparty_adapters.py",
+    "validation/scripts/validate_evidence.py"
    ],
    "fixture": "automation/collectors/fixtures/mapping/example-posture-scanner.mapping.json"
   },
@@ -272,6 +290,7 @@
     "automation/collectors/test_thirdparty_adapters.py",
     "validation/scripts/test_adapter_source_bindings.py",
     "validation/scripts/test_init_wizard.py",
+    "validation/scripts/test_offering_scoped_sources.py",
     "validation/scripts/test_profile_traceability.py",
     "validation/scripts/test_provenance_mutations.py",
     "validation/scripts/test_rule_test_map.py",
@@ -286,9 +305,12 @@
     "MUT-F67",
     "MUT-F68",
     "MUT-F69",
-    "MUT-F72"
+    "MUT-F72",
+    "MUT-F79",
+    "MUT-F80"
    ],
    "mutated_files": [
+    "automation/collectors/apply_third_party_evidence.py",
     "automation/collectors/evidence_wiring.py",
     "automation/collectors/thirdparty_adapters.py",
     "sdr.py",
@@ -746,6 +768,16 @@
    "kind": "closed-defect",
    "severity": "Medium",
    "component": "validation/scripts/build_sdr.py (build_extensions guidance blocks, fill_guidance, render_human header; new _platform_metadata, _guidance_note); validation/scripts/build_docx.py (header line, how-to-comply label; new _how_to_comply_label); validation/scripts/build_notes.py (guidance_platform on every note)"
+  },
+  "ledger.AUD-F79": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "validation/scripts/validate_evidence.py (load_source_bindings, _registered_adapters, classify_source_binding messages, load_trusted_signer; new declares_aws_platform, enabled_source_names); sdr.py (package-preflight production-assurance provenance block passes the offering); validation/scripts/build_mas_coverage.py (load_bindings takes the offering); examples/sample-offering-class-c/build_class_c_sample.py (profile enables the Falcon source its probes claim; bindings read under the sample profile; AUD-F79 probe)"
+  },
+  "ledger.AUD-F80": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "automation/collectors/apply_third_party_evidence.py (new apply_sources; main reads --location-base and SDR_EVIDENCE_LOCATION_BASE)"
   },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
@@ -1958,6 +1990,40 @@
      "in_test_suite": true
     },
     {
+     "gate_id": "ledger.AUD-F79",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_adapter_source_bindings.py",
+      "validation/scripts/test_mas_coverage.py",
+      "validation/scripts/test_offering_scoped_sources.py",
+      "validation/scripts/test_provenance_mutations.py"
+     ],
+     "mutations": [
+      "MUT-F79"
+     ],
+     "mutated_files": [
+      "validation/scripts/validate_evidence.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F80",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "automation/collectors/test_mapping_adapter.py",
+      "validation/scripts/test_offering_scoped_sources.py"
+     ],
+     "mutations": [
+      "MUT-F80"
+     ],
+     "mutated_files": [
+      "automation/collectors/apply_third_party_evidence.py"
+     ],
+     "in_test_suite": true
+    },
+    {
      "gate_id": "scan.ksi_automation_verified",
      "mode": "readiness-scan",
      "classes": [
@@ -2892,6 +2958,24 @@
      ],
      "mutated_files": [
       "validation/scripts/build_sdr.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F79",
+     "mode": "regression-test+mutation",
+     "severity": "Medium",
+     "tests": [
+      "validation/scripts/test_adapter_source_bindings.py",
+      "validation/scripts/test_mas_coverage.py",
+      "validation/scripts/test_offering_scoped_sources.py",
+      "validation/scripts/test_provenance_mutations.py"
+     ],
+     "mutations": [
+      "MUT-F79"
+     ],
+     "mutated_files": [
+      "validation/scripts/validate_evidence.py"
      ],
      "in_test_suite": true
     },

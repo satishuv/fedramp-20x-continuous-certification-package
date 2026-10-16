@@ -300,16 +300,17 @@ def render_md(report):
     return "\n".join(L) + "\n"
 
 
-def load_bindings():
+def load_bindings(offering=None):
     """The source registry's bindings ({ksi_id: {"keys": set("service:check")}}),
     from validate_evidence, so a `service:check` reference in the inventory is
-    held to the same binding the provenance gate enforces. None when the gate
+    held to the same binding the provenance gate enforces, scoped to the
+    sources the offering declares it operates (AUD-F79). None when the gate
     module is unavailable (the reference is then resolved against the record
     only, never counted as bound)."""
     try:
         sys.path.insert(0, HERE)
         import validate_evidence  # noqa: E402
-        return validate_evidence.load_source_bindings()
+        return validate_evidence.load_source_bindings(profile=offering)
     except Exception as e:  # noqa: BLE001  (reported, never fabricated)
         print(f"NOTE: source bindings unavailable for the MAS report ({e}); "
               "source:check references are resolved against the record only")
@@ -323,7 +324,7 @@ def build_all():
     ksi_profile = load(KSI_PROFILE, {"indicators": []})
     dataset_version = (ksi_profile.get("meta") or {}).get("dataset_version")
     rule = _find_rule(load(DATASET, {}), RULE_ID)
-    bindings = load_bindings()
+    bindings = load_bindings(offering)
     os.makedirs(OUT_DIR, exist_ok=True)
     for cls in CLASSES:
         class_profile = load(os.path.join(BASE, "profiles", f"class-{cls}", "profile.json"), {})

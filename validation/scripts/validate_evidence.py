@@ -84,7 +84,7 @@ HASH_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 
 
-def load_trusted_signer():
+def load_trusted_signer(profile=None):
     """Load the INDEPENDENTLY PINNED evidence signer from the offering profile
     (findings 7/8). Returns {"public_key": <PEM str>, "key_arn": <arn or None>,
     "public_key_fingerprint": <'sha256:..' or None>, "required": <bool>} or None
@@ -93,6 +93,13 @@ def load_trusted_signer():
     is resolved relative to the repo so the key can live in a file. A TBD/empty
     value is treated as 'not pinned'.
 
+    The pinned key reference is `key_reference` (a label, any platform; MCE-12)
+    or the AWS form `key_arn` (a KMS key ARN, alias or id); when both are set
+    the neutral name wins. Either is reduced with sign_evidence.key_reference
+    before comparison, so an ARN pin still matches a block that records the
+    bare key id (AUD-F60). The returned dict keeps the historical "key_arn"
+    slot for its callers.
+
     `required` (finding 8 downgrade): when the signer sets signing_required=true,
     every evidence entry MUST carry a recomputable digest AND a valid signature
     over it - a MISSING signature (finding 8), a MISSING digest (AUD-F57) or an
@@ -100,8 +107,11 @@ def load_trusted_signer():
     where an actor who can edit a record simply deletes xEvidenceSignature (and
     xEvidenceContentHash) and falls back to weaker verification. Default:
     required is true whenever a signer is pinned (pinning a signer is the intent
-    to require signing) unless explicitly set false."""
-    prof = load(PROFILE, {}) or {}
+    to require signing) unless explicitly set false.
+
+    `profile` may be injected (the preflight passes the offering it already
+    loaded); None reads the repository's own."""
+    prof = profile if profile is not None else (load(PROFILE, {}) or {})
     signer = prof.get("expected_evidence_signer") or {}
     if not isinstance(signer, dict):
         return None
@@ -117,7 +127,11 @@ def load_trusted_signer():
                 pem = None
     if not pem or str(pem).startswith("TBD"):
         return None
-    arn = signer.get("key_arn")
+
+    def _set(v):
+        return v is not None and str(v).strip() != "" and not str(v).strip().startswith("TBD")
+
+    arn = signer.get("key_reference") if _set(signer.get("key_reference")) else signer.get("key_arn")
     fp = signer.get("public_key_fingerprint")
     # Pinning a signer means signing is intended; a signature-less entry is a
     # downgrade unless the provider explicitly opts out (signing_required=false).
@@ -165,20 +179,24 @@ def iter_evidence(records):
 # for that KSI, and its pointer must describe the same observation.
 #
 # Sources a KSI may legitimately be measured by, all already declared in the
-# repository (nothing is inferred from prose):
+# repository (nothing is inferred from prose), scoped to the sources the
+# OFFERING declares it operates (AUD-F79; see load_source_bindings):
 #   - the collector registry's per-KSI metric_service_keys allowlist
-#     ("service:check", the same binding prefill and the metric engine use);
+#     ("service:check", the same binding prefill and the metric engine use),
+#     for an offering that declares an AWS platform;
 #   - the registry's config_managed_rule checks (AWS Config managed rules named
 #     in the guidance, plus the provider's custom rules from the customer
-#     overlay), as service "config" and the rule name;
+#     overlay), as service "config" and the rule name, likewise;
 #   - the provider-deployed Config custom rules in
 #     automation/config-rules/rules-manifest.json (the 11 KSIs whose only
-#     automated method is an artifact-existence rule), as service "config";
-#   - a registered evidence adapter (thirdparty_adapters.py, or a mapping-driven
-#     adapter the offering profile enables), for exactly the (service, check)
-#     pairs it DECLARES against each of its KSI targets (adapter
-#     source_bindings(), MCE-03). Nothing is inferred from a service name: an
-#     undeclared check under a registered service is unbound.
+#     automated method is an artifact-existence rule), as service "config",
+#     likewise;
+#   - an evidence adapter the offering profile ENABLES under evidence_sources
+#     (thirdparty_adapters.py, or a mapping-driven adapter), for exactly the
+#     (service, check) pairs it DECLARES against each of its KSI targets
+#     (adapter source_bindings(), MCE-03). Nothing is inferred from a service
+#     name: an undeclared check under a registered service is unbound, and a
+#     registered adapter the profile does not enable binds nothing.
 # An entry WITHOUT xSourceFact makes no source claim (human-authored or
 # file-backed evidence) and is out of scope here: its review is a human's.
 # FRR rule artifacts have no machine-readable source map (the registry is per
@@ -188,33 +206,68 @@ RULES_MANIFEST = os.path.join(BASE, "automation", "config-rules", "rules-manifes
 OFFERING_PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 
 
-def load_source_bindings(registry=None, rules_manifest=None, adapters=None):
-    """Build {ksi_id: {"keys": set, "config": set}} from the collector
-    registry, the config-rules manifest and the registered adapters' declared
-    (service, check) bindings. Each argument may be injected (tests); None
-    loads the repository's own."""
+def declares_aws_platform(profile):
+    """Pure. Whether the offering profile declares an AWS platform: the same
+    predicate the SDR builders use for the AWS metadata lines (MCE-16), an
+    `aws_partition` that is present and not empty. A TBD value counts as
+    declared (the intent to run on AWS, not yet filled in)."""
+    return (profile or {}).get("aws_partition") not in (None, "")
+
+
+def enabled_source_names(profile):
+    """Pure. The evidence_sources entries the profile ENABLES (Python adapters
+    by their registered name, mapping-driven sources by their mapping name)."""
+    sources = (profile or {}).get("evidence_sources") or {}
+    return {str(name) for name, cfg in sources.items()
+            if isinstance(cfg, dict) and cfg.get("enabled")}
+
+
+def load_source_bindings(registry=None, rules_manifest=None, adapters=None, profile=None):
+    """Build {ksi_id: {"keys": set, "config": set}} from the sources the
+    OFFERING declares it operates (AUD-F79), never from everything the
+    repository knows:
+
+      - the collector registry and the config-rules manifest describe the AWS
+        collectors and Config rules; they bind only for an offering whose
+        profile declares an AWS platform (declares_aws_platform). For any
+        other offering an entry claiming `config:<rule>` or an AWS collector
+        key names a source the offering never ran;
+      - a registered adapter binds its declared (service, check) pairs only
+        when the profile ENABLES that source under evidence_sources; a tool the
+        provider says it does not use cannot be where its evidence came from.
+
+    Each argument may be injected (tests); None loads the repository's own.
+    `profile` None reads the committed offering profile; the preflight passes
+    the offering it already loaded. An injected `adapters` list is the
+    caller's statement of the operated sources and is used as given; an
+    injected registry or manifest still binds only under a declared AWS
+    platform, because the platform rule is about the offering, not the data."""
+    if profile is None:
+        profile = load(OFFERING_PROFILE, {}) or {}
+    aws = declares_aws_platform(profile)
     if registry is None:
-        registry = (load(REGISTRY, {}) or {}).get("ksis", {}) or {}
+        registry = ((load(REGISTRY, {}) or {}).get("ksis", {}) or {}) if aws else {}
     if rules_manifest is None:
-        rules_manifest = (load(RULES_MANIFEST, {}) or {})
+        rules_manifest = (load(RULES_MANIFEST, {}) or {}) if aws else {}
     if adapters is None:
-        adapters = _registered_adapters()
+        adapters = _registered_adapters(profile)
     out = {}
 
     def _slot(kid):
         return out.setdefault(kid, {"keys": set(), "config": set()})
 
-    for kid, entry in (registry or {}).items():
-        slot = _slot(kid)
-        for key in (entry or {}).get("metric_service_keys") or []:
-            slot["keys"].add(str(key))
-        for chk in (entry or {}).get("checks") or []:
-            if (chk or {}).get("type") == "config_managed_rule" and chk.get("target"):
-                slot["config"].add(str(chk["target"]))
-    rules = rules_manifest.get("rules") if isinstance(rules_manifest, dict) else rules_manifest
-    for rule in rules or []:
-        if isinstance(rule, dict) and rule.get("ksi_id") and rule.get("rule_name"):
-            _slot(rule["ksi_id"])["config"].add(str(rule["rule_name"]))
+    if aws:
+        for kid, entry in (registry or {}).items():
+            slot = _slot(kid)
+            for key in (entry or {}).get("metric_service_keys") or []:
+                slot["keys"].add(str(key))
+            for chk in (entry or {}).get("checks") or []:
+                if (chk or {}).get("type") == "config_managed_rule" and chk.get("target"):
+                    slot["config"].add(str(chk["target"]))
+        rules = rules_manifest.get("rules") if isinstance(rules_manifest, dict) else rules_manifest
+        for rule in rules or []:
+            if isinstance(rule, dict) and rule.get("ksi_id") and rule.get("rule_name"):
+                _slot(rule["ksi_id"])["config"].add(str(rule["rule_name"]))
     # Adapters bind exactly the pairs they declare (MCE-03). An adapter without
     # source_bindings() (or with none declared) binds nothing.
     for adapter in adapters or []:
@@ -227,12 +280,16 @@ def load_source_bindings(registry=None, rules_manifest=None, adapters=None):
     return out
 
 
-def _registered_adapters():
-    """Every registered EvidenceAdapter instance, after importing the optional
-    third-party adapters module and registering the mapping-driven sources the
-    offering profile enables, so their declared bindings are present. An import
-    or mapping failure contributes nothing (fail closed: an adapter-derived
-    entry is then unbound, never silently bound) and is printed once."""
+def _registered_adapters(profile=None):
+    """The EvidenceAdapter instances the offering profile ENABLES, after
+    importing the optional third-party adapters module and registering the
+    mapping-driven sources the profile enables, so their declared bindings are
+    present. A registered adapter the profile does not enable contributes
+    nothing (AUD-F79). An import or mapping failure contributes nothing (fail
+    closed: an adapter-derived entry is then unbound, never silently bound) and
+    is printed once."""
+    if profile is None:
+        profile = load(OFFERING_PROFILE, {}) or {}
     try:
         import evidence_wiring as _ew
     except Exception:
@@ -243,10 +300,11 @@ def _registered_adapters():
         pass
     try:
         import mapping_adapter as _ma
-        _ma.register_from_profile(load(OFFERING_PROFILE, {}) or {}, BASE)
+        _ma.register_from_profile(profile, BASE)
     except Exception as e:  # a bad mapping is reported, never bound
         print(f"NOTE: mapping-driven evidence sources not registered: {e}")
-    return [_ew.get_adapter(n) for n in _ew.list_adapters()]
+    enabled = enabled_source_names(profile)
+    return [_ew.get_adapter(n) for n in _ew.list_adapters() if n in enabled]
 
 
 def classify_source_binding(ksi_id, e, bindings):
@@ -262,21 +320,22 @@ def classify_source_binding(ksi_id, e, bindings):
         return ("no-claim", "")
     slot = (bindings or {}).get(ksi_id)
     if not slot:
-        return ("unbound", f"SOURCE NOT BOUND - {ksi_id} has no registered evidence "
-                           "source (collector registry, config-rules manifest or "
-                           "adapter), so no collector-derived entry can be attached "
-                           f"to it; this entry claims {service}:{check} (AUD-F62)")
+        return ("unbound", f"SOURCE NOT BOUND - {ksi_id} has no evidence source this offering "
+                           "operates (AWS collector registry and config-rules manifest under a "
+                           "declared AWS platform, or an adapter the profile enables), so no "
+                           "collector-derived entry can be attached to it; this entry claims "
+                           f"{service}:{check} (AUD-F62, AUD-F79)")
     if service == "config" and check in slot["config"]:
         return ("bound", "")
     if f"{service}:{check}" in slot["keys"]:
         return ("bound", "")
-    return ("unbound", f"SOURCE NOT BOUND - {service}:{check} is not a registered source "
-                       f"for {ksi_id} (registry metric_service_keys / config rules, "
-                       "config-rules manifest, adapter declared checks); a valid digest "
-                       "over the wrong observation does not make it evidence for this "
-                       "indicator. Derive the entry from a source this KSI registers, or "
-                       "register the source (customer overlay / rules manifest / adapter "
-                       "checks) (AUD-F62)")
+    return ("unbound", f"SOURCE NOT BOUND - {service}:{check} is not a source this offering "
+                       f"operates for {ksi_id} (registry metric_service_keys / config rules and "
+                       "the config-rules manifest under a declared AWS platform; the declared "
+                       "checks of an adapter the profile enables); a valid digest over the wrong "
+                       "observation does not make it evidence for this indicator. Derive the "
+                       "entry from a source this KSI registers, or register the source (customer "
+                       "overlay / rules manifest / an enabled adapter's checks) (AUD-F62, AUD-F79)")
 
 
 def classify_pointer_binding(e):
@@ -529,8 +588,9 @@ def classify_entry(e, hash_fn=None, trusted_signer=None):
 
 def main():
     records = load(RECORDS, {"frr": {}, "ksi": {}})
-    trusted_signer = load_trusted_signer()
-    bindings = load_source_bindings()
+    profile = load(PROFILE, {}) or {}
+    trusted_signer = load_trusted_signer(profile)
+    bindings = load_source_bindings(profile=profile)
     hard, findings = [], []
     checked = verified = 0
     provenance_findings = 0

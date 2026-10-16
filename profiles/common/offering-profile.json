@@ -80,6 +80,7 @@
  "expected_evidence_signer": {
   "note": "Findings 7/8 - the INDEPENDENTLY PINNED trusted evidence signer. When any evidence carries an xEvidenceSignature, validate_evidence.py cryptographically verifies it (offline ECDSA) against public_key_pem here and requires the evidence keyId to equal key_arn. The public key is obtained ONCE via kms:GetPublicKey on the audit-account signing key and pinned here by the VERIFIER; it is never taken from the evidence. Leave TBD when evidence signing is not in use (unsigned evidence stays verified-by-hash). A present-but-unpinned or non-verifying signature is a HARD failure.",
   "key_arn": "TBD: arn:aws:kms:<region>:<audit-account>:key/<id> of the audit-account signing key (must equal the evidence xEvidenceSignature.keyId)",
+  "key_reference": "TBD: for a signer that is not AWS KMS, the key reference LABEL the signature blocks record as keyId (lower-case slug, no ARN, URL, GUID or account id; see automation/collectors/signers.py). Takes precedence over key_arn when set. MCE-12.",
   "public_key_pem": "TBD: the PEM SubjectPublicKeyInfo public key from kms:GetPublicKey on the signing key (or set public_key_pem_path to a file)",
   "public_key_pem_path": "TBD: optional path (repo-relative) to a .pem file holding the pinned public key, as an alternative to inlining public_key_pem",
   "public_key_fingerprint": "TBD: optional sha256:<hex> of the DER SubjectPublicKeyInfo, a second independent pin checked before verification",

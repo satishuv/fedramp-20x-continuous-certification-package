@@ -48,6 +48,11 @@ _KEY = b"test-scope-key-not-a-secret"
 
 FALCON_CHECKS = ("sensor_coverage", "open_detections", "prevention_policy")
 FALCON_TARGETS = ("KSI-MLA-OSM", "KSI-MLA-RVL", "KSI-MLA-LET", "KSI-INR-RIR")
+# AUD-F79: an adapter binds only for an offering that ENABLES it. The AWS
+# profile below declares the platform and turns Falcon on; the committed
+# template turns every third-party source off.
+AWS_WITH_FALCON = {"aws_partition": "aws",
+                   "evidence_sources": {"crowdstrike-falcon": {"enabled": True}}}
 
 failures = []
 
@@ -87,18 +92,26 @@ def test_ac1_declared_pairs_are_bound_per_ksi_and_nothing_service_wide():
     check("Wiz declares its three checks and binds them to its targets",
           set(wiz.source_bindings()) == {"wiz:issues_critical_high", "wiz:config_findings", "wiz:vulnerabilities"}
           and all(v == {"KSI-MLA-EVC", "KSI-MLA-OSM", "KSI-SCR-MON"} for v in wiz.source_bindings().values()))
-    bindings = ve.load_source_bindings()
-    check("the gate's bindings carry every Falcon pair under every Falcon target",
+    bindings = ve.load_source_bindings(profile=AWS_WITH_FALCON)
+    check("the gate's bindings carry every Falcon pair under every Falcon target when the offering enables Falcon",
           all({f"crowdstrike:{c}" for c in FALCON_CHECKS} <= bindings[k]["keys"] for k in FALCON_TARGETS))
     check("no slot carries a service-wide binding any more",
           all("services" not in slot for slot in bindings.values()))
     check("an adapter with no declared checks binds nothing (no inference from its service)",
           ve.load_source_bindings({}, {"rules": []},
                                   [type("A", (), {"service": "x", "ksi_targets": lambda s: ["KSI-A"]})()]) == {})
+    # AUD-F79: a registered adapter the profile does NOT enable binds nothing;
+    # the committed template enables no third-party source.
+    off = ve.load_source_bindings(profile={"aws_partition": "aws"})
+    check("Falcon registered but not enabled by the offering binds none of its pairs (AUD-F79)",
+          not any(k.startswith("crowdstrike:") for slot in off.values() for k in slot["keys"]))
+    check("the committed template profile binds no adapter pair (every evidence source is off)",
+          not any(k.split(":")[0] in ("crowdstrike", "wiz")
+                  for slot in ve.load_source_bindings().values() for k in slot["keys"]))
 
 
 def test_ac2_wrong_pair_is_unbound_blocks_under_production_and_bound_twin_passes():
-    bindings = ve.load_source_bindings()
+    bindings = ve.load_source_bindings(profile=AWS_WITH_FALCON)
     # The positive control: this exact pair is what MUT-F72 removes.
     good = _entry("crowdstrike", "open_detections")
     check("POSITIVE CONTROL: crowdstrike:open_detections under KSI-MLA-OSM is bound",
@@ -141,8 +154,9 @@ def test_ac3_falcon_to_evidence_refuses_an_undeclared_check():
     finally:
         falcon.collect = original
     evs = falcon.to_evidence({"observed_at": "2026-10-01T00:00:00Z", "detections_open": 1}, _BASE)
+    enabled = ve.load_source_bindings(profile=AWS_WITH_FALCON)
     check("Falcon's own output is bound under each of its targets",
-          len(evs) == 1 and all(ve.classify_source_binding(k, evs[0], ve.load_source_bindings())[0] == "bound"
+          len(evs) == 1 and all(ve.classify_source_binding(k, evs[0], enabled)[0] == "bound"
                                 for k in FALCON_TARGETS))
 
 
@@ -211,9 +225,12 @@ def test_register_from_profile_registers_enabled_mapping_sources_for_the_gate():
     out = ma.register_from_profile(prof, BASE)
     check("only the enabled mapping-driven source is registered",
           set(out) == {"example-posture-scanner"} and "example-posture-scanner" in ew.list_adapters())
-    bindings = ve.load_source_bindings()
+    bindings = ve.load_source_bindings(profile=prof)
     check("the gate now binds the profile-declared adapter's pairs",
           "example-posture:PUBLIC_BUCKET_ACL" in bindings["KSI-MLA-EVC"]["keys"])
+    check("the same adapter, registered but not enabled by the offering, binds nothing (AUD-F79)",
+          "example-posture:PUBLIC_BUCKET_ACL" not in
+          ve.load_source_bindings(profile={"aws_partition": "aws"}).get("KSI-MLA-EVC", {}).get("keys", set()))
     check("re-registering the same mapping is idempotent",
           ma.register_from_profile(prof, BASE)["example-posture-scanner"] is out["example-posture-scanner"])
     try:
