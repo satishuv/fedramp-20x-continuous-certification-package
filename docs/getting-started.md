@@ -82,7 +82,7 @@ The two `FAIL` lines are expected and correct on a fresh clone. Both are `SHOULD
 
 1. `validate_upstream.py` - validate the pinned dataset against the official rules schema and the lock hashes
 2. `build_catalogs.py` - rule and indicator catalogs from the pinned dataset
-3. `build_notes.py` - per-rule notes and family name expansions
+3. `build_notes.py` - per-rule notes and family name expansions. The how-to-comply notes describe the platform the profile's `guidance_platform` names: AWS (built-in, the default) or a guidance file under `guidance/platforms/` (Google Cloud, Microsoft Azure and Oracle Cloud Infrastructure ship; see `guidance/platforms/README.md`). The notes are SAS advisory examples for that platform, labelled as such everywhere they are copied; an unknown label fails the build and never falls back to AWS.
 4. `build_profiles.py` - per-class profiles, the Class C overlay, the Class D register
 5. `build_collector_registry.py` - indicator to read-only AWS check map
 6. `build_sdr.py` - the official JSON, the extensions companion, and the plain-text record

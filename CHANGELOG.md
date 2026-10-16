@@ -11,6 +11,43 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### Implementation guidance notes for Google Cloud, Microsoft Azure and Oracle Cloud Infrastructure (MCE-17)
+
+The how-to-comply notes layer described AWS only (MCE-16 labelled it so). A
+provider on another platform now selects its own notes with one profile field,
+`guidance_platform`: absent or `AWS` keeps the built-in notes and produces the
+committed artifacts byte for byte; `Google Cloud`, `Microsoft Azure` or
+`Oracle Cloud Infrastructure` selects a data file under `guidance/platforms/`
+(46 KSI notes each, plus overrides for the four FRR families whose built-in
+text names an AWS service: CMU, IEC, MAS, VDR; the other thirteen families use
+a neutral base that names no platform). Each file records the date its
+service names and documentation URLs were captured from the vendor's public
+documentation and a `services` table; the build adds `guidance_references`
+(the vendor URL for every service a note names) to each note and records the
+sources at the top of `traceability/rule-notes.json` and `ksi-notes.json`. An
+unknown label fails the build and lists the platforms available; the notes
+layer never substitutes AWS guidance for another platform (fail closed by
+design, proven red by hand). The fictional non-AWS Class C sample declares
+`Google Cloud` and reaches READY with its extension, records store and DOCX
+labelled "Google Cloud implementation examples".
+
+Built to be removable: every third-party name lives in a file that exists only
+for it plus one registration row and one watchlist line, and
+`THIRD_PARTY_NOTICE.md` gains a "Removing a third party" procedure backed by a
+new read-only `--inventory` mode of the naming guard that lists, per registered
+name, the tracked files that still contain it (computed from the tree, never
+maintained by hand). The 87 service names the notes introduce are registered per
+owner (the guard now registers 102 names, 15 before) and added to the guard's watchlist, so every sentence naming one is
+checked for comparative or evaluative language; a `validation/scripts/test_platform_guidance_notes.py`
+suite (57 checks) additionally requires each platform file to be complete
+(every KSI, every AWS-specific family, every service registered and used), and
+every note to carry no AWS service name, no lexicon term even where no vendor
+is named, no compliance-determination verb, no URL and no em or en dash. Four
+by-hand mutations (fail-open to AWS, a dropped family override, an evaluative
+sentence, an AWS name inside a Google Cloud note) each turn exactly the
+intended check red. Documented in `guidance/platforms/README.md`,
+`docs/getting-started.md` and the non-AWS quickstart.
+
 ### Provider quickstart for a platform other than AWS (MCE-14)
 
 `docs/quickstart-non-aws.md` walks a provider from an export its tooling

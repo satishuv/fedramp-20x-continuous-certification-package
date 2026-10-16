@@ -220,6 +220,9 @@ def generate_profile(production=False, signer_public_key_pem=None):
     fia_done = (TODAY - aws.dt.timedelta(days=40)).isoformat()
     for k in ("aws_partition", "primary_region", "dr_region"):
         profile.pop(k, None)
+    # MCE-17: the how-to-comply notes this package carries describe the platform
+    # the offering runs on, labelled as that platform's examples.
+    profile["guidance_platform"] = "Google Cloud"
     profile.update({
         "organization_name": f"{PROVIDER}, Inc. (fictional)",
         "offering_name": PROVIDER,

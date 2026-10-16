@@ -399,6 +399,7 @@ TEST_SUITE = [
     "validation/scripts/test_evidence_store_properties.py",
     "validation/scripts/test_scaffold_platform_neutral.py",
     "validation/scripts/test_platform_labelled_notes.py",
+    "validation/scripts/test_platform_guidance_notes.py",
     "validation/scripts/test_provenance_mutations.py",
     "validation/scripts/test_class_support.py",
     "validation/scripts/test_rule_test_map.py",

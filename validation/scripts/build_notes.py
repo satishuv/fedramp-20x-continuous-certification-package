@@ -28,34 +28,51 @@ CANONICAL = os.path.join(BASE, "references", "fedramp-consolidated-rules.json")
 CATALOG = os.path.join(BASE, "traceability", "rule-catalog.json")
 KSI_CATALOG = os.path.join(BASE, "traceability", "ksi-catalog.json")
 
-# The platform the authored how-to-comply notes describe (MCE-16). Every note
-# carries it as a structured field so every document that copies a note can
-# label it as implementation guidance for THIS platform, never as the
-# provider's own statement. The notes layer is AWS-only until a provider on
-# another platform contributes grounded content; that content would carry its
-# own platform value, never this one.
+# The platform the built-in how-to-comply notes describe (MCE-16). Every note
+# carries its platform as a structured field so every document that copies a
+# note can label it as implementation guidance for THAT platform, never as the
+# provider's own statement.
+#
+# Platform selection (MCE-17). The AWS guidance below is the built-in platform.
+# Guidance for any other platform is a data file under guidance/platforms/
+# carrying its own `platform` label, the documentation sources its service
+# names were captured from, the FRR families it overrides and a note per KSI.
+# The offering profile selects the platform with `guidance_platform`: absent
+# or "AWS" means the built-in guidance (byte-identical output); any other value
+# must match a platform file's label. An unknown value is a hard error that
+# names the platforms available; it never falls back to AWS, so a provider on
+# another platform cannot be handed AWS guidance by accident. Deleting a
+# platform file withdraws that platform entirely (THIRD_PARTY_NOTICE.md).
 GUIDANCE_PLATFORM = "AWS"
+PLATFORM_DIR = os.path.join(BASE, "guidance", "platforms")
+PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 
-# Advisory guidance per FRR family. Labeled as guidance in output.
-FAMILY_GUIDANCE = {
+# Advisory guidance per FRR family. Labeled as guidance in output. The neutral
+# entries name no platform and apply to every platform; the AWS entries name
+# AWS services and are overridden, family by family, by a platform file.
+FAMILY_GUIDANCE_NEUTRAL = {
     "AFC": "Stand up a dedicated, monitored FedRAMP security inbox as a distribution list reaching the security on-call rotation, separate from customer support. Test delivery and acknowledgement on a schedule (for example monthly synthetic emails) and keep membership current.",
     "AGU": "These rules apply to federal agencies, not providers. A provider only needs awareness of what agencies are told to expect.",
     "CCM": "Establish the quarterly Ongoing Certification Report and Quarterly Review cadence: a named owner, a calendar, a consistent format, a feedback mechanism, and public next-report and next-review dates in the certification data.",
     "CDS": "Publish certification data through a trust center with both public and agency-authenticated access, in human-readable and machine-readable form. Automate generation from the same pipeline that produces the SDR so the two never drift.",
-    "CMU": "Use FIPS-validated cryptographic modules for federal data: AWS KMS (validated HSM-backed) for keys, FIPS endpoints for service APIs where required, and TLS 1.2 or higher. Record module certificates and validation numbers; document any exception formally.",
     "CPO": "Keep the Certification Package Overview concise and current. At Class C the package must be maintained at least every 2 weeks; put the maintenance run on a calendar with a named owner and generate as much as possible from the pipeline.",
     "FRC": "Certification mechanics: pick one Program Certification type, supply schema-valid JSON wherever a rule defines a schema, meet the per-class automated verification and validation minimums (FRC-CSX-VVK), and start accumulating the KSI metric history the Security Decision Record carries (SDR-CSX-KMT: daily data up to the past year at Class C) before applying.",
-    "IEC": "Define incident evaluation and reporting procedures with the FedRAMP Reportable Incident test, the Potential Agency Impact N-rating scale, and the class-specific reporting timeframes. Wire detection (GuardDuty, Security Hub) to an on-call process that can meet the clock.",
     "IVV": "Engage a FedRAMP Recognized Assessor with documented independence (no advisory work on this offering in the past 2 years). Give the assessor access to the SDR and read access to live evidence; supply evidence of implementation (verification) and effectiveness (validation).",
-    "MAS": "Define the Minimum Assessment Scope narrowly and defensibly: identify every information resource that handles federal data or whose compromise would affect it, justify each exclusion, and keep the inventory machine-generated (AWS Config, Resource Explorer) so it stays current.",
     "MKT": "Maintain an accurate FedRAMP Marketplace listing. If listing during Initial Implementation, schedule the assessment within 2 years (MKT-IIP-DLA). Keep listing data consistent with the certification data.",
     "REC": "These rules govern assessor recognition, not providers. A provider's obligation is to select an assessor that holds FedRAMP Recognition and to respect the 2-year advisory independence bar.",
     "SCG": "Write the Secure Configuration Guide for the agency customer, not the provider: the settings the customer controls, secure defaults, consequences of insecure choices, and machine-readable guidance where practical.",
     "SCN": "Classify changes (routine recurring, adaptive, transformative, impact categorization) and automate the notification workflow with the class timeframes. Keep 12 months of notification history in human-readable and JSON form; log every evaluation.",
     "SDR": "Maintain the Security Decision Record in both human-readable and JSON form, schema-valid, with an entry for every applicable rule and KSI, metadata (version, last updated, update source), and the per-class historical metrics.",
-    "VDR": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
     "VER": "Evaluate every detected vulnerability quickly, assign a Potential Agency Impact N-rating, treat qualifying exploitable vulnerabilities as FedRAMP Reportable Incidents per the class rules, and report through the required channels with machine-readable detail.",
 }
+FAMILY_GUIDANCE_AWS = {
+    "CMU": "Use FIPS-validated cryptographic modules for federal data: AWS KMS (validated HSM-backed) for keys, FIPS endpoints for service APIs where required, and TLS 1.2 or higher. Record module certificates and validation numbers; document any exception formally.",
+    "IEC": "Define incident evaluation and reporting procedures with the FedRAMP Reportable Incident test, the Potential Agency Impact N-rating scale, and the class-specific reporting timeframes. Wire detection (GuardDuty, Security Hub) to an on-call process that can meet the clock.",
+    "MAS": "Define the Minimum Assessment Scope narrowly and defensibly: identify every information resource that handles federal data or whose compromise would affect it, justify each exclusion, and keep the inventory machine-generated (AWS Config, Resource Explorer) so it stays current.",
+    "VDR": "Run continuous vulnerability detection across every in-scope resource (Amazon Inspector for EC2, ECR, Lambda; Security Hub aggregation), meet the class cadences for sample and drift detection, track mitigation and remediation against the timeframes, and honor CISA KEV due dates.",
+}
+FAMILY_GUIDANCE = dict(FAMILY_GUIDANCE_NEUTRAL)
+FAMILY_GUIDANCE.update(FAMILY_GUIDANCE_AWS)
 
 # Advisory AWS compliance guidance per KSI. Labeled as guidance in output.
 KSI_GUIDANCE = {
@@ -113,6 +130,71 @@ def load(path):
         return json.load(f)
 
 
+def available_platforms():
+    """Platform label -> (file name, data) for every guidance file shipped under
+    guidance/platforms/. An empty dict when the directory is absent: the
+    built-in AWS guidance needs no file."""
+    out = {}
+    if not os.path.isdir(PLATFORM_DIR):
+        return out
+    for name in sorted(os.listdir(PLATFORM_DIR)):
+        if not name.endswith(".json"):
+            continue
+        data = load(os.path.join(PLATFORM_DIR, name))
+        label = data.get("platform")
+        if not label:
+            raise SystemExit(f"build_notes: {name} declares no 'platform' label")
+        if label in out:
+            raise SystemExit(f"build_notes: platform {label!r} is declared by two files")
+        out[label] = (name, data)
+    return out
+
+
+def select_platform(profile):
+    """Resolve the profile's `guidance_platform` to the guidance the notes carry.
+
+    Returns (label, family_guidance, ksi_guidance, sources, file_name).
+    Absent or "AWS": the built-in guidance, sources None, file None. Any other
+    label must name a platform file: its family entries override the neutral
+    base, its KSI entries are the KSI guidance, and `sources` records where its
+    service names were captured from. Unknown: a hard error naming what is
+    available. There is no fallback to AWS by design."""
+    wanted = (profile or {}).get("guidance_platform") or GUIDANCE_PLATFORM
+    if not isinstance(wanted, str):
+        raise SystemExit("build_notes: guidance_platform must be a string label")
+    if wanted == GUIDANCE_PLATFORM:
+        return GUIDANCE_PLATFORM, FAMILY_GUIDANCE, KSI_GUIDANCE, None, None
+    platforms = available_platforms()
+    if wanted not in platforms:
+        names = ", ".join([GUIDANCE_PLATFORM] + sorted(platforms))
+        raise SystemExit(
+            f"build_notes: guidance_platform {wanted!r} matches no guidance file under "
+            f"guidance/platforms/ (available: {names}). The notes layer never substitutes "
+            "AWS guidance for another platform; add a platform file or correct the label.")
+    name, data = platforms[wanted]
+    families = dict(FAMILY_GUIDANCE_NEUTRAL)
+    families.update(data.get("family_guidance") or {})
+    sources = {
+        "file": f"guidance/platforms/{name}",
+        "captured": data.get("captured"),
+        "services": data.get("services") or {},
+    }
+    return wanted, families, data.get("ksi_guidance") or {}, sources, name
+
+
+def guidance_references(text, sources):
+    """The documentation URL of every service a note names, in name order, so a
+    reader can trace each product name to the vendor page it was captured
+    from. Empty for the built-in platform (no sources recorded)."""
+    if not sources:
+        return []
+    return [
+        {"name": svc, "url": url}
+        for svc, url in sources["services"].items()
+        if svc in text
+    ]
+
+
 def find_rule_extras(dataset, rule_id, family):
     node = dataset["FRR"].get(family, {}).get("data", {})
 
@@ -133,6 +215,8 @@ def main():
     dataset = load(CANONICAL)
     catalog = load(CATALOG)
     ksi_catalog = load(KSI_CATALOG)
+    profile = load(PROFILE) if os.path.exists(PROFILE) else {}
+    platform, family_guidance, ksi_guidance, sources, platform_file = select_platform(profile)
     default_frr = dataset["info"]["default_artifacts"]["FRR"]
     default_ksi = dataset["info"]["default_artifacts"]["KSI"]
 
@@ -145,6 +229,8 @@ def main():
                 x for v in artifacts.values() if isinstance(v, list) for x in v
             ]
         notes = extras.get("notes") or ([extras["note"]] if extras.get("note") else [])
+        guidance = family_guidance.get(
+            r["family"], "See the rule statement; no family guidance authored.")
         rule_notes[r["rule_id"]] = {
             "what_it_looks_for": (
                 "The rule text below is the requirement; the force keyword "
@@ -156,20 +242,21 @@ def main():
                 "rule-specific artifacts list" if artifacts
                 else "FedRAMP default artifact expectations for rules"
             ),
-            "how_to_comply_guidance": FAMILY_GUIDANCE.get(
-                r["family"],
-                "See the rule statement; no family guidance authored."),
-            "guidance_platform": GUIDANCE_PLATFORM,
+            "how_to_comply_guidance": guidance,
+            "guidance_platform": platform,
             "guidance_label": (
                 "The compliance guidance is SAS advisory content naming typical "
-                "AWS approaches. It is not an official FedRAMP requirement; the "
+                f"{platform} approaches. It is not an official FedRAMP requirement; the "
                 "rule statement governs."
             ),
         }
+        if sources:
+            rule_notes[r["rule_id"]]["guidance_references"] = guidance_references(guidance, sources)
 
     ksi_notes = {}
     for k in ksi_catalog["indicators"]:
         kid = k["ksi_id"]
+        guidance = ksi_guidance.get(kid, "No guidance authored yet for this indicator.")
         ksi_notes[kid] = {
             "what_it_looks_for": k["statement"] or (
                 "FedRAMP pending: no statement published yet for this indicator."
@@ -177,15 +264,16 @@ def main():
             "evidence_required": default_ksi,
             "evidence_source": "FedRAMP default artifact expectations for KSIs",
             "nist_controls": k.get("controls", []),
-            "how_to_comply_guidance": KSI_GUIDANCE.get(
-                kid, "No guidance authored yet for this indicator."),
-            "guidance_platform": GUIDANCE_PLATFORM,
+            "how_to_comply_guidance": guidance,
+            "guidance_platform": platform,
             "guidance_label": (
                 "The compliance guidance is SAS advisory content naming typical "
-                "AWS approaches. It is not an official FedRAMP requirement; the "
+                f"{platform} approaches. It is not an official FedRAMP requirement; the "
                 "indicator statement governs."
             ),
         }
+        if sources:
+            ksi_notes[kid]["guidance_references"] = guidance_references(guidance, sources)
 
     # Family name map so every document can spell out the short forms
     # (for example VDR is Vulnerability Detection and Response, IAM is
@@ -206,12 +294,21 @@ def main():
 
     out1 = os.path.join(BASE, "traceability", "rule-notes.json")
     out2 = os.path.join(BASE, "traceability", "ksi-notes.json")
+    rules_doc = {"note": "Explainer layer for FRR rules.", "rules": rule_notes}
+    ksis_doc = {"note": "Explainer layer for KSIs.", "indicators": ksi_notes}
+    if sources:
+        # Only a platform file records where its names came from; the built-in
+        # AWS layer keeps its committed shape byte for byte.
+        for doc in (rules_doc, ksis_doc):
+            doc["guidance_platform"] = platform
+            doc["guidance_sources"] = sources
     with open(out1, "w", encoding="utf-8", newline="\n") as f:
-        json.dump({"note": "Explainer layer for FRR rules.", "rules": rule_notes}, f, indent=1)
+        json.dump(rules_doc, f, indent=1)
     with open(out2, "w", encoding="utf-8", newline="\n") as f:
-        json.dump({"note": "Explainer layer for KSIs.", "indicators": ksi_notes}, f, indent=1)
+        json.dump(ksis_doc, f, indent=1)
 
     missing_guidance = [k for k in ksi_notes if "No guidance authored" in ksi_notes[k]["how_to_comply_guidance"]]
+    print("guidance platform:", platform, f"(guidance/platforms/{platform_file})" if platform_file else "(built-in)")
     print("rule notes:", len(rule_notes))
     print("ksi notes:", len(ksi_notes))
     print("ksis missing guidance:", missing_guidance)
