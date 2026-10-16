@@ -5,6 +5,7 @@
 | Guide | Read it when |
 |---|---|
 | [Getting started](getting-started.md) | You want a validated Security Decision Record on your machine in five minutes |
+| [Quickstart for a platform other than AWS](quickstart-non-aws.md) | Your offering runs elsewhere and you want evidence from your own exports behind the right indicators, through to Submission ready, with no credential in the repository |
 | [Implementation guide](implementation-guide.md) | You are filling in your own facts and need to know what each field wants |
 | [Certification classes](certification-classes.md) | You are choosing between Class A, B, and C, or planning for D |
 
