@@ -604,6 +604,31 @@ MUTATIONS = [
      '    platform = note.get("guidance_platform") or "the platform named in the notes layer"\n',
      '    platform = "the platform named in the notes layer"  # MUTATION platform label dropped\n',
      "validation/scripts/test_platform_labelled_notes.py"),
+    # AUD-F79 / MCE-12: the provenance gate bound every source the REPOSITORY
+    # knows (AWS collector registry, Config-rules manifest, every registered
+    # adapter), not the sources the OFFERING declares it operates, so an
+    # offering with no AWS platform could attach a valid signed entry claiming
+    # an AWS Config rule. Mutation: the platform rule always says AWS; the
+    # regression's non-AWS checks go RED.
+    ("MUT-F79",
+     "validation/scripts/validate_evidence.py",
+     '    aws = declares_aws_platform(profile)\n',
+     '    aws = True  # MUTATION every offering binds the AWS sources\n',
+     "validation/scripts/test_offering_scoped_sources.py"),
+    # (Second AUD-F79 guarantee, an adapter binds only when the profile ENABLES
+    # it, is proven by hand in the PR: the enabled filter in
+    # _registered_adapters replaced by every registered adapter fails the
+    # regression's disabled-Falcon check. Not a runner entry: one runner id per
+    # defect is the ledger rule.)
+    # AUD-F80 / MCE-12: the adapter apply path never supplied an evidence
+    # location base, so every adapter-derived pointer was an sdr://placeholder/
+    # pseudo-URI that package-preflight refuses at Class C. Mutation: the
+    # pre-fix call (no location_base); the regression's pointer checks go RED.
+    ("MUT-F80",
+     "automation/collectors/apply_third_party_evidence.py",
+     '            evidence = adapter.to_evidence(raw, location_base=location_base, scope_key=scope_key)\n',
+     '            evidence = adapter.to_evidence(raw, scope_key=scope_key)  # MUTATION base dropped\n',
+     "validation/scripts/test_offering_scoped_sources.py"),
 ]
 
 

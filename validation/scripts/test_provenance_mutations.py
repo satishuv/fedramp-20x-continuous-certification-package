@@ -201,9 +201,11 @@ def test_query_family_bindings_from_the_repository():
                                        _entry("config", rules[1]["rule_name"], signed=False), bindings)
     check("a manifest rule attached to a DIFFERENT manifest KSI is unbound", cross[0] == "unbound")
     # Third-party adapters register exactly their declared (service, check)
-    # pairs against their targets (MCE-03); nothing is bound service-wide.
+    # pairs against their targets (MCE-03); nothing is bound service-wide, and
+    # the pairs bind only for an offering that ENABLES the source (AUD-F79).
     import thirdparty_adapters as tpa  # noqa: F401
-    bindings = ve.load_source_bindings()
+    bindings = ve.load_source_bindings(
+        profile={"aws_partition": "aws", "evidence_sources": {"crowdstrike-falcon": {"enabled": True}}})
     falcon_pairs = {f"crowdstrike:{c}" for c in ("sensor_coverage", "open_detections", "prevention_policy")}
     check("Falcon adapter binds each declared check to each of its KSI targets",
           all(falcon_pairs <= bindings.get(k, {}).get("keys", set())

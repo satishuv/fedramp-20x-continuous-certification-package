@@ -25,7 +25,13 @@ source is a JSON file, not Python. The entry's key must equal the mapping's
 `name`. An export with no records is reported as a collection outcome of
 not-run and attaches nothing. Set SDR_EVIDENCE_SCOPE_KEY when an export carries
 raw scope identifiers (account, tenant, subscription, compartment, project,
-organization); without it such facts are refused, never exported raw.
+organization, host); without it such facts are refused, never exported raw.
+
+Evidence pointers (AUD-F80): every entry's evidenceLocation is built under the
+provider's evidence-store base URI, SDR_EVIDENCE_LOCATION_BASE (or
+--location-base), the same variable the collector path (prefill_from_facts.py)
+reads. Without it the pointers are sdr://placeholder/ pseudo-URIs, which
+package-preflight refuses at Class C; the driver says so when it applies them.
 """
 
 import json
@@ -40,6 +46,10 @@ import thirdparty_adapters  # noqa: E402,F401  (registers the adapters)
 
 PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 RECORDS = os.path.join(BASE, "sdr", "records", "records-store.json")
+# Env names shared with the collector path (collect_multi_account.py,
+# prefill_from_facts.py).
+SCOPE_KEY_ENV = "SDR_EVIDENCE_SCOPE_KEY"
+LOCATION_BASE_ENV = "SDR_EVIDENCE_LOCATION_BASE"
 
 
 def _obs_key(ev):
@@ -113,20 +123,27 @@ def load(path):
         return json.load(f)
 
 
-def main():
-    profile = load(PROFILE)
-    sources = profile.get("evidence_sources", {})
+def apply_sources(profile, records, *, base=None, scope_key=None, location_base=None, log=print):
+    """Apply every ENABLED evidence source in `profile` to `records` in place.
+    Returns (exit_code, total_attached). Reads only the export files the
+    profile names (relative to `base`, default the repository root); writes
+    nothing. The fictional samples drive this with in-memory profile and
+    records, so the evidence they carry comes through the same path a
+    provider's run uses (MCE-12)."""
+    base = base or BASE
+    sources = (profile or {}).get("evidence_sources", {}) or {}
     enabled = [(name, cfg) for name, cfg in sources.items()
                if isinstance(cfg, dict) and cfg.get("enabled")]
     if not enabled:
-        print("No third-party evidence sources enabled (evidence_sources all off). "
-              "Nothing to do.")
-        return 0
-    if not os.path.exists(RECORDS):
-        print("Record store not found; run build_sdr.py once first.")
-        return 1
-    records = load(RECORDS)
-    scope_key = os.environ.get("SDR_EVIDENCE_SCOPE_KEY") or None
+        log("No third-party evidence sources enabled (evidence_sources all off). "
+            "Nothing to do.")
+        return 0, 0
+    if not location_base:
+        # AUD-F80: a pointer with no store base is a placeholder preflight
+        # refuses at Class C; say so once rather than attach it silently.
+        log(f"NOTE: no evidence-store base URI ({LOCATION_BASE_ENV} / --location-base); "
+            "every attached pointer is an sdr://placeholder/ pseudo-URI that package-preflight "
+            "refuses at Class C. Set the base to the provider's evidence store.")
     total_attached = 0
     for name, cfg in enabled:
         # Mapping-driven source (MCE-02): a mapping file declares the adapter;
@@ -135,24 +152,24 @@ def main():
         mapping_rel = cfg.get("mapping_path")
         if mapping_rel:
             try:
-                adapter = ma.register_mapping_adapter(ma.load_mapping(os.path.join(BASE, mapping_rel)))
+                adapter = ma.register_mapping_adapter(ma.load_mapping(os.path.join(base, mapping_rel)))
             except (ma.MappingError, ew.EvidenceExportError, OSError, ValueError) as e:
-                print(f"'{name}': mapping refused, record store untouched. {e}")
-                return 1
+                log(f"'{name}': mapping refused, record store untouched. {e}")
+                return 1, total_attached
             if adapter.name != name:
-                print(f"'{name}': the mapping at {mapping_rel} declares name {adapter.name!r}; "
-                      "the evidence_sources key must match. Record store untouched.")
-                return 1
+                log(f"'{name}': the mapping at {mapping_rel} declares name {adapter.name!r}; "
+                    "the evidence_sources key must match. Record store untouched.")
+                return 1, total_attached
         else:
             adapter = ew.get_adapter(name)
         if adapter is None:
-            print(f"WARNING: enabled source '{name}' has no registered adapter; skipping.")
+            log(f"WARNING: enabled source '{name}' has no registered adapter; skipping.")
             continue
         export_rel = cfg.get("export_path")
-        export_path = os.path.join(BASE, export_rel) if export_rel else None
+        export_path = os.path.join(base, export_rel) if export_rel else None
         if not export_path or not os.path.exists(export_path):
-            print(f"'{name}' enabled but export not found at {export_rel}; skipping. "
-                  "Produce the export in your own environment (no API client here).")
+            log(f"'{name}' enabled but export not found at {export_rel}; skipping. "
+                "Produce the export in your own environment (no API client here).")
             continue
         if mapping_rel:
             with open(export_path, encoding="utf-8") as f:
@@ -160,23 +177,23 @@ def main():
         else:
             raw = load(export_path)
         try:
-            evidence = adapter.to_evidence(raw, scope_key=scope_key)
+            evidence = adapter.to_evidence(raw, location_base=location_base, scope_key=scope_key)
         except ew.EvidenceExportError as e:
             # Fact contract or scope refusal (MCE-01): nothing is written, the
             # offending field is named, and the exit is non-zero.
-            print(f"'{name}': refused, record store untouched. {e}")
-            return 1
+            log(f"'{name}': refused, record store untouched. {e}")
+            return 1, total_attached
         if mapping_rel and adapter.collection_outcome() == "not-run":
-            print(f"'{name}': export at {export_rel} contained no records; collection outcome "
-                  "not-run. Nothing attached: an empty export is not a clean posture.")
+            log(f"'{name}': export at {export_rel} contained no records; collection outcome "
+                "not-run. Nothing attached: an empty export is not a clean posture.")
             continue
         if mapping_rel:
             skipped = adapter.health().get("skipped_undeclared") or 0
             if skipped:
                 names = adapter.health().get("undeclared_checks") or []
                 shown = ", ".join(names[:10]) + (" ..." if len(names) > 10 else "")
-                print(f"'{name}': {skipped} record(s) whose check is not declared in the mapping "
-                      f"yielded no fact (undeclared_checks: skip): {shown}")
+                log(f"'{name}': {skipped} record(s) whose check is not declared in the mapping "
+                    f"yielded no fact (undeclared_checks: skip): {shown}")
         # MCE-03: an entry is attached ONLY to the KSIs its (service, check)
         # pair is declared for, the same bindings the provenance gate reads. An
         # entry whose pair binds nothing is reported and not attached.
@@ -193,8 +210,8 @@ def main():
             for kid in sorted(kids):
                 per_ksi.setdefault(kid, []).append(ev)
         if unbound:
-            print(f"'{name}': {len(unbound)} evidence entr{'y' if len(unbound) == 1 else 'ies'} "
-                  f"with no declared KSI binding not attached: {', '.join(sorted(set(unbound)))}")
+            log(f"'{name}': {len(unbound)} evidence entr{'y' if len(unbound) == 1 else 'ies'} "
+                f"with no declared KSI binding not attached: {', '.join(sorted(set(unbound)))}")
         attached = 0
         for kid, evs in sorted(per_ksi.items()):
             rec = records.get("ksi", {}).get(kid)
@@ -204,8 +221,34 @@ def main():
             rec["evidence"], n = _upsert_evidence(existing, evs)
             attached += n
         total_attached += attached
-        print(f"'{name}': {len(evidence)} evidence entries applied to "
-              f"{len(per_ksi)} KSI(s) by declared binding ({attached} attached after de-dup).")
+        log(f"'{name}': {len(evidence)} evidence entries applied to "
+            f"{len(per_ksi)} KSI(s) by declared binding ({attached} attached after de-dup).")
+    return 0, total_attached
+
+
+def main(argv=None):
+    import argparse
+    ap = argparse.ArgumentParser(description="Apply the enabled evidence sources to the record store.")
+    ap.add_argument("--location-base", default=os.environ.get(LOCATION_BASE_ENV),
+                    help="evidence-store base URI for the attached evidence pointers "
+                         f"(default: ${LOCATION_BASE_ENV}); without it pointers are "
+                         "sdr://placeholder/ pseudo-URIs that preflight refuses (AUD-F80)")
+    args = ap.parse_args(argv)
+    profile = load(PROFILE)
+    if not any(isinstance(cfg, dict) and cfg.get("enabled")
+               for cfg in (profile.get("evidence_sources", {}) or {}).values()):
+        print("No third-party evidence sources enabled (evidence_sources all off). "
+              "Nothing to do.")
+        return 0
+    if not os.path.exists(RECORDS):
+        print("Record store not found; run build_sdr.py once first.")
+        return 1
+    records = load(RECORDS)
+    code, total_attached = apply_sources(
+        profile, records, base=BASE, scope_key=os.environ.get(SCOPE_KEY_ENV) or None,
+        location_base=args.location_base or None)
+    if code != 0:
+        return code
     if total_attached:
         with open(RECORDS, "w", encoding="utf-8", newline="\n") as f:
             json.dump(records, f, indent=1)

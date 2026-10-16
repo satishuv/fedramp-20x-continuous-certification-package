@@ -33,17 +33,23 @@ In `profiles/common/offering-profile.json`, under `evidence_sources`, set
 Both are `false` by default. A customer who does not use the tool leaves it off
 and nothing tool-related appears anywhere.
 
-Then run, before `python sdr.py build`:
+Then run, before `python sdr.py build`, with the provider's evidence-store base
+URI (the same `SDR_EVIDENCE_LOCATION_BASE` the collector path reads, or
+`--location-base`), and `SDR_EVIDENCE_SCOPE_KEY` when the export carries raw
+scope identifiers:
 
 ```bash
+SDR_EVIDENCE_LOCATION_BASE=https://evidence.example.gov/store \
 python automation/collectors/apply_third_party_evidence.py
 ```
 
-It attaches evidence to the mapped KSIs and updates the record store. If a
-source is enabled but its export file is absent, it is skipped with a message,
-not an error. If an adapter yields a fact that does not meet the fact contract
-(below), the run stops with the offending field named and the record store is
-left untouched.
+It attaches evidence to the mapped KSIs and updates the record store. Every
+attached pointer is a concrete URL under the base; without a base the pointers
+are `sdr://placeholder/` pseudo-URIs that `package-preflight` refuses at
+Class C, and the driver says so (AUD-F80). If a source is enabled but its
+export file is absent, it is skipped with a message, not an error. If an
+adapter yields a fact that does not meet the fact contract (below), the run
+stops with the offending field named and the record store is left untouched.
 
 ## The fact contract (every adapter, any platform)
 
@@ -108,7 +114,13 @@ normalize to `PASS`, `FAIL` or `UNKNOWN`, and which KSIs the facts support:
 `checks` lists every check value the export can carry, as it appears in the
 export; each one is bound to the `ksi_targets` (or to its own `check_bindings`
 list) in the source registry the provenance gate reads. Every binding is
-declared; nothing is inferred from a name.
+declared; nothing is inferred from a name. A source binds only for an offering
+whose profile enables it: a registered adapter the profile leaves disabled
+binds nothing, so evidence claiming a tool the provider says it does not use
+is unbound (AUD-F79). The AWS collector registry and Config-rules manifest
+bind, likewise, only for an offering that declares an AWS platform
+(`aws_partition` in the profile); an offering on another platform binds
+exactly its enabled adapters.
 
 Exports may be JSON lines, CSV (header row; paths are column names), a JSON
 document (an array, or an object with `records_path`), or an XCCDF results

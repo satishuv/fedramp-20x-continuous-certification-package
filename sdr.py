@@ -414,6 +414,7 @@ TEST_SUITE = [
     "automation/collectors/test_oci_cloud_guard_adapter.py",
     "automation/collectors/test_adapter_conformance.py",
     "validation/scripts/test_adapter_source_bindings.py",
+    "validation/scripts/test_offering_scoped_sources.py",
     "automation/importers/test_import_findings.py",
     "automation/importers/test_import_oscal_ssp.py",
     "automation/importers/test_import_landing_zone.py",
@@ -3246,7 +3247,7 @@ def cmd_preflight(args):
             [(rid, rec) for rid, rec in (records.get("frr", {}) or {}).items() if rid in applicable_frr]
             + [(kid, rec) for kid, rec in (records.get("ksi", {}) or {}).items() if kid in applicable_ksi])
         _unverified = unverified_evidence_under_production(
-            _applicable_records, _ve.load_trusted_signer(), _ve.classify_entry, _ve._evidence_hash)
+            _applicable_records, _ve.load_trusted_signer(offering), _ve.classify_entry, _ve._evidence_hash)
         if _unverified:
             _by_outcome = {}
             for _rid, _idx, _outcome, _msg in _unverified:
@@ -3262,11 +3263,13 @@ def cmd_preflight(args):
                 "required); re-derive each entry with evidence_wiring.fact_to_evidence and sign it, "
                 "or declare the development profile (AUD-F59)")
         # AUD-F62 / AUD-F63: a VERIFIED entry must also BELONG where it sits.
-        # Same bindings and classifiers the validation gate reports with.
+        # Same bindings and classifiers the validation gate reports with,
+        # scoped to the sources THIS offering declares it operates (AUD-F79).
         _unbound = unbound_evidence_under_production(
             [(kid, rec) for kid, rec in (records.get("ksi", {}) or {}).items() if kid in applicable_ksi],
             [(rid, rec) for rid, rec in (records.get("frr", {}) or {}).items() if rid in applicable_frr],
-            _ve.load_source_bindings(), _ve.classify_source_binding, _ve.classify_pointer_binding)
+            _ve.load_source_bindings(profile=offering), _ve.classify_source_binding,
+            _ve.classify_pointer_binding)
         if _unbound:
             _by_kind = {}
             for _rid, _idx, _kind, _msg in _unbound:
@@ -3278,10 +3281,11 @@ def cmd_preflight(args):
                 f"entr{'y' if len(_unbound) == 1 else 'ies'} behind populated applicable records "
                 f"are not PROVENANCE-BOUND ({_summary}). A recomputable digest proves an entry was "
                 "not edited, not that it belongs to this indicator: a source fact must name a "
-                "service:check the repository registers for the KSI (collector registry, "
-                "config-rules manifest or adapter), and the pointer must describe the same "
-                "observation as the source fact. Re-derive each entry from a registered source "
-                "with evidence_wiring.fact_to_evidence (AUD-F62/F63)")
+                "service:check this offering operates for the KSI (the collector registry and "
+                "config-rules manifest under a declared AWS platform, or an adapter the profile "
+                "enables), and the pointer must describe the same observation as the source fact. "
+                "Re-derive each entry from an operated source with "
+                "evidence_wiring.fact_to_evidence (AUD-F62/F63, AUD-F79)")
 
     # Scan the GENERATED submission artifacts, not merely the input profile. A
     # generated CPO carrying template markers, placeholder IDs/URLs, or recorded

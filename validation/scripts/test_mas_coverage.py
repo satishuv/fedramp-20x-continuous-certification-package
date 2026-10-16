@@ -212,10 +212,18 @@ def main():
     check("a method_id or URL reference is never subjected to the binding check",
           bmc.unbound_pairs("KSI-CNA-RNT", ["KSI-CNA-RNT:verify:config:x", "https://e.example/x.json"],
                             {"KSI-CNA-RNT": {"keys": set()}}) == [])
-    live = bmc.load_bindings()
-    check("the live source bindings load and carry the registered adapters' declared pairs",
+    # AUD-F79: the bindings are scoped to the sources the OFFERING operates. A
+    # profile that enables Falcon carries its declared pairs; the committed
+    # template (every third-party source off) carries none of them.
+    enabling = {"aws_partition": "aws", "evidence_sources": {"crowdstrike-falcon": {"enabled": True}}}
+    live = bmc.load_bindings(enabling)
+    check("the live source bindings load and carry an ENABLED adapter's declared pairs",
           isinstance(live, dict) and any(k.startswith("crowdstrike:") for v in live.values()
                                          for k in v.get("keys", set())))
+    template = bmc.load_bindings(bmc.load(bmc.OFFERING, {}))
+    check("the committed template enables no third-party source, so no adapter pair is bound (AUD-F79)",
+          isinstance(template, dict) and not any(k.startswith("crowdstrike:") for v in template.values()
+                                                 for k in v.get("keys", set())))
 
     print(f"\n{PASS} passed, {FAIL} failed")
     return 1 if FAIL else 0

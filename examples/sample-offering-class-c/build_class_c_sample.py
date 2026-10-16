@@ -331,6 +331,17 @@ def generate_profile():
             "implementation": f"{FICT} write-once versioned object store in a separately "
                               "administered audit account, access-logged to its own destination.",
         },
+        # AUD-F79: a source binds only for an offering that declares it. The
+        # MCE-03 probes below claim the Falcon adapter's declared pair, so the
+        # fictional offering enables that source (export produced in its own
+        # environment; the path is the committed example, no API client here).
+        "evidence_sources": {
+            "crowdstrike-falcon": {
+                "enabled": True,
+                "export_path": "examples/evidence-sources/falcon-export.example.json",
+            },
+            "wiz": {"enabled": False, "export_path": "automation/facts/wiz-export.json"},
+        },
         "overall_assessment_summary": (f"{FICT} The independent assessor's overall summary: "
                                        "no unresolved high findings; all in-scope KSIs validated."),
         "fedramp_independent_assessment": {
@@ -799,7 +810,10 @@ def attack():
         import validate_evidence as _ve
         observed = f"{TODAY.isoformat()}T00:00:00+00:00"
         base = "https://evidence.bfc-demo.invalid/store"
-        bindings = _ve.load_source_bindings()
+        # The bindings the GATE will read for this offering: scoped to the
+        # sources the sample profile declares it operates (AUD-F79), not to the
+        # committed template on disk at this moment.
+        bindings = _ve.load_source_bindings(profile=base_profile)
 
         def one(service, check, what):
             ev = _ew.fact_to_evidence(
@@ -924,7 +938,7 @@ def attack():
         key, key_arn = _pin_signer_and_sign_history(pr, hi_)
         one = _bind_sample_evidence(st, sign_with=(key, key_arn))
         import validate_evidence as _ve
-        bindings = _ve.load_source_bindings()
+        bindings = _ve.load_source_bindings(profile=base_profile)
         kids = sorted(st["ksi"])
         # A source the repository registers for ANOTHER KSI, derived and signed
         # exactly like the legitimate entries, attached to the first KSI.
@@ -993,6 +1007,18 @@ def attack():
     _probe_ready("production-assurance: the adapter's declared pair (crowdstrike:open_detections) under its "
                  "target KSI-MLA-OSM stays READY (MCE-03 positive control; MUT-F72 removes this binding)",
                  _production_adapter_declared_pair)
+
+    # AUD-F79: an adapter binds only for an offering that ENABLES it. The sample
+    # enables Falcon and leaves Wiz off, so Wiz's declared pair under its own
+    # target KSI names a source this offering does not operate: a valid digest
+    # and signature over an observation the provider says it never collected.
+    def _production_disabled_adapter_pair(st, pr, hi_):
+        key, key_arn = _pin_signer_and_sign_history(pr, hi_)
+        one = _bind_sample_evidence(st, sign_with=(key, key_arn))
+        st["ksi"]["KSI-MLA-EVC"]["evidence"] = [one("wiz", "vulnerabilities", "KSI-MLA-EVC")]
+    probe("production-assurance: a DISABLED adapter's declared pair (wiz:vulnerabilities, evidence_sources.wiz "
+          "off) under its own target KSI-MLA-EVC, signed, blocks (AUD-F79: not a source this offering operates)",
+          _production_disabled_adapter_pair, expect="not PROVENANCE-BOUND (1 source (e.g.")
 
     print(f"\n{passed}/{passed + failed} assessor-attack probes passed "
           "(each tamper must be BLOCKED; baseline + justified-narrative combo must be READY)")

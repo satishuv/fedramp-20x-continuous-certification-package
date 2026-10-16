@@ -11,6 +11,43 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### Evidence sources scoped to the offering, and concrete adapter pointers (MCE-12 groundwork; AUD-F79, AUD-F80)
+
+Found while designing the non-AWS Class C sample (MCE-12). `AUD-F79`
+(Medium): the provenance gate built its bindings from everything the
+repository knows (the AWS collector registry, the Config-rules manifest, every
+adapter registered in the process) and never read the offering profile, so an
+offering with no AWS platform could attach a valid, signed entry claiming an
+AWS Config rule it never ran and pass the AUD-F62 check, and any offering
+could claim a registered adapter's declared pair while its profile said that
+source was disabled; the AWS Class C sample itself relied on the second path.
+Now `validate_evidence.load_source_bindings` takes the offering profile (the
+preflight passes the one it loaded, the validator and the MAS builder
+likewise): the registry and the manifest bind only for an offering that
+declares an AWS platform (`aws_partition`, the MCE-16 predicate), and a
+registered adapter binds only when `evidence_sources` enables it. The unbound
+messages say the source is not one this offering operates. The signer pin
+accepts the neutral `key_reference` beside the AWS `key_arn`. The AWS Class C
+sample now enables the Falcon source its MCE-03 probes claim, reads its
+bindings under its own profile, and gains a probe attaching a disabled
+adapter's declared pair under that adapter's own target (blocked by the
+provenance gate; it reaches READY on the unfixed gate). `AUD-F80` (Medium):
+the adapter apply path never supplied an evidence location base, so every
+adapter-derived pointer was an `sdr://placeholder/` pseudo-URI that
+`package-preflight` refuses at Class C, while the collector path honours
+`SDR_EVIDENCE_LOCATION_BASE`; a provider on any platform following the adapter
+path could never produce a Class C ready entry. `apply_third_party_evidence.py`
+now exposes `apply_sources` (the whole attachment logic over an injected
+profile and store, writing nothing) and its CLI reads `--location-base`
+(default `$SDR_EVIDENCE_LOCATION_BASE`) and prints one note when attaching
+placeholders. New `validation/scripts/test_offering_scoped_sources.py` (34
+checks, red on the pre-change engine); the MCE-03, provenance-mutation and MAS
+tests read bindings under a profile that enables Falcon and assert the
+committed template binds no adapter pair. `MUT-F79` (every offering binds the
+AWS sources) and `MUT-F80` (the base dropped from the adapter path) killed;
+the enabled filter removed by hand fails the regression and lets the sample's
+new probe reach READY.
+
 ### Platform-labelled implementation notes and optional AWS metadata (MCE-16; AUD-F78)
 
 Sequenced before the non-AWS Class C sample (MCE-12), because a non-AWS
