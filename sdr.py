@@ -425,6 +425,7 @@ TEST_SUITE = [
     "validation/scripts/test_visualization_xss.py",
     "validation/scripts/test_submission_readiness.py",
     "validation/scripts/test_assessor_attack.py",
+    "validation/scripts/test_attack_harness_probes.py",
     "validation/scripts/test_cpo_semantics_adversarial.py",
     "validation/scripts/test_third_party_names.py",
 ]
@@ -1619,9 +1620,9 @@ def cmd_release(args):
     # caught by the gate's own tree-clean steps rather than confusing the
     # double-build comparison.
     out()
-    code = run(os.path.join(BASE, "audit", "release_gate.py"), ["audit", "attack", "security"])
+    code = run(os.path.join(BASE, "audit", "release_gate.py"), ["audit", "attack", "attack-non-aws", "security"])
     if code != 0:
-        out("Release gate (audit/attack/security sections) failed; not releasable.")
+        out("Release gate (audit/attack/attack-non-aws/security sections) failed; not releasable.")
         return code
     out()
     code = cmd_reproducibility()

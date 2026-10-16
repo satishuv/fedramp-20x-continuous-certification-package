@@ -1,0 +1,211 @@
+{
+  "schema": "fedramp-adapter-mapping/v1",
+  "name": "example-provider-collector",
+  "service": "provider-collector",
+  "version": "1.0.0",
+  "source_type": "provider-collection",
+  "evidence_type": "Report",
+  "freshness_policy_days": 1,
+  "export_format": "jsonl",
+  "undeclared_checks": "refuse",
+  "fields": {
+    "check": "check",
+    "status": "status",
+    "observed_at": "observed_at",
+    "location": "location",
+    "detail": "detail"
+  },
+  "status_normalization": {
+    "pass": "PASS",
+    "fail": "FAIL",
+    "error": "UNKNOWN",
+    "not-run": "UNKNOWN"
+  },
+  "ksi_targets": [
+    "KSI-CED-RAT",
+    "KSI-CMT-LMC",
+    "KSI-CMT-RMV",
+    "KSI-CMT-RVP",
+    "KSI-CMT-VTD",
+    "KSI-CNA-DFP",
+    "KSI-CNA-EIS",
+    "KSI-CNA-IBP",
+    "KSI-CNA-OFA",
+    "KSI-CNA-RVP",
+    "KSI-CNA-ULN",
+    "KSI-IAM-ELP",
+    "KSI-IAM-JIT",
+    "KSI-IAM-SUS",
+    "KSI-INR-AAR",
+    "KSI-INR-RIR",
+    "KSI-INR-RPI",
+    "KSI-MLA-ALA",
+    "KSI-MLA-OSM",
+    "KSI-MLA-RVL",
+    "KSI-PIY-RES",
+    "KSI-PIY-RIS",
+    "KSI-PIY-RSD",
+    "KSI-PIY-RVD",
+    "KSI-RPL-ABO",
+    "KSI-RPL-ARP",
+    "KSI-RPL-RRO",
+    "KSI-RPL-TRC",
+    "KSI-SCR-MIT",
+    "KSI-SCR-MON",
+    "KSI-SVC-ACM",
+    "KSI-SVC-EIS",
+    "KSI-SVC-PRR",
+    "KSI-SVC-RUD",
+    "KSI-SVC-SIN",
+    "KSI-SVC-VCM"
+  ],
+  "checks": [
+    "reviewing-all-training",
+    "logging-changes",
+    "redeploying-vs-modifying",
+    "reviewing-change-procedures",
+    "validating-throughout-deployment",
+    "defining-functionality-and-privileges",
+    "enforcing-intended-state",
+    "implementing-best-practices",
+    "optimizing-for-availability",
+    "reviewing-protections",
+    "using-logical-networking",
+    "ensuring-least-privilege",
+    "authorizing-just-in-time",
+    "responding-to-suspicious-activity",
+    "generating-after-action-reports",
+    "reviewing-incident-response-procedures",
+    "reviewing-past-incidents",
+    "authorizing-log-access",
+    "operating-siem-capability",
+    "reviewing-logs",
+    "reviewing-executive-support",
+    "reviewing-investments-in-security",
+    "reviewing-security-in-the-sdlc",
+    "reviewing-vulnerability-disclosures",
+    "aligning-backups-with-objectives",
+    "aligning-recovery-plan",
+    "reviewing-recovery-objectives",
+    "testing-recovery-capabilities",
+    "mitigating-supply-chain-risk",
+    "monitoring-supply-chain-risk",
+    "automating-configuration-management",
+    "evaluating-and-improving-security",
+    "preventing-residual-risk",
+    "removing-unwanted-data",
+    "securing-information",
+    "validating-communications"
+  ],
+  "check_bindings": {
+    "reviewing-all-training": [
+      "KSI-CED-RAT"
+    ],
+    "logging-changes": [
+      "KSI-CMT-LMC"
+    ],
+    "redeploying-vs-modifying": [
+      "KSI-CMT-RMV"
+    ],
+    "reviewing-change-procedures": [
+      "KSI-CMT-RVP"
+    ],
+    "validating-throughout-deployment": [
+      "KSI-CMT-VTD"
+    ],
+    "defining-functionality-and-privileges": [
+      "KSI-CNA-DFP"
+    ],
+    "enforcing-intended-state": [
+      "KSI-CNA-EIS"
+    ],
+    "implementing-best-practices": [
+      "KSI-CNA-IBP"
+    ],
+    "optimizing-for-availability": [
+      "KSI-CNA-OFA"
+    ],
+    "reviewing-protections": [
+      "KSI-CNA-RVP"
+    ],
+    "using-logical-networking": [
+      "KSI-CNA-ULN"
+    ],
+    "ensuring-least-privilege": [
+      "KSI-IAM-ELP"
+    ],
+    "authorizing-just-in-time": [
+      "KSI-IAM-JIT"
+    ],
+    "responding-to-suspicious-activity": [
+      "KSI-IAM-SUS"
+    ],
+    "generating-after-action-reports": [
+      "KSI-INR-AAR"
+    ],
+    "reviewing-incident-response-procedures": [
+      "KSI-INR-RIR"
+    ],
+    "reviewing-past-incidents": [
+      "KSI-INR-RPI"
+    ],
+    "authorizing-log-access": [
+      "KSI-MLA-ALA"
+    ],
+    "operating-siem-capability": [
+      "KSI-MLA-OSM"
+    ],
+    "reviewing-logs": [
+      "KSI-MLA-RVL"
+    ],
+    "reviewing-executive-support": [
+      "KSI-PIY-RES"
+    ],
+    "reviewing-investments-in-security": [
+      "KSI-PIY-RIS"
+    ],
+    "reviewing-security-in-the-sdlc": [
+      "KSI-PIY-RSD"
+    ],
+    "reviewing-vulnerability-disclosures": [
+      "KSI-PIY-RVD"
+    ],
+    "aligning-backups-with-objectives": [
+      "KSI-RPL-ABO"
+    ],
+    "aligning-recovery-plan": [
+      "KSI-RPL-ARP"
+    ],
+    "reviewing-recovery-objectives": [
+      "KSI-RPL-RRO"
+    ],
+    "testing-recovery-capabilities": [
+      "KSI-RPL-TRC"
+    ],
+    "mitigating-supply-chain-risk": [
+      "KSI-SCR-MIT"
+    ],
+    "monitoring-supply-chain-risk": [
+      "KSI-SCR-MON"
+    ],
+    "automating-configuration-management": [
+      "KSI-SVC-ACM"
+    ],
+    "evaluating-and-improving-security": [
+      "KSI-SVC-EIS"
+    ],
+    "preventing-residual-risk": [
+      "KSI-SVC-PRR"
+    ],
+    "removing-unwanted-data": [
+      "KSI-SVC-RUD"
+    ],
+    "securing-information": [
+      "KSI-SVC-SIN"
+    ],
+    "validating-communications": [
+      "KSI-SVC-VCM"
+    ]
+  },
+  "note": "Reference mapping for a provider's OWN evidence collection (MCE-12): the checks a provider's collector runs against its boundary, declared the same way a third-party source is, so the provenance gate holds first-party and third-party evidence to one binding rule. One check per KSI the fictional non-AWS sample's posture sources do not bind, named after the indicator; the names and bindings are the fictional provider's declaration for illustration only. A real provider declares the checks its collector actually runs. Statuses outside the table are UNKNOWN, never PASS; an undeclared check refuses the batch."
+}

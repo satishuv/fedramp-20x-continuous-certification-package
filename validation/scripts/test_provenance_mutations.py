@@ -290,6 +290,38 @@ def test_source_family_pointer_substitution_is_unbound_while_verified():
     _recompute_and_resign(rerun)
     check("SOURCE: pointer moved to another run (recomputed, re-signed) -> verified but unbound",
           _verified(rerun) and ve.classify_pointer_binding(rerun)[0] == "unbound")
+    # AUD-F81 (found by MCE-12): the per-record identity a findings-type source
+    # stamps (AUD-F77) is part of the pointer; the check must know the segment,
+    # or every such entry is unbound and production-assurance is unsatisfiable
+    # for that source.
+    per_record = ew.fact_to_evidence(
+        {"service": "scanner", "check": "open-port", "status": "FAIL", "region": "global",
+         "detail": "unit fixture", "observed_at": "2026-10-10T00:00:00+00:00",
+         "project": "fictional-project-0001", "record_id": "findings/0001"},
+        location_base=_BASE_URI, scope_key=b"k" * 32)
+    _sign(per_record)
+    check("SOURCE: a per-record pointer carries scope, region and the opaque record id",
+          per_record["xSourceFact"].get("record", "").startswith("rec-")
+          and per_record["evidenceLocation"].endswith(
+              f"/{per_record['xSourceFact']['scope']}/global/{per_record['xSourceFact']['record']}.json"))
+    check("SOURCE: the factory-built per-record pointer is BOUND (AUD-F81)",
+          ve.classify_pointer_binding(per_record)[0] == "bound")
+    other_record = ew.fact_to_evidence(
+        {"service": "scanner", "check": "open-port", "status": "FAIL", "region": "global",
+         "detail": "unit fixture", "observed_at": "2026-10-10T00:00:00+00:00",
+         "project": "fictional-project-0001", "record_id": "findings/0002"},
+        location_base=_BASE_URI, scope_key=b"k" * 32)
+    swapped_record = copy.deepcopy(per_record)
+    swapped_record["evidenceLocation"] = other_record["evidenceLocation"]  # another resource's pointer
+    _recompute_and_resign(swapped_record)
+    check("SOURCE: pointer moved to another RECORD of the same check (recomputed, re-signed) -> verified but unbound",
+          _verified(swapped_record) and ve.classify_pointer_binding(swapped_record)[0] == "unbound")
+    derecorded = copy.deepcopy(per_record)
+    derecorded["evidenceLocation"] = derecorded["evidenceLocation"].replace(
+        "/" + per_record["xSourceFact"]["record"] + ".json", ".json")
+    _recompute_and_resign(derecorded)
+    check("SOURCE: record segment stripped from the pointer (recomputed, re-signed) -> verified but unbound",
+          _verified(derecorded) and ve.classify_pointer_binding(derecorded)[0] == "unbound")
     placeholder = ew.fact_to_evidence({"service": "config", "check": "rule-a", "status": "COMPLIANT",
                                        "region": "us-east-1", "collected_at": "2026-10-10T00:00:00+00:00"})
     check("SOURCE: a placeholder pointer makes no claim here (already a readiness finding)",

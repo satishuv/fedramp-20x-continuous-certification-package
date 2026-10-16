@@ -40,7 +40,7 @@ import thirdparty_adapters  # noqa: E402,F401  (registers the Python adapters on
 FIX = os.path.join(HERE, "fixtures", "mapping")
 PY_GOLDEN = os.path.join(HERE, "fixtures", "adapter-golden-evidence.json")
 EXPORT_SUFFIXES = (".export.json", ".export.jsonl", ".export.csv", ".results.xml")
-FIRST_PARTY_SERVICES = {"example-posture", "openscap"}
+FIRST_PARTY_SERVICES = {"example-posture", "openscap", "provider-collector"}
 
 
 def _canon(obj):

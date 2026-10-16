@@ -1,0 +1,293 @@
+{
+  "note": "Expected facts for example-provider-collector.export.jsonl through example-provider-collector.mapping.json (MCE-12). Regenerated deliberately by the sample's own story; the conformance suite compares byte for byte.",
+  "facts": [
+    {
+      "service": "provider-collector",
+      "check": "reviewing-all-training",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for reviewing-all-training.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:00:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "logging-changes",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for logging-changes.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:01:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "redeploying-vs-modifying",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for redeploying-vs-modifying.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:02:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "reviewing-change-procedures",
+      "status": "FAIL",
+      "detail": "source state: fail. Fictional: provider collector result for reviewing-change-procedures.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:03:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "validating-throughout-deployment",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for validating-throughout-deployment.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:04:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "defining-functionality-and-privileges",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for defining-functionality-and-privileges.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:05:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "enforcing-intended-state",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for enforcing-intended-state.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:06:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "implementing-best-practices",
+      "status": "UNKNOWN",
+      "detail": "source state: error. Fictional: provider collector result for implementing-best-practices.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:07:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "optimizing-for-availability",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for optimizing-for-availability.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:08:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "reviewing-protections",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for reviewing-protections.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:09:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "using-logical-networking",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for using-logical-networking.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:10:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "ensuring-least-privilege",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for ensuring-least-privilege.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:11:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "authorizing-just-in-time",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for authorizing-just-in-time.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:12:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "responding-to-suspicious-activity",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for responding-to-suspicious-activity.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:13:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "generating-after-action-reports",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for generating-after-action-reports.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:14:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "reviewing-incident-response-procedures",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for reviewing-incident-response-procedures.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:15:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "reviewing-past-incidents",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for reviewing-past-incidents.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:16:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "authorizing-log-access",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for authorizing-log-access.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:17:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "operating-siem-capability",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for operating-siem-capability.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:18:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "reviewing-logs",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for reviewing-logs.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:19:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "reviewing-executive-support",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for reviewing-executive-support.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:20:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "reviewing-investments-in-security",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for reviewing-investments-in-security.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:21:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "reviewing-security-in-the-sdlc",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for reviewing-security-in-the-sdlc.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:22:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "reviewing-vulnerability-disclosures",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for reviewing-vulnerability-disclosures.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:23:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "aligning-backups-with-objectives",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for aligning-backups-with-objectives.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:24:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "aligning-recovery-plan",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for aligning-recovery-plan.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:25:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "reviewing-recovery-objectives",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for reviewing-recovery-objectives.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:26:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "testing-recovery-capabilities",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for testing-recovery-capabilities.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:27:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "mitigating-supply-chain-risk",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for mitigating-supply-chain-risk.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:28:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "monitoring-supply-chain-risk",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for monitoring-supply-chain-risk.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:29:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "automating-configuration-management",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for automating-configuration-management.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:30:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "evaluating-and-improving-security",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for evaluating-and-improving-security.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:31:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "preventing-residual-risk",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for preventing-residual-risk.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:32:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "removing-unwanted-data",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for removing-unwanted-data.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:33:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "securing-information",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for securing-information.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:34:00Z"
+    },
+    {
+      "service": "provider-collector",
+      "check": "validating-communications",
+      "status": "PASS",
+      "detail": "source state: pass. Fictional: provider collector result for validating-communications.",
+      "region": "us-central1",
+      "observed_at": "2026-10-01T05:35:00Z"
+    }
+  ]
+}

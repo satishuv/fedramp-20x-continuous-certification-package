@@ -341,10 +341,14 @@ def classify_source_binding(ksi_id, e, bindings):
 def classify_pointer_binding(e):
     """Pure. ('bound' | 'unbound' | 'no-claim', message). The factory builds
     evidenceLocation from the SAME fields it stamps into xSourceFact
-    (<base>/<service>/<check>[/<scope>]/<region>[/<run_id>].json, AUD-F27), so
-    a pointer that does not end in that slug describes a different observation
-    than the entry's own source fact: a provenance substitution that survives
-    every digest check because both fields are inside the bound payload."""
+    (<base>/<service>/<check>[/<scope>]/<region>[/<record>][/<run_id>].json,
+    AUD-F27, AUD-F77), so a pointer that does not end in that slug describes a
+    different observation than the entry's own source fact: a provenance
+    substitution that survives every digest check because both fields are
+    inside the bound payload. The opaque per-record id (AUD-F77) is part of
+    the observation identity: a source that reports one record per resource
+    gives each record its own pointer, and this check follows the factory
+    (AUD-F81: before it did not, so every such entry was pointer-unbound)."""
     sf = e.get("xSourceFact") if isinstance(e, dict) else None
     loc = e.get("evidenceLocation") if isinstance(e, dict) else None
     if not isinstance(sf, dict) or not isinstance(loc, str) or not loc:
@@ -355,6 +359,8 @@ def classify_pointer_binding(e):
     if sf.get("scope"):
         parts.append(sf.get("scope"))
     parts.append(sf.get("region"))
+    if sf.get("record"):
+        parts.append(sf.get("record"))
     if sf.get("run_id"):
         parts.append(sf.get("run_id"))
     if any(not str(p or "").strip() for p in parts):

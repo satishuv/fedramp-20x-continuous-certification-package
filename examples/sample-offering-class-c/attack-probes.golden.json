@@ -1,0 +1,529 @@
+{
+ "note": "Pinned probe list of the Class C assessor-attack harness per sample platform: name, kind (block or ready) and the gate pin each probe requires. Regenerate deliberately with test_attack_harness_probes.py --write-golden when a probe is added or re-pinned; never a compliance statement.",
+ "platforms": {
+  "aws": [
+   {
+    "name": "baseline package is not READY (attack invalid)",
+    "kind": "ready",
+    "expect": null
+   },
+   {
+    "name": "empty SDR-CSX-KMT summaries block at Class C",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "placeholder evidence URI blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "< 2 automated methods per KSI blocks at Class C",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "FIA older than 9 months blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "non-survivable availability service blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "provider_verified_at older than 7 days blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "future-dated provider_verified_at does not pass freshness",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "Agency certification_path blocks (Program-path engine)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "future-dated FIA completed_at blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "availability history < 30 days blocks (CDS-CSO-AVR)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "a KSI answered with bare 'N/A' is not accepted as answered",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "CPO CDS-CSO-PUB sources all bare 'N/A' block (hollow but structured)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "CPO CDS-CSO-PUB sources all '.' block (single-char non-answer)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "CPO CDS-CSO-IRP record fields all 'N/A' block (hollow array record)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "overall_assessment_summary of bare 'N/A' blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "signoff bound to the WRONG manifest SHA blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "a non-approved package_signoff blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "a required profile field of bare 'N/A' blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "FIA assessor_name of bare 'N/A' blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "FIA assessor_fedramp_id of bare 'N/A' blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "CPO metadata responsible_official of bare 'N/A' blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "CPO Sales/Security contact of bare 'N/A' blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "[combo] the entire CPO required-information hollowed blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "[combo] every hardened content field hollowed at once blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "[combo] varied non-answer tokens across fields all block",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "[combo] justified 'N/A: <reason>' on NARRATIVE fields stays READY",
+    "kind": "ready",
+    "expect": null
+   },
+   {
+    "name": "hollow CDS-CSO-PUB override is ignored; derived real values keep the package READY",
+    "kind": "ready",
+    "expect": null
+   },
+   {
+    "name": "justified 'N/A' assessor_name still blocks (FRC-APP-FIA identity)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "justified 'N/A' assessor_fedramp_id still blocks (Recognition id)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "justified 'N/A' Sales/Security contact still blocks (CDS-CSO-PUB)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "justified 'N/A' CPO responsible_official still blocks (CPO-CSO-MTD)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "backfilled observation inserted mid-chain blocks (chain-break)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "edited past observation blocks (bad-hash)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "deleted observation blocks (chain-break and unbacked series point)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "declared method whose series went stale 60 days ago blocks (vvk binding freshness)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "production-assurance profile with an UNSIGNED history digest blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "rechained tamper carrying a signature that does not verify blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "unknown evidence_store_profile value blocks (no silent default)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "production-assurance with a store attesting NEITHER versioning nor write-once blocks (AUD-F73)",
+    "kind": "block",
+    "expect": "AUD-F73"
+   },
+   {
+    "name": "production-assurance with a SOFTWARE-KEY signer declared blocks (AUD-F74, not separately administered)",
+    "kind": "block",
+    "expect": "AUD-F74"
+   },
+   {
+    "name": "production-assurance + pinned signer with HASHLESS evidence blocks (AUD-F57/F59)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "production-assurance + pinned signer with hashed but UNSIGNED evidence blocks (finding 8)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "production-assurance: deleting ONE entry's digest + signature blocks (AUD-F57)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "production-assurance with a VALID signed digest, pinned signer and signed evidence stays READY",
+    "kind": "ready",
+    "expect": null
+   },
+   {
+    "name": "production-assurance: a VALID signed entry from a source registered for a DIFFERENT KSI blocks (AUD-F62, query binding)",
+    "kind": "block",
+    "expect": "not PROVENANCE-BOUND (1 source (e.g."
+   },
+   {
+    "name": "production-assurance: a pointer re-targeted to another observation, digest recomputed and re-signed, blocks (AUD-F63, source binding)",
+    "kind": "block",
+    "expect": "not PROVENANCE-BOUND (1 pointer (e.g."
+   },
+   {
+    "name": "production-assurance: a 400-day-old observation with a recomputed, re-signed digest blocks at Class C (AUD-F64, freshness)",
+    "kind": "block",
+    "expect": "backed only by EXPIRED evidence"
+   },
+   {
+    "name": "production-assurance: an ADAPTER's declared pair (crowdstrike:open_detections), signed, under a KSI the adapter does not target blocks (MCE-03, declared binding)",
+    "kind": "block",
+    "expect": "not PROVENANCE-BOUND (1 source (e.g."
+   },
+   {
+    "name": "production-assurance: an UNDECLARED check under the adapter's own service and target KSI, signed, blocks (MCE-03: nothing is inferred from a service name)",
+    "kind": "block",
+    "expect": "not PROVENANCE-BOUND (1 source (e.g."
+   },
+   {
+    "name": "production-assurance: the adapter's declared pair (crowdstrike:open_detections) under its target KSI-MLA-OSM stays READY (MCE-03 positive control; MUT-F72 removes this binding)",
+    "kind": "ready",
+    "expect": null
+   },
+   {
+    "name": "production-assurance: a DISABLED adapter's declared pair (wiz:vulnerabilities, evidence_sources.wiz off) under its own target KSI-MLA-EVC, signed, blocks (AUD-F79: not a source this offering operates)",
+    "kind": "block",
+    "expect": "not PROVENANCE-BOUND (1 source (e.g."
+   }
+  ],
+  "non-aws": [
+   {
+    "name": "baseline package is not READY (attack invalid)",
+    "kind": "ready",
+    "expect": null
+   },
+   {
+    "name": "empty SDR-CSX-KMT summaries block at Class C",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "placeholder evidence URI blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "< 2 automated methods per KSI blocks at Class C",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "FIA older than 9 months blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "non-survivable availability service blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "provider_verified_at older than 7 days blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "future-dated provider_verified_at does not pass freshness",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "Agency certification_path blocks (Program-path engine)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "future-dated FIA completed_at blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "availability history < 30 days blocks (CDS-CSO-AVR)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "a KSI answered with bare 'N/A' is not accepted as answered",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "CPO CDS-CSO-PUB sources all bare 'N/A' block (hollow but structured)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "CPO CDS-CSO-PUB sources all '.' block (single-char non-answer)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "CPO CDS-CSO-IRP record fields all 'N/A' block (hollow array record)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "overall_assessment_summary of bare 'N/A' blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "signoff bound to the WRONG manifest SHA blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "a non-approved package_signoff blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "a required profile field of bare 'N/A' blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "FIA assessor_name of bare 'N/A' blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "FIA assessor_fedramp_id of bare 'N/A' blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "CPO metadata responsible_official of bare 'N/A' blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "CPO Sales/Security contact of bare 'N/A' blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "[combo] the entire CPO required-information hollowed blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "[combo] every hardened content field hollowed at once blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "[combo] varied non-answer tokens across fields all block",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "[combo] justified 'N/A: <reason>' on NARRATIVE fields stays READY",
+    "kind": "ready",
+    "expect": null
+   },
+   {
+    "name": "hollow CDS-CSO-PUB override is ignored; derived real values keep the package READY",
+    "kind": "ready",
+    "expect": null
+   },
+   {
+    "name": "justified 'N/A' assessor_name still blocks (FRC-APP-FIA identity)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "justified 'N/A' assessor_fedramp_id still blocks (Recognition id)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "justified 'N/A' Sales/Security contact still blocks (CDS-CSO-PUB)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "justified 'N/A' CPO responsible_official still blocks (CPO-CSO-MTD)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "backfilled observation inserted mid-chain blocks (chain-break)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "edited past observation blocks (bad-hash)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "deleted observation blocks (chain-break and unbacked series point)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "declared method whose series went stale 60 days ago blocks (vvk binding freshness)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "production-assurance profile with an UNSIGNED history digest blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "rechained tamper carrying a signature that does not verify blocks",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "unknown evidence_store_profile value blocks (no silent default)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "production-assurance with a store attesting NEITHER versioning nor write-once blocks (AUD-F73)",
+    "kind": "block",
+    "expect": "AUD-F73"
+   },
+   {
+    "name": "production-assurance with a SOFTWARE-KEY signer declared blocks (AUD-F74, not separately administered)",
+    "kind": "block",
+    "expect": "AUD-F74"
+   },
+   {
+    "name": "production-assurance + pinned signer with HASHLESS evidence blocks (AUD-F57/F59)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "production-assurance + pinned signer with hashed but UNSIGNED evidence blocks (finding 8)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "production-assurance: deleting ONE entry's digest + signature blocks (AUD-F57)",
+    "kind": "block",
+    "expect": null
+   },
+   {
+    "name": "production-assurance with a VALID signed digest, pinned signer and signed evidence stays READY",
+    "kind": "ready",
+    "expect": null
+   },
+   {
+    "name": "production-assurance: a VALID signed entry from a source registered for a DIFFERENT KSI blocks (AUD-F62, query binding)",
+    "kind": "block",
+    "expect": "not PROVENANCE-BOUND (1 source (e.g."
+   },
+   {
+    "name": "production-assurance: a pointer re-targeted to another observation, digest recomputed and re-signed, blocks (AUD-F63, source binding)",
+    "kind": "block",
+    "expect": "not PROVENANCE-BOUND (1 pointer (e.g."
+   },
+   {
+    "name": "production-assurance: a 400-day-old observation with a recomputed, re-signed digest blocks at Class C (AUD-F64, freshness)",
+    "kind": "block",
+    "expect": "backed only by EXPIRED evidence"
+   },
+   {
+    "name": "production-assurance: an ADAPTER fact (google-cloud-scc network check, bound to KSI-CNA-RNT) re-pointed at KSI-CED-RAT, digest recomputed and re-signed, blocks by the provenance gate (MCE-12 AC3; AUD-F62 on adapter evidence)",
+    "kind": "block",
+    "expect": "not PROVENANCE-BOUND (1 source (e.g."
+   },
+   {
+    "name": "production-assurance: a VALID signed entry claiming an AWS Config rule (a source this offering, with no AWS platform, does not operate) under the KSI the AWS manifest binds it to blocks (AUD-F79, platform scope)",
+    "kind": "block",
+    "expect": "not PROVENANCE-BOUND (1 source (e.g."
+   },
+   {
+    "name": "a populated KSI whose adapter-derived evidence is removed blocks at Class C (FRC-CSX-VVK: every populated KSI carries evidence; validation gate)",
+    "kind": "block",
+    "expect": "the validation gate does not pass"
+   },
+   {
+    "name": "production-assurance: the same adapter entry under the SECOND KSI its check binds (storage check: KSI-CNA-MAT and KSI-MLA-EVC) stays READY (MCE-12 positive control)",
+    "kind": "ready",
+    "expect": null
+   }
+  ]
+ }
+}

@@ -1068,6 +1068,19 @@
       "mutation": "MUT-F80: the pre-fix to_evidence call (no location_base) restored in apply_sources; the regression's concrete-pointer checks go RED; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F81",
+      "severity": "Medium",
+      "requirement": "FRC-CSX-VVK / SDR-CSX-KSI: evidence behind a populated KSI must be verifiable and attributable to the observation it describes; a readiness gate that cannot be satisfied by correct evidence from a supported source is a gate defect. MCE-12 of the multi-cloud evidence epic.",
+      "component": "validation/scripts/validate_evidence.py (classify_pointer_binding)",
+      "description": "Found by the first dry run of the non-AWS Class C sample (MCE-12): every evidence entry derived from the Google Cloud Security Command Center reference mapping was source-bound but POINTER-unbound under the AUD-F63 check. AUD-F77 (MCE-04) added the opaque per-record id to the evidence pointer (<base>/<service>/<check>[/<scope>]/<region>[/<record>][/<run_id>].json) so two findings of one check keep distinct pointers, but classify_pointer_binding still built its expected tail without the record segment, so a pointer that correctly carried it never matched. Every entry from a source that reports one record per resource (the Security Command Center, Azure Policy and Cloud Guard mappings) was therefore reported as a pointer substitution, and production-assurance was unsatisfiable for any offering using such a source. Nothing noticed because no sample had driven per-record adapter evidence through package-preflight: the MCE-04 to MCE-06 tests proved the adapters' output and the pointer form, not the gate's reading of it.",
+      "root_cause": "The pointer form changed in the factory and in its own tests, but the gate-side classifier that mirrors the form was not updated and had no test with a per-record entry.",
+      "fix_commit": "this PR -- classify_pointer_binding appends the opaque record (xSourceFact.record) after the region and before the run id, mirroring evidence_wiring._pointer; the docstring states the full form and the defect",
+      "regression_test": "validation/scripts/test_provenance_mutations.py (SOURCE family: a per-record pointer carries scope, region and the opaque record id and is BOUND; the pointer moved to another record of the same check, recomputed and re-signed, is verified but unbound; the record segment stripped from the pointer, recomputed and re-signed, is verified but unbound; the pre-existing scope, run-id and placeholder cases unchanged); examples/sample-offering-class-c-non-aws/build_non_aws_class_c_sample.py (every one of the 55 adapter-derived entries, 11 of them per-record, is source- and pointer-bound and the package reaches READY under production-assurance)",
+      "mutation": "MUT-F81: classify_pointer_binding ignores the record segment again; the regression's per-record pointer check goes RED; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

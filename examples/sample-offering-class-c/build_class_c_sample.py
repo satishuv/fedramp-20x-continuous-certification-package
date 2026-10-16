@@ -87,6 +87,12 @@ TODAY = dt.date.today()
 FICT = "[SAMPLE - fictional, not an attestation]"
 
 
+def _aws_method_ids(kid):
+    """The two automated VVK method ids the AWS sample declares per KSI; the
+    metric history keys its per-method telemetry by the same ids."""
+    return (f"{kid}-config-rule", f"{kid}-api-collector")
+
+
 def _impl(kid, aspect):
     return (f"{FICT} Beacon Federal Cloud (BFC) addresses {kid} for '{aspect}' via "
             "documented, version-controlled controls in the BFC boundary, deployed "
@@ -185,7 +191,7 @@ def generate_store():
     return store
 
 
-def generate_history(store):
+def generate_history(store, method_ids=None):
     """A >=6-month daily-ish metric history per KSI, in the REAL production
     shape append_metrics writes: {"ksis": {kid: {"series": [...], "metrics": {...},
     "observations": [...]}}, "meta": {...}}.
@@ -195,6 +201,8 @@ def generate_history(store):
     declared automated VVK method is BOUND to observed telemetry. This satisfies
     the Class C/D method-to-telemetry binding gate: a declared automated method
     that produced no keyed telemetry is a false-ready path and must block.
+    `method_ids(kid)` may be supplied by another sample platform (MCE-12); the
+    default is the AWS sample's pair.
 
     AUD-F37: every series point has an observation behind it, and the
     observations are hash-chained with (fictional, labelled) run provenance, so
@@ -204,12 +212,14 @@ def generate_history(store):
     block it, which is the point."""
     sys.path.insert(0, os.path.join(BASE, "automation", "metrics"))
     import history_integrity as hi
+    if method_ids is None:
+        method_ids = _aws_method_ids
     ksis = list(store.get("ksi", {}).keys())
     hist = {"ksis": {}, "meta": {}}
     for kid in ksis:
         series = []
         observations = []
-        per_method = {f"{kid}-config-rule": [], f"{kid}-api-collector": []}
+        per_method = {mid: [] for mid in method_ids(kid)}
         # 400 days back to today, weekly datapoints: past the up-to-one-year
         # reference period SDR-CSX-KMT names, so the fictional offering needs no
         # initial-certification commitment and the continuity bound is evaluated
@@ -378,11 +388,13 @@ def generate_profile():
     return profile
 
 
-def _preflight_rc(store, profile, history, post_sign=None):
+def _preflight_rc(store, profile, history, post_sign=None, signoff=None):
     """Apply the given in-memory inputs, build, sign, run package-preflight,
     return (returncode, output). Always restores real inputs after. If post_sign
     is given, it is called after the (correct) signoff is written and before
-    preflight runs, so a probe can tamper with the manifest-bound signoff."""
+    preflight runs, so a probe can tamper with the manifest-bound signoff.
+    `signoff` is the (reviewer, note) pair the fictional signoff records; None
+    is the AWS sample's."""
     tmp = tempfile.mkdtemp(prefix="sdr-attack-")
     baks = _backup(tmp)
     history_existed = os.path.exists(REAL_HISTORY)
@@ -392,7 +404,7 @@ def _preflight_rc(store, profile, history, post_sign=None):
         json.dump(history, open(REAL_HISTORY, "w", encoding="utf-8", newline="\n"), indent=1)
         subprocess.run([sys.executable, os.path.join(BASE, "sdr.py"), "build"],
                        cwd=BASE, capture_output=True, text=True)
-        _record_signoff()
+        _record_signoff(*(signoff or ()))
         if post_sign is not None:
             post_sign()
         pf = subprocess.run([sys.executable, os.path.join(BASE, "sdr.py"), "package-preflight"],
@@ -402,16 +414,68 @@ def _preflight_rc(store, profile, history, post_sign=None):
         _restore_tree(baks, history_existed, tmp)
 
 
-def attack():
+class SamplePlatform:
+    """The platform-specific half of the assessor-attack harness (MCE-12).
+
+    attack() takes one of these. The AWS sample is the default and its
+    behaviour is unchanged; the non-AWS Class C sample supplies its own so
+    the SAME probe list, with the same gate pinned per probe, runs against a
+    package whose evidence comes from adapters the profile enables on another
+    platform. Everything a probe needs that differs by platform is here;
+    everything else (the tampers, the pins, the backup and restore) is shared."""
+    name = "aws"
+    # Region segment and store base of the entries the harness derives itself.
+    region = "us-east-1"
+    location_base = "https://evidence.bfc-demo.invalid/store"
+    # The pinned signer: the key reference the blocks record and the profile
+    # field it is pinned under (key_arn for KMS, key_reference elsewhere).
+    signer_key_ref = "arn:aws:kms:us-east-1:000000000000:key/SAMPLE-fictional-signer"
+    signer_pin_field = "key_arn"
+    # Service the derived FRR rule artifacts claim (no source map applies to
+    # FRR artifacts; only the pointer check does).
+    frr_source_service = "config"
+    # Whether the sample's hand-written KSI evidence is replaced by entries
+    # derived from the first source the offering registers for each KSI. A
+    # platform whose store already carries adapter-derived entries keeps them.
+    rebind_ksi_evidence = True
+    # The MCE-03 Falcon probes and the AUD-F79 Wiz probe: this sample enables
+    # the Falcon source and leaves Wiz off.
+    adapter_probes = True
+    signoff_reviewer = "D. Okafor, BFC Authorizing Official (fictional)"
+    signoff_note = f"{FICT} Package-level provider signoff for the Class C sample."
+
+    def generate_store(self):
+        return generate_store()
+
+    def generate_profile(self):
+        return generate_profile()
+
+    def generate_history(self, store):
+        return generate_history(store, self.method_ids)
+
+    def method_ids(self, kid):
+        return _aws_method_ids(kid)
+
+    def extra_probes(self, harness):
+        """Platform-specific probes, run after the shared list. `harness`
+        exposes probe, probe_ready, pin_signer, bind_evidence, resign and the
+        base inputs."""
+        return None
+
+
+def attack(platform=None):
     """Assessor attack: start from the READY Class C package, apply one hollowing
     tamper at a time, and assert preflight BLOCKS each. A tamper that still
-    reaches 'ready' is a framework gap."""
+    reaches 'ready' is a framework gap. `platform` is a SamplePlatform; None is
+    the AWS sample."""
     import copy
+    plat = platform or SamplePlatform()
     sys.path.insert(0, os.path.join(BASE, "validation", "scripts"))
     import profile_contract as _pc  # the CDS-CSO-PUB source map (AUD-F39)
-    base_store = generate_store()
-    base_profile = generate_profile()
-    base_history = generate_history(base_store)
+    base_store = plat.generate_store()
+    base_profile = plat.generate_profile()
+    base_history = plat.generate_history(base_store)
+    signoff = (plat.signoff_reviewer, plat.signoff_note)
     passed = failed = 0
 
     def probe(name, mutate, post_sign=None, expect=None):
@@ -421,7 +485,7 @@ def attack():
         nonlocal passed, failed
         st, pr, hi = copy.deepcopy(base_store), copy.deepcopy(base_profile), copy.deepcopy(base_history)
         mutate(st, pr, hi)
-        rc, out = _preflight_rc(st, pr, hi, post_sign=post_sign)
+        rc, out = _preflight_rc(st, pr, hi, post_sign=post_sign, signoff=signoff)
         blocked = rc != 0
         if blocked and expect is not None and expect not in (out or ""):
             failed += 1
@@ -434,7 +498,7 @@ def attack():
 
     # Baseline: the unmutated package must be READY (else the probes are meaningless).
     rc0, _ = _preflight_rc(copy.deepcopy(base_store), copy.deepcopy(base_profile),
-                           copy.deepcopy(base_history))
+                           copy.deepcopy(base_history), signoff=signoff)
     if rc0 == 0:
         passed += 1; print("  PASS (ready) baseline complete package is READY")
     else:
@@ -686,7 +750,7 @@ def attack():
         nonlocal passed, failed
         st, pr, hi = copy.deepcopy(base_store), copy.deepcopy(base_profile), copy.deepcopy(base_history)
         mutate(st, pr, hi)
-        rc, _out = _preflight_rc(st, pr, hi)
+        rc, _out = _preflight_rc(st, pr, hi, signoff=signoff)
         if rc == 0:
             passed += 1; print(f"  PASS (ready, not over-blocked) {name}")
         else:
@@ -764,7 +828,7 @@ def attack():
         # One declared method's series stopped 60 days ago: still "exists",
         # no longer working. Class C needs TWO working methods.
         kid = _first_kid(hi_)
-        m = hi_["ksis"][kid]["metrics"][f"{kid}-api-collector"]
+        m = hi_["ksis"][kid]["metrics"][plat.method_ids(kid)[1]]
         cutoff = (TODAY - dt.timedelta(days=60)).isoformat()
         m["series"] = [p for p in m["series"] if p["date"] < cutoff]
     probe("declared method whose series went stale 60 days ago blocks (vvk binding freshness)",
@@ -786,12 +850,12 @@ def attack():
             serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo).decode("ascii")
         digest = _hint.record_heads(hi_)
         sig = key.sign(digest.encode("utf-8"), ec.ECDSA(hashes.SHA256()))
-        key_arn = "arn:aws:kms:us-east-1:000000000000:key/SAMPLE-fictional-signer"
+        key_arn = plat.signer_key_ref
         hi_["meta"]["history_signature"] = {"algorithm": "ECDSA_SHA_256", "keyId": key_arn,
                                             "signedHash": digest,
                                             "signature": base64.b64encode(sig).decode("ascii")}
         pr["evidence_store_profile"] = "production-assurance"
-        pr["expected_evidence_signer"] = {"key_arn": key_arn, "public_key_pem": pub_pem,
+        pr["expected_evidence_signer"] = {plat.signer_pin_field: key_arn, "public_key_pem": pub_pem,
                                           "signer_kind": "managed-key-service"}
         return key, key_arn
 
@@ -800,49 +864,60 @@ def attack():
         derived by the canonical factory, so the integrity gate can recompute
         each digest from the entry's own bound fields; optionally sign each
         digest with the probe's key the way sign_evidence.py would. AUD-F62:
-        each KSI's entry is derived from a source the repository REGISTERS for
-        that KSI (collector registry, config-rules manifest or adapter), the
-        same bindings the production gate checks; a fictional check name would
-        be a valid digest over an observation nothing maps to the indicator."""
+        each KSI's entry is derived from a source the OFFERING operates for
+        that KSI (collector registry, config-rules manifest or an enabled
+        adapter, AUD-F79), the same bindings the production gate checks; a
+        fictional check name would be a valid digest over an observation
+        nothing maps to the indicator. A platform whose store already carries
+        adapter-derived entries (MCE-12) keeps them and only signs them."""
         import base64
         from cryptography.hazmat.primitives import hashes
         from cryptography.hazmat.primitives.asymmetric import ec
         import validate_evidence as _ve
         observed = f"{TODAY.isoformat()}T00:00:00+00:00"
-        base = "https://evidence.bfc-demo.invalid/store"
+        base = plat.location_base
         # The bindings the GATE will read for this offering: scoped to the
         # sources the sample profile declares it operates (AUD-F79), not to the
         # committed template on disk at this moment.
         bindings = _ve.load_source_bindings(profile=base_profile)
 
+        def sign(ev):
+            key, key_arn = sign_with
+            h = ev["xEvidenceContentHash"]
+            sig = key.sign(h.encode("ascii"), ec.ECDSA(hashes.SHA256()))
+            # As sign_evidence.sign_hash records it: the key REFERENCE, never
+            # the ARN (which would carry the account id into the scanned
+            # package, AUD-F60); the profile pins the ARN.
+            ev["xEvidenceSignature"] = {"algorithm": "ECDSA_SHA_256",
+                                        "keyId": _se.key_reference(key_arn),
+                                        "signedHash": h,
+                                        "signature": base64.b64encode(sig).decode("ascii")}
+            return ev
+
         def one(service, check, what):
             ev = _ew.fact_to_evidence(
-                {"service": service, "check": check, "status": "PASS", "region": "us-east-1",
+                {"service": service, "check": check, "status": "PASS", "region": plat.region,
                  "detail": f"{FICT} {what} evaluation history", "collected_at": observed},
                 location_base=base)
             if sign_with is not None:
-                key, key_arn = sign_with
-                h = ev["xEvidenceContentHash"]
-                sig = key.sign(h.encode("ascii"), ec.ECDSA(hashes.SHA256()))
-                # As sign_evidence.sign_hash records it: the key REFERENCE, never
-                # the ARN (which would carry the account id into the scanned
-                # package, AUD-F60); the profile pins the ARN.
-                ev["xEvidenceSignature"] = {"algorithm": "ECDSA_SHA_256",
-                                            "keyId": _se.key_reference(key_arn),
-                                            "signedHash": h,
-                                            "signature": base64.b64encode(sig).decode("ascii")}
+                sign(ev)
             return ev
 
         for kid, rec in st["ksi"].items():
             if rec.get("evidence"):
-                source = _ve.first_bound_source(kid, bindings)
-                if source is None:
-                    raise RuntimeError(f"{kid}: the repository registers no evidence source")
-                rec["evidence"] = [one(source[0], source[1], kid)]
+                if plat.rebind_ksi_evidence:
+                    source = _ve.first_bound_source(kid, bindings)
+                    if source is None:
+                        raise RuntimeError(f"{kid}: the offering operates no evidence source for it")
+                    rec["evidence"] = [one(source[0], source[1], kid)]
+                elif sign_with is not None:
+                    for ev in rec["evidence"]:
+                        if ev.get("xEvidenceContentHash"):
+                            sign(ev)
         for rid, rec in st["frr"].items():
             ext = rec.get("extension") or {}
             if ext.get("rule_artifacts"):
-                ext["rule_artifacts"] = [one("config", f"frr-{rid.lower()}", rid)]
+                ext["rule_artifacts"] = [one(plat.frr_source_service, f"frr-{rid.lower()}", rid)]
         return one
 
     def _production_unsigned(st, pr, hi_):
@@ -893,6 +968,13 @@ def attack():
     # required-signer check, and a presence-only linkage gate).
     def _production_hashless_evidence(st, pr, hi_):
         _pin_signer_and_sign_history(pr, hi_)  # evidence left hashless
+        # The AWS sample's hand-written entries carry no digest; a platform
+        # whose entries are adapter-derived (MCE-12) is brought to the same
+        # shape, so the probe tests what its name says on every platform.
+        for rec in st["ksi"].values():
+            for ev in rec.get("evidence") or []:
+                ev.pop("xEvidenceContentHash", None)
+                ev.pop("xEvidenceSignature", None)
     probe("production-assurance + pinned signer with HASHLESS evidence blocks (AUD-F57/F59)",
           _production_hashless_evidence)
 
@@ -969,7 +1051,10 @@ def attack():
         kid = sorted(st["ksi"])[0]
         ev = st["ksi"][kid]["evidence"][0]
         ev["lastUpdated"] = old.isoformat()
-        ev["xSourceFact"]["collected_at"] = f"{old.isoformat()}T00:00:00+00:00"
+        # The AWS collector stamps collected_at; adapter facts carry observed_at.
+        for field in ("collected_at", "observed_at"):
+            if field in ev["xSourceFact"]:
+                ev["xSourceFact"][field] = f"{old.isoformat()}T00:00:00+00:00"
         _resign(ev, key, key_arn)
     probe("production-assurance: a 400-day-old observation with a recomputed, re-signed digest blocks "
           "at Class C (AUD-F64, freshness)", _production_stale_resigned,
@@ -979,7 +1064,8 @@ def attack():
     # per KSI target. The Falcon adapter declares open_detections for four
     # MLA/INR indicators; the same signed entry elsewhere, or an undeclared
     # check under its own target, is a valid digest over an observation that
-    # maps to no indicator.
+    # maps to no indicator. These four probes belong to the AWS sample, which
+    # enables the Falcon source and leaves Wiz off (plat.adapter_probes).
     _FALCON_TARGETS = ("KSI-MLA-OSM", "KSI-MLA-RVL", "KSI-MLA-LET", "KSI-INR-RIR")
 
     def _production_adapter_pair_wrong_ksi(st, pr, hi_):
@@ -988,25 +1074,16 @@ def attack():
         victim = next(k for k in sorted(st["ksi"])
                       if k not in _FALCON_TARGETS and st["ksi"][k].get("evidence"))
         st["ksi"][victim]["evidence"] = [one("crowdstrike", "open_detections", victim)]
-    probe("production-assurance: an ADAPTER's declared pair (crowdstrike:open_detections), signed, under a "
-          "KSI the adapter does not target blocks (MCE-03, declared binding)", _production_adapter_pair_wrong_ksi,
-          expect="not PROVENANCE-BOUND (1 source (e.g.")
 
     def _production_adapter_undeclared_check(st, pr, hi_):
         key, key_arn = _pin_signer_and_sign_history(pr, hi_)
         one = _bind_sample_evidence(st, sign_with=(key, key_arn))
         st["ksi"]["KSI-MLA-OSM"]["evidence"] = [one("crowdstrike", "made_up_check", "KSI-MLA-OSM")]
-    probe("production-assurance: an UNDECLARED check under the adapter's own service and target KSI, "
-          "signed, blocks (MCE-03: nothing is inferred from a service name)", _production_adapter_undeclared_check,
-          expect="not PROVENANCE-BOUND (1 source (e.g.")
 
     def _production_adapter_declared_pair(st, pr, hi_):
         key, key_arn = _pin_signer_and_sign_history(pr, hi_)
         one = _bind_sample_evidence(st, sign_with=(key, key_arn))
         st["ksi"]["KSI-MLA-OSM"]["evidence"] = [one("crowdstrike", "open_detections", "KSI-MLA-OSM")]
-    _probe_ready("production-assurance: the adapter's declared pair (crowdstrike:open_detections) under its "
-                 "target KSI-MLA-OSM stays READY (MCE-03 positive control; MUT-F72 removes this binding)",
-                 _production_adapter_declared_pair)
 
     # AUD-F79: an adapter binds only for an offering that ENABLES it. The sample
     # enables Falcon and leaves Wiz off, so Wiz's declared pair under its own
@@ -1016,9 +1093,35 @@ def attack():
         key, key_arn = _pin_signer_and_sign_history(pr, hi_)
         one = _bind_sample_evidence(st, sign_with=(key, key_arn))
         st["ksi"]["KSI-MLA-EVC"]["evidence"] = [one("wiz", "vulnerabilities", "KSI-MLA-EVC")]
-    probe("production-assurance: a DISABLED adapter's declared pair (wiz:vulnerabilities, evidence_sources.wiz "
-          "off) under its own target KSI-MLA-EVC, signed, blocks (AUD-F79: not a source this offering operates)",
-          _production_disabled_adapter_pair, expect="not PROVENANCE-BOUND (1 source (e.g.")
+
+    if plat.adapter_probes:
+        probe("production-assurance: an ADAPTER's declared pair (crowdstrike:open_detections), signed, under a "
+              "KSI the adapter does not target blocks (MCE-03, declared binding)", _production_adapter_pair_wrong_ksi,
+              expect="not PROVENANCE-BOUND (1 source (e.g.")
+        probe("production-assurance: an UNDECLARED check under the adapter's own service and target KSI, "
+              "signed, blocks (MCE-03: nothing is inferred from a service name)", _production_adapter_undeclared_check,
+              expect="not PROVENANCE-BOUND (1 source (e.g.")
+        _probe_ready("production-assurance: the adapter's declared pair (crowdstrike:open_detections) under its "
+                     "target KSI-MLA-OSM stays READY (MCE-03 positive control; MUT-F72 removes this binding)",
+                     _production_adapter_declared_pair)
+        probe("production-assurance: a DISABLED adapter's declared pair (wiz:vulnerabilities, evidence_sources.wiz "
+              "off) under its own target KSI-MLA-EVC, signed, blocks (AUD-F79: not a source this offering operates)",
+              _production_disabled_adapter_pair, expect="not PROVENANCE-BOUND (1 source (e.g.")
+
+    # Platform-specific probes (MCE-12): the toolkit is the same closures the
+    # shared probes use, so a platform's probe is pinned the same way.
+    class _Harness:
+        pass
+    harness = _Harness()
+    harness.probe = probe
+    harness.probe_ready = _probe_ready
+    harness.pin_signer = _pin_signer_and_sign_history
+    harness.bind_evidence = _bind_sample_evidence
+    harness.resign = _resign
+    harness.base_store = base_store
+    harness.base_profile = base_profile
+    harness.base_history = base_history
+    plat.extra_probes(harness)
 
     print(f"\n{passed}/{passed + failed} assessor-attack probes passed "
           "(each tamper must be BLOCKED; baseline + justified-narrative combo must be READY)")
@@ -1056,10 +1159,11 @@ def run(argv):
         _restore_tree(baks, history_existed, tmp)
 
 
-def _record_signoff():
+def _record_signoff(reviewer=None, note=None):
     """Write a package_signoff into the review register, bound to the current
     release manifest's tag AND its exact SHA-256 (the binding preflight checks).
-    Fictional signer; illustrative only."""
+    Fictional signer; illustrative only. Another sample platform (MCE-12) names
+    its own fictional reviewer; the defaults are the AWS sample's."""
     import hashlib
     register_path = os.path.join(BASE, "sdr", "reviews", "review-register.json")
     manifest = json.load(open(MANIFEST, encoding="utf-8"))
@@ -1070,11 +1174,11 @@ def _record_signoff():
         register = json.load(open(register_path, encoding="utf-8"))
     register["package_signoff"] = {
         "decision": "approved",
-        "reviewer": "D. Okafor, BFC Authorizing Official (fictional)",
+        "reviewer": reviewer or "D. Okafor, BFC Authorizing Official (fictional)",
         "timestamp": TODAY.isoformat(),
         "release_tag": manifest.get("release_tag"),
         "package_manifest_sha256": manifest_sha,
-        "note": f"{FICT} Package-level provider signoff for the Class C sample.",
+        "note": note or f"{FICT} Package-level provider signoff for the Class C sample.",
     }
     with open(register_path, "w", encoding="utf-8", newline="\n") as f:
         json.dump(register, f, indent=1)

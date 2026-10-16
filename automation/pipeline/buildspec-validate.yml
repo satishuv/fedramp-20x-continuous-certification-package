@@ -65,12 +65,13 @@ phases:
           python sdr.py validate
           echo "RELEASE_MODE: running the double-build reproducibility gate."
           python -c "import sdr; import sys; sys.exit(sdr.cmd_reproducibility())"
-          echo "RELEASE_MODE: running the audit + attack + security sections of the ONE release gate."
+          echo "RELEASE_MODE: running the audit + attack + attack-non-aws + security sections of the ONE release gate."
           # Same step list GitHub Actions and `sdr.py release` execute (AUD-F12):
           # oracle, mutation-runner self-test, mutation runner, tree-clean, the
-          # Class C assessor-attack harness (AUD-F61), Bandit, pip-audit.
+          # Class C assessor-attack harness (AUD-F61) and its non-AWS twin
+          # (MCE-12), Bandit, pip-audit.
           pip install --quiet bandit==1.8.6 pip-audit==2.10.1
-          python audit/release_gate.py audit attack security
+          python audit/release_gate.py audit attack attack-non-aws security
         else
           python sdr.py validate --no-tests
         fi
