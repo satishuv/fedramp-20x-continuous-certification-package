@@ -523,9 +523,16 @@ def _ksi_observed_today(ksi_entry, config_by_rule, posture_by_service, today):
         for fact in facts or []:
             if _obs_date(fact.get("collected_at")) == today:
                 return True
-    allowed = set(ksi_entry.get("metric_service_keys", []))
-    for svc_key in allowed:
-        for pf in posture_by_service.get(svc_key, []):
+    # AUD-F82: the allowlist entries are check-scoped ("service:check", AUD-F16)
+    # while posture_by_service is keyed by the bare service. Looking the raw key
+    # up found nothing, so no posture-only KSI was ever fresh and production
+    # append_metrics recorded 0 KSIs from a live collection. Resolve the key
+    # exactly as _route does, and admit only the named check (F03).
+    for key in ksi_entry.get("metric_service_keys", []) or []:
+        service, check = parse_service_key(key)
+        for pf in posture_by_service.get(service, []):
+            if check and pf.get("check") != check:
+                continue
             if _obs_date(pf.get("collected_at")) == today:
                 return True
     return False

@@ -163,6 +163,54 @@ def test_allowlist_is_read_only():
         assert verb.startswith(read_prefixes), f"non-read action in allowlist: {action}"
 
 
+# --- AUD-F83: allowlist entries must be the names IAM evaluates --------------
+# Found by the first live AWS run (2026-10-17) under a role granting exactly
+# READ_ONLY_ACTIONS: three collectors were denied. AWS's own denial messages
+# named the actions it evaluates: "access-analyzer:ListAnalyzers" (the IAM
+# prefix is not the boto3 client name), "s3:GetEncryptionConfiguration" and
+# "s3:GetLifecycleConfiguration" (the IAM action is not the API operation name).
+# The pipeline CollectorRole copied the same wrong strings, so the iam-matches
+# test agreed with itself. An offline oracle exists for the prefix (botocore's
+# signing name is the IAM service prefix for every service the collectors use);
+# the two S3 names are pinned from the live denials.
+
+# botocore client name -> IAM service prefix (botocore signing name). s3control
+# signs as s3, so its one action lives under the s3: prefix in IAM as well.
+_IAM_PREFIX_FOR_CLIENT = {"accessanalyzer": "access-analyzer", "s3control": "s3"}
+_LIVE_DENIED_FORMS = {
+    "accessanalyzer:ListAnalyzers", "accessanalyzer:ListFindings",
+    "s3:GetBucketEncryption", "s3:GetBucketLifecycleConfiguration",
+}
+_LIVE_EVALUATED_FORMS = {
+    "access-analyzer:ListAnalyzers", "access-analyzer:ListFindings",
+    "s3:GetEncryptionConfiguration", "s3:GetLifecycleConfiguration",
+}
+
+
+def test_f83_allowlist_prefixes_are_iam_signing_names():
+    import botocore.session
+    sess = botocore.session.get_session()
+    prefixes = {a.split(":", 1)[0] for a in collectors.READ_ONLY_ACTIONS}
+    # Every prefix must be the signing name of SOME service the SDK knows.
+    known = set()
+    for client in ("accessanalyzer", "backup", "cloudformation", "cloudtrail",
+                   "codepipeline", "config", "dynamodb", "ec2", "ecr", "events",
+                   "guardduty", "iam", "inspector2", "kms", "s3", "s3control",
+                   "securityhub", "sts", "wafv2"):
+        known.add(sess.get_service_model(client).signing_name)
+    bad = sorted(p for p in prefixes if p not in known)
+    assert not bad, f"allowlist prefixes that IAM does not evaluate: {bad}"
+    for client, prefix in _IAM_PREFIX_FOR_CLIENT.items():
+        assert sess.get_service_model(client).signing_name == prefix
+
+
+def test_f83_allowlist_uses_live_evaluated_action_names():
+    denied = sorted(_LIVE_DENIED_FORMS & collectors.READ_ONLY_ACTIONS)
+    assert not denied, f"allowlist carries names AWS denied live: {denied}"
+    missing = sorted(_LIVE_EVALUATED_FORMS - collectors.READ_ONLY_ACTIONS)
+    assert not missing, f"allowlist lacks the names AWS evaluates: {missing}"
+
+
 # --- Stage 2 Bucket A collector tests (CNA, SVC, MLA) ------------------------
 
 

@@ -11,6 +11,36 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### First live AWS collection: two defects the fixtures could not see (AUD-F82, AUD-F83)
+
+The read-only collectors ran for the first time against a real account (one
+AWS Organizations management account with Control Tower, Config, Security Hub,
+GuardDuty, Inspector and Access Analyzer active) under a role granting exactly
+`READ_ONLY_ACTIONS`, and the facts went through prefill and the metric appender.
+
+- **AUD-F82 (High).** `append_metrics.py` recorded 0 KSIs from 36 fresh posture
+  facts and exited 4: the freshness predicate looked each check-scoped
+  allowlist key (`ec2:security_groups`, AUD-F16) up in a map keyed by the bare
+  service, so no posture-only KSI was ever fresh and the SDR-CSX-KMT history
+  could not advance from a live run. It now resolves the key exactly as routing
+  does. Same facts store afterwards: exit 0, 13 KSIs appended. Three
+  regressions, MUT-F82 killed.
+- **AUD-F83 (Medium).** Three collectors were denied under the repository's own
+  role because four allowlist entries were spelled as boto3 names, not IAM
+  action names: `access-analyzer:` is the prefix IAM evaluates, and the S3
+  actions are `GetEncryptionConfiguration` and `GetLifecycleConfiguration`.
+  The deployable `CollectorRole` carried the same strings, and the parity
+  test's regex excluded hyphenated prefixes, so the two copies agreed with
+  each other. Both fixed; the regression checks every prefix against
+  botocore's signing names, an oracle independent of the allowlist. MUT-F83
+  killed.
+
+Also observed, not changed in this entry: the 34 registry Config managed rules
+all read `RULE_NOT_DEPLOYED` because the collector matches the exact
+`ConfigRuleName`, while the account runs 29 of them under Security Hub
+(`securityhub-<rule>-<hash>`) and conformance-pack
+(`<rule>-conformance-pack-<id>`) names. Tracked as the next item.
+
 ### Implementation guidance notes for Google Cloud, Microsoft Azure and Oracle Cloud Infrastructure (MCE-17)
 
 The how-to-comply notes layer described AWS only (MCE-16 labelled it so). A

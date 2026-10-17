@@ -455,6 +455,53 @@ def test_f03_per_metric_keeps_per_check_identity():
     assert pm["posture:s3:public_access"]["passing"] == 0
 
 
+# --- AUD-F82: freshness must see check-scoped posture facts -----------------
+# Found by the first live AWS run (2026-10-17): 13 posture-only KSIs had a
+# datapoint from facts collected minutes earlier, yet main() appended 0 KSIs
+# and exited 4. _ksi_observed_today looked a check-scoped allowlist entry
+# ("ec2:security_groups") up in posture_by_service, which is keyed by the bare
+# service ("ec2"), so no posture fact was ever fresh. Only a KSI with a Config
+# rule fact collected today passed, through the config branch. Every existing
+# F05 test used a Config fact, so the posture branch was never exercised.
+
+_F82_KSI = {"metric_service_keys": ["ec2:security_groups"], "checks": []}
+
+
+def _f82_posture(check, collected_at):
+    return {"ec2": [{"service": "ec2", "check": check, "status": "OBSERVED",
+                     "measured": 4, "total": 4, "collected_at": collected_at}]}
+
+
+def test_f82_fresh_check_scoped_posture_fact_is_recorded():
+    today = date(2026, 10, 17)
+    pbs = _f82_posture("security_groups", "2026-10-17T16:29:07+00:00")
+    assert am._ksi_observed_today(_F82_KSI, {}, pbs, today) is True
+    hist = {}
+    am.append_run(hist, {"meta": {}, "ksis": {"KSI-F82": _F82_KSI}}, {}, pbs,
+                  today, require_fresh=True)
+    series = hist.get("ksis", {}).get("KSI-F82", {}).get("series", [])
+    assert len(series) == 1 and series[0]["date"] == "2026-10-17", series
+
+
+def test_f82_stale_posture_fact_is_still_not_fresh():
+    today = date(2026, 10, 17)
+    pbs = _f82_posture("security_groups", "2026-10-01T00:00:00+00:00")
+    assert am._ksi_observed_today(_F82_KSI, {}, pbs, today) is False
+    hist = {}
+    am.append_run(hist, {"meta": {}, "ksis": {"KSI-F82": _F82_KSI}}, {}, pbs,
+                  today, require_fresh=True)
+    assert hist.get("ksis", {}).get("KSI-F82", {}).get("series", []) == []
+
+
+def test_f82_freshness_is_check_scoped_like_routing():
+    # An unrelated check of the same service, collected today, is not freshness
+    # for this KSI (mirrors the F03 routing rule: the key admits one check).
+    today = date(2026, 10, 17)
+    pbs = _f82_posture("network_acls", "2026-10-17T16:29:07+00:00")
+    assert am._ksi_observed_today(_F82_KSI, {}, pbs, today) is False
+
+
+
 # --- AUD-F16: never route a whole service ------------------------------------
 
 def test_f16_bare_service_key_is_refused():

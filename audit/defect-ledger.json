@@ -1081,6 +1081,32 @@
       "mutation": "MUT-F81: classify_pointer_binding ignores the record segment again; the regression's per-record pointer check goes RED; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F82",
+      "severity": "High",
+      "requirement": "SDR-CSX-KMT (Class C: daily metric data retained up to a year) and FRC-CSX-VVK: the metric history must advance from a real collection, or persistent validation cannot be shown for any posture-only indicator.",
+      "component": "automation/metrics/append_metrics.py (_ksi_observed_today)",
+      "description": "Found by the first live AWS collection (2026-10-17, read-only role, 36 posture facts collected minutes earlier): datapoint_for_ksi produced a datapoint for 13 posture-only KSIs, yet production main() appended 0 KSIs, exited 4 and did not advance last_run. The F05 freshness predicate looked each metric_service_keys entry up in posture_by_service as written; since AUD-F16 those entries are check-scoped (\"ec2:security_groups\") while posture_by_service is keyed by the bare service (\"ec2\"), so the lookup never matched and no posture fact was ever fresh. Only a KSI with an AWS Config rule fact collected today passed, through the config branch. Every F05 test used a Config fact, and the Class C samples build their histories through the library path with require_fresh unset, so the production path had never been run against a posture-only KSI.",
+      "root_cause": "AUD-F16 changed the allowlist key shape and updated routing (_route parses service:check) but not the freshness predicate that reads the same keys; no test exercised the posture branch of _ksi_observed_today.",
+      "fix_commit": "this PR -- _ksi_observed_today resolves each key with parse_service_key exactly as _route does and admits only the named check (F03)",
+      "regression_test": "automation/metrics/test_append_metrics.py (test_f82_fresh_check_scoped_posture_fact_is_recorded: a posture-only KSI with a fact collected today is fresh and append_run under require_fresh records it; test_f82_stale_posture_fact_is_still_not_fresh: a stale posture fact stays unrecorded; test_f82_freshness_is_check_scoped_like_routing: an unrelated check of the same service collected today is not freshness for the KSI). Live proof: append_metrics.py against the same facts store went from exit 4 / 0 KSIs to exit 0 / 13 KSIs.",
+      "mutation": "MUT-F82: the predicate looks the raw check-scoped key up again; the fresh-posture regression goes RED; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F83",
+      "severity": "Medium",
+      "requirement": "Read-only by construction (docs/automation.md): the deployed collector role grants exactly READ_ONLY_ACTIONS, so an action spelled as IAM does not evaluate it is a collector that can never run under the repository's own role.",
+      "component": "automation/collectors/collectors.py (READ_ONLY_ACTIONS); automation/pipeline/sdr-pipeline.yaml (CollectorRole); automation/collectors/test_collector_iam_matches.py",
+      "description": "Found by the first live AWS collection under a role granting exactly READ_ONLY_ACTIONS: three collectors were denied. AWS's denial messages named the actions it evaluates: access-analyzer:ListAnalyzers (the IAM prefix is botocore's signing name, not the boto3 client name accessanalyzer), s3:GetEncryptionConfiguration and s3:GetLifecycleConfiguration (the IAM action names differ from the API operation names GetBucketEncryption and GetBucketLifecycleConfiguration). Access Analyzer therefore reported ERROR and S3 encryption and lifecycle UNKNOWN for all 38 buckets, honestly but needlessly. The pipeline CollectorRole carried the same strings, so the IAM parity test agreed with itself; its action regex also excluded hyphenated prefixes, so a corrected access-analyzer grant would have been invisible to it. A fourth entry, s3control:GetPublicAccessBlock, granted an action no collector calls under a prefix IAM does not evaluate.",
+      "root_cause": "Action names were derived from boto3 client and operation names rather than from IAM's action vocabulary, and the only check compared two copies of the same derivation.",
+      "fix_commit": "this PR -- the four entries renamed or removed in both the allowlist and the CollectorRole; the parity regex accepts hyphenated prefixes",
+      "regression_test": "automation/collectors/test_collectors.py (test_f83_allowlist_prefixes_are_iam_signing_names: every allowlist prefix is the botocore signing name of a service the collectors use, an offline oracle independent of the allowlist; test_f83_allowlist_uses_live_evaluated_action_names: the four live-denied spellings are absent and the four evaluated ones present); automation/collectors/test_collector_iam_matches.py (3/3 with the corrected grants)",
+      "mutation": "MUT-F83: the allowlist reverts the Access Analyzer prefix to the client name; the signing-name regression goes RED; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

@@ -26,8 +26,10 @@ READ_ONLY_ACTIONS = {
     "config:DescribeComplianceByConfigRule",
     "securityhub:GetFindings",
     "securityhub:DescribeHub",
-    "accessanalyzer:ListAnalyzers",
-    "accessanalyzer:ListFindings",
+    # AUD-F83: IAM evaluates Access Analyzer under the "access-analyzer" prefix
+    # (botocore's signing name), not the boto3 client name "accessanalyzer".
+    "access-analyzer:ListAnalyzers",
+    "access-analyzer:ListFindings",
     "inspector2:ListCoverage",
     "inspector2:ListFindings",
     "guardduty:ListDetectors",
@@ -48,7 +50,8 @@ READ_ONLY_ACTIONS = {
     # S3: account-wide data-at-rest and public-access posture.
     "s3:ListAllMyBuckets",
     "s3:GetBucketPublicAccessBlock",
-    "s3control:GetPublicAccessBlock",
+    # (AUD-F83: a former "s3control:GetPublicAccessBlock" entry granted an action
+    # no collector calls, under a prefix IAM does not evaluate; removed.)
     # IAM: account-wide identity posture.
     "iam:GetAccountSummary",
     "iam:GetAccountPasswordPolicy",
@@ -63,8 +66,11 @@ READ_ONLY_ACTIONS = {
     "ec2:DescribeSecurityGroups",
     "ec2:DescribeNetworkAcls",
     "ecr:DescribeRepositories",
-    "s3:GetBucketEncryption",
-    "s3:GetBucketLifecycleConfiguration",
+    # AUD-F83: the IAM action names differ from the API operation names
+    # (GetBucketEncryption / GetBucketLifecycleConfiguration); these are the
+    # names AWS evaluates, recorded from live AccessDenied messages.
+    "s3:GetEncryptionConfiguration",
+    "s3:GetLifecycleConfiguration",
     "dynamodb:ListTables",
     "dynamodb:DescribeTimeToLive",
     # Stage 3 Bucket A additions (IAM, CMT, PIY, SCR, RPL families): read-only.
