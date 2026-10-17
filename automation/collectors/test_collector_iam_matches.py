@@ -51,7 +51,9 @@ def granted_collector_actions():
     """Extract the IAM actions the CollectorRole grants, scoped to that role's
     block ONLY (not the whole file)."""
     import re
-    action_re = re.compile(r"^\s*-\s+([a-z0-9]+:[A-Za-z0-9*]+)\s*$")
+    # AUD-F83: IAM prefixes may carry a hyphen (access-analyzer); the earlier
+    # [a-z0-9]+ silently dropped such grants from the comparison.
+    action_re = re.compile(r"^\s*-\s+([a-z0-9-]+:[A-Za-z0-9*]+)\s*$")
     actions = set()
     for line in _collector_role_block().splitlines():
         m = action_re.match(line)

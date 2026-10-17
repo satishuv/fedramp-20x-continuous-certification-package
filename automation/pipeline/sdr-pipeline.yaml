@@ -397,8 +397,8 @@ Resources:
                 # in sync with the collector by test_collector_iam_matches.py
                 # (granted actions must be a superset of what collectors call).
                 Action:
-                  - accessanalyzer:ListAnalyzers
-                  - accessanalyzer:ListFindings
+                  - access-analyzer:ListAnalyzers
+                  - access-analyzer:ListFindings
                   - backup:ListBackupPlans
                   - backup:ListProtectedResources
                   - backup:ListRestoreTestingPlans
@@ -432,12 +432,11 @@ Resources:
                   - inspector2:ListFindings
                   - kms:GetKeyRotationStatus
                   - kms:ListKeys
-                  - s3:GetBucketEncryption
-                  - s3:GetBucketLifecycleConfiguration
                   - s3:GetBucketPublicAccessBlock
                   - s3:GetBucketVersioning
+                  - s3:GetEncryptionConfiguration
+                  - s3:GetLifecycleConfiguration
                   - s3:ListAllMyBuckets
-                  - s3control:GetPublicAccessBlock
                   - securityhub:DescribeHub
                   - securityhub:GetFindings
                   - sts:GetCallerIdentity

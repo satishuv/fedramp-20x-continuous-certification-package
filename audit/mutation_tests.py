@@ -639,6 +639,16 @@ MUTATIONS = [
      '    if sf.get("record"):\n        parts.append(sf.get("record"))\n',
      '    if False and sf.get("record"):  # MUTATION record segment ignored by the pointer check\n        parts.append(sf.get("record"))\n',
      "validation/scripts/test_provenance_mutations.py"),
+    ("MUT-F82",
+     "automation/metrics/append_metrics.py",
+     "        service, check = parse_service_key(key)\n        for pf in posture_by_service.get(service, []):\n            if check and pf.get(\"check\") != check:\n                continue\n            if _obs_date(pf.get(\"collected_at\")) == today:\n",
+     "        service, check = key, None  # MUTATION freshness looks the raw check-scoped key up again\n        for pf in posture_by_service.get(service, []):\n            if check and pf.get(\"check\") != check:\n                continue\n            if _obs_date(pf.get(\"collected_at\")) == today:\n",
+     "automation/metrics/test_append_metrics.py"),
+    ("MUT-F83",
+     "automation/collectors/collectors.py",
+     '    "access-analyzer:ListAnalyzers",\n    "access-analyzer:ListFindings",\n',
+     '    "accessanalyzer:ListAnalyzers",  # MUTATION boto3 client name used as the IAM prefix again\n    "accessanalyzer:ListFindings",\n',
+     "automation/collectors/test_collectors.py"),
 ]
 
 
