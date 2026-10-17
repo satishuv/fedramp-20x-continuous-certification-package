@@ -42,6 +42,10 @@ READ_ONLY_ACTIONS = {
     # state of all supported resource types across every service in scope.
     "config:DescribeConfigurationRecorderStatus",
     "config:DescribeConfigurationRecorders",
+    # AUD-F84: list the account's deployed rules once so a registry rule running
+    # under a Security Hub or conformance-pack name is found, not reported as
+    # RULE_NOT_DEPLOYED. Read verb; the first widening since the allowlist began.
+    "config:DescribeConfigRules",
     "config:DescribeComplianceByConfigRule",
     "config:GetDiscoveredResourceCounts",
     # CloudTrail: account-wide audit capture across all services.

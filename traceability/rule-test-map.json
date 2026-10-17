@@ -904,6 +904,11 @@
    "severity": "Medium",
    "component": "automation/collectors/collectors.py (READ_ONLY_ACTIONS); automation/pipeline/sdr-pipeline.yaml (CollectorRole); automation/collectors/test_collector_iam_matches.py"
   },
+  "ledger.AUD-F84": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "automation/collectors/collect_facts.py (Config rule loop); automation/collectors/config_rule_resolution.py (new, shared with automation/importers/import_findings.py); READ_ONLY_ACTIONS and CollectorRole (+config:DescribeConfigRules)"
+  },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
    "severity": "medium",
@@ -2179,6 +2184,21 @@
      "in_test_suite": true
     },
     {
+     "gate_id": "ledger.AUD-F84",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/collectors/test_config_rule_resolution.py"
+     ],
+     "mutations": [
+      "MUT-F84"
+     ],
+     "mutated_files": [
+      "automation/collectors/collect_facts.py"
+     ],
+     "in_test_suite": true
+    },
+    {
      "gate_id": "scan.ksi_automation_verified",
      "mode": "readiness-scan",
      "classes": [
@@ -3161,6 +3181,21 @@
      ],
      "mutated_files": [
       "validation/scripts/validate_evidence.py"
+     ],
+     "in_test_suite": true
+    },
+    {
+     "gate_id": "ledger.AUD-F84",
+     "mode": "regression-test+mutation",
+     "severity": "High",
+     "tests": [
+      "automation/collectors/test_config_rule_resolution.py"
+     ],
+     "mutations": [
+      "MUT-F84"
+     ],
+     "mutated_files": [
+      "automation/collectors/collect_facts.py"
      ],
      "in_test_suite": true
     },

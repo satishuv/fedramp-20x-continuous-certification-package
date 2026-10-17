@@ -409,6 +409,7 @@ Resources:
                   - codepipeline:GetPipeline
                   - codepipeline:ListPipelines
                   - config:DescribeComplianceByConfigRule
+                  - config:DescribeConfigRules
                   - config:DescribeConfigurationRecorderStatus
                   - config:DescribeConfigurationRecorders
                   - config:DescribeConformancePacks

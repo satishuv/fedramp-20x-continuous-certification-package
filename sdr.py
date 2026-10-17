@@ -357,6 +357,7 @@ TEST_SUITE = [
     "automation/config-rules/deploy/test_cdk_synth.py",
     "automation/collectors/test_collector_iam_matches.py",
     "automation/collectors/test_collection_fail_closed.py",
+    "automation/collectors/test_config_rule_resolution.py",
     "validation/scripts/test_docx_integrity.py",
     "automation/metrics/test_history_integrity.py",
     "automation/collectors/test_service_registry.py",

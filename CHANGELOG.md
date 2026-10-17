@@ -11,7 +11,7 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
-### First live AWS collection: two defects the fixtures could not see (AUD-F82, AUD-F83)
+### First live AWS collection: three defects the fixtures could not see (AUD-F82 to AUD-F84)
 
 The read-only collectors ran for the first time against a real account (one
 AWS Organizations management account with Control Tower, Config, Security Hub,
@@ -35,11 +35,21 @@ GuardDuty, Inspector and Access Analyzer active) under a role granting exactly
   botocore's signing names, an oracle independent of the allowlist. MUT-F83
   killed.
 
-Also observed, not changed in this entry: the 34 registry Config managed rules
-all read `RULE_NOT_DEPLOYED` because the collector matches the exact
-`ConfigRuleName`, while the account runs 29 of them under Security Hub
-(`securityhub-<rule>-<hash>`) and conformance-pack
-(`<rule>-conformance-pack-<id>`) names. Tracked as the next item.
+- **AUD-F84 (High).** All 34 registry Config managed rules read
+  `RULE_NOT_DEPLOYED` while the account ran 29 of them under Security Hub
+  (`securityhub-<rule>-<hash>`) and conformance-pack
+  (`<rule>-conformance-pack-<id>`) names: the live collector queried the exact
+  catalog name only. The offline importer already resolved deployed names
+  (exact id, the Security Hub shape, `Source.SourceIdentifier` through the
+  pinned vocabulary); that logic now lives in
+  `automation/collectors/config_rule_resolution.py`, shared by both paths.
+  The collector lists the account's rules once (`config:DescribeConfigRules`,
+  a read verb added to the allowlist and the `CollectorRole`), queries every
+  deployed instance and aggregates worst-wins, recording `instances`,
+  `deployed_names` and the `resolution` mode on each fact. A role without the
+  new grant falls back to the exact name and every fact says
+  `exact-name-only`. 26 checks, 5 red against the old collector, MUT-F84
+  killed.
 
 ### Implementation guidance notes for Google Cloud, Microsoft Azure and Oracle Cloud Infrastructure (MCE-17)
 

@@ -649,6 +649,11 @@ MUTATIONS = [
      '    "access-analyzer:ListAnalyzers",\n    "access-analyzer:ListFindings",\n',
      '    "accessanalyzer:ListAnalyzers",  # MUTATION boto3 client name used as the IAM prefix again\n    "accessanalyzer:ListFindings",\n',
      "automation/collectors/test_collectors.py"),
+    ("MUT-F84",
+     "automation/collectors/collect_facts.py",
+     '        names = deployed.get(rule, []) if resolution == "deployed-names" else [rule]\n',
+     '        names = [rule]  # MUTATION exact ConfigRuleName only; deployed names ignored again\n',
+     "automation/collectors/test_config_rule_resolution.py"),
 ]
 
 
