@@ -1107,6 +1107,19 @@
       "mutation": "MUT-F83: the allowlist reverts the Access Analyzer prefix to the client name; the signing-name regression goes RED; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F84",
+      "severity": "High",
+      "requirement": "FRC-CSX-VVK / SDR-CSX-KSI: the automated methods a KSI cites must be the ones actually running; a collector that cannot see a deployed check reports a false absence, so the 34 registry Config checks (11 indicators' only collectable method) were unobservable in any account that deploys rules the way AWS tooling does.",
+      "component": "automation/collectors/collect_facts.py (Config rule loop); automation/collectors/config_rule_resolution.py (new, shared with automation/importers/import_findings.py); READ_ONLY_ACTIONS and CollectorRole (+config:DescribeConfigRules)",
+      "description": "Found by the first live AWS collection (2026-10-17): the account runs 504 Config rules, 29 of the registry's 34 managed rules among them, under Security Hub names (securityhub-<rule>-<hash>, 35 instances including 8 parameterizations of iam-password-policy) and conformance-pack names (<rule>-conformance-pack-<id>, 7 instances). collect_facts.py queried describe_compliance_by_config_rule with the exact catalog name and reported all 34 as RULE_NOT_DEPLOYED (0 deployed), while the account's own compliance summary showed 20 compliant and 31 non-compliant resources behind those very rules. The offline importer (automation/importers/import_findings.py) already resolved deployed names three ways (exact id, the Security Hub linked shape, Source.SourceIdentifier through the pinned vocabulary) with worst-wins aggregation across instances; the live path never received that logic, so an export of the same account would have scored while a live collection did not.",
+      "root_cause": "The live collector was written against the catalog name and tested with fixtures that deploy rules under catalog names; the resolution logic existed only in the importer, so the two consumers of the same AWS data disagreed on what was deployed.",
+      "fix_commit": "this PR -- config_rule_resolution.py holds the resolution and precedence for both paths (the importer re-exports it); collect_facts lists the account's rules once (config:DescribeConfigRules, a read verb added to the allowlist and the CollectorRole), resolves each registry rule to its deployed instances, queries compliance for all of them in API-sized chunks and aggregates worst-wins, recording instances, deployed_names and the resolution mode on each fact; when the listing is denied (a role predating the grant) it falls back to the exact name and labels every fact exact-name-only instead of silently reporting absence",
+      "regression_test": "automation/collectors/test_config_rule_resolution.py (26 checks: the four naming cases resolve and a custom Lambda rule or an unrelated rule never does; worst-wins precedence; main() end to end with a paginated fake client: aggregation, provider-named rules, an undeployed rule stays RULE_NOT_DEPLOYED with no compliance call, the exact-name fallback is labelled; the importer's map_rule_name and precedence ARE the shared objects; the vocabulary covers every registry rule). Red-first: 5 checks RED against the pre-change collector (1 of 5 deployed).",
+      "mutation": "MUT-F84: the collector queries the exact ConfigRuleName again and ignores the resolved names; the aggregation and conformance-pack checks go RED; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }
