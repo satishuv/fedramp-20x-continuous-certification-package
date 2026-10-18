@@ -114,6 +114,8 @@ python sdr.py all
 
 That builds every deliverable, runs the validator, and prints a readiness summary. Expect `hard failures: 0` and a long list of open items: the repository ships as a template with honest placeholders, so open items are the correct result on a fresh clone.
 
+`requirements.txt` pins the five runtime packages to exact versions. To reproduce the CI environment bit for bit (every transitive package, hash-verified), install `requirements.lock` with `--require-hashes` instead; it is resolved for Python 3.12 on Linux, installs on 3.11 and later, and includes the CI-only tooling. `python setup.py` checks every installed package against its pin either way.
+
 Then run `python sdr.py init`: it asks every offering-profile question FedRAMP requires (each traced to a Certification Package Overview schema property or a CR26 rule) and writes `profiles/common/offering-profile.json` for you. For the record itself, `sdr/records/records-store.json`, the collectors, the pre-fill and the drafter propose content and `python sdr.py review --walk` takes one keystroke per field from a named human; nothing enters the record without that decision. See the [implementation guide](docs/implementation-guide.md).
 
 If you have GNU make, `make all` wraps the same command. To run the build steps individually, see [getting started](docs/getting-started.md).

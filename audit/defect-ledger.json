@@ -1146,6 +1146,19 @@
       "mutation": "MUT-F86: the README badge reverts to the previous release 2026.10.08.01; the badge pin-claim check goes RED; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F87",
+      "severity": "Medium",
+      "requirement": "The gate's results are only meaningful in the environment they were built against. requirements.txt pins five runtime packages to exact versions; onboarding must establish that those versions are what the interpreter holds, because an older jsonschema or cryptography validates differently and verifies differently.",
+      "component": "setup.py (install_deps, the import-presence check); validation/scripts/test_install_dependencies.py (F-08 guard); docs/getting-started.md, README.md, Makefile (install guidance)",
+      "description": "Found by an external review of main 23f46c9 (2026-10-18), which observed that setup.py accepted an importable module as the pinned dependency. Confirmed on the reviewer's own host: setup.py answered 'all present' from __import__ of five module names alone, so any installed version satisfied it and the install step never ran. The first run of the corrected checker on the development interpreter found cryptography 46.0.3 installed against the pin 50.0.2, an environment the old code had been calling complete. Also found while fixing: docs/getting-started.md said 'three packages' (there are five), and the review's proposed remedy, making requirements.lock the default install, was tested and rejected: the lock is compiled for Linux and Python 3.12 (make lock passes --python-platform linux --python-version 3.12), carries the CI-only CDK tooling, and does not resolve on Python 3.10 (rpds-py==2026.6.3 requires 3.11+), while the repository promises 3.10+ and requirements.txt does resolve there. The 3.10 floor and the hashed lock cannot both be the default.",
+      "root_cause": "The onboarding check tested importability, which every version satisfies, and kept its own list of names beside requirements.txt; nothing compared the installed distribution metadata to the pin.",
+      "fix_commit": "this PR -- setup.py reads the pins from requirements.txt (requirement_pins, no second list), reads each installed distribution's version through importlib.metadata (_installed_version, DistributionMissing when absent), reports every absent or differently-versioned distribution as (installed, pinned) (dependency_mismatches, oracle injectable for tests), installs the pinned set on any mismatch and fails closed if a mismatch survives the install. The dead DEPS list is removed. Docs name both install paths honestly: requirements.txt for the 3.10+ floor, requirements.lock --require-hashes for the CI closure (3.11+, Linux-resolved, includes CI tooling), with a make install-locked target",
+      "regression_test": "validation/scripts/test_install_dependencies.py: test_setup_checks_installed_versions_against_pins (an injected oracle returns one pinned, one wrong, one absent version; the function must report exactly the wrong and absent ones as (installed, pinned); setup.py must read importlib.metadata) and test_setup_deps_cover_requirements retargeted (no DEPS list; requirement_pins() returns every requirements.txt pin, each an exact version). Red-first: AssertionError 'setup.py must expose dependency_mismatches()' on the unmodified setup.py; 4/4 after",
+      "mutation": "MUT-F87: the version comparison in dependency_mismatches is disabled so any installed version passes as the pinned one; test_setup_checks_installed_versions_against_pins goes RED on the wrong-version case; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

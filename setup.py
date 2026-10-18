@@ -34,7 +34,8 @@ import sys
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 OFFERING = os.path.join(BASE, "profiles", "common", "offering-profile.json")
-DEPS = ["jsonschema", "referencing", "python-docx", "cryptography", "PyYAML"]
+# The runtime dependency set and its versions live in requirements.txt only
+# (F-08, AUD-F87); requirement_pins() reads them, no list is kept here.
 VALID_CLASSES = {"A", "B", "C"}
 
 
@@ -50,27 +51,83 @@ def run(args, label):
     return code
 
 
+class DistributionMissing(Exception):
+    """The named distribution is not installed in this interpreter."""
+
+
+def _installed_version(dist):
+    """Version of an installed distribution, read from its metadata on disk.
+    Raises DistributionMissing when it is not installed. This asks about the
+    DISTRIBUTION, not an importable module: any version of jsonschema imports
+    as 'jsonschema', only the metadata says which one is present."""
+    import importlib.metadata as md
+    try:
+        return md.version(dist)
+    except md.PackageNotFoundError as exc:
+        raise DistributionMissing(dist) from exc
+
+
+def requirement_pins(path=None):
+    """Distribution name -> exact version pinned in requirements.txt. The
+    requirements file is the single source of truth (test_install_dependencies,
+    F-08); nothing here keeps a second list of versions."""
+    path = path or os.path.join(BASE, "requirements.txt")
+    pins = {}
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            name, sep, version = line.partition("==")
+            if sep and name.strip() and version.strip():
+                pins[name.strip()] = version.strip()
+    return pins
+
+
+def dependency_mismatches(pins, installed_version=_installed_version):
+    """Compare each pinned distribution to what is installed (AUD-F87).
+    Returns {dist: (installed_or_None, pinned)} for every absent or
+    differently-versioned distribution; empty when the environment holds
+    exactly the pinned set. `installed_version` is injectable so the logic is
+    testable without altering the running interpreter."""
+    mismatches = {}
+    for dist, pinned in pins.items():
+        try:
+            have = installed_version(dist)
+        except DistributionMissing:
+            mismatches[dist] = (None, pinned)
+            continue
+        if have != pinned:
+            mismatches[dist] = (have, pinned)
+    return mismatches
+
+
 def install_deps():
     out("[1/4] Python dependencies")
     if sys.version_info < (3, 10):
         out(f"  FAIL: Python 3.10+ required; this is {sys.version.split()[0]}.")
         return False
-    missing = []
-    for mod in ("jsonschema", "referencing", "docx", "cryptography", "yaml"):
-        try:
-            __import__(mod)
-        except ImportError:
-            missing.append(mod)
-    if not missing:
-        out("  all present.")
+    pins = requirement_pins()
+    mismatches = dependency_mismatches(pins)
+    if not mismatches:
+        out(f"  all {len(pins)} present at their pinned versions.")
         return True
-    out("  installing from requirements.txt (pinned)")
+    for dist, (have, pinned) in sorted(mismatches.items()):
+        state = "missing" if have is None else f"installed {have}"
+        out(f"  {dist}: {state}, pinned {pinned}")
+    out("  installing the pinned set from requirements.txt")
     req = os.path.join(BASE, "requirements.txt")
     code = subprocess.run(
         [sys.executable, "-m", "pip", "install", "--quiet", "-r", req]).returncode
     if code != 0:
         out("  FAIL: could not install dependencies. Install them by hand:")
         out("    python -m pip install -r requirements.txt")
+        return False
+    remaining = dependency_mismatches(requirement_pins())
+    if remaining:
+        out("  FAIL: after installing, these still differ from requirements.txt:")
+        for dist, (have, pinned) in sorted(remaining.items()):
+            out(f"    {dist}: installed {have}, pinned {pinned}")
         return False
     return True
 

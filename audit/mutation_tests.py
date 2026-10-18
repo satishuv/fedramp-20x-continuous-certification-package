@@ -664,6 +664,11 @@ MUTATIONS = [
      "CR26%20dataset-2026.10.13.01-0b7285",
      "CR26%20dataset-2026.10.08.01-0b7285",
      "validation/scripts/test_docs_facts.py"),
+    ("MUT-F87",
+     "setup.py",
+     "        if have != pinned:\n",
+     "        if False:  # MUTATION any installed version passes as the pinned one again\n",
+     "validation/scripts/test_install_dependencies.py"),
 ]
 
 

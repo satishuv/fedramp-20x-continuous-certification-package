@@ -919,6 +919,11 @@
    "severity": "Medium",
    "component": "README.md (badge, pin sentence, derived-counts sentence); docs/architecture.md, docs/validation.md, docs/versioning.md (Word output called the byte-determinism exception); docs/automation.md, docs/comparison.md (pin claims); docs/versioning.md (CI install source); validation/scripts/validate_sdr.py (dataset_version_agreement comment)"
   },
+  "ledger.AUD-F87": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "setup.py (install_deps, the import-presence check); validation/scripts/test_install_dependencies.py (F-08 guard); docs/getting-started.md, README.md, Makefile (install guidance)"
+  },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
    "severity": "medium",

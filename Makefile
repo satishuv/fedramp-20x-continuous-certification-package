@@ -15,6 +15,9 @@ help: ## Show this help
 install: ## Install runtime dependencies from requirements.txt
 	$(PYTHON) -m pip install -r requirements.txt
 
+install-locked: ## Install the hash-verified closure CI uses (requirements.lock; Python 3.11+)
+	$(PYTHON) -m pip install --require-hashes -r requirements.lock
+
 lock: ## Resolve a fully-hashed requirements.lock, then rebuild the SBOM from it
 	@echo "Resolving the full dependency closure with hashes into requirements.lock."
 	@echo "Run this in a CLEAN environment with network access (not the offline"
