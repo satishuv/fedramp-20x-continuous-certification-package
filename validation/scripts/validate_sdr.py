@@ -331,8 +331,10 @@ def main():
     # version it was built from; the pinned dataset carries its own
     # info.version. If someone swaps the dataset file without rebuilding the
     # profiles, every report would still stamp the stale profile version and
-    # the mismatch would go unnoticed. Assert they agree so the version the
-    # README and badge advertise is provably the version on disk.
+    # the mismatch would go unnoticed. Assert they agree. This check reads the
+    # dataset and the profiles only; the README badge and every documentation
+    # sentence that claims the current pin are held to the same version by
+    # validation/scripts/test_docs_facts.py (AUD-F86), in the offline suite.
     dataset_info_version = load(DATASET).get("info", {}).get("version")
     check("dataset_version_agreement", dataset_info_version == dataset_version,
           f"pinned dataset info.version {dataset_info_version} vs profile "
