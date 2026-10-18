@@ -135,15 +135,17 @@ the authorizing body, never of this tool.
 
 ## Reproducibility
 
-Generated JSON, text, and CSV carry no run timestamps and are byte-identical
-across builds of unchanged inputs. CI enforces this with a double-build
-reproducibility gate. Word files are the documented exception (their zip
-container embeds timestamps).
+Generated JSON, text, CSV and Word output carry no run timestamps and are
+byte-identical across builds of unchanged inputs. CI enforces this with a
+double-build reproducibility gate that hashes the `.docx` too (byte-reproducible
+since AUD-F35: fixed zip entry timestamps, dataset-derived core properties).
 
 ## Dependencies
 
 Runtime dependencies are pinned in `requirements.txt`; local test dependencies
-in `requirements-dev.txt`; CI installs the pinned set from `requirements-ci.txt`
-(GitHub Actions and CodeBuild both install `requirements-ci.txt`, so the CI
-environment is reproducible). GitHub Actions are pinned to full commit SHAs.
-This keeps the build inputs traceable.
+in `requirements-dev.txt`; CI-only tools in `requirements-ci.txt`. Those are the
+INPUTS to `make lock`, which resolves the full closure with hashes into
+`requirements.lock`. Every CI path (GitHub Actions and both CodeBuild buildspecs)
+installs `requirements.lock` with `--require-hashes`, so a CI environment holds
+exactly the resolved closure and nothing else. GitHub Actions are pinned to full
+commit SHAs. This keeps the build inputs traceable.

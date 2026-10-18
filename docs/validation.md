@@ -178,7 +178,7 @@ python automation/sdrscan/sdrscan.py --write-catalog
 
 Generated JSON, text, and CSV are byte-identical across runs of unchanged inputs, verified by double-run hash comparison. No run timestamps are embedded anywhere. This lets a reviewer regenerate your package and confirm it matches what you shipped, which is a stronger claim than asking them to trust the file.
 
-Word files are the exception. Their zip container embeds file-entry timestamps, so bytes differ between runs while content is identical.
+Word files are included in that claim since 1.5.0. The build rewrites the `.docx` zip container with fixed entry timestamps and stamps its core properties with the pinned dataset's date (AUD-F35), so the file is diffed, double-build hashed and fingerprinted in the release manifest like every other output. A `.docx` that differs from its committed copy after `python sdr.py build` means a changed input, a hand edit, or sample residue.
 
 To record when your content actually changed, set `sdr_last_updated` in `profiles/common/offering-profile.json`. It is manual on purpose, so that a rebuild does not falsely claim your record was updated today.
 

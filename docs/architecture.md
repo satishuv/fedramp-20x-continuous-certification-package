@@ -163,7 +163,7 @@ Notice where the humans sit. Approval before publication, judgment between a col
 
 **Provider-owned inputs, enforced.** Continuous integration regenerates everything and fails if any generated file differs from what the pipeline produces. That converts "please do not hand-edit the outputs" from a convention into a build error.
 
-**Determinism, deliberately.** Generated JSON, text, and CSV carry no run timestamps and are byte-identical across runs of unchanged inputs, verified by double-run hash comparison. Anyone can regenerate your package and confirm it matches what you shipped. Word files are the exception: their zip container embeds file-entry timestamps, so bytes differ while content is identical.
+**Determinism, deliberately.** Generated JSON, text, CSV and Word output carry no run timestamps and are byte-identical across runs of unchanged inputs, verified by double-run hash comparison. Anyone can regenerate your package and confirm it matches what you shipped. The `.docx` earns its place in that set because the build rewrites its zip container with fixed entry timestamps and stamps the core properties with the pinned dataset's date, never the wall clock (AUD-F35); CI hashes it in the double build like every other output.
 
 **Paths are relative.** Every script resolves paths from its own location, so the repository works from any checkout directory and in any continuous integration environment.
 
@@ -217,7 +217,7 @@ Honest list of places where a reasonable person would choose differently.
 
 **JSON rather than YAML for the record store.** YAML would be friendlier for long prose. JSON was chosen because the deliverable is JSON and the schema is JSON, so the authoring format matching the output format removes a translation layer where errors hide.
 
-**Word output at all.** It exists because reviewers ask for it. It is also the one deliverable that cannot be byte-stable, which slightly weakens the reproducibility story.
+**Word output at all.** It exists because reviewers ask for it. Until 1.5.0 it was the one deliverable that was not byte-stable; since AUD-F35 the build fixes the zip entry timestamps and derives the core properties from the dataset, so it is diffed, double-build hashed and fingerprinted in the release manifest like every other output.
 
 **Python with three dependencies.** Deliberately boring, so a provider's security team can read the whole pipeline in an afternoon.
 

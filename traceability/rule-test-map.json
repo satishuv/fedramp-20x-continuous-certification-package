@@ -914,6 +914,11 @@
    "severity": "High",
    "component": "automation/collectors/collect_multi_account.py (per-scope collection, private store); automation/collectors/collect_facts.py (collect_config_rule_facts extracted from main); automation/metrics/append_metrics.py (load_facts scope identity)"
   },
+  "ledger.AUD-F86": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "README.md (badge, pin sentence, derived-counts sentence); docs/architecture.md, docs/validation.md, docs/versioning.md (Word output called the byte-determinism exception); docs/automation.md, docs/comparison.md (pin claims); docs/versioning.md (CI install source); validation/scripts/validate_sdr.py (dataset_version_agreement comment)"
+  },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
    "severity": "medium",

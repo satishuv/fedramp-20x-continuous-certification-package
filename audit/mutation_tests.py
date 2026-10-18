@@ -659,6 +659,11 @@ MUTATIONS = [
      "    if registry is not None:\n",
      "    if registry is not None and False:  # MUTATION fan-out skips the Config rule unit again\n",
      "automation/collectors/test_multi_account_config_rules.py"),
+    ("MUT-F86",
+     "README.md",
+     "CR26%20dataset-2026.10.13.01-0b7285",
+     "CR26%20dataset-2026.10.08.01-0b7285",
+     "validation/scripts/test_docs_facts.py"),
 ]
 
 

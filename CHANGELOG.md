@@ -11,6 +11,37 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### Documentation facts are now derived and tested, not hand-synced (AUD-F86)
+
+An external security and maintainability review of main `23f46c9` (2026-10-18)
+found the README still advertising the previous dataset release five days after
+the pin advanced, and the architecture guide still calling Word output the
+exception to byte determinism five months after AUD-F35 removed the exception.
+Re-reading every document against the dataset on disk widened it to seven files.
+
+- **AUD-F86 (Medium).** The README badge, pin sentence and derived-counts
+  sentence said `2026.10.08.01`; `docs/automation.md` and `docs/comparison.md`
+  claimed `2026.09.13.02` as the current pin; the dataset, `sources.lock.json`
+  and the profiles all carried `2026.10.13.01`. The counts themselves (233 of
+  245 rules in 20x scope, 12 rev5-only, 46 KSIs in 10 families) were still
+  right. `docs/architecture.md`, `docs/validation.md` and `docs/versioning.md`
+  still said Word files are not byte-stable while `docs/faq.md`,
+  `docs/getting-started.md` and the CI double-build (which hashes `*.docx`)
+  said the opposite. `docs/versioning.md` said CI installs
+  `requirements-ci.txt`; every CI path installs `requirements.lock` with
+  `--require-hashes`. The `validate_sdr.py` comment on `dataset_version_agreement`
+  promised the README and badge were covered; the check reads the dataset and
+  the profiles only. All seven documents corrected; the comment now says what
+  the check reads.
+- New `validation/scripts/test_docs_facts.py`, in the offline suite: derives the
+  version, the FRR counts by applicability and the KSI counts from the dataset
+  by its real nesting, holds every sentence that claims the current pin to that
+  version, holds the README counts to the derived counts, and refuses the stale
+  Word-exception phrasings. Historical references (release tag examples, the
+  changelog) are not pin claims and are not checked. Red-first: 8 failures on
+  the unmodified tree, 0 after. MUT-F86 (badge reverted to the previous
+  release) killed.
+
 ### First live AWS collection: four defects the fixtures could not see (AUD-F82 to AUD-F85)
 
 The read-only collectors ran for the first time against a real account (one

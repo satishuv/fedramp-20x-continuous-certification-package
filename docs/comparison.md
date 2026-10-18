@@ -11,7 +11,7 @@ not an aspiration. Legend: implemented, partial, not applicable.
 
 | Capability | FedRAMP/rules | FedRAMP/2026 | FedRAMP/2026-markdown | This framework | Notes |
 |---|---|---|---|---|---|
-| Authoritative rules source | source of truth (JSON) | renders rules | renders rules (Markdown) | consumes pinned JSON | Pinned to `2026.09.13.02`, hash-locked in `sources.lock.json`, drift-checked daily |
+| Authoritative rules source | source of truth (JSON) | renders rules | renders rules (Markdown) | consumes pinned JSON | Pinned to `2026.10.13.01`, hash-locked in `sources.lock.json`, drift-checked daily |
 | Machine-readable input | JSON, schema-validated | HTML | Markdown | consumes JSON, never HTML | Aligns with FedRAMP guidance to use the machine-readable source |
 | Class A/B/C applicability | encoded (`varies_by_class`) | narrative | Markdown | implemented | `build_profiles.py` resolves per-class; the validator independently re-derives every statement from the dataset (`content_fidelity_against_dataset`) |
 | Per-class force and dates | in JSON | timelines | changelog | implemented | Per-class force resolved from the dataset; SDR-CSX-KMT reference-period coverage (up to the past year) measured per KSI |

@@ -65,7 +65,7 @@ Two evidence-store profiles, declared in the offering profile as `evidence_store
 
 The FRC-CSX-VVK binding gate counts a declared automated method as working only when its per-method series carries a datapoint inside the method's cadence window (daily 7 days, weekly 14, monthly 45, quarterly 90; project policy, FedRAMP names no cadence). A series that exists but stopped, or was written with old dates, is not a working method. A real Class C offering should declare `production-assurance` before submission; the fictional Class C sample stays on `development` because it cannot hold a signer's key, and its attack mode shows that the same package under `production-assurance` is blocked until the digest is signed.
 
-What 20x specifies (verified against the pinned CR26 dataset `2026.09.13.02`):
+What 20x specifies (verified against the pinned CR26 dataset `2026.10.13.01`):
 
 - KSI metric history (`SDR-CSX-KMT`): Class B (SHOULD) keeps a 30-day summary and an up-to-one-year summary per indicator; Class C (MUST) keeps those plus all daily metric data, including the status of persistent validation, up to the past year; Class D must significantly supersede the lower classes, with specifics set during the 20x Phase 4 Pilot. The governing window is **up to one year**, which is why the appender retains about a year.
 - Significant Change Notifications (`SCN-CSO-HIS`): 12 months of history.
