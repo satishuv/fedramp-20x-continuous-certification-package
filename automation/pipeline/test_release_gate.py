@@ -501,6 +501,32 @@ def main():
     check("release workflow publish job needs the gate",
           re.search(r'needs:\s*\[verify-tag,\s*gate\]', rw) is not None)
 
+    # (f) AUD-F88: the signature check is cryptographic, not structural. The
+    #     workflow must run `git verify-tag` with gpg.format=ssh against the
+    #     committed allowed-signers file (a valid signature from an unlisted key
+    #     fails with "No principal matched"), refuse an empty signers file, and
+    #     bind the tag to the commit the run is building.
+    signers_rel = ".github/release-allowed-signers"
+    signers_path = os.path.join(BASE, *signers_rel.split("/"))
+    check("release workflow verifies the tag signature cryptographically (git verify-tag)",
+          re.search(r'git verify-tag\s+"\$TAG"', rw) is not None)
+    check("release workflow verifies against the committed allowed-signers file",
+          signers_rel in rw and "gpg.ssh.allowedSignersFile" in rw and "gpg.format ssh" in rw)
+    check("release workflow refuses an allowed-signers file that lists no signer",
+          "lists no signer" in rw)
+    check("release workflow binds the tag to the commit being built (GITHUB_SHA)",
+          "rev-list -n 1" in rw and "GITHUB_SHA" in rw)
+    check("release workflow no longer describes its signature check as structural",
+          "Signature verification here is structural" not in rw)
+    signers = open(signers_path, encoding="utf-8").read() if os.path.exists(signers_path) else ""
+    entries = [ln for ln in signers.splitlines() if ln.strip() and not ln.lstrip().startswith("#")]
+    check("allowed-signers file exists with at least one signer", len(entries) >= 1)
+    check("every allowed-signers entry is <principal> namespaces=\"git\" <keytype> <key>",
+          all(re.fullmatch(r'\S+@\S+ namespaces="git" (ssh-ed25519|ecdsa-sha2-nistp\d+|ssh-rsa|sk-\S+) \S+',
+                           e.strip()) for e in entries))
+    check("allowed-signers file holds public keys only (no private key material)",
+          "PRIVATE KEY" not in signers)
+
     print(f"\n{passed}/{passed + failed} release-gate checks passed")
     return 0 if failed == 0 else 1
 

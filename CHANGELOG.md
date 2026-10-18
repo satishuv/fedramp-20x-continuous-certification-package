@@ -62,6 +62,29 @@ Re-reading every document against the dataset on disk widened it to seven files.
 - `test_install_dependencies.py`: new `test_setup_checks_installed_versions_against_pins`
   (injected oracle: one pinned, one wrong, one absent) and the F-08 guard
   retargeted to the single-source reader. Red-first; MUT-F87 killed.
+### Release tags are verified cryptographically against a committed signer list (AUD-F88)
+
+- **AUD-F88 (High).** `release.yml` checked only that the tag object contained
+  a `BEGIN (PGP|SSH) SIGNATURE` block and said so in its header; a tag signed
+  by any key passed, and nothing bound the tag to the commit the run built.
+  Found by an external review of main `23f46c9`. The maintainer's practice was
+  read from the tags themselves: v1.5.0 and v1.6.0 are SSH-signed by one
+  ed25519 key (fingerprint `SHA256:95T8oBQ46qClD/NUDTlUsP6hxVKCLDsfjMJtsZY5wAY`),
+  extracted from the signature blobs and matched to the configured public
+  signing key.
+- New `.github/release-allowed-signers` holds that public key in ssh-keygen
+  `allowed_signers` form, with the rotation procedure in its header; no private
+  key enters the repository. The verify-tag job now sets `gpg.format=ssh` and
+  `gpg.ssh.allowedSignersFile` to it, refuses a signers file listing no signer,
+  runs `git verify-tag` (fails on no signature, an invalid signature, or a valid
+  signature from an unlisted key), requires the tag to resolve to `GITHUB_SHA`,
+  and keeps the manifest `release_tag` binding. `docs/versioning.md` describes
+  verification, the consumer command and key rotation.
+- `test_release_gate.py` section (f): six new checks, red-first (99/104 with the
+  old workflow, 104/104 after). The shipped shell was executed verbatim under
+  bash against the real tags: wrong `GITHUB_SHA`, unsigned tag, empty signers
+  file, unlisted key and manifest mismatch each fail closed; v1.5.0 and v1.6.0
+  verify against the committed file. MUT-F88 killed.
 
 ### First live AWS collection: four defects the fixtures could not see (AUD-F82 to AUD-F85)
 
