@@ -929,6 +929,11 @@
    "severity": "High",
    "component": ".github/workflows/release.yml (verify-tag job); .github/release-allowed-signers (new); automation/pipeline/test_release_gate.py (section f); docs/versioning.md (signing and publishing sections)"
   },
+  "ledger.AUD-F89": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": ".github/workflows/living-sdr-loop.yml (job layout and permissions); automation/pipeline/test_living_sdr_privileges.py (new); automation/collectors/test_collection_fail_closed.py (F32 slice retargeted to the alarm job); docs/automation.md"
+  },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
    "severity": "medium",

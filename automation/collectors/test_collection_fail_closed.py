@@ -158,8 +158,15 @@ def test_f31_actions_loop_refuses_to_run_without_a_bucket():
 def test_f32_actions_loop_files_an_issue_on_failure():
     wf = _read(LOOP)
     assert "issues: write" in wf
-    tail = wf[wf.find("Open an issue on failure"):]
-    assert "if: failure()" in tail
+    # Since AUD-F89 the issue is filed by its own job (`alarm:`) with a
+    # job-level `if: failure()`; before that it was a step with a step-level
+    # one. Either way the condition must sit between the alarm's start and the
+    # gh commands.
+    start = wf.find("\n  alarm:")
+    if start < 0:
+        start = wf.find("Open an issue on failure")
+    tail = wf[start:]
+    assert "if: failure()" in tail[:tail.find("gh issue")]
     assert "gh issue create" in tail and "gh issue comment" in tail
 
 

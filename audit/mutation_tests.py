@@ -674,6 +674,11 @@ MUTATIONS = [
      '          if ! git verify-tag "$TAG"; then\n',
      '          if ! git cat-file -p "refs/tags/$TAG" | grep -qE SIGNATURE; then  # MUTATION structural check again\n',
      "automation/pipeline/test_release_gate.py"),
+    ("MUT-F89",
+     ".github/workflows/living-sdr-loop.yml",
+     "      contents: read       # read the repository; this job writes nothing to it\n",
+     "      contents: write      # MUTATION the AWS job can write to the repository again\n",
+     "automation/pipeline/test_living_sdr_privileges.py"),
 ]
 
 
