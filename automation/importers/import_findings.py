@@ -59,7 +59,6 @@ import argparse
 import hashlib
 import json
 import os
-import re
 import sys
 from datetime import datetime, timedelta, timezone
 
@@ -94,10 +93,14 @@ KINDS = {
 #                evaluation cadence Config records per rule.
 OBSERVED_RULES = ("VDR-CSO-DET", "VDR-CSO-RES", "VDR-CSO-ADT", "VDR-TFR-MVX")
 
-EVALUATED = ("COMPLIANT", "NON_COMPLIANT", "INSUFFICIENT_DATA", "NOT_APPLICABLE")
-# Worst-wins precedence when one framework id is deployed under several names.
-_PRECEDENCE = {"NON_COMPLIANT": 0, "COMPLIANT": 1, "INSUFFICIENT_DATA": 2,
-               "NOT_APPLICABLE": 3}
+# AUD-F84: the deployed-name resolution (exact id, Security Hub linked shape,
+# catalog SourceIdentifier) and the worst-wins precedence are shared with the
+# live collector through automation/collectors/config_rule_resolution.py, so
+# the two paths cannot drift. The names below are kept for this module's callers.
+from config_rule_resolution import (  # noqa: E402
+    EVALUATED, PRECEDENCE as _PRECEDENCE, VocabularyError, map_rule_name)
+import config_rule_resolution as _crr  # noqa: E402
+
 _SEVERITIES = ("CRITICAL", "HIGH", "MEDIUM", "LOW", "INFORMATIONAL")
 _WORKFLOWS = ("NEW", "NOTIFIED", "SUPPRESSED", "RESOLVED")
 
@@ -189,37 +192,17 @@ def load_name_map(path, known_ids):
     return dict(names)
 
 
-_SH_LINKED = re.compile(r"^securityhub-(?P<body>.+)-(?P<suffix>[0-9a-zA-Z]+)$")
-
-
 def catalog_identifiers(path=VOCABULARY):
     """{catalog identifier: framework managed-rule id}, from the pinned
     vocabulary (read from the AWS Config Developer Guide, one page per rule).
     The identifier is not derivable from the name (restricted-ssh is
-    INCOMING_SSH_DISABLED), so this is data, never a transform."""
-    doc = load_json(path)
-    pairs = doc.get("config_managed_rule_identifiers") or {}
-    if not isinstance(pairs, dict) or not pairs:
-        raise RefusedInput(f"{path}: config_managed_rule_identifiers is missing")
-    return {ident: name for name, ident in pairs.items()}
-
-
-def map_rule_name(name, known_ids, source_identifiers, name_map, by_identifier=None):
-    """Resolve a deployed Config rule name to a framework managed-rule id, or
-    None. `source_identifiers` is {deployed name: Source.SourceIdentifier}
-    from a ConfigRules export (may be empty); `by_identifier` is the pinned
-    {catalog identifier: framework id} map (catalog_identifiers())."""
-    if name in known_ids:
-        return name
-    m = _SH_LINKED.match(name)
-    if m and m.group("body") in known_ids:
-        return m.group("body")
-    ident = source_identifiers.get(name)
-    if isinstance(ident, str) and by_identifier:
-        candidate = by_identifier.get(ident.strip())
-        if candidate in known_ids:
-            return candidate
-    return name_map.get(name)
+    INCOMING_SSH_DISABLED), so this is data, never a transform. Shared with the
+    live collector (AUD-F84); a malformed vocabulary is a refused input here."""
+    load_json(path)  # the importer's own unreadable-file refusal first
+    try:
+        return _crr.catalog_identifiers(path)
+    except VocabularyError as e:
+        raise RefusedInput(str(e)) from e
 
 
 # ---- Export readers ----------------------------------------------------------

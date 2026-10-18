@@ -66,6 +66,64 @@ def collection_outcome(facts, posture_facts):
     return {"evaluated": evaluated, "unevaluated": unevaluated, "errors": errors}
 
 
+def _import_resolution():
+    try:
+        import config_rule_resolution as crr
+    except ImportError:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "config_rule_resolution",
+            os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                         "config_rule_resolution.py"))
+        crr = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(crr)
+    return crr
+
+
+def resolve_deployed_rules(config, known_ids, client_error):
+    """AUD-F84: {framework id: [deployed names]} for the account's Config rules,
+    via one paginated config:DescribeConfigRules read. Returns (mapping,
+    resolution) where resolution is "deployed-names" on success or
+    "exact-name-only" when the listing was denied (a role predating the
+    DescribeConfigRules grant): the caller then falls back to the exact-name
+    lookup and the facts say so, rather than reporting every rule as not
+    deployed with no hint why."""
+    crr = _import_resolution()
+    rules = []
+    try:
+        token = None
+        while True:
+            kw = {"NextToken": token} if token else {}
+            resp = config.describe_config_rules(**kw)
+            rules.extend(resp.get("ConfigRules", []))
+            token = resp.get("NextToken")
+            if not token:
+                break
+    except Exception as e:  # noqa: BLE001 - a failed listing must not sink the run
+        code = (getattr(e, "response", None) or {}).get("Error", {}).get("Code") \
+            or type(e).__name__
+        print(f"  (config:DescribeConfigRules {code}: resolving registry rules by "
+              "exact ConfigRuleName only; deployed Security Hub or conformance-pack "
+              "names are invisible until the collector role grants it)")
+        return {}, "exact-name-only"
+    mapping = crr.resolve_deployed_names(rules, known_ids, crr.catalog_identifiers())
+    return mapping, "deployed-names"
+
+
+def _compliance_for_names(config, names, client_error):
+    """{deployed name: ComplianceType} for up to any number of names, in the
+    API's chunks of 25. A name AWS does not return is absent from the result."""
+    out = {}
+    for i in range(0, len(names), 25):
+        chunk = names[i:i + 25]
+        resp = config.describe_compliance_by_config_rule(ConfigRuleNames=chunk)
+        for row in resp.get("ComplianceByConfigRules", []):
+            name = row.get("ConfigRuleName")
+            if name:
+                out[name] = (row.get("Compliance") or {}).get("ComplianceType", "UNKNOWN")
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--profile", default=None, help="AWS profile (use a ReadOnly one)")
@@ -108,23 +166,37 @@ def main():
                 rule_to_checks.setdefault(check["target"], []).append(check["check_id"])
 
     facts = []
+    # AUD-F84: resolve the registry's catalog names to the names the account
+    # actually deploys (Security Hub, conformance packs, provider templates).
+    crr = _import_resolution()
+    deployed, resolution = resolve_deployed_rules(
+        config, set(rule_to_checks), botocore.exceptions.ClientError)
     for rule, check_ids in sorted(rule_to_checks.items()):
         fact = {"rule": rule, "check_ids": check_ids, "collected_at": now,
-                "region": region}
-        try:
-            resp = config.describe_compliance_by_config_rule(ConfigRuleNames=[rule])
-            results = resp.get("ComplianceByConfigRules", [])
-            if results:
-                comp = results[0].get("Compliance", {})
-                fact["compliance_type"] = comp.get("ComplianceType", "UNKNOWN")
-            else:
-                fact["compliance_type"] = "RULE_NOT_DEPLOYED"
-        except botocore.exceptions.ClientError as e:
-            code = e.response.get("Error", {}).get("Code", "ClientError")
-            fact["compliance_type"] = ("RULE_NOT_DEPLOYED"
-                                       if code == "NoSuchConfigRuleException" else f"ERROR:{code}")
+                "region": region, "resolution": resolution}
+        names = deployed.get(rule, []) if resolution == "deployed-names" else [rule]
+        if not names:
+            fact["compliance_type"] = "RULE_NOT_DEPLOYED"
+            fact["instances"] = 0
+        else:
+            try:
+                by_name = _compliance_for_names(config, names, botocore.exceptions.ClientError)
+                found = {n: ct for n, ct in by_name.items() if n in names}
+                if found:
+                    fact["compliance_type"] = crr.worst_wins(found.values())
+                    fact["instances"] = len(found)
+                    fact["deployed_names"] = sorted(found)
+                else:
+                    fact["compliance_type"] = "RULE_NOT_DEPLOYED"
+                    fact["instances"] = 0
+            except botocore.exceptions.ClientError as e:
+                code = e.response.get("Error", {}).get("Code", "ClientError")
+                fact["compliance_type"] = ("RULE_NOT_DEPLOYED"
+                                           if code == "NoSuchConfigRuleException"
+                                           else f"ERROR:{code}")
         facts.append(fact)
-        print(f"  {rule}: {fact['compliance_type']}")
+        suffix = f" ({fact.get('instances', 0)} deployed)" if fact.get("instances") else ""
+        print(f"  {rule}: {fact['compliance_type']}{suffix}")
 
     # Broadened read-only posture collectors (Security Hub, Access Analyzer,
     # Inspector, GuardDuty, Backup, KMS). Each is read-only and self-contained;
