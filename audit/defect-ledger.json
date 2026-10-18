@@ -1159,6 +1159,19 @@
       "mutation": "MUT-F87: the version comparison in dependency_mismatches is disabled so any installed version passes as the pinned one; test_setup_checks_installed_versions_against_pins goes RED on the wrong-version case; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F88",
+      "severity": "High",
+      "requirement": "A release of a framework that generates certification evidence must be attributable to an authorized maintainer by the publishing gate itself, not by a downstream consumer who may never check. docs/versioning.md requires a signed release tag; the gate must establish WHO signed, not only that something signature-shaped is present.",
+      "component": ".github/workflows/release.yml (verify-tag job); .github/release-allowed-signers (new); automation/pipeline/test_release_gate.py (section f); docs/versioning.md (signing and publishing sections)",
+      "description": "Found by an external review of main 23f46c9 (2026-10-18) and confirmed verbatim: the verify-tag job ran `git cat-file -p | grep -qE 'BEGIN (PGP|SSH) SIGNATURE'` and its own header said verification was structural, delegating the cryptographic question to consumers. A tag signed by ANY key passed, and nothing bound the tag to the commit the run was building. The maintainer's real practice was read from the tags: v1.5.0 and v1.6.0 are SSH-signed (SSHSIG v1, namespace git, sha512) by one ed25519 key, fingerprint SHA256:95T8oBQ46qClD/NUDTlUsP6hxVKCLDsfjMJtsZY5wAY, extracted from the signature blobs and matched to the maintainer's configured public signing key; v1.4.0 and earlier carry no signature, as the workflow header already records.",
+      "root_cause": "The workflow had no trust anchor to verify against (no committed public key), so it checked the only thing it could without one: the presence of a signature block.",
+      "fix_commit": "this PR -- .github/release-allowed-signers commits the trusted PUBLIC key in ssh-keygen allowed_signers form (principal, namespaces=git, key; rotation procedure in the file header); the verify-tag job sets gpg.format=ssh and gpg.ssh.allowedSignersFile to it, refuses a signers file that lists no signer, runs `git verify-tag \"$TAG\"` (fails on no signature, invalid signature, or a valid signature from an unlisted key: No principal matched), requires `git rev-list -n 1 <tag>` to equal GITHUB_SHA, and keeps the manifest release_tag binding. No private key enters the repository. docs/versioning.md describes verification, the consumer command and key rotation",
+      "regression_test": "automation/pipeline/test_release_gate.py section (f): workflow runs git verify-tag against the committed signers file with gpg.format ssh, refuses an empty signers file, binds to GITHUB_SHA, no longer calls itself structural; signers file exists, every entry is <principal> namespaces=\"git\" <keytype> <key>, no private key material. Red-first: 99/104 with the old workflow (five new checks red), 104/104 after. The shipped shell was also executed verbatim under bash against the real tags: listed-key signature then wrong GITHUB_SHA fails (exit 1), unsigned v1.4.0 fails, empty signers file fails, a signers file listing a different ed25519 key fails (No principal matched), older signed tag fails on the manifest binding; git verify-tag on v1.5.0 and v1.6.0 against the committed file exits 0",
+      "mutation": "MUT-F88: the git verify-tag call is replaced by the old structural grep; the 'verifies the tag signature cryptographically' check goes RED; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

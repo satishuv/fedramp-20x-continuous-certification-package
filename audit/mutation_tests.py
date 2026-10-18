@@ -669,6 +669,11 @@ MUTATIONS = [
      "        if have != pinned:\n",
      "        if False:  # MUTATION any installed version passes as the pinned one again\n",
      "validation/scripts/test_install_dependencies.py"),
+    ("MUT-F88",
+     ".github/workflows/release.yml",
+     '          if ! git verify-tag "$TAG"; then\n',
+     '          if ! git cat-file -p "refs/tags/$TAG" | grep -qE SIGNATURE; then  # MUTATION structural check again\n',
+     "automation/pipeline/test_release_gate.py"),
 ]
 
 

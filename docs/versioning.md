@@ -53,10 +53,27 @@ git tag -s v<framework>-cr26-<dataset> -m "FedRAMP 20x SDR framework <tag>"
 git push origin v<framework>-cr26-<dataset>
 ```
 
-`-s` creates a GPG-signed tag (or configure `gpg.format=ssh` / sigstore for
-keyless signing per your organization's policy). Verify with
-`git tag -v <tag>`. Signing keys are the maintainer's own and are never held in
-this repository. A GitHub Release created from a signed tag carries the
+`-s` signs the tag with the key your git is configured for; this project's
+release tags are SSH-signed (`gpg.format=ssh`, an ed25519 key). The release
+workflow verifies the signature cryptographically with `git verify-tag` against
+`.github/release-allowed-signers`, which lists the PUBLIC keys trusted to sign a
+release, one per line in ssh-keygen `allowed_signers` form. A tag signed by a key
+not on that list fails the workflow with "No principal matched", however valid
+the signature is; so does an unsigned tag, a tag that does not point at the
+commit being built, or a tag whose name differs from the manifest's
+`release_tag`. Private keys are the maintainer's own and are never held in this
+repository. Consumers verify the same way:
+
+```
+git config gpg.format ssh
+git config gpg.ssh.allowedSignersFile .github/release-allowed-signers
+git verify-tag <tag>
+```
+
+Rotating a key: add the new public key to `.github/release-allowed-signers` in
+a reviewed pull request and merge it BEFORE tagging with the new key; remove a
+retired key only once every release it signed is superseded, since verifying
+those tags needs it. A GitHub Release created from a signed tag also carries the
 signature badge.
 
 ## The release gate is one gate
@@ -93,7 +110,9 @@ closure.
 
 Push the signed tag. `.github/workflows/release.yml` then:
 
-1. refuses a lightweight or unsigned tag, and a tag whose name is not the
+1. refuses a lightweight or unsigned tag, a tag whose signature does not
+   verify against a key in `.github/release-allowed-signers`, a tag that does
+   not point at the commit being built, and a tag whose name is not the
    committed manifest's `release_tag` (bump `FRAMEWORK_VERSION` in
    `validation/scripts/build_release_manifest.py`, rebuild and commit first);
 2. re-runs the whole validate workflow on the tagged commit;

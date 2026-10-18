@@ -1,0 +1,19 @@
+# Release-tag signers trusted by .github/workflows/release.yml (AUD-F88).
+#
+# ssh-keygen allowed_signers format: <principal> namespaces="git" <keytype> <key>
+# The workflow runs `git verify-tag` with gpg.format=ssh against THIS file, so a
+# release tag is published only when its signature was made by a key listed
+# here, in the "git" namespace. A tag signed by any other key fails with
+# "No principal matched", however valid the signature is.
+#
+# Public keys only; the private half is the maintainer's own and is never held
+# in this repository (docs/versioning.md). The key below is the one that signed
+# v1.5.0-cr26-2026.09.13.02 and v1.6.0-cr26-2026.10.08.01 (extracted from those
+# tags' SSHSIG blobs and matched to the maintainer's configured signing key;
+# fingerprint SHA256:95T8oBQ46qClD/NUDTlUsP6hxVKCLDsfjMJtsZY5wAY).
+#
+# Rotation: add the new key on its own line BEFORE signing with it, merge that
+# change to main, then tag. Remove a retired key only after every release it
+# signed has been superseded; verify-tag on old tags needs it. Changes to this
+# file are release-trust changes and go through a reviewed pull request.
+satishuv@amazon.com namespaces="git" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB6ZuPp0kvAZ042217TWorUITwrnVj9BE9p0gYa52gdK
