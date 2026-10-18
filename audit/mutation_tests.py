@@ -679,6 +679,11 @@ MUTATIONS = [
      "      contents: read       # read the repository; this job writes nothing to it\n",
      "      contents: write      # MUTATION the AWS job can write to the repository again\n",
      "automation/pipeline/test_living_sdr_privileges.py"),
+    ("MUT-F90",
+     ".github/workflows/validate.yml",
+     "      - name: Ruff lint (report-only)\n        continue-on-error: true\n",
+     "      - name: Ruff lint (report-only)\n        continue-on-error: false  # MUTATION a 166-finding baseline becomes a silent hard gate\n",
+     "validation/scripts/test_quality_telemetry.py"),
 ]
 
 

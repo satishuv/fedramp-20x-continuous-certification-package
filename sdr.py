@@ -361,6 +361,7 @@ TEST_SUITE = [
     "automation/collectors/test_multi_account_config_rules.py",
     "validation/scripts/test_docx_integrity.py",
     "validation/scripts/test_docs_facts.py",
+    "validation/scripts/test_quality_telemetry.py",
     "automation/metrics/test_history_integrity.py",
     "automation/collectors/test_service_registry.py",
     "automation/collectors/test_thirdparty_upsert.py",

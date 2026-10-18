@@ -1,0 +1,42 @@
+# Tool configuration only. This file carries NO project table and NO
+# build-system table on purpose: the framework is run from a checkout
+# (python sdr.py ...), setup.py is an onboarding script and not a packaging
+# definition, and nothing installs this repository as a distribution. Adding
+# packaging metadata here would change that contract; lint configuration does not.
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+extend-exclude = [
+  ".claude",
+  ".fortify",
+  "automation/collectors/testdata",
+  "artifacts",
+  "package",
+]
+
+[tool.ruff.lint]
+# Baseline measured on main 38ef617 (AUD-F90) under THIS configuration:
+# 166 findings, 108 auto-fixable (mostly I001 import order and UP modernisations);
+# the default rule set alone reports 113 (78 E702 semicolon statements in
+# tests, 14 unused imports, 8 late imports, 7 unused variables). None of the
+# B023 or F841 hits is a defect (the flagged closures are called inside their
+# own iteration). The CI quality job runs report-only until a ratchet is
+# recorded here; the gate is switched on by removing `continue-on-error` in
+# validate.yml, not by editing this list to hide findings.
+select = ["E", "F", "I", "B", "UP"]
+ignore = [
+  "E501",  # line length: measured by the tests' own 100-column convention, not enforced here yet
+  "E702",  # semicolon-separated statements: a deliberate idiom in the offline tests' one-line checks
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests import the module under test after sys.path manipulation.
+"**/test_*.py" = ["E402"]
+"tests/**" = ["E402"]
+"validation/scripts/*.py" = ["E402"]
+
+[tool.ruff.format]
+# Report-only: 197 of 202 files differ from the formatter's output on main
+# 38ef617. A repository-wide reformat is a deliberate, separate change.
+quote-style = "double"

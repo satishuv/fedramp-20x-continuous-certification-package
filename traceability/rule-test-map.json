@@ -934,6 +934,11 @@
    "severity": "High",
    "component": ".github/workflows/living-sdr-loop.yml (job layout and permissions); automation/pipeline/test_living_sdr_privileges.py (new); automation/collectors/test_collection_fail_closed.py (F32 slice retargeted to the alarm job); docs/automation.md"
   },
+  "ledger.AUD-F90": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "pyproject.toml (new, [tool.ruff] only); .github/workflows/validate.yml (quality job); .github/dependabot.yml (new); .gitignore; validation/scripts/test_quality_telemetry.py (new)"
+  },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
    "severity": "medium",
