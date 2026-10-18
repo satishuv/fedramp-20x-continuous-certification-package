@@ -4,11 +4,19 @@ Goal: a validated Security Decision Record on your machine, and a clear picture 
 
 ## Prerequisites
 
-Python 3.10 or later, and three packages.
+Python 3.10 or later, and five packages pinned to exact versions.
 
 ```bash
 pip install -r requirements.txt
 ```
+
+That installs the five runtime packages at the versions the gate was built against. For a bit-for-bit copy of the CI environment (every transitive package, hash-verified), install the resolved closure instead; it is compiled for Python 3.12 on Linux, installs on Python 3.11 and later, and includes the CI-only tooling:
+
+```bash
+python -m pip install --require-hashes -r requirements.lock
+```
+
+Either way, `python setup.py` checks that each installed package matches its pin and reinstalls the pinned set when one differs, so an older package already on the machine cannot pass as the pinned one.
 
 No AWS account is needed. Nothing in the build path makes a network call: the FedRAMP dataset and both official schemas are pinned in the repository.
 

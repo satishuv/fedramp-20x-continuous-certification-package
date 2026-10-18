@@ -41,6 +41,27 @@ Re-reading every document against the dataset on disk widened it to seven files.
   changelog) are not pin claims and are not checked. Red-first: 8 failures on
   the unmodified tree, 0 after. MUT-F86 (badge reverted to the previous
   release) killed.
+### Onboarding checks installed versions against the pins (AUD-F87)
+
+- **AUD-F87 (Medium).** `setup.py` answered "all present" from `__import__` of
+  five module names, so any installed version passed as the pinned one and the
+  install step never ran; the first run of the corrected check on the
+  development interpreter found `cryptography` 46.0.3 installed against the pin
+  50.0.2. It now reads the pins from `requirements.txt` (no second list; the
+  dead `DEPS` is gone), reads each installed distribution's version through
+  `importlib.metadata`, reports every absent or differing distribution as
+  (installed, pinned), installs the pinned set on any mismatch and fails closed
+  if a mismatch survives. Found by an external review of main `23f46c9`.
+- The review's proposed remedy, `requirements.lock --require-hashes` as the
+  default install, was tested and not adopted: the lock is resolved for Linux
+  and Python 3.12, carries the CI-only CDK tooling, and does not install on
+  Python 3.10 (`rpds-py==2026.6.3` requires 3.11+), while the repository
+  promises 3.10+ and `requirements.txt` resolves there. The docs now name both
+  paths with their scope, `docs/getting-started.md` says five packages (it said
+  three), and `make install-locked` installs the hashed closure.
+- `test_install_dependencies.py`: new `test_setup_checks_installed_versions_against_pins`
+  (injected oracle: one pinned, one wrong, one absent) and the F-08 guard
+  retargeted to the single-source reader. Red-first; MUT-F87 killed.
 
 ### First live AWS collection: four defects the fixtures could not see (AUD-F82 to AUD-F85)
 
