@@ -1,0 +1,29 @@
+# Dependabot version updates (AUD-F90). Security updates were disabled on the
+# repository and no version-update schedule existed, so an advisory against a
+# pinned dependency surfaced only when pip-audit failed the release gate.
+#
+# How an update lands here: requirements.txt, requirements-dev.txt and
+# requirements-ci.txt are INPUTS; requirements.lock is the hash-locked closure
+# every CI path installs (docs/versioning.md). A Dependabot PR that bumps an
+# input must have `make lock` run on it (clean, networked environment) and the
+# regenerated requirements.lock and artifacts/sbom.cdx.json committed, or the
+# release gate's hashed install does not see the bump. Dependabot does not run
+# `make lock`; the maintainer does, on the PR branch, before merging.
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+    commit-message:
+      prefix: "chore(deps)"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+    commit-message:
+      prefix: "chore(ci)"

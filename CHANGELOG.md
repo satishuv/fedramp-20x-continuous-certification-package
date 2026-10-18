@@ -29,6 +29,29 @@ diff against the previous dataset and its pin advanced)
   read-only and pushing nothing; the writer without a token or AWS step; the
   diff crossing as an artifact). Red-first: 12 failures on the old workflow, 0
   after; the existing F29 to F32 loop assertions still pass. MUT-F89 killed.
+### Lint telemetry and dependency-update automation, honest about their status (AUD-F90)
+
+- **AUD-F90 (Medium).** No Ruff, Flake8 or Mypy configuration or CI step, no
+  Dependabot schedule, and repository security updates disabled; Bandit was the
+  only static analysis. Found by an external review of main `23f46c9`. Baseline
+  measured before any configuration was written: Ruff's default rules report
+  113 findings, the committed E/F/I/B/UP selection (E702 ignored as a deliberate
+  test idiom, E402 per-file for tests) 166, of which 108 auto-fixable; every
+  B023 and F841 hit was read and none is a defect. `ruff format --check` would
+  reformat 197 of 202 files.
+- New `pyproject.toml` with `[tool.ruff]` only (no packaging tables; the repo
+  runs from a checkout) and the baseline recorded beside the rule selection. New
+  `quality` job in `validate.yml`: `ruff check` and `ruff format --check`,
+  report-only (`continue-on-error`, with `set -o pipefail` so the step shows its
+  real status), reports uploaded, deliberately outside `release-gate`. New
+  `.github/dependabot.yml`: weekly pip and github-actions updates, with the note
+  that an input bump needs `make lock` before the hashed CI sees it.
+- Coverage was NOT added: the suite spawns a Python subprocess per gate, so a
+  meaningful number needs subprocess-aware wiring and a measured baseline first.
+- `validation/scripts/test_quality_telemetry.py` holds the pieces to what they
+  claim (report-only, outside the gate, pinned, scheduled). Red-first: 11
+  failures with the pieces absent, 0 after. MUT-F90 (the lint step silently
+  becomes a hard gate) killed.
 
 ### Documentation facts are now derived and tested, not hand-synced (AUD-F86)
 

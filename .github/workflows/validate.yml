@@ -226,6 +226,47 @@ jobs:
             validation/reports/gate-results.run.json
           if-no-files-found: ignore
 
+  quality:
+    # REPORT-ONLY (AUD-F90). General lint and format telemetry with Ruff, under
+    # the committed pyproject.toml. Bandit covers security patterns; this covers
+    # unused imports and variables, late-binding closures, import order and
+    # modernisation, none of which the security gate sees. Baseline on main
+    # 38ef617: 166 findings, 197 of 202 files unformatted. The job records the
+    # numbers on every run and never blocks: `continue-on-error` on both steps,
+    # and it is deliberately NOT in release-gate's `needs`. To turn it into a
+    # gate, fix the findings, remove `continue-on-error`, add it to release-gate,
+    # and record the ratchet in pyproject.toml; never hide findings by widening
+    # the ignore list.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.12"
+      - name: Install ruff
+        run: pip install --quiet ruff==0.15.20
+      - name: Ruff lint (report-only)
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          ruff check . --output-format concise | tee ruff-lint.txt
+          ruff check . --statistics | tee ruff-lint-statistics.txt
+      - name: Ruff format check (report-only)
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          ruff format --check . | tee ruff-format.txt
+      - name: Upload quality report
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: quality-report
+          path: |
+            ruff-lint.txt
+            ruff-lint-statistics.txt
+            ruff-format.txt
+          if-no-files-found: ignore
+
   release-gate:
     # THE ONE REQUIRED STATUS CHECK on main (AUD-F12). Succeeds only when every
     # section above succeeded. Requiring this single job means a merge can never
