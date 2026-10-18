@@ -11,7 +11,7 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
-### First live AWS collection: three defects the fixtures could not see (AUD-F82 to AUD-F84)
+### First live AWS collection: four defects the fixtures could not see (AUD-F82 to AUD-F85)
 
 The read-only collectors ran for the first time against a real account (one
 AWS Organizations management account with Control Tower, Config, Security Hub,
@@ -50,6 +50,27 @@ GuardDuty, Inspector and Access Analyzer active) under a role granting exactly
   new grant falls back to the exact name and every fact says
   `exact-name-only`. 26 checks, 5 red against the old collector, MUT-F84
   killed.
+- **AUD-F85 (High).** The multi-account fan-out, the repository's only width
+  lever for an AWS Organization, produced facts no metric ever saw. Run across
+  the management account and one member account it iterated only the 36
+  posture collectors (the 34 registry Config rule checks lived inline in
+  `collect_facts.py main()`) and wrote one flat list to `multi-account.json`,
+  a name outside the `facts-*.json` glob every downstream reader opens. The
+  per-scope Config rule unit is now `collect_facts.collect_config_rule_facts`,
+  called by both drivers (a denied listing degrades to `exact-name-only` for
+  that scope only); the fan-out writes `facts-multi-account.json` in the
+  `{meta, facts, posture_facts}` shape with its own `collection_outcome`, and
+  refuses an `--out` name the pipeline would not read. Reading the two stores
+  together then exposed the second half: the management account's facts
+  carried no account tag in the single-account store and did in the fan-out's,
+  so `load_facts` saw two scopes and every one of 28 routed indicators doubled
+  (KSI-CMT-LMC 3/3 became 6/6; KSI-IAM-JIT 141/143 became 282/286). The loader
+  now derives a store's account from `meta.identity_arn` and applies it to
+  untagged facts, so one scope is one observation. Live afterwards: 71 facts
+  over 2 accounts (34 rules checked, 29 deployed) and every indicator back at
+  its single-store value. 18 checks plus one appender regression, both red
+  first; MUT-F85 killed, and three further hand mutations (loader de-dup, store
+  name, store shape) each turned their guarding check red.
 
 ### Implementation guidance notes for Google Cloud, Microsoft Azure and Oracle Cloud Infrastructure (MCE-17)
 
