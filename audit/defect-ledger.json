@@ -1172,6 +1172,19 @@
       "mutation": "MUT-F88: the git verify-tag call is replaced by the old structural grep; the 'verifies the tag signature cryptographically' check goes RED; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F89",
+      "severity": "High",
+      "requirement": "Least privilege across a trust boundary: the job that executes repository-controlled code against the provider's account must not also be able to change the repository, and the job that can change the repository must not hold a cloud credential. The living-SDR loop is the one path where provider telemetry becomes a proposed change to committed deliverables.",
+      "component": ".github/workflows/living-sdr-loop.yml (job layout and permissions); automation/pipeline/test_living_sdr_privileges.py (new); automation/collectors/test_collection_fail_closed.py (F32 slice retargeted to the alarm job); docs/automation.md",
+      "description": "Found by an external review of main 23f46c9 (2026-10-18) and confirmed verbatim: the single `refresh` job declared id-token: write, contents: write, pull-requests: write and issues: write at workflow level, assumed the AWS role, ran the collectors, appender, prefill and build, then pushed a branch and opened a PR, all in one token scope. A compromised collector dependency or a crafted API response executing inside that job could push to the repository; the job that pushed also held a live cloud credential.",
+      "root_cause": "The loop was written as one linear script and the workflow permissions block was the union of everything any step needed.",
+      "fix_commit": "this PR -- three jobs. `collect` (id-token: write, contents: read) guards on the bucket, assumes the role, collects, restores/appends/publishes the history, prefills, builds, validates, and captures `git diff --binary -- .` of TRACKED paths plus the changed-path list as an artifact (git-excluded private stores cannot appear in it). `propose` (contents: write, pull-requests: write; needs collect; no id-token, no AWS step) downloads the artifact, refuses any path under .github/, audit/, requirements*, references/, profiles/common/, or any *.py/*.yml/*.yaml/*.sh, refuses an untracked path, applies with `git apply --index`, then branches, commits and opens the PR. `alarm` (issues: write only; if: failure()) files or refreshes the issue. Workflow-level permissions reduced to contents: read. Action pins aligned to the repository's upload-artifact v6.0.0 SHA with the matching download-artifact v6.0.0 SHA, both resolved against the tags",
+      "regression_test": "automation/pipeline/test_living_sdr_privileges.py (parses the YAML: workflow-level permissions grant no write; exactly one job assumes the role; no job holds id-token: write with any repository write; the AWS job has contents: read and runs no git push / gh pr / gh issue; the pushing job holds no id-token, runs no AWS step, refuses out-of-scope paths and applies to the index; the alarm job holds issues: write alone; the writer depends on the AWS job and the diff crosses as an artifact). Red-first: 12 failures against the old single-job workflow, 0 after. The four existing loop assertions (F29 to F32) still pass; F32's slice now starts at the alarm job because a dependent job carries its if: failure() at job level",
+      "mutation": "MUT-F89: the collect job's contents: read becomes contents: write; the 'does not hold id-token: write together with a repository write' and 'AWS job has contents: read' checks go RED; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

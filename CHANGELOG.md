@@ -11,6 +11,25 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### The living-SDR loop separates its cloud credential from its repository write (AUD-F89)
+
+- **AUD-F89 (High).** `living-sdr-loop.yml` ran one job with `id-token: write`,
+  `contents: write`, `pull-requests: write` and `issues: write`, assumed the
+  AWS role, executed the collectors and the build, then pushed a branch and
+  opened a PR in the same token scope. Found by an external review of main
+  `23f46c9`. Now three jobs: `collect` holds the OIDC token with
+  `contents: read` and hands the regenerated diff of tracked paths over as a
+  patch artifact; `propose` holds `contents: write` and `pull-requests: write`,
+  runs no AWS step, refuses a patch touching `.github/`, `audit/`, the
+  dependency lock, the pinned sources, `profiles/common/` or any script, applies
+  it with `git apply --index` and opens the PR; `alarm` holds `issues: write`
+  alone. Workflow-level permissions are `contents: read`.
+- New `automation/pipeline/test_living_sdr_privileges.py` asserts the separation
+  from the parsed YAML (no job with both a token and a write; the AWS job
+  read-only and pushing nothing; the writer without a token or AWS step; the
+  diff crossing as an artifact). Red-first: 12 failures on the old workflow, 0
+  after; the existing F29 to F32 loop assertions still pass. MUT-F89 killed.
+
 ### Documentation facts are now derived and tested, not hand-synced (AUD-F86)
 
 An external security and maintainability review of main `23f46c9` (2026-10-18)

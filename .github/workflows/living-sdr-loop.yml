@@ -13,6 +13,23 @@
 #   7. On ANY failure, opens (or refreshes) a GitHub issue so a broken
 #      collection is visible the day it breaks, not at submission (AUD-F32).
 #
+# Two privilege domains, three jobs (AUD-F89). Until this change one job held
+# the AWS OIDC token AND contents/pull-requests/issues write, while executing
+# repository-controlled Python against the provider's account. Now:
+#
+#   collect   id-token: write, contents: read.  Holds AWS credentials; can read
+#             the repository and write nothing to it. Produces the regenerated
+#             diff as a patch ARTIFACT.
+#   propose   contents: write, pull-requests: write. Holds NO id-token and runs
+#             no AWS step; applies the patch to a fresh checkout after checking
+#             it touches only tracked deliverables, then opens the PR.
+#   alarm     issues: write only. Files or refreshes the failure issue.
+#
+# A compromise of the collection path (a collector dependency, a crafted API
+# response) can therefore not push a branch or open a PR, and the job that can
+# write to the repository never holds a cloud credential. The patch is the only
+# thing that crosses between them, and it is inspected before it is applied.
+#
 # What this deliberately does NOT do: it never sets a status, never writes the
 # assessment field, and never commits the facts store or metric history (both
 # are git-excluded because they derive from a real account). The metric history
@@ -33,18 +50,23 @@ on:
   schedule:
     - cron: "23 5 * * *"
 
+# Default for every job: read the repository, nothing else. Each job grants
+# itself exactly what it needs below; no job holds both a cloud credential and
+# a repository write.
 permissions:
-  id-token: write      # for OIDC role assumption
-  contents: write      # to open the regeneration PR branch
-  pull-requests: write
-  issues: write        # to file the failure issue (AUD-F32)
+  contents: read
 
 jobs:
-  refresh:
+  collect:
     runs-on: ubuntu-latest
     # Guard: does nothing until the provider configures the OIDC role. Keeps the
     # public template from failing daily on a fork that has no account wired.
     if: vars.AWS_OIDC_ROLE_ARN != ''
+    permissions:
+      id-token: write      # for OIDC role assumption
+      contents: read       # read the repository; this job writes nothing to it
+    outputs:
+      changed: ${{ steps.diff.outputs.changed }}
     env:
       SDR_METRIC_HISTORY_BUCKET: ${{ vars.SDR_METRIC_HISTORY_BUCKET }}
     steps:
@@ -113,35 +135,107 @@ jobs:
       - name: Validate before proposing anything
         run: python sdr.py validate --no-tests
 
-      - name: Open a PR only if committed outputs changed
+      - name: Capture the regenerated diff as a patch (tracked deliverables only)
+        id: diff
+        # Facts, metric history, and the pre-fill sidecar are git-excluded, so a
+        # diff of TRACKED paths is exactly the set of committed deliverables the
+        # build changed. Untracked files are never part of the patch: an
+        # untracked file here is a private store, not a deliverable.
+        run: |
+          set -e
+          if git diff --quiet -- .; then
+            echo "No committed deliverable changed; nothing to propose today."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          mkdir -p /tmp/living-sdr
+          git diff --binary -- . > /tmp/living-sdr/regenerated.patch
+          git diff --name-only -- . > /tmp/living-sdr/changed-paths.txt
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "Changed tracked paths:"
+          cat /tmp/living-sdr/changed-paths.txt
+
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        if: steps.diff.outputs.changed == 'true'
+        with:
+          name: living-sdr-regenerated
+          path: /tmp/living-sdr/
+          retention-days: 7
+          if-no-files-found: error
+
+  propose:
+    needs: collect
+    if: needs.collect.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    # This job can write to the repository and therefore holds NO cloud
+    # credential: no id-token, no configure-aws-credentials step, no AWS
+    # variable. It applies the patch the collect job produced, nothing else.
+    permissions:
+      contents: write      # to push the regeneration branch
+      pull-requests: write # to open the PR
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          name: living-sdr-regenerated
+          path: /tmp/living-sdr/
+
+      - name: Refuse a patch that reaches outside the regenerated deliverables
+        # The patch may change TRACKED files only (git-excluded private stores
+        # cannot appear in it by construction), and never the workflows, the
+        # audit ledger, the dependency lock or the pinned sources. The collect
+        # job regenerates deliverables; a patch touching anything that governs
+        # the gate itself is not a regeneration and is not applied.
+        run: |
+          set -e
+          test -s /tmp/living-sdr/changed-paths.txt || { echo "FAIL. Empty change list."; exit 1; }
+          bad=0
+          while IFS= read -r p; do
+            case "$p" in
+              .github/*|audit/*|requirements*|references/*|profiles/common/*|*.py|*.yml|*.yaml|*.sh)
+                echo "REFUSE: $p is not a regenerated deliverable."; bad=1 ;;
+            esac
+            git ls-files --error-unmatch -- "$p" >/dev/null 2>&1 || { echo "REFUSE: $p is not a tracked file."; bad=1; }
+          done < /tmp/living-sdr/changed-paths.txt
+          [ "$bad" -eq 0 ] || exit 1
+          echo "Patch touches only tracked deliverables."
+
+      - name: Apply the patch
+        run: |
+          set -e
+          git apply --index --whitespace=nowarn /tmp/living-sdr/regenerated.patch
+          git diff --cached --stat
+
+      - name: Open the PR
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Facts, metric history, and the pre-fill sidecar are git-excluded, so
-          # a diff here means a committed deliverable actually changed.
-          if git diff --quiet -- .; then
-            echo "No committed deliverable changed; nothing to propose today."
-            exit 0
-          fi
+          set -e
           BRANCH="living-sdr/refresh-$(date -u +%Y%m%d)"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
-          git add -- .
           git commit -m "chore: scheduled SDR refresh $(date -u +%Y-%m-%d)"
           git push -u origin "$BRANCH"
           gh pr create --title "Scheduled SDR refresh $(date -u +%Y-%m-%d)" \
-            --body "Automated read-only refresh. Regenerated deliverables from the pinned dataset and latest collected facts. No status was changed and no assessment was written. Review the diff before merging; collected facts are telemetry, not compliance conclusions." \
+            --body "Automated read-only refresh. Regenerated deliverables from the pinned dataset and latest collected facts, produced by a job holding the AWS credential and no repository write, applied by this job holding a repository write and no AWS credential. No status was changed and no assessment was written. Review the diff before merging; collected facts are telemetry, not compliance conclusions." \
             || echo "PR may already exist for today."
 
+  alarm:
+    needs: [collect, propose]
+    # Silence is the failure mode this closes: a collection that fails for
+    # weeks leaves a gap in the SDR-CSX-KMT history that nothing reports
+    # until submission. One open issue per failure streak; a repeat failure
+    # comments on the existing issue instead of filing a duplicate.
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write        # to file the failure issue (AUD-F32); nothing else
+    steps:
       - name: Open an issue on failure (AUD-F32)
-        # Silence is the failure mode this closes: a collection that fails for
-        # weeks leaves a gap in the SDR-CSX-KMT history that nothing reports
-        # until submission. One open issue per failure streak; a repeat failure
-        # comments on the existing issue instead of filing a duplicate.
-        if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           TITLE="living-sdr-loop failed: KSI metric collection did not complete"
