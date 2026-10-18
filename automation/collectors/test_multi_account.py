@@ -211,13 +211,17 @@ def test_f27_private_store_carries_the_scope_map():
     assert set(scopes.values()) == set(accounts)
     assert all(k == ew.scope_id(v, _KEY) for k, v in scopes.items())
     with tempfile.TemporaryDirectory() as d:
-        p = mac.write_private_store(os.path.join(d, "facts", "run.json"),
+        p = mac.write_private_store(os.path.join(d, "facts", "facts-run.json"),
                                     facts, "run-store", scopes)
         with open(p, encoding="utf-8") as f:
             stored = json.load(f)
-    assert stored["run_id"] == "run-store"
+    # AUD-F85 moved the run id under meta (the collect_facts.py shape every
+    # downstream reader opens); the F27 guarantee is unchanged: the store
+    # carries the run id and the private scope map beside the facts.
+    assert stored["meta"]["run_id"] == "run-store"
     assert stored["scope_map"] == scopes
-    assert len(stored["facts"]) == 2 and all(f["account"] in accounts for f in stored["facts"])
+    all_facts = stored["facts"] + stored["posture_facts"]
+    assert len(all_facts) == 2 and all(f["account"] in accounts for f in all_facts)
     print("PASS: test_f27_private_store_carries_the_scope_map")
 
 

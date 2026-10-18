@@ -654,6 +654,11 @@ MUTATIONS = [
      '        names = deployed.get(rule, []) if resolution == "deployed-names" else [rule]\n',
      '        names = [rule]  # MUTATION exact ConfigRuleName only; deployed names ignored again\n',
      "automation/collectors/test_config_rule_resolution.py"),
+    ("MUT-F85",
+     "automation/collectors/collect_multi_account.py",
+     "    if registry is not None:\n",
+     "    if registry is not None and False:  # MUTATION fan-out skips the Config rule unit again\n",
+     "automation/collectors/test_multi_account_config_rules.py"),
 ]
 
 

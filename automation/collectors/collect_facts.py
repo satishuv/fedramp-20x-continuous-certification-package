@@ -124,6 +124,79 @@ def _compliance_for_names(config, names, client_error):
     return out
 
 
+def registry_rule_checks(registry):
+    """{Config managed-rule catalog name: [check ids]} for every collectable
+    config_managed_rule check in the registry, across all KSIs."""
+    rule_to_checks = {}
+    for kid, entry in registry["ksis"].items():
+        for check in entry["checks"]:
+            if check.get("collectable_now") and check["type"] == "config_managed_rule":
+                rule_to_checks.setdefault(check["target"], []).append(check["check_id"])
+    return rule_to_checks
+
+
+def _client_error_code(e):
+    """The AWS error code of a ClientError-shaped exception, else its type."""
+    resp = getattr(e, "response", None) or {}
+    return (resp.get("Error") or {}).get("Code") or type(e).__name__
+
+
+def collect_config_rule_facts(session, registry, region, now=None, echo=print):
+    """One account-region scope's registry Config rule facts, read-only.
+
+    This is the per-scope unit the single-account driver and the multi-account
+    fan-out share (AUD-F85): before it existed the loop lived inline in main()
+    and the fan-out ran only the posture collectors, so a member account's
+    Config rules never reached a metric. Resolves catalog names to deployed
+    names once per scope (AUD-F84), evaluates each resolved name, aggregates
+    worst-wins. Never raises: a failed Config client yields one ERROR fact per
+    registry rule rather than sinking the scope. ``echo`` receives one line per
+    rule (pass a no-op to run quietly)."""
+    now = now or datetime.now(timezone.utc).isoformat(timespec="seconds")
+    rule_to_checks = registry_rule_checks(registry)
+    try:
+        config = session.client("config")
+    except Exception as e:  # noqa: BLE001 - one scope must not sink a run
+        code = _client_error_code(e)
+        return [{"rule": rule, "check_ids": check_ids, "collected_at": now,
+                 "region": region, "resolution": "exact-name-only",
+                 "compliance_type": f"ERROR:{code}", "instances": 0}
+                for rule, check_ids in sorted(rule_to_checks.items())]
+
+    facts = []
+    # AUD-F84: resolve the registry's catalog names to the names the account
+    # actually deploys (Security Hub, conformance packs, provider templates).
+    crr = _import_resolution()
+    deployed, resolution = resolve_deployed_rules(config, set(rule_to_checks), Exception)
+    for rule, check_ids in sorted(rule_to_checks.items()):
+        fact = {"rule": rule, "check_ids": check_ids, "collected_at": now,
+                "region": region, "resolution": resolution}
+        names = deployed.get(rule, []) if resolution == "deployed-names" else [rule]
+        if not names:
+            fact["compliance_type"] = "RULE_NOT_DEPLOYED"
+            fact["instances"] = 0
+        else:
+            try:
+                by_name = _compliance_for_names(config, names, Exception)
+                found = {n: ct for n, ct in by_name.items() if n in names}
+                if found:
+                    fact["compliance_type"] = crr.worst_wins(found.values())
+                    fact["instances"] = len(found)
+                    fact["deployed_names"] = sorted(found)
+                else:
+                    fact["compliance_type"] = "RULE_NOT_DEPLOYED"
+                    fact["instances"] = 0
+            except Exception as e:  # noqa: BLE001 - one rule must not sink the scope
+                code = _client_error_code(e)
+                fact["compliance_type"] = ("RULE_NOT_DEPLOYED"
+                                           if code == "NoSuchConfigRuleException"
+                                           else f"ERROR:{code}")
+        facts.append(fact)
+        suffix = f" ({fact.get('instances', 0)} deployed)" if fact.get("instances") else ""
+        echo(f"  {rule}: {fact['compliance_type']}{suffix}")
+    return facts
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--profile", default=None, help="AWS profile (use a ReadOnly one)")
@@ -154,49 +227,10 @@ def main():
               "Use ReadOnly or least-privilege credentials.")
         return 1
 
-    config = session.client("config")
     region = session.region_name or "unknown-region"
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
-    # Gather the unique Config managed rule names across all KSIs.
-    rule_to_checks = {}
-    for kid, entry in registry["ksis"].items():
-        for check in entry["checks"]:
-            if check.get("collectable_now") and check["type"] == "config_managed_rule":
-                rule_to_checks.setdefault(check["target"], []).append(check["check_id"])
-
-    facts = []
-    # AUD-F84: resolve the registry's catalog names to the names the account
-    # actually deploys (Security Hub, conformance packs, provider templates).
-    crr = _import_resolution()
-    deployed, resolution = resolve_deployed_rules(
-        config, set(rule_to_checks), botocore.exceptions.ClientError)
-    for rule, check_ids in sorted(rule_to_checks.items()):
-        fact = {"rule": rule, "check_ids": check_ids, "collected_at": now,
-                "region": region, "resolution": resolution}
-        names = deployed.get(rule, []) if resolution == "deployed-names" else [rule]
-        if not names:
-            fact["compliance_type"] = "RULE_NOT_DEPLOYED"
-            fact["instances"] = 0
-        else:
-            try:
-                by_name = _compliance_for_names(config, names, botocore.exceptions.ClientError)
-                found = {n: ct for n, ct in by_name.items() if n in names}
-                if found:
-                    fact["compliance_type"] = crr.worst_wins(found.values())
-                    fact["instances"] = len(found)
-                    fact["deployed_names"] = sorted(found)
-                else:
-                    fact["compliance_type"] = "RULE_NOT_DEPLOYED"
-                    fact["instances"] = 0
-            except botocore.exceptions.ClientError as e:
-                code = e.response.get("Error", {}).get("Code", "ClientError")
-                fact["compliance_type"] = ("RULE_NOT_DEPLOYED"
-                                           if code == "NoSuchConfigRuleException"
-                                           else f"ERROR:{code}")
-        facts.append(fact)
-        suffix = f" ({fact.get('instances', 0)} deployed)" if fact.get("instances") else ""
-        print(f"  {rule}: {fact['compliance_type']}{suffix}")
+    facts = collect_config_rule_facts(session, registry, region, now=now)
 
     # Broadened read-only posture collectors (Security Hub, Access Analyzer,
     # Inspector, GuardDuty, Backup, KMS). Each is read-only and self-contained;

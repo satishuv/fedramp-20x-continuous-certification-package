@@ -358,6 +358,7 @@ TEST_SUITE = [
     "automation/collectors/test_collector_iam_matches.py",
     "automation/collectors/test_collection_fail_closed.py",
     "automation/collectors/test_config_rule_resolution.py",
+    "automation/collectors/test_multi_account_config_rules.py",
     "validation/scripts/test_docx_integrity.py",
     "automation/metrics/test_history_integrity.py",
     "automation/collectors/test_service_registry.py",

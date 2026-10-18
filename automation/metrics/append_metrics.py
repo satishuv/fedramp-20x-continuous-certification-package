@@ -85,17 +85,26 @@ def load_facts():
     # De-duplicate identical (rule, region, account) observations so re-reading
     # the same file, or two files for the same scope, does not double-count.
     seen_scopes = {}
+    seen_posture = set()
     for fn in sorted(os.listdir(FACTS_DIR)):
         if not fn.startswith("facts-") or not fn.endswith(".json"):
             continue
         store = load(os.path.join(FACTS_DIR, fn), {})
         store_ts = (store.get("meta") or {}).get("collected_at")
+        # AUD-F85: a single-account store names its identity in meta but tags
+        # no fact with the account, while the fan-out tags every fact. Without
+        # this, one account observed by both stores reads as two scopes and
+        # its rules count twice (the first live run recorded 6 of 6 for three
+        # rules). Apply the store's account to its untagged facts.
+        store_account = _store_account(store)
         for fact in store.get("facts", []):
             # F05: ensure an observation timestamp is present so the appender can
             # tell a fresh measurement from a replayed stale one. Config facts
             # carry collected_at; fall back to the store's meta timestamp.
             if not fact.get("collected_at") and store_ts:
                 fact = {**fact, "collected_at": store_ts}
+            if not fact.get("account") and store_account:
+                fact = {**fact, "account": store_account}
             rule = fact.get("rule")
             scope = (rule, fact.get("region"), fact.get("account"))
             # Latest file wins for the SAME exact scope; different scopes are
@@ -104,10 +113,33 @@ def load_facts():
         for pf in store.get("posture_facts", []):
             if not pf.get("collected_at") and store_ts:
                 pf = {**pf, "collected_at": store_ts}
+            if not pf.get("account") and store_account:
+                pf = {**pf, "account": store_account}
+            # Same scope rule for posture: one (service, check, region, account)
+            # observation per scope, latest file wins.
+            pkey = (pf.get("service"), pf.get("check"), pf.get("region"), pf.get("account"))
+            if pf.get("account") and pkey in seen_posture:
+                prior = posture_by_service.get(pf.get("service"), [])
+                posture_by_service[pf.get("service")] = [
+                    p for p in prior
+                    if (p.get("service"), p.get("check"),
+                        p.get("region"), p.get("account")) != pkey]
+            seen_posture.add(pkey)
             posture_by_service.setdefault(pf.get("service"), []).append(pf)
     for (rule, _region, _account), fact in seen_scopes.items():
         config_by_rule.setdefault(rule, []).append(fact)
     return config_by_rule, posture_by_service
+
+
+def _store_account(store):
+    """The AWS account a facts store was collected from, or None: the fifth
+    field of meta.identity_arn (collect_facts.py records the caller's ARN).
+    A store with no identity (an offline import) stays untagged."""
+    arn = str((store.get("meta") or {}).get("identity_arn") or "")
+    parts = arn.split(":")
+    if len(parts) >= 5 and parts[4].isdigit():
+        return parts[4]
+    return None
 
 
 GOOD_CONFIG = {"COMPLIANT"}

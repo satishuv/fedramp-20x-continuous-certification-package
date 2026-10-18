@@ -720,6 +720,53 @@ def test_f30_main_exits_nonzero_when_nothing_appended():
         am.REGISTRY, am.FACTS_DIR, am.HISTORY, sys.argv = saved
 
 
+def test_f85_same_scope_in_two_stores_counts_once():
+    """AUD-F85: the management account of a real Organization is observed by
+    BOTH collect_facts.py (facts-us-east-1.json, whose facts carried no account
+    tag) and the fan-out (facts-multi-account.json, account-tagged). The loader
+    de-duplicates on (rule, region, account), so the untagged copy and the
+    tagged copy read as two scopes and one account's rule counted twice: the
+    first live run recorded passing 6 of 6 for three deployed rules. A store
+    whose meta names the identity must have its account applied to untagged
+    facts so the same scope collapses to one observation."""
+    import json
+    import tempfile
+    tmp = tempfile.mkdtemp(prefix="am-f85-")
+    facts_dir = os.path.join(tmp, "facts")
+    os.makedirs(facts_dir)
+    ts = "2026-10-18T00:10:00+00:00"
+    acct = "111122223333"
+    single = {"rule": "cloudtrail-enabled", "compliance_type": "COMPLIANT",
+              "region": "us-east-1", "collected_at": ts}
+    with open(os.path.join(facts_dir, "facts-us-east-1.json"), "w", encoding="utf-8") as f:
+        json.dump({"meta": {"collected_at": ts,
+                            "identity_arn": f"arn:aws:sts::{acct}:assumed-role/FedRampReadOnly/x"},
+                   "facts": [single],
+                   "posture_facts": [{"service": "guardduty", "check": "detector",
+                                      "status": "ENABLED", "region": "us-east-1",
+                                      "collected_at": ts}]}, f)
+    with open(os.path.join(facts_dir, "facts-multi-account.json"), "w", encoding="utf-8") as f:
+        json.dump({"meta": {"collected_at": ts, "run_id": "run-fanout"},
+                   "facts": [{**single, "account": acct},
+                             {**single, "account": "444455556666",
+                              "compliance_type": "NON_COMPLIANT"}],
+                   "posture_facts": [{"service": "guardduty", "check": "detector",
+                                      "status": "ENABLED", "region": "us-east-1",
+                                      "collected_at": ts, "account": acct}]}, f)
+    saved = am.FACTS_DIR
+    am.FACTS_DIR = facts_dir
+    try:
+        config_by_rule, posture_by_service = am.load_facts()
+    finally:
+        am.FACTS_DIR = saved
+    scopes = sorted(f.get("account") for f in config_by_rule["cloudtrail-enabled"])
+    assert scopes == [acct, "444455556666"], (
+        f"one account observed by two stores must be ONE scope; got {scopes}")
+    gd = posture_by_service["guardduty"]
+    assert len(gd) == 1 and gd[0].get("account") == acct, (
+        f"the posture fact for one account must not be doubled; got {gd}")
+
+
 def _run_all():
     tests = [v for k, v in sorted(globals().items())
              if k.startswith("test_") and callable(v)]
