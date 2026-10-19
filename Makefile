@@ -6,7 +6,7 @@
 PYTHON ?= python
 
 .DEFAULT_GOAL := help
-.PHONY: help install all build validate scan clean reproducible catalog lock
+.PHONY: help install install-locked all build validate scan clean reproducible catalog lock lock-security
 
 help: ## Show this help
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -28,6 +28,14 @@ lock: ## Resolve a fully-hashed requirements.lock, then rebuild the SBOM from it
 	$(PYTHON) validation/scripts/build_sbom.py
 	@echo "requirements.lock written and SBOM regenerated from the resolved closure."
 	@echo "Commit requirements.lock and the regenerated artifacts/sbom.cdx.json together."
+
+lock-security: ## Resolve the hash-locked closure of the security-gate tools (Bandit, pip-audit)
+	@echo "Resolving requirements-security.txt into requirements-security.lock with hashes,"
+	@echo "constrained to requirements.lock so a shared transitive cannot diverge."
+	uv pip compile requirements-security.txt -c requirements.lock --generate-hashes \
+		--python-platform linux --python-version 3.12 --no-header \
+		--output-file requirements-security.lock
+	@echo "requirements-security.lock written. Commit it with requirements-security.txt."
 
 all: ## Build, validate, scan, then print a readiness summary
 	$(PYTHON) sdr.py all

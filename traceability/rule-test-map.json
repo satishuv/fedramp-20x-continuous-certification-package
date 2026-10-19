@@ -944,6 +944,16 @@
    "severity": "High",
    "component": ".github/workflows/release.yml (verify-tag job: ancestry step and header); automation/pipeline/test_release_gate.py (section g); docs/versioning.md (verification and trust-chain paragraphs)"
   },
+  "ledger.AUD-F92": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "requirements-security.txt (new, input); requirements-security.lock (new, hashed closure); audit/release_gate.py (SECURITY_TOOL_PINS read from the input file; SECURITY_LOCK); .github/workflows/validate.yml (security-scan install step); automation/pipeline/buildspec-validate.yml (RELEASE_MODE install); Makefile (lock-security target); automation/collectors/test_collection_fail_closed.py (F34 updated, F92 new); validation/scripts/test_lock_closure.py"
+  },
+  "ledger.AUD-F93": {
+   "kind": "closed-defect",
+   "severity": "Low",
+   "component": ".github/workflows/living-sdr-loop.yml (propose job boundary step, header); automation/pipeline/living-sdr-allowed-paths.txt (new); automation/pipeline/test_living_sdr_privileges.py (F93 section)"
+  },
   "ledger.AUD-F94": {
    "kind": "closed-defect",
    "severity": "Low",

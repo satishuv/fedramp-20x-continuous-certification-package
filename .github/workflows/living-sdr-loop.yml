@@ -22,7 +22,9 @@
 #             diff as a patch ARTIFACT.
 #   propose   contents: write, pull-requests: write. Holds NO id-token and runs
 #             no AWS step; applies the patch to a fresh checkout after checking
-#             it touches only tracked deliverables, then opens the PR.
+#             every changed path is on the committed positive allowlist
+#             (automation/pipeline/living-sdr-allowed-paths.txt, AUD-F93) and
+#             tracked, then opens the PR.
 #   alarm     issues: write only. Files or refreshes the failure issue.
 #
 # A compromise of the collection path (a collector dependency, a crafted API
@@ -181,24 +183,45 @@ jobs:
           path: /tmp/living-sdr/
 
       - name: Refuse a patch that reaches outside the regenerated deliverables
-        # The patch may change TRACKED files only (git-excluded private stores
-        # cannot appear in it by construction), and never the workflows, the
-        # audit ledger, the dependency lock or the pinned sources. The collect
-        # job regenerates deliverables; a patch touching anything that governs
-        # the gate itself is not a regeneration and is not applied.
+        # POSITIVE boundary (AUD-F93): every changed path must match a line of
+        # automation/pipeline/living-sdr-allowed-paths.txt, read from THIS
+        # checkout of the default branch (the patch is not applied yet, so a
+        # patch cannot rewrite the list it is judged by; the list also lives
+        # outside every prefix it allows). Until AUD-F93 this was a denylist
+        # (.github/, audit/, requirements*, references/, profiles/common/, and
+        # four script extensions), which refused what it named and admitted any
+        # other tracked file (Makefile, pyproject.toml, LICENSE, .gitignore,
+        # any JSON outside the named roots). Scripts, workflows, ".." segments
+        # and the pinned official schemas are refused even under an allowed
+        # prefix. The patch may change TRACKED files only (git-excluded private
+        # stores cannot appear in it by construction).
+        env:
+          ALLOWLIST: automation/pipeline/living-sdr-allowed-paths.txt
         run: |
           set -e
           test -s /tmp/living-sdr/changed-paths.txt || { echo "FAIL. Empty change list."; exit 1; }
+          test -s "$ALLOWLIST" || { echo "FAIL. $ALLOWLIST is missing or empty; refusing to apply any patch."; exit 1; }
           bad=0
           while IFS= read -r p; do
             case "$p" in
-              .github/*|audit/*|requirements*|references/*|profiles/common/*|*.py|*.yml|*.yaml|*.sh)
-                echo "REFUSE: $p is not a regenerated deliverable."; bad=1 ;;
+              *..*|*.py|*.yml|*.yaml|*.sh|artifacts/schemas/*)
+                echo "REFUSE: $p is never a regenerated deliverable."; bad=1; continue ;;
             esac
+            allowed=0
+            while IFS= read -r rule; do
+              case "$rule" in ''|'#'*) continue ;; esac
+              case "$rule" in
+                */) case "$p" in "$rule"*) allowed=1 ;; esac ;;
+                *)  [ "$p" = "$rule" ] && allowed=1 ;;
+              esac
+            done < "$ALLOWLIST"
+            if [ "$allowed" -ne 1 ]; then
+              echo "REFUSE: $p is not in $ALLOWLIST (not a regenerated deliverable)."; bad=1; continue
+            fi
             git ls-files --error-unmatch -- "$p" >/dev/null 2>&1 || { echo "REFUSE: $p is not a tracked file."; bad=1; }
           done < /tmp/living-sdr/changed-paths.txt
           [ "$bad" -eq 0 ] || exit 1
-          echo "Patch touches only tracked deliverables."
+          echo "Patch touches only tracked deliverables listed in $ALLOWLIST."
 
       - name: Apply the patch
         run: |

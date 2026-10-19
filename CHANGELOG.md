@@ -11,24 +11,6 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
-### The last two Word-document exclusions are gone (AUD-F94)
-
-- **AUD-F94 (Low).** `make reproducible` still diffed with `':(exclude)*.docx'`,
-  and `build_release_attestation.py` excluded `*.docx` on all five of its git
-  calls and told the operator so in five places, with the pre-AUD-F35 reason
-  (zip timestamps) that no longer holds. Found by an external re-audit of main
-  `ffb3b55` (2026-10-19), which named the Makefile; the attestation builder was
-  the wider instance: `sdr.py release` would have attested a commit as the source
-  of a package whose Word document had been hand-edited after that commit. Both
-  now cover the whole tree, and every message says Word documents are inside
-  the check.
-- `test_docx_integrity.py` gains a structural test (no exclusion pathspec in
-  either file, no "excluded" wording) and a behavioural one (append bytes to the
-  tracked Class B `.docx`, the builder must report dirty naming it, restore
-  byte-for-byte). Red-first: the behavioural test fails on the old builder, the
-  structural one on the old Makefile; 10/10 after. MUT-F94 (the exclusion
-  returns) killed.
-
 ### Release trust is anchored to protected main, not to the tagged commit (AUD-F91)
 
 - **AUD-F91 (High).** The `verify-tag` job verified the tag's signature against
@@ -53,6 +35,65 @@ diff against the previous dataset and its pin advanced)
   on a main commit passed both and stopped only at the manifest binding, so a
   legitimate release is not over-blocked. MUT-F91 (ancestry becomes `if false`)
   killed.
+### The security scanners are hash-locked like the closure they audit (AUD-F92)
+
+- **AUD-F92 (Medium).** The `security-scan` job and the AWS `RELEASE_MODE`
+  build installed `bandit==1.8.6 pip-audit==2.10.1` with a bare `pip install`
+  while every other CI install used `--require-hashes -r requirements.lock`, so
+  the two programs whose exit codes are the security verdict sat outside the
+  repository's hash-locked supply chain. Found by an external re-audit of main
+  `ffb3b55` (2026-10-19). New `requirements-security.txt` (the two pins, single
+  source of truth: `release_gate.py` now reads `SECURITY_TOOL_PINS` from it,
+  fail-closed) and `requirements-security.lock` (32 packages, every entry
+  hashed, resolved with `-c requirements.lock` so the shared transitive cannot
+  diverge). Both installers use `--require-hashes -r requirements-security.lock`;
+  `make lock-security` re-resolves after a bump.
+- `test_collection_fail_closed.py`: F34 follows the chain installer -> hashed
+  lock -> pin; five F92 tests hold both installers hashed, the lock complete
+  and hashed, pins and lock in agreement, the two locks in agreement on shared
+  packages, the pins reader fail-closed, and the relock target present.
+  `test_lock_closure.py` gains the same lock checks. Red-first: F34 fails on
+  the old installers, 19/19 after. MUT-F92 (the hashed install reverts to a
+  bare version pin) killed.
+### The living-SDR patch boundary is a positive allowlist (AUD-F93)
+
+- **AUD-F93 (Low).** The `propose` job's boundary (AUD-F89) refused a denylist
+  (`.github/`, `audit/`, `requirements*`, `references/`, `profiles/common/`,
+  four script extensions) and admitted every other tracked file: run verbatim,
+  it accepted `Makefile`, `pyproject.toml`, `LICENSE`, `.gitignore`, a tracked
+  JSON outside the deliverable roots and a pinned official schema, each with
+  "Patch touches only tracked deliverables." Found by an external re-audit of
+  main `ffb3b55` (2026-10-19). New
+  `automation/pipeline/living-sdr-allowed-paths.txt` names the deliverable set
+  positively (the roots `sdr.py build` writes) and lives outside every prefix it
+  allows; the step reads it from the default-branch checkout before the patch
+  is applied, fails closed when it is missing, refuses `..`, scripts, workflows
+  and `artifacts/schemas/` unconditionally, and admits only a prefix or exact
+  match.
+- `test_living_sdr_privileges.py` gains an F93 section: structure, the list
+  outside its own prefixes, every manifest-fingerprinted artifact covered, 25
+  governance paths not covered, and the step's shell run verbatim against 15
+  cases when bash is available. Red-first: 11 failures on the old workflow
+  (the six admitted governance files among them), 0 after. MUT-F93 (every
+  tracked path admitted again) killed.
+
+### The last two Word-document exclusions are gone (AUD-F94)
+
+- **AUD-F94 (Low).** `make reproducible` still diffed with `':(exclude)*.docx'`,
+  and `build_release_attestation.py` excluded `*.docx` on all five of its git
+  calls and told the operator so in five places, with the pre-AUD-F35 reason
+  (zip timestamps) that no longer holds. Found by an external re-audit of main
+  `ffb3b55` (2026-10-19), which named the Makefile; the attestation builder was
+  the wider instance: `sdr.py release` would have attested a commit as the source
+  of a package whose Word document had been hand-edited after that commit. Both
+  now cover the whole tree, and every message says Word documents are inside
+  the check.
+- `test_docx_integrity.py` gains a structural test (no exclusion pathspec in
+  either file, no "excluded" wording) and a behavioural one (append bytes to the
+  tracked Class B `.docx`, the builder must report dirty naming it, restore
+  byte-for-byte). Red-first: the behavioural test fails on the old builder, the
+  structural one on the old Makefile; 10/10 after. MUT-F94 (the exclusion
+  returns) killed.
 
 ### The living-SDR loop separates its cloud credential from its repository write (AUD-F89)
 
