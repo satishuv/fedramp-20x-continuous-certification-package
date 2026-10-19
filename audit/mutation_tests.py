@@ -684,6 +684,11 @@ MUTATIONS = [
      "      - name: Ruff lint (report-only)\n        continue-on-error: true\n",
      "      - name: Ruff lint (report-only)\n        continue-on-error: false  # MUTATION a 166-finding baseline becomes a silent hard gate\n",
      "validation/scripts/test_quality_telemetry.py"),
+    ("MUT-F92",
+     ".github/workflows/validate.yml",
+     "        run: pip install --quiet --require-hashes -r requirements-security.lock\n",
+     "        run: pip install --quiet bandit==1.8.6 pip-audit==2.10.1  # MUTATION the scanners are version-pinned, not hash-locked, again\n",
+     "automation/collectors/test_collection_fail_closed.py"),
 ]
 
 

@@ -69,8 +69,9 @@ phases:
           # Same step list GitHub Actions and `sdr.py release` execute (AUD-F12):
           # oracle, mutation-runner self-test, mutation runner, tree-clean, the
           # Class C assessor-attack harness (AUD-F61) and its non-AWS twin
-          # (MCE-12), Bandit, pip-audit.
-          pip install --quiet bandit==1.8.6 pip-audit==2.10.1
+          # (MCE-12), Bandit, pip-audit. The scanners install from their own
+          # hash-locked closure (AUD-F92), like the runtime closure above.
+          pip install --quiet --require-hashes -r requirements-security.lock
           python audit/release_gate.py audit attack attack-non-aws security
         else
           python sdr.py validate --no-tests

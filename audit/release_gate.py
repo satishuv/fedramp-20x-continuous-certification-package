@@ -117,9 +117,34 @@ SECTIONS = {
     ],
 }
 
-# Tools the security section needs beyond the runtime closure, pinned so every
-# path installs the same auditor (CI workflow, AWS buildspec, local release).
-SECURITY_TOOL_PINS = {"bandit": "1.8.6", "pip-audit": "2.10.1"}
+# Tools the security section needs beyond the runtime closure. AUD-F92: every
+# path installs them from requirements-security.lock with --require-hashes (the
+# same artifact-identity discipline the runtime closure gets), and the pins are
+# READ from requirements-security.txt, the lock's input, so one file is the
+# source of truth and a bump without a re-lock is caught by the lock test.
+SECURITY_REQUIREMENTS = os.path.join(BASE, "requirements-security.txt")
+SECURITY_LOCK = os.path.join(BASE, "requirements-security.lock")
+
+
+def _security_tool_pins(path=SECURITY_REQUIREMENTS):
+    """name -> version for every `name==version` line of the input file.
+    Fails closed: a missing or empty file is an error, never an empty gate."""
+    pins = {}
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            s = line.strip()
+            if not s or s.startswith("#"):
+                continue
+            name, _, version = s.partition("==")
+            if not name or not version:
+                raise ValueError(f"{path}: expected name==version, got {s!r}")
+            pins[name.strip().lower()] = version.strip()
+    if not pins:
+        raise ValueError(f"{path}: lists no security tool")
+    return pins
+
+
+SECURITY_TOOL_PINS = _security_tool_pins()
 
 SECTION_ORDER = ["audit", "attack", "attack-non-aws", "security"]
 
