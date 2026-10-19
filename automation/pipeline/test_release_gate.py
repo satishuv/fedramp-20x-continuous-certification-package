@@ -527,6 +527,28 @@ def main():
     check("allowed-signers file holds public keys only (no private key material)",
           "PRIVATE KEY" not in signers)
 
+    # (g) AUD-F91: the trust anchor is bound to protected main. The signers
+    #     file is read from the tagged commit's own tree, so a tag on a
+    #     side-branch commit could carry its own signer list. The workflow must
+    #     fetch main by its own ref (never from the tag), require the tagged
+    #     commit to be an ancestor of it, and do so BEFORE the signers file is
+    #     consulted, so an untrusted tree never decides who is trusted.
+    m_anc = re.search(r'git merge-base --is-ancestor\s+"\$tag_commit"\s+"refs/remotes/origin/\$PROTECTED_BRANCH"', rw)
+    check("release workflow requires the tagged commit to be an ancestor of protected main",
+          m_anc is not None)
+    check("release workflow fetches main by its own ref, never from the tag (--no-tags, +refs/heads/)",
+          re.search(r'git fetch --no-tags origin\s+"\+refs/heads/\$PROTECTED_BRANCH:refs/remotes/origin/\$PROTECTED_BRANCH"', rw) is not None)
+    check("release workflow names the protected branch once, as an env value",
+          re.search(r'^\s+PROTECTED_BRANCH:\s*main\s*$', rw, re.MULTILINE) is not None)
+    m_sig = re.search(r'gpg\.ssh\.allowedSignersFile', rw)
+    check("ancestry is established BEFORE the signers file is trusted",
+          m_anc is not None and m_sig is not None and m_anc.start() < m_sig.start())
+    anc_block = rw[m_anc.start():m_anc.start() + 600] if m_anc else ""
+    check("a tag off protected main fails closed (exit 1 inside the ancestry branch)",
+          "exit 1" in anc_block and "not on protected" in anc_block)
+    check("release workflow header records why ancestry precedes signature verification",
+          "AUD-F91" in rw and "a tag decided who was trusted" in rw)
+
     print(f"\n{passed}/{passed + failed} release-gate checks passed")
     return 0 if failed == 0 else 1
 

@@ -11,6 +11,30 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### Release trust is anchored to protected main, not to the tagged commit (AUD-F91)
+
+- **AUD-F91 (High).** The `verify-tag` job verified the tag's signature against
+  `.github/release-allowed-signers` read from the tagged commit's own tree, and
+  bound the tag only to `GITHUB_SHA`. Found by an external re-audit of main
+  `ffb3b55` (2026-10-19) and reproduced in a throwaway clone: a side-branch
+  commit carrying its own signer list, tagged and signed by that key, passed
+  every check up to the manifest binding, and a passing run reaches the publish
+  job's `contents: write`. The step now fetches `main` by its own ref (never from
+  the tag) and requires the tagged commit to be an ancestor of it, failing closed
+  naming the commit, BEFORE the signers file is consulted; so the signer list in
+  force is one that passed `main`'s required `release-gate` check in a reviewed
+  PR. Every AUD-F88 check follows unchanged. `docs/versioning.md` records
+  `main`'s branch protection as part of the release trust chain. A `v*` tag
+  ruleset (restrict creation, update and deletion) is a repository setting the
+  owner applies beside this; it is recommended, not a substitute.
+- `automation/pipeline/test_release_gate.py` section (g) holds the order and the
+  fetch shape. Red-first: 104/110 on the old workflow (six new checks red),
+  110/110 after. The shipped shell was executed verbatim under bash with real
+  ssh-keygen keys: self-authorised side-branch tag refused at ancestry;
+  attacker-signed tag on a main commit refused at `verify-tag`; listed-key tag
+  on a main commit passed both and stopped only at the manifest binding, so a
+  legitimate release is not over-blocked. MUT-F91 (ancestry becomes `if false`)
+  killed.
 ### The living-SDR patch boundary is a positive allowlist (AUD-F93)
 
 - **AUD-F93 (Low).** The `propose` job's boundary (AUD-F89) refused a denylist

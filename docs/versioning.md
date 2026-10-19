@@ -55,12 +55,22 @@ git push origin v<framework>-cr26-<dataset>
 
 `-s` signs the tag with the key your git is configured for; this project's
 release tags are SSH-signed (`gpg.format=ssh`, an ed25519 key). The release
-workflow verifies the signature cryptographically with `git verify-tag` against
-`.github/release-allowed-signers`, which lists the PUBLIC keys trusted to sign a
-release, one per line in ssh-keygen `allowed_signers` form. A tag signed by a key
-not on that list fails the workflow with "No principal matched", however valid
-the signature is; so does an unsigned tag, a tag that does not point at the
-commit being built, or a tag whose name differs from the manifest's
+workflow first requires the tagged commit to be on protected `main` (it fetches
+`main` by its own ref, never from the tag, and runs `git merge-base
+--is-ancestor`), and only then verifies the signature cryptographically with
+`git verify-tag` against `.github/release-allowed-signers`, which lists the
+PUBLIC keys trusted to sign a release, one per line in ssh-keygen
+`allowed_signers` form. The order matters (AUD-F91): the signers file is read
+from the tagged commit's own tree, so without the ancestry step a tag on a side
+branch could carry its own signer list and authorise itself. Requiring the
+commit to have reached `main` means the signers file in force is one that passed
+`main`'s required `release-gate` status check in a reviewed pull request; the
+branch protection on `main` (required status check, strict up-to-date, no force
+push, no deletion) is therefore part of the release trust chain and is recorded
+in the workflow header. A tag signed by a key not on that list fails the
+workflow with "No principal matched", however valid the signature is; so does an
+unsigned tag, a tag on a commit that is not on `main`, a tag that does not point
+at the commit being built, or a tag whose name differs from the manifest's
 `release_tag`. Private keys are the maintainer's own and are never held in this
 repository. Consumers verify the same way:
 
@@ -110,10 +120,11 @@ closure.
 
 Push the signed tag. `.github/workflows/release.yml` then:
 
-1. refuses a lightweight or unsigned tag, a tag whose signature does not
-   verify against a key in `.github/release-allowed-signers`, a tag that does
-   not point at the commit being built, and a tag whose name is not the
-   committed manifest's `release_tag` (bump `FRAMEWORK_VERSION` in
+1. refuses a lightweight or unsigned tag, a tag on a commit that is not on
+   protected `main`, a tag whose signature does not verify against a key in
+   `.github/release-allowed-signers`, a tag that does not point at the commit
+   being built, and a tag whose name is not the committed manifest's
+   `release_tag` (bump `FRAMEWORK_VERSION` in
    `validation/scripts/build_release_manifest.py`, rebuild and commit first);
 2. re-runs the whole validate workflow on the tagged commit;
 3. writes the release attestation and assembles the active-class bundle from
