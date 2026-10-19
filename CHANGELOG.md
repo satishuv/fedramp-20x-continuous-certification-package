@@ -11,6 +11,28 @@ in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
 added or removed, 0 force changes; the AWS service-KSI map was re-verified by
 diff against the previous dataset and its pin advanced)
 
+### The living-SDR patch boundary is a positive allowlist (AUD-F93)
+
+- **AUD-F93 (Low).** The `propose` job's boundary (AUD-F89) refused a denylist
+  (`.github/`, `audit/`, `requirements*`, `references/`, `profiles/common/`,
+  four script extensions) and admitted every other tracked file: run verbatim,
+  it accepted `Makefile`, `pyproject.toml`, `LICENSE`, `.gitignore`, a tracked
+  JSON outside the deliverable roots and a pinned official schema, each with
+  "Patch touches only tracked deliverables." Found by an external re-audit of
+  main `ffb3b55` (2026-10-19). New
+  `automation/pipeline/living-sdr-allowed-paths.txt` names the deliverable set
+  positively (the roots `sdr.py build` writes) and lives outside every prefix it
+  allows; the step reads it from the default-branch checkout before the patch
+  is applied, fails closed when it is missing, refuses `..`, scripts, workflows
+  and `artifacts/schemas/` unconditionally, and admits only a prefix or exact
+  match.
+- `test_living_sdr_privileges.py` gains an F93 section: structure, the list
+  outside its own prefixes, every manifest-fingerprinted artifact covered, 25
+  governance paths not covered, and the step's shell run verbatim against 15
+  cases when bash is available. Red-first: 11 failures on the old workflow
+  (the six admitted governance files among them), 0 after. MUT-F93 (every
+  tracked path admitted again) killed.
+
 ### The living-SDR loop separates its cloud credential from its repository write (AUD-F89)
 
 - **AUD-F89 (High).** `living-sdr-loop.yml` ran one job with `id-token: write`,

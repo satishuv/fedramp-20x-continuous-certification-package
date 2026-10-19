@@ -1198,6 +1198,19 @@
       "mutation": "MUT-F90: the Ruff lint step's continue-on-error becomes false, making a 166-finding baseline a silent hard gate; the 'every ruff step is report-only' check goes RED; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F93",
+      "severity": "Low",
+      "requirement": "A privilege boundary must match its stated guarantee. The living-SDR loop's propose job claimed to apply only regenerated deliverables; a boundary that admits everything it does not name is a denylist, and its guarantee is only as complete as the list of things someone thought to forbid.",
+      "component": ".github/workflows/living-sdr-loop.yml (propose job boundary step, header); automation/pipeline/living-sdr-allowed-paths.txt (new); automation/pipeline/test_living_sdr_privileges.py (F93 section)",
+      "description": "Found by an external re-audit of main ffb3b55 (2026-10-19) and confirmed by running the step's shell verbatim: the AUD-F89 boundary refused .github/*, audit/*, requirements*, references/*, profiles/common/* and four script extensions, and admitted every other tracked file. Makefile, pyproject.toml, LICENSE, .gitignore, automation/sdrscan/check-catalog.json and a pinned official schema under artifacts/schemas/ each passed with 'Patch touches only tracked deliverables.' A compromised collection path still could not merge to protected main (the PR remains human-reviewed), but it could hand the repository-writing job a change to any of those files, which is not what the boundary said it allowed.",
+      "root_cause": "AUD-F89 drew the boundary by naming what must not cross rather than what may; the build's output set was never written down as a list the step could consult.",
+      "fix_commit": "this PR -- automation/pipeline/living-sdr-allowed-paths.txt names the deliverable set positively (the roots `sdr.py build` writes: sdr/, package/, traceability/, artifacts/, validation/reports/, the per-class profiles, automation/collectors/registry.json) and lives outside every prefix it allows; the propose step reads it from its own checkout of the default branch before the patch is applied, refuses when the list is missing or empty, refuses '..' segments, scripts, workflows and artifacts/schemas/ unconditionally, and admits a path only on a prefix or exact match",
+      "regression_test": "automation/pipeline/test_living_sdr_privileges.py main_f93: the step names the list as its env and matches positively; fail-closed on a missing list; unconditional refusals present; old denylist shape gone; the list is outside its own prefixes; every artifact the release manifest fingerprints is covered; none of 25 governance paths (workflows, signers file, ledger, runner, gate, locks, pinned sources, profiles/common, Makefile, pyproject, LICENSE, .gitignore, .gitmodules, README, sdr.py, collectors.py, pipeline template, a pinned schema, the list itself) is covered; and when bash is available the step's shell is run verbatim against 15 cases (4 deliverables admitted, 11 refused). Red-first: 11 failures on the AUD-F89 workflow including the six admitted governance files, 0 after",
+      "mutation": "MUT-F93: the step's `allowed=0` initialiser becomes `allowed=1`, so every tracked path is admitted and the allowlist decides nothing; the verbatim refusal cases go RED; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

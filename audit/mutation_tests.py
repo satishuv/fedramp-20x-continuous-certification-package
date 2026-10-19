@@ -684,6 +684,11 @@ MUTATIONS = [
      "      - name: Ruff lint (report-only)\n        continue-on-error: true\n",
      "      - name: Ruff lint (report-only)\n        continue-on-error: false  # MUTATION a 166-finding baseline becomes a silent hard gate\n",
      "validation/scripts/test_quality_telemetry.py"),
+    ("MUT-F93",
+     ".github/workflows/living-sdr-loop.yml",
+     '            allowed=0\n',
+     '            allowed=1  # MUTATION every tracked path is admitted again, the allowlist decides nothing\n',
+     "automation/pipeline/test_living_sdr_privileges.py"),
 ]
 
 
