@@ -125,6 +125,28 @@ def main():
               "--require-hashes -r requirements.lock" in text
               and "-r requirements-ci.txt" not in text)
 
+    # AUD-F92: the security-gate tools have their own hash-locked closure, the
+    # two installers that run the security section use it, and no path installs
+    # a scanner by bare version pin any more.
+    sec_lock_path = os.path.join(BASE, "requirements-security.lock")
+    check("requirements-security.lock is committed", os.path.exists(sec_lock_path))
+    if os.path.exists(sec_lock_path):
+        sec_lock = _lock_entries(sec_lock_path)
+        sec_unhashed = sorted(n for n, e in sec_lock.items() if e["hashes"] == 0)
+        check("every security-lock entry carries at least one sha256 hash", not sec_unhashed, str(sec_unhashed))
+        sec_direct = _direct_pins(os.path.join(BASE, "requirements-security.txt"))
+        sec_drift = {n: (v, (sec_lock.get(n) or {}).get("version"))
+                     for n, v in sec_direct.items() if (sec_lock.get(n) or {}).get("version") != v}
+        check("every security-tool pin is in its lock at the same version", not sec_drift, str(sec_drift))
+        shared_drift = {n: (sec_lock[n]["version"], lock[n]["version"])
+                        for n in set(sec_lock) & set(lock) if sec_lock[n]["version"] != lock[n]["version"]}
+        check("security lock and runtime lock agree on every shared package", not shared_drift, str(shared_drift))
+    for rel in (".github/workflows/validate.yml", "automation/pipeline/buildspec-validate.yml"):
+        text = open(os.path.join(BASE, rel), encoding="utf-8").read()
+        check(f"{rel} installs the security tools from requirements-security.lock with hashes",
+              "--require-hashes -r requirements-security.lock" in text
+              and not re.search(r"pip install[^\n]*\b(bandit|pip-audit)==", text))
+
     print(f"\n{'PASS' if _fail == 0 else 'FAIL'}: lock closure ({_fail} failures)")
     return 1 if _fail else 0
 

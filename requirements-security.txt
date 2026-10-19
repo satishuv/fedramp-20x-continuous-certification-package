@@ -1,0 +1,8 @@
+# Security-gate tools (AUD-F92). INPUT to requirements-security.lock, the
+# hash-locked closure every path installs before `release_gate.py security`
+# runs (validate.yml security-scan job, buildspec-validate.yml RELEASE_MODE,
+# `sdr.py release`). These pins are the single source of truth for
+# audit/release_gate.py's SECURITY_TOOL_PINS; test_collection_fail_closed.py
+# holds the two equal. After a bump, re-lock with: make lock-security
+bandit==1.8.6
+pip-audit==2.10.1

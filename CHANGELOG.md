@@ -35,6 +35,26 @@ diff against the previous dataset and its pin advanced)
   on a main commit passed both and stopped only at the manifest binding, so a
   legitimate release is not over-blocked. MUT-F91 (ancestry becomes `if false`)
   killed.
+### The security scanners are hash-locked like the closure they audit (AUD-F92)
+
+- **AUD-F92 (Medium).** The `security-scan` job and the AWS `RELEASE_MODE`
+  build installed `bandit==1.8.6 pip-audit==2.10.1` with a bare `pip install`
+  while every other CI install used `--require-hashes -r requirements.lock`, so
+  the two programs whose exit codes are the security verdict sat outside the
+  repository's hash-locked supply chain. Found by an external re-audit of main
+  `ffb3b55` (2026-10-19). New `requirements-security.txt` (the two pins, single
+  source of truth: `release_gate.py` now reads `SECURITY_TOOL_PINS` from it,
+  fail-closed) and `requirements-security.lock` (32 packages, every entry
+  hashed, resolved with `-c requirements.lock` so the shared transitive cannot
+  diverge). Both installers use `--require-hashes -r requirements-security.lock`;
+  `make lock-security` re-resolves after a bump.
+- `test_collection_fail_closed.py`: F34 follows the chain installer -> hashed
+  lock -> pin; five F92 tests hold both installers hashed, the lock complete
+  and hashed, pins and lock in agreement, the two locks in agreement on shared
+  packages, the pins reader fail-closed, and the relock target present.
+  `test_lock_closure.py` gains the same lock checks. Red-first: F34 fails on
+  the old installers, 19/19 after. MUT-F92 (the hashed install reverts to a
+  bare version pin) killed.
 ### The living-SDR patch boundary is a positive allowlist (AUD-F93)
 
 - **AUD-F93 (Low).** The `propose` job's boundary (AUD-F89) refused a denylist
