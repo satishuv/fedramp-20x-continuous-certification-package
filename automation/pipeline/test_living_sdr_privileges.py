@@ -13,6 +13,7 @@
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -220,8 +221,14 @@ def main_f93():
     with tempfile.TemporaryDirectory() as td:
         tmp = os.path.join(td, "living-sdr")
         os.makedirs(tmp)
-        # The step reads /tmp/living-sdr/changed-paths.txt; point it at ours.
-        shell_local = shell.replace("/tmp/living-sdr/", _posix(tmp) + "/")
+        # The step reads changed-paths.txt from the exchange directory the
+        # collect job uploads to; read that directory out of the step text
+        # (not hardcoded here) and point it at ours for the run.
+        m_dir = re.search(r"(\S+/)changed-paths\.txt", shell)
+        check("the boundary step reads changed-paths.txt from one exchange directory", m_dir is not None)
+        if not m_dir:
+            return
+        shell_local = shell.replace(m_dir.group(1), _posix(tmp) + "/")
         script = os.path.join(td, "step.sh")
         with open(script, "w", encoding="utf-8", newline="\n") as fh:
             fh.write(shell_local)
