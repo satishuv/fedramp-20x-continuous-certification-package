@@ -203,8 +203,13 @@ jobs:
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.12"
-      - name: Install bandit
-        run: pip install --quiet bandit==1.8.6 pip-audit==2.10.1
+      - name: Install the security tools from their hash-locked closure (AUD-F92)
+        # The scanners decide whether this gate passes, so they get the same
+        # artifact-identity guarantee as the runtime closure: exact versions
+        # AND sha256 hashes, resolved into requirements-security.lock from
+        # requirements-security.txt (make lock-security). A version pin alone
+        # constrained the version, not the bytes.
+        run: pip install --quiet --require-hashes -r requirements-security.lock
       - name: Security section of the release gate (Bandit, HARD GATE)
         # Argument list lives in audit/release_gate.py (one definition for
         # CI, the AWS release build, and sdr.py release). The report is

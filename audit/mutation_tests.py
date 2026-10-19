@@ -689,6 +689,11 @@ MUTATIONS = [
      '          if ! git merge-base --is-ancestor "$tag_commit" "refs/remotes/origin/$PROTECTED_BRANCH"; then\n',
      '          if false; then  # MUTATION any commit, on any branch, is trusted to carry the signer list again\n',
      "automation/pipeline/test_release_gate.py"),
+    ("MUT-F92",
+     ".github/workflows/validate.yml",
+     "        run: pip install --quiet --require-hashes -r requirements-security.lock\n",
+     "        run: pip install --quiet bandit==1.8.6 pip-audit==2.10.1  # MUTATION the scanners are version-pinned, not hash-locked, again\n",
+     "automation/collectors/test_collection_fail_closed.py"),
 ]
 
 

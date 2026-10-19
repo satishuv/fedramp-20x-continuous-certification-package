@@ -209,9 +209,92 @@ def test_f34_pip_audit_is_a_hard_security_step_on_every_path():
     argv = dict(rg.SECTIONS["security"])["pip-audit"]
     assert "pip_audit" in argv and "requirements.lock" in argv, argv
     assert "--require-hashes" in argv and "--strict" in argv, argv
+    # AUD-F92: the auditor itself is installed from a hash-locked closure on
+    # every path, and that closure carries the pinned version.
     pin = rg.SECURITY_TOOL_PINS["pip-audit"]
     for path in (VALIDATE_WF, BUILDSPEC_VALIDATE):
-        assert f"pip-audit=={pin}" in _read(path), path
+        assert "--require-hashes -r requirements-security.lock" in _read(path), path
+    assert f"pip-audit=={pin}" in _read(SECURITY_LOCK), SECURITY_LOCK
+
+
+# ---- AUD-F92: the security scanners are hash-locked like the closure they audit
+
+SECURITY_REQ = os.path.join(BASE, "requirements-security.txt")
+SECURITY_LOCK = os.path.join(BASE, "requirements-security.lock")
+MAIN_LOCK = os.path.join(BASE, "requirements.lock")
+
+
+def _lock_entries(path):
+    """name -> (version, hash_count) for a pip hash-locked requirements file."""
+    entries, name = {}, None
+    for raw in _read(path).splitlines():
+        s = raw.strip()
+        if not s or s.startswith("#"):
+            continue
+        m = re.match(r"^([A-Za-z0-9._-]+)==([A-Za-z0-9._!+-]+)", s)
+        if m:
+            name = m.group(1).lower().replace("_", "-")
+            entries[name] = [m.group(2), s.count("--hash=")]
+        elif name and "--hash=" in s:
+            entries[name][1] += s.count("--hash=")
+    return {k: tuple(v) for k, v in entries.items()}
+
+
+def test_f92_security_tools_install_from_a_hash_locked_closure_everywhere():
+    for path in (VALIDATE_WF, BUILDSPEC_VALIDATE):
+        text = _read(path)
+        assert "--require-hashes -r requirements-security.lock" in text, path
+        # The old shape, a version pin without hashes, must be gone.
+        assert not re.search(r"pip install[^\n]*\bbandit==", text), path
+        assert not re.search(r"pip install[^\n]*\bpip-audit==", text), path
+
+
+def test_f92_security_lock_is_hashed_complete_and_matches_the_pins():
+    assert os.path.exists(SECURITY_REQ) and os.path.exists(SECURITY_LOCK)
+    lock = _lock_entries(SECURITY_LOCK)
+    assert len(lock) >= 10, f"a real closure, not just the two tools: {len(lock)}"
+    unhashed = sorted(n for n, (_v, h) in lock.items() if h == 0)
+    assert not unhashed, unhashed
+    # Every pin in the input file is in the lock at the same version (a bump
+    # without `make lock-security` fails here), and the gate reads the pins
+    # from that same input file.
+    pins = rg._security_tool_pins(SECURITY_REQ)
+    assert set(pins) == {"bandit", "pip-audit"}, pins
+    for name, version in pins.items():
+        assert lock.get(name, (None,))[0] == version, (name, version, lock.get(name))
+    assert rg.SECURITY_TOOL_PINS == pins
+
+
+def test_f92_security_lock_agrees_with_the_runtime_lock_on_shared_packages():
+    # Both locks install into one environment on every path; a shared
+    # transitive at two versions would make the second install fail or
+    # silently replace what the first verified.
+    sec, main = _lock_entries(SECURITY_LOCK), _lock_entries(MAIN_LOCK)
+    shared = sorted(set(sec) & set(main))
+    assert shared, "expected at least one shared transitive (pyyaml)"
+    diverged = {n: (sec[n][0], main[n][0]) for n in shared if sec[n][0] != main[n][0]}
+    assert not diverged, diverged
+
+
+def test_f92_pins_reader_fails_closed():
+    import tempfile
+    for body in ("", "# only a comment\n", "bandit\n"):
+        with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False, encoding="utf-8") as f:
+            f.write(body)
+        try:
+            rg._security_tool_pins(f.name)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"pins reader accepted {body!r}")
+        finally:
+            os.unlink(f.name)
+
+
+def test_f92_makefile_has_a_relock_target_constrained_to_the_runtime_lock():
+    mk = _read(os.path.join(BASE, "Makefile"))
+    assert "lock-security:" in mk
+    assert "requirements-security.txt -c requirements.lock --generate-hashes" in mk
 
 
 # ---- AUD-F43: the drift workflow's review hand-off is fail-visible ---------
