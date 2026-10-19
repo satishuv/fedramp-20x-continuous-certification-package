@@ -689,6 +689,11 @@ MUTATIONS = [
      '          if ! git merge-base --is-ancestor "$tag_commit" "refs/remotes/origin/$PROTECTED_BRANCH"; then\n',
      '          if false; then  # MUTATION any commit, on any branch, is trusted to carry the signer list again\n',
      "automation/pipeline/test_release_gate.py"),
+    ("MUT-F94",
+     "validation/scripts/build_release_attestation.py",
+     '            ["git", "-C", BASE, "diff", "--quiet", "HEAD", "--", "."],\n',
+     '            ["git", "-C", BASE, "diff", "--quiet", "HEAD", "--", ".", ":(exclude)*.docx"],  # MUTATION a hand-edited Word document attests as clean again\n',
+     "validation/scripts/test_docx_integrity.py"),
 ]
 
 

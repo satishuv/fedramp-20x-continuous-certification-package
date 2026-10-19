@@ -21,9 +21,12 @@ Fail-closed provenance: because `sdr.py release` builds from the WORKING TREE,
 this script refuses to write an attestation when (a) git provenance is
 unavailable, (b) the tracked working tree differs from HEAD, or (c) untracked
 non-ignored files are present - any of which would make "this commit is the
-source that produced the manifest" materially false. *.docx is excluded from
-the tree comparison (its zip container embeds timestamps), matching every other
-diff gate in the repo. The deployed CodePipeline is already protected because it
+source that produced the manifest" materially false. The comparison covers
+every tracked file, Word documents included: the .docx is byte-reproducible
+since AUD-F35 (fixed zip entry timestamps, dataset-derived core properties) and
+CI diffs and double-build hashes it like every other output, so an exclusion
+here (removed in AUD-F94) would have attested a hand-edited Word document as
+clean. The deployed CodePipeline is already protected because it
 clones via CODEBUILD_CLONE_REF and runs a regenerate-and-diff gate; this closes
 the equivalent hole in the local release path.
 
@@ -61,10 +64,9 @@ def _worktree_status():
 
     'clean' means the tracked working tree matches HEAD (both unstaged and
     staged), so the commit named in the attestation actually contains the bytes
-    this release was built from. *.docx is excluded from the comparison for the
-    same reason every diff gate in this repo excludes it: its zip container
-    embeds timestamps, so its bytes differ across builds while its content does
-    not (see the reproducibility gate and buildspec-validate.yml).
+    this release was built from. Every tracked file counts, *.docx included:
+    the Word document is byte-reproducible (AUD-F35) and CI diffs it like any
+    JSON file, so a differing .docx is a hand edit or sample residue, not noise.
 
     This does NOT flag untracked non-ignored files. `git clean_status` below
     surfaces them separately so an untracked module imported during the build
@@ -74,12 +76,10 @@ def _worktree_status():
         # Both worktree-vs-HEAD and index-vs-HEAD must be clean. `git diff` with
         # a pathspec exit code is 1 when differences exist, 0 when clean.
         unstaged = subprocess.run(
-            ["git", "-C", BASE, "diff", "--quiet", "HEAD", "--",
-             ".", ":(exclude)*.docx"],
+            ["git", "-C", BASE, "diff", "--quiet", "HEAD", "--", "."],
             capture_output=True, text=True, timeout=10)
         staged = subprocess.run(
-            ["git", "-C", BASE, "diff", "--cached", "--quiet", "HEAD", "--",
-             ".", ":(exclude)*.docx"],
+            ["git", "-C", BASE, "diff", "--cached", "--quiet", "HEAD", "--", "."],
             capture_output=True, text=True, timeout=10)
     except Exception:  # noqa: BLE001
         return "unknown", []
@@ -88,15 +88,12 @@ def _worktree_status():
         return "unknown", []
     if unstaged.returncode == 0 and staged.returncode == 0:
         return "clean", []
-    # Collect the specific dirty tracked paths for a useful error, still
-    # excluding *.docx so the message matches the check.
+    # Collect the specific dirty tracked paths for a useful error.
     names = subprocess.run(
-        ["git", "-C", BASE, "diff", "--name-only", "HEAD", "--",
-         ".", ":(exclude)*.docx"],
+        ["git", "-C", BASE, "diff", "--name-only", "HEAD", "--", "."],
         capture_output=True, text=True, timeout=10)
     cached_names = subprocess.run(
-        ["git", "-C", BASE, "diff", "--cached", "--name-only", "HEAD", "--",
-         ".", ":(exclude)*.docx"],
+        ["git", "-C", BASE, "diff", "--cached", "--name-only", "HEAD", "--", "."],
         capture_output=True, text=True, timeout=10)
     paths = sorted(set(
         (names.stdout or "").split() + (cached_names.stdout or "").split()))
@@ -104,14 +101,14 @@ def _worktree_status():
 
 
 def _untracked_files():
-    """Return untracked, non-ignored files (excluding *.docx). These are not a
+    """Return untracked, non-ignored files. These are not a
     diff against HEAD, but an untracked .py imported at build time, or an
     untracked input, means the named commit does not fully describe the build
     context. Surface them so the operator decides."""
     try:
         r = subprocess.run(
             ["git", "-C", BASE, "ls-files", "--others", "--exclude-standard",
-             "--", ".", ":(exclude)*.docx"],
+             "--", "."],
             capture_output=True, text=True, timeout=10)
     except Exception:  # noqa: BLE001
         return []
@@ -174,18 +171,20 @@ def main():
     # IS the source that produced the manifest. `sdr.py release` builds from the
     # working tree, so if tracked files differ from HEAD, the package was built
     # from bytes that commit does NOT contain - the provenance statement would
-    # be materially false. Refuse. *.docx is excluded (nondeterministic zip
-    # timestamps), matching every other diff gate in the repo. The deployed
-    # CodePipeline is already protected here: it clones via CODEBUILD_CLONE_REF
-    # and runs a regenerate-and-diff gate, so a tracked change must live in the
-    # cloned commit; this closes the equivalent hole in the LOCAL release path.
+    # be materially false. Refuse. Word documents are inside this check: the
+    # .docx is byte-reproducible (AUD-F35), so a differing one is a hand edit or
+    # sample residue, exactly what the attestation must not paper over. The
+    # deployed CodePipeline is already protected here: it clones via
+    # CODEBUILD_CLONE_REF and runs a regenerate-and-diff gate, so a tracked
+    # change must live in the cloned commit; this closes the equivalent hole in
+    # the LOCAL release path.
     if att["worktree_state"] == "dirty":
         print("FAIL. The tracked working tree differs from HEAD "
               f"({att['source_commit']}). `sdr.py release` builds from the "
               "working tree, so attesting this commit would bind the release to "
               "a source that does not contain the built bytes. Commit or stash "
               "the changes and rebuild before attesting. Differing tracked "
-              "paths (*.docx excluded):")
+              "paths:")
         for p in att["dirty_paths"][:40]:
             print(f"    - {p}")
         return 1
@@ -198,8 +197,7 @@ def main():
         print("FAIL. Untracked, non-ignored files are present; the named "
               f"commit ({att['source_commit']}) does not describe them, and an "
               "untracked module or input could have influenced the build. "
-              "Commit, remove, or gitignore them before attesting (*.docx "
-              "excluded):")
+              "Commit, remove, or gitignore them before attesting:")
         for p in att["untracked_paths"][:40]:
             print(f"    - {p}")
         return 1
@@ -209,7 +207,7 @@ def main():
     print(f"Release attestation written: {os.path.relpath(ATTESTATION, BASE)}")
     print(f"  manifest sha256 {att['release_manifest_sha256']}")
     print(f"  source commit   {att['source_commit']}")
-    print("  worktree        clean (tracked tree matches HEAD; *.docx excluded)")
+    print("  worktree        clean (tracked tree matches HEAD, Word documents included)")
     return 0
 
 

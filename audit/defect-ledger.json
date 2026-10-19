@@ -1211,6 +1211,19 @@
       "mutation": "MUT-F91: the `git merge-base --is-ancestor` condition becomes `if false`, so any commit on any branch is trusted to carry the signer list again; the 'requires the tagged commit to be an ancestor of protected main' and 'ancestry is established BEFORE the signers file is trusted' checks go RED; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F94",
+      "severity": "Low",
+      "requirement": "Every integrity gate must cover the same artifact set, or the weakest one defines the real guarantee. Since AUD-F35 the Word document is byte-reproducible and CI diffs, double-build hashes and fingerprints it; a local gate that still excludes it admits exactly the hand edit CI would refuse.",
+      "component": "Makefile (reproducible target); validation/scripts/build_release_attestation.py (_worktree_status, _untracked_files, docstring, refusal and summary messages); validation/scripts/test_docx_integrity.py (F94 tests)",
+      "description": "Found by an external re-audit of main ffb3b55 (2026-10-19), which named the Makefile; confirmed and found wider: `make reproducible` diffed with `':(exclude)*.docx'`, and build_release_attestation.py excluded *.docx on all five of its git calls (unstaged and staged quiet diffs, both name listings, the untracked listing), told the operator so in its docstring, a comment, the dirty-paths message, the untracked message and the clean summary line, and justified it with the pre-F35 reason (zip timestamps) that no longer holds. Consequence: `sdr.py release` would attest a commit as the source of a package whose Word document had been hand-edited after that commit. Reproduced: with the pre-fix builder, appending bytes to the tracked Class B .docx left _worktree_status() reporting the document absent from the dirty list.",
+      "root_cause": "AUD-F35 removed the exclusion from CI, the buildspec and the Actions loop (test_f35_docx_is_inside_every_integrity_check pins those three) but the Makefile target and the attestation builder were not in that test's scope, so they kept the pre-F35 exception and its rationale.",
+      "fix_commit": "this PR -- Makefile's reproducible target diffs the whole tree; build_release_attestation.py drops the exclusion from all five git calls and every message and comment now states that Word documents are inside the check and why",
+      "regression_test": "validation/scripts/test_docx_integrity.py::test_f94_local_reproducible_target_and_attestation_include_docx (no exclusion pathspec in the Makefile or the builder, and the builder no longer tells the operator .docx is excluded) and ::test_f94_attestation_reports_a_modified_docx_as_dirty (behavioural: append bytes to the tracked Class B .docx, _worktree_status() must report dirty naming it, restore byte-for-byte; skips rather than lies if the document is already modified in the tree). Red-first: the behavioural test fails on the pre-fix builder (dirty list without the document), the structural test fails on the pre-fix Makefile; 10/10 after",
+      "mutation": "MUT-F94: the unstaged quiet diff regains `:(exclude)*.docx`; test_f94_attestation_reports_a_modified_docx_as_dirty goes RED (and the structural test too); expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

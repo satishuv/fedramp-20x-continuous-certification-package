@@ -944,6 +944,11 @@
    "severity": "High",
    "component": ".github/workflows/release.yml (verify-tag job: ancestry step and header); automation/pipeline/test_release_gate.py (section g); docs/versioning.md (verification and trust-chain paragraphs)"
   },
+  "ledger.AUD-F94": {
+   "kind": "closed-defect",
+   "severity": "Low",
+   "component": "Makefile (reproducible target); validation/scripts/build_release_attestation.py (_worktree_status, _untracked_files, docstring, refusal and summary messages); validation/scripts/test_docx_integrity.py (F94 tests)"
+  },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
    "severity": "medium",
