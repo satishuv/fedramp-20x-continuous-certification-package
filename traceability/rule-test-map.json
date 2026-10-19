@@ -939,6 +939,11 @@
    "severity": "Medium",
    "component": "pyproject.toml (new, [tool.ruff] only); .github/workflows/validate.yml (quality job); .github/dependabot.yml (new); .gitignore; validation/scripts/test_quality_telemetry.py (new)"
   },
+  "ledger.AUD-F91": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": ".github/workflows/release.yml (verify-tag job: ancestry step and header); automation/pipeline/test_release_gate.py (section g); docs/versioning.md (verification and trust-chain paragraphs)"
+  },
   "ledger.AUD-F92": {
    "kind": "closed-defect",
    "severity": "Medium",
