@@ -959,6 +959,11 @@
    "severity": "Low",
    "component": "Makefile (reproducible target); validation/scripts/build_release_attestation.py (_worktree_status, _untracked_files, docstring, refusal and summary messages); validation/scripts/test_docx_integrity.py (F94 tests)"
   },
+  "ledger.AUD-F95": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": ".github/workflows/living-sdr-loop.yml (propose job: boundary step and apply step, header); automation/pipeline/test_living_sdr_privileges.py (F95 structural checks; real-patch verbatim harness)"
+  },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
    "severity": "medium",

@@ -21,10 +21,12 @@
 #             the repository and write nothing to it. Produces the regenerated
 #             diff as a patch ARTIFACT.
 #   propose   contents: write, pull-requests: write. Holds NO id-token and runs
-#             no AWS step; applies the patch to a fresh checkout after checking
-#             every changed path is on the committed positive allowlist
-#             (automation/pipeline/living-sdr-allowed-paths.txt, AUD-F93) and
-#             tracked, then opens the PR.
+#             no AWS step; derives the changed-path set from the PATCH ITSELF
+#             (never from the collect job's description of it, AUD-F95), checks
+#             every path against the committed positive allowlist
+#             (automation/pipeline/living-sdr-allowed-paths.txt, AUD-F93),
+#             applies the patch, re-checks the STAGED set equals the authorized
+#             set, then opens the PR.
 #   alarm     issues: write only. Files or refreshes the failure issue.
 #
 # A compromise of the collection path (a collector dependency, a crafted API
@@ -187,47 +189,109 @@ jobs:
         # automation/pipeline/living-sdr-allowed-paths.txt, read from THIS
         # checkout of the default branch (the patch is not applied yet, so a
         # patch cannot rewrite the list it is judged by; the list also lives
-        # outside every prefix it allows). Until AUD-F93 this was a denylist
-        # (.github/, audit/, requirements*, references/, profiles/common/, and
-        # four script extensions), which refused what it named and admitted any
-        # other tracked file (Makefile, pyproject.toml, LICENSE, .gitignore,
-        # any JSON outside the named roots). Scripts, workflows, ".." segments
+        # outside every prefix it allows). Scripts, workflows, ".." segments
         # and the pinned official schemas are refused even under an allowed
         # prefix. The patch may change TRACKED files only (git-excluded private
         # stores cannot appear in it by construction).
+        #
+        # THE OBJECT JUDGED IS THE PATCH (AUD-F95). Until this change the step
+        # authorized changed-paths.txt, a sidecar the collect job wrote beside
+        # the patch, and the next step applied the patch: two artifact members
+        # from the same untrusted job, judged separately. A benign sidecar next
+        # to a patch touching a forbidden file passed. Now the path set is
+        # derived from the patch itself (`git apply --numstat`, which parses the
+        # patch without touching the tree and lists every path it would change,
+        # both sides of a rename), the apply is a dry run first (`--check`),
+        # and after the real apply the STAGED paths are authorized again from
+        # `git diff --cached --name-only`, so what was judged, what was applied
+        # and what will be committed are provably the same set. The sidecar is
+        # kept only as consistency telemetry: a disagreement is reported as a
+        # refusal, because the collect job lying about its own output is itself
+        # the signal this boundary exists for.
         env:
           ALLOWLIST: automation/pipeline/living-sdr-allowed-paths.txt
+          PATCH: /tmp/living-sdr/regenerated.patch
+          SIDECAR: /tmp/living-sdr/changed-paths.txt
         run: |
           set -e
-          test -s /tmp/living-sdr/changed-paths.txt || { echo "FAIL. Empty change list."; exit 1; }
+          test -s "$PATCH" || { echo "FAIL. Empty or missing patch."; exit 1; }
           test -s "$ALLOWLIST" || { echo "FAIL. $ALLOWLIST is missing or empty; refusing to apply any patch."; exit 1; }
-          bad=0
-          while IFS= read -r p; do
-            case "$p" in
-              *..*|*.py|*.yml|*.yaml|*.sh|artifacts/schemas/*)
-                echo "REFUSE: $p is never a regenerated deliverable."; bad=1; continue ;;
-            esac
-            allowed=0
-            while IFS= read -r rule; do
-              case "$rule" in ''|'#'*) continue ;; esac
-              case "$rule" in
-                */) case "$p" in "$rule"*) allowed=1 ;; esac ;;
-                *)  [ "$p" = "$rule" ] && allowed=1 ;;
+          # authorize_paths <file>: one path per line; exit 1 on any refusal.
+          authorize_paths() {
+            local bad=0 p rule allowed
+            while IFS= read -r p; do
+              [ -n "$p" ] || continue
+              case "$p" in
+                *..*|*.py|*.yml|*.yaml|*.sh|artifacts/schemas/*)
+                  echo "REFUSE: $p is never a regenerated deliverable."; bad=1; continue ;;
               esac
-            done < "$ALLOWLIST"
-            if [ "$allowed" -ne 1 ]; then
-              echo "REFUSE: $p is not in $ALLOWLIST (not a regenerated deliverable)."; bad=1; continue
+              allowed=0
+              while IFS= read -r rule; do
+                case "$rule" in ''|'#'*) continue ;; esac
+                case "$rule" in
+                  */) case "$p" in "$rule"*) allowed=1 ;; esac ;;
+                  *)  [ "$p" = "$rule" ] && allowed=1 ;;
+                esac
+              done < "$ALLOWLIST"
+              if [ "$allowed" -ne 1 ]; then
+                echo "REFUSE: $p is not in $ALLOWLIST (not a regenerated deliverable)."; bad=1; continue
+              fi
+              git ls-files --error-unmatch -- "$p" >/dev/null 2>&1 || { echo "REFUSE: $p is not a tracked file."; bad=1; }
+            done < "$1"
+            return "$bad"
+          }
+          # 1. The path set comes from the PATCH. --numstat prints
+          #    "<added>\t<deleted>\t<path>" per file, or "... <old> => <new>" /
+          #    "{a => b}/x" forms for a rename; a rename or copy is refused
+          #    outright (a regeneration rewrites files in place, it never
+          #    renames), so every remaining line is one plain path.
+          if grep -qE '^(rename|copy) (from|to) ' "$PATCH"; then
+            echo "FAIL. The patch renames or copies a file; a regeneration never does."; exit 1
+          fi
+          git apply --numstat "$PATCH" | cut -f3- | sort -u > /tmp/living-sdr/patch-paths.txt
+          test -s /tmp/living-sdr/patch-paths.txt || { echo "FAIL. The patch changes no file."; exit 1; }
+          echo "Paths the patch would change (from the patch itself):"
+          cat /tmp/living-sdr/patch-paths.txt
+          authorize_paths /tmp/living-sdr/patch-paths.txt || exit 1
+          # 2. Telemetry: the sidecar must agree with the patch. It carries no
+          #    authority; a disagreement means the collect job misdescribed its
+          #    own output, which is refused rather than tolerated.
+          if [ -s "$SIDECAR" ]; then
+            sort -u "$SIDECAR" > /tmp/living-sdr/sidecar-sorted.txt
+            if ! diff -q /tmp/living-sdr/sidecar-sorted.txt /tmp/living-sdr/patch-paths.txt >/dev/null; then
+              echo "REFUSE: changed-paths.txt disagrees with the patch's own file list:"
+              diff /tmp/living-sdr/sidecar-sorted.txt /tmp/living-sdr/patch-paths.txt || true
+              exit 1
             fi
-            git ls-files --error-unmatch -- "$p" >/dev/null 2>&1 || { echo "REFUSE: $p is not a tracked file."; bad=1; }
-          done < /tmp/living-sdr/changed-paths.txt
-          [ "$bad" -eq 0 ] || exit 1
-          echo "Patch touches only tracked deliverables listed in $ALLOWLIST."
+          else
+            echo "REFUSE: changed-paths.txt is missing or empty; the collect job always writes it."; exit 1
+          fi
+          # 3. Dry run: the patch must apply cleanly to this checkout as-is.
+          git apply --check --whitespace=nowarn "$PATCH"
+          echo "Patch authorized: every path it changes is a tracked deliverable listed in $ALLOWLIST."
 
-      - name: Apply the patch
+      - name: Apply the patch, then authorize what is actually staged
+        env:
+          ALLOWLIST: automation/pipeline/living-sdr-allowed-paths.txt
+          PATCH: /tmp/living-sdr/regenerated.patch
         run: |
           set -e
-          git apply --index --whitespace=nowarn /tmp/living-sdr/regenerated.patch
+          git apply --index --whitespace=nowarn "$PATCH"
+          # AUD-F95: the decision is re-made on the RESULT. The staged path set
+          # must equal the set authorized from the patch; anything else means
+          # the apply did something the patch text did not declare.
+          git diff --cached --name-only | sort -u > /tmp/living-sdr/staged-paths.txt
+          if ! diff -q /tmp/living-sdr/staged-paths.txt /tmp/living-sdr/patch-paths.txt >/dev/null; then
+            echo "FAIL. Staged paths differ from the paths authorized from the patch:"
+            diff /tmp/living-sdr/staged-paths.txt /tmp/living-sdr/patch-paths.txt || true
+            git reset -q --hard HEAD
+            exit 1
+          fi
+          test -z "$(git ls-files --others --exclude-standard)" || {
+            echo "FAIL. The patch created untracked files:"; git ls-files --others --exclude-standard
+            git reset -q --hard HEAD; git clean -q -fd; exit 1; }
           git diff --cached --stat
+          echo "Staged set equals the authorized set."
 
       - name: Open the PR
         env:
