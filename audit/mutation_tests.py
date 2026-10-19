@@ -694,6 +694,11 @@ MUTATIONS = [
      "        run: pip install --quiet --require-hashes -r requirements-security.lock\n",
      "        run: pip install --quiet bandit==1.8.6 pip-audit==2.10.1  # MUTATION the scanners are version-pinned, not hash-locked, again\n",
      "automation/collectors/test_collection_fail_closed.py"),
+    ("MUT-F93",
+     ".github/workflows/living-sdr-loop.yml",
+     '            allowed=0\n',
+     '            allowed=1  # MUTATION every tracked path is admitted again, the allowlist decides nothing\n',
+     "automation/pipeline/test_living_sdr_privileges.py"),
 ]
 
 

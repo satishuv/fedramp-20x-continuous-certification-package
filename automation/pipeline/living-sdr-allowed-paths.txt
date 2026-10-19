@@ -1,0 +1,31 @@
+# Living-SDR patch boundary (AUD-F93). The propose job of
+# .github/workflows/living-sdr-loop.yml applies the collect job's patch ONLY if
+# every changed path matches a line here. A line ending in "/" is a directory
+# prefix; any other line is one exact file. Everything else is refused, so a
+# compromised collection path cannot hand the repository-writing job a change
+# to anything this list does not name.
+#
+# Two guards hold regardless of this list: scripts and workflow files (*.py,
+# *.yml, *.yaml, *.sh), any path containing "..", and the pinned official
+# schemas under artifacts/schemas/ are refused even under an allowed prefix.
+#
+# This file lives OUTSIDE every prefix below, so a patch can never rewrite the
+# boundary it is judged by; the propose job reads it from its own checkout of
+# the default branch, never from the patch. The prefixes are the directories
+# `sdr.py build` writes (sdr/, package/, traceability/, artifacts/,
+# validation/reports/, the per-class profiles, and the collector registry).
+# automation/pipeline/test_living_sdr_privileges.py holds this list to the
+# release manifest's fingerprinted artifact set (every fingerprinted artifact
+# must be covered) and to the governance paths it must never cover
+# (workflows, the audit ledger and runner, dependency locks, pinned sources,
+# profiles/common/, this file).
+sdr/
+package/
+traceability/
+artifacts/
+validation/reports/
+profiles/class-a/
+profiles/class-b/
+profiles/class-c/
+profiles/class-d-future/
+automation/collectors/registry.json
