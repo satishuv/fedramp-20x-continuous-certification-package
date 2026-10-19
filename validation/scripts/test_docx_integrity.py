@@ -126,6 +126,47 @@ def test_f35_docx_is_inside_every_integrity_check():
     assert "':(exclude)*.docx'" not in _read(LOOP_WF)
 
 
+def test_f94_local_reproducible_target_and_attestation_include_docx():
+    # AUD-F94: the two local-path gates that still carried the exclusion after
+    # AUD-F35 made the Word document reproducible. `make reproducible` is the CI
+    # regenerate-and-diff gate run locally; the attestation's dirty-tree check
+    # is what stops `sdr.py release` attesting a commit that does not contain
+    # the built bytes. With the exclusion, a hand-edited .docx passed both.
+    mk = _read(os.path.join(BASE, "Makefile"))
+    assert ":(exclude)*.docx" not in mk, "make reproducible still excludes Word documents"
+    bra_src = _read(os.path.join(HERE, "build_release_attestation.py"))
+    assert ":(exclude)*.docx" not in bra_src, "the attestation's tree check still excludes Word documents"
+    assert "*.docx excluded" not in bra_src, "the attestation still TELLS the operator .docx is excluded"
+
+
+def test_f94_attestation_reports_a_modified_docx_as_dirty():
+    # Behavioural: modify a tracked .docx byte-for-byte-detectably, ask the
+    # builder's own helper, restore. Must report dirty naming the document.
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "build_release_attestation", os.path.join(HERE, "build_release_attestation.py"))
+    bra = importlib.util.module_from_spec(spec); spec.loader.exec_module(bra)
+    rel = "sdr/human-readable/sdr-class-b-authoring.docx"
+    path = os.path.join(BASE, *rel.split("/"))
+    original = open(path, "rb").read()
+    # Precondition: the tree is clean for this file, or the test cannot judge.
+    pre = subprocess.run(["git", "-C", BASE, "diff", "--quiet", "HEAD", "--", rel]).returncode
+    if pre != 0:
+        print("  SKIP f94 behavioural check: the Word document is already modified in this tree")
+        return
+    try:
+        with open(path, "ab") as fh:
+            fh.write(b"\n# tamper")
+        state, dirty = bra._worktree_status()
+        assert state == "dirty", state
+        assert rel in dirty, dirty
+    finally:
+        with open(path, "wb") as fh:
+            fh.write(original)
+    post = subprocess.run(["git", "-C", BASE, "diff", "--quiet", "HEAD", "--", rel]).returncode
+    assert post == 0, "the Word document was not restored byte-for-byte"
+
+
 def test_f35_manifest_fingerprints_the_committed_docx_bytes():
     import json
     manifest = json.load(open(os.path.join(BASE, "artifacts", "release-manifest.json"), encoding="utf-8"))

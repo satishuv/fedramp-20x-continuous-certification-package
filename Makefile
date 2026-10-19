@@ -55,8 +55,8 @@ clean: ## Remove caches and scanner reports
 catalog: ## Regenerate the scanner check catalog after editing checks.py
 	$(PYTHON) automation/sdrscan/sdrscan.py --write-catalog
 
-reproducible: ## Prove the deliverables match their inputs (the CI gate, locally)
+reproducible: ## Prove the deliverables match their inputs (the CI gate, locally; Word documents included)
 	$(PYTHON) sdr.py build
-	@git diff --exit-code -- . ':(exclude)*.docx' \
-		&& echo "OK. Every generated file matches what the pipeline produces." \
+	@git diff --exit-code -- . \
+		&& echo "OK. Every generated file matches what the pipeline produces (Word documents included)." \
 		|| { echo "FAIL. A generated file was hand-edited. Edit the record store instead."; exit 1; }

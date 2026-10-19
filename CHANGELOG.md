@@ -77,6 +77,24 @@ diff against the previous dataset and its pin advanced)
   (the six admitted governance files among them), 0 after. MUT-F93 (every
   tracked path admitted again) killed.
 
+### The last two Word-document exclusions are gone (AUD-F94)
+
+- **AUD-F94 (Low).** `make reproducible` still diffed with `':(exclude)*.docx'`,
+  and `build_release_attestation.py` excluded `*.docx` on all five of its git
+  calls and told the operator so in five places, with the pre-AUD-F35 reason
+  (zip timestamps) that no longer holds. Found by an external re-audit of main
+  `ffb3b55` (2026-10-19), which named the Makefile; the attestation builder was
+  the wider instance: `sdr.py release` would have attested a commit as the source
+  of a package whose Word document had been hand-edited after that commit. Both
+  now cover the whole tree, and every message says Word documents are inside
+  the check.
+- `test_docx_integrity.py` gains a structural test (no exclusion pathspec in
+  either file, no "excluded" wording) and a behavioural one (append bytes to the
+  tracked Class B `.docx`, the builder must report dirty naming it, restore
+  byte-for-byte). Red-first: the behavioural test fails on the old builder, the
+  structural one on the old Makefile; 10/10 after. MUT-F94 (the exclusion
+  returns) killed.
+
 ### The living-SDR loop separates its cloud credential from its repository write (AUD-F89)
 
 - **AUD-F89 (High).** `living-sdr-loop.yml` ran one job with `id-token: write`,

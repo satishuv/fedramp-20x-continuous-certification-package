@@ -699,6 +699,11 @@ MUTATIONS = [
      '            allowed=0\n',
      '            allowed=1  # MUTATION every tracked path is admitted again, the allowlist decides nothing\n',
      "automation/pipeline/test_living_sdr_privileges.py"),
+    ("MUT-F94",
+     "validation/scripts/build_release_attestation.py",
+     '            ["git", "-C", BASE, "diff", "--quiet", "HEAD", "--", "."],\n',
+     '            ["git", "-C", BASE, "diff", "--quiet", "HEAD", "--", ".", ":(exclude)*.docx"],  # MUTATION a hand-edited Word document attests as clean again\n',
+     "validation/scripts/test_docx_integrity.py"),
 ]
 
 

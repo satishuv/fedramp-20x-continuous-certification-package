@@ -954,6 +954,11 @@
    "severity": "Low",
    "component": ".github/workflows/living-sdr-loop.yml (propose job boundary step, header); automation/pipeline/living-sdr-allowed-paths.txt (new); automation/pipeline/test_living_sdr_privileges.py (F93 section)"
   },
+  "ledger.AUD-F94": {
+   "kind": "closed-defect",
+   "severity": "Low",
+   "component": "Makefile (reproducible target); validation/scripts/build_release_attestation.py (_worktree_status, _untracked_files, docstring, refusal and summary messages); validation/scripts/test_docx_integrity.py (F94 tests)"
+  },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
    "severity": "medium",
