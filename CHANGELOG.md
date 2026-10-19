@@ -95,6 +95,27 @@ diff against the previous dataset and its pin advanced)
   structural one on the old Makefile; 10/10 after. MUT-F94 (the exclusion
   returns) killed.
 
+### The living-SDR write job authorizes the patch it applies, not a description of it (AUD-F95)
+
+- **AUD-F95 (High).** The `propose` job authorized `changed-paths.txt`, a
+  sidecar the `collect` job wrote beside `regenerated.patch`, then applied the
+  patch. Both come from the same untrusted job. Run verbatim, a patch changing
+  `Makefile` (or `release.yml`, or the allowlist itself) with a sidecar naming
+  `sdr/json/sdr-class-b.json` passed. Found by an external re-audit of main
+  `f80b8f4` (2026-10-19); AUD-F89 introduced the sidecar and AUD-F93 hardened
+  the rules applied to it without asking whether it was the right object. Now
+  the path set is derived from the patch (`git apply --numstat`; renames and
+  copies refused), that set is authorized, the sidecar is telemetry whose
+  disagreement is refused, the apply is dry-run first, and after the real apply
+  the staged set must equal the authorized set or the tree is reset and the
+  job fails.
+- The verbatim harness in `test_living_sdr_privileges.py` now builds real
+  patches in a throwaway clone: 13 honest cases, 4 attack cases (benign sidecar,
+  forbidden patch; allowed patch, lying sidecar) all refused, and a staged-set
+  probe exercising the post-apply re-check. Red-first: 15 failures on the old
+  workflow with all four attacks admitted; 0 after. MUT-F95 (the sidecar
+  becomes the judged list again) killed.
+
 ### The living-SDR loop separates its cloud credential from its repository write (AUD-F89)
 
 - **AUD-F89 (High).** `living-sdr-loop.yml` ran one job with `id-token: write`,

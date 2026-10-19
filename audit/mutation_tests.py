@@ -704,6 +704,11 @@ MUTATIONS = [
      '            ["git", "-C", BASE, "diff", "--quiet", "HEAD", "--", "."],\n',
      '            ["git", "-C", BASE, "diff", "--quiet", "HEAD", "--", ".", ":(exclude)*.docx"],  # MUTATION a hand-edited Word document attests as clean again\n',
      "validation/scripts/test_docx_integrity.py"),
+    ("MUT-F95",
+     ".github/workflows/living-sdr-loop.yml",
+     '          git apply --numstat "$PATCH" | cut -f3- | sort -u > /tmp/living-sdr/patch-paths.txt\n',
+     '          sort -u "$SIDECAR" > /tmp/living-sdr/patch-paths.txt  # MUTATION the self-reported sidecar is the object judged again\n',
+     "automation/pipeline/test_living_sdr_privileges.py"),
 ]
 
 

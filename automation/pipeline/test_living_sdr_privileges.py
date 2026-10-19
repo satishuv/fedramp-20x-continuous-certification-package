@@ -181,6 +181,19 @@ def main_f93():
           "*..*" in shell and "*.py" in shell and "artifacts/schemas/*" in shell)
     check("the old denylist shape is gone",
           ".github/*|audit/*" not in shell)
+    # AUD-F95: the object judged is the patch, not the sidecar.
+    check("the boundary step derives the path set from the patch itself (git apply --numstat)",
+          "git apply --numstat" in shell and "patch-paths.txt" in shell)
+    check("the boundary step authorizes the patch-derived set, not changed-paths.txt",
+          "authorize_paths /tmp/living-sdr/patch-paths.txt" in shell
+          and "authorize_paths /tmp/living-sdr/changed-paths.txt" not in shell
+          and 'done < /tmp/living-sdr/changed-paths.txt' not in shell)
+    check("the sidecar is consistency telemetry: a disagreement with the patch is refused",
+          "disagrees with the patch" in shell)
+    check("the boundary step dry-runs the apply (git apply --check) before anything is staged",
+          "git apply --check" in shell)
+    check("renames and copies in the patch are refused (a regeneration rewrites in place)",
+          "rename|copy" in shell)
 
     check("the allowlist is committed and non-empty", os.path.exists(ALLOWLIST) and _allow_rules() != [])
     rules = _allow_rules()
@@ -198,51 +211,153 @@ def main_f93():
           not leaked, str(leaked))
 
     # Decisive check: run the shipped shell verbatim when bash is available
-    # (CI runners and WSL). Each case writes one path into changed-paths.txt;
-    # tracked allowed paths must pass, every other case must be refused.
+    # (CI runners and WSL), in a throwaway clone, with REAL patches. AUD-F95:
+    # the object judged must be the patch and the staged result, so each case
+    # builds a patch by actually editing the named file in the clone; the
+    # sidecar is written separately so it can be made to lie.
     bash = shutil.which("bash")
     if not bash:
         print("  SKIP verbatim shell cases (no bash on PATH)")
         return
+    apply_shell = _apply_step_shell(wf)
+    check("the propose job applies the patch in a step that re-authorizes the staged result",
+          "git diff --cached --name-only" in apply_shell and "patch-paths.txt" in apply_shell)
+    # (patch_target, sidecar_claim or None for honest, expect_ok)
     cases = [
-        ("sdr/json/sdr-class-b.json", True),
-        ("package/cpo/cpo.json", True),
-        ("validation/reports/validation-report.json", True),
-        ("automation/collectors/registry.json", True),
-        ("Makefile", False), ("pyproject.toml", False), ("LICENSE", False),
-        (".gitignore", False), (".gitmodules", False),
-        ("automation/sdrscan/check-catalog.json", False),   # tracked JSON outside the roots
-        ("profiles/common/offering-profile.json", False),
-        ("artifacts/schemas/official/fedramp-common-definitions-schema-2026-06-24.json", False),
-        ("sdr/../sdr.py", False),
-        ("sdr/json/evil.py", False),
-        (ALLOWLIST_REL, False),
+        ("sdr/json/sdr-class-b.json", None, True),
+        ("package/cpo/cpo.json", None, True),
+        ("validation/reports/validation-report.json", None, True),
+        ("automation/collectors/registry.json", None, True),
+        ("Makefile", None, False), ("pyproject.toml", None, False), ("LICENSE", None, False),
+        (".gitignore", None, False),
+        ("automation/sdrscan/check-catalog.json", None, False),   # tracked JSON outside the roots
+        ("profiles/common/offering-profile.json", None, False),
+        ("artifacts/schemas/official/fedramp-common-definitions-schema-2026-06-24.json", None, False),
+        ("sdr/json/evil.py", None, False),
+        (ALLOWLIST_REL, None, False),
+        # AUD-F95: the attack. The patch changes a forbidden file while the
+        # sidecar claims an allowed one. Before F95 this PASSED.
+        ("Makefile", "sdr/json/sdr-class-b.json", False),
+        (".github/workflows/release.yml", "package/cpo/cpo.json", False),
+        (ALLOWLIST_REL, "sdr/json/sdr-class-b.json", False),
+        # The reverse lie: allowed patch, sidecar naming something else.
+        ("sdr/json/sdr-class-b.json", "package/cpo/cpo.json", False),
     ]
     with tempfile.TemporaryDirectory() as td:
+        clone = os.path.join(td, "clone")
+        # No line-ending conversion in the throwaway clone: with
+        # core.autocrlf=input on a Windows host the working copy and index
+        # disagree byte-for-byte and `git apply --index` reports "does not
+        # match index" for reasons unrelated to the workflow under test. The
+        # ubuntu runner has no such conversion.
+        subprocess.run(["git", "-c", "core.autocrlf=false", "clone", "-q", "--no-local", BASE, clone], check=True)
+        subprocess.run(["git", "-C", clone, "config", "core.autocrlf", "false"], check=True)
+        subprocess.run(["git", "-C", clone, "config", "user.email", "t@example.invalid"], check=True)
+        subprocess.run(["git", "-C", clone, "config", "user.name", "t"], check=True)
         tmp = os.path.join(td, "living-sdr")
         os.makedirs(tmp)
-        # The step reads changed-paths.txt from the exchange directory the
-        # collect job uploads to; read that directory out of the step text
-        # (not hardcoded here) and point it at ours for the run.
-        m_dir = re.search(r"(\S+/)changed-paths\.txt", shell)
-        check("the boundary step reads changed-paths.txt from one exchange directory", m_dir is not None)
+        # The exchange directory is the one the collect job uploads to; the
+        # step names its members through env (PATCH, SIDECAR). Read it there
+        # and point every occurrence (env values and the shell's own temp
+        # files) at ours for the run.
+        step_env = _propose_step_env(wf)
+        sidecar_env = step_env.get("SIDECAR", "")
+        m_dir = re.match(r"(.+/)changed-paths\.txt$", sidecar_env)
+        check("the boundary step names the sidecar and patch through env, in one exchange directory",
+              m_dir is not None and step_env.get("PATCH", "").startswith(m_dir.group(1) if m_dir else "\0"))
         if not m_dir:
             return
-        shell_local = shell.replace(m_dir.group(1), _posix(tmp) + "/")
-        script = os.path.join(td, "step.sh")
-        with open(script, "w", encoding="utf-8", newline="\n") as fh:
-            fh.write(shell_local)
-        for path, expect_ok in cases:
+        exchange = m_dir.group(1)
+        step1 = os.path.join(td, "step1.sh"); step2 = os.path.join(td, "step2.sh")
+        for path_, body in ((step1, shell), (step2, apply_shell)):
+            with open(path_, "w", encoding="utf-8", newline="\n") as fh:
+                fh.write(body.replace(exchange, _posix(tmp) + "/"))
+        env_prefix = (f'ALLOWLIST="{ALLOWLIST_REL}" PATCH="{_posix(tmp)}/regenerated.patch" '
+                      f'SIDECAR="{_posix(tmp)}/changed-paths.txt"')
+
+        def run_step(script, refresh=False):
+            # `refresh`: the apply step runs `git apply --index`, which
+            # compares against the index's stat cache. On this host the clone
+            # is written by Windows git and the step runs under WSL git, two
+            # programs with incompatible stat caches, so every entry reads
+            # stale ("does not match index"). Refresh from the bash side first;
+            # it changes no content and is a harness concern only (the ubuntu
+            # runner uses one git throughout).
+            pre = "git update-index -q --refresh; " if refresh else ""
+            return subprocess.run([bash, "-c", f'cd "{_posix(clone)}" && {pre}{env_prefix} bash "{_posix(script)}"'],
+                                  capture_output=True, text=True)
+
+        for target, claim, expect_ok in cases:
+            # Build a real patch: append to the target (creating it if it is
+            # the one untracked case), diff, restore.
+            tpath = os.path.join(clone, *target.split("/"))
+            existed = os.path.exists(tpath)
+            os.makedirs(os.path.dirname(tpath), exist_ok=True)
+            with open(tpath, "ab") as fh:
+                fh.write(b"\n# regenerated\n")
+            if not existed:
+                subprocess.run(["git", "-C", clone, "add", "-N", "--", target], check=True)
+            patch = subprocess.run(["git", "-C", clone, "diff", "--binary", "--", "."],
+                                   capture_output=True, text=True).stdout
+            subprocess.run(["git", "-C", clone, "reset", "-q", "--hard", "HEAD"], check=True)
+            subprocess.run(["git", "-C", clone, "clean", "-q", "-fd"], check=True)
+            with open(os.path.join(tmp, "regenerated.patch"), "w", encoding="utf-8", newline="\n") as fh:
+                fh.write(patch)
             with open(os.path.join(tmp, "changed-paths.txt"), "w", encoding="utf-8", newline="\n") as fh:
-                fh.write(path + "\n")
-            # ALLOWLIST is set inside the bash command (WSL does not forward
-            # arbitrary Windows environment variables).
-            r = subprocess.run([bash, "-c",
-                                f'cd "{_posix(BASE)}" && ALLOWLIST="{ALLOWLIST_REL}" bash "{_posix(script)}"'],
-                               capture_output=True, text=True)
-            ok = r.returncode == 0
-            check(f"verbatim step {'admits' if expect_ok else 'refuses'} {path}",
-                  ok == expect_ok, (r.stdout + r.stderr).strip()[-160:])
+                fh.write((claim or target) + "\n")
+            r1 = run_step(step1)
+            ok = r1.returncode == 0
+            label = f"patch={target}" + (f" sidecar-claims={claim}" if claim else "")
+            check(f"verbatim boundary {'admits' if expect_ok else 'refuses'} {label}",
+                  ok == expect_ok, (r1.stdout + r1.stderr).strip()[-200:])
+            if ok and expect_ok:
+                r2 = run_step(step2, refresh=True)
+                staged = subprocess.run(["git", "-C", clone, "diff", "--cached", "--name-only"],
+                                        capture_output=True, text=True).stdout.split()
+                check(f"verbatim apply stages exactly the authorized path for {target}",
+                      r2.returncode == 0 and staged == [target], (r2.stdout + r2.stderr).strip()[-200:])
+                subprocess.run(["git", "-C", clone, "reset", "-q", "--hard", "HEAD"], check=True)
+
+        # AUD-F95, the second half: a patch whose declared file list disagrees
+        # with what applying it stages cannot be built with git (the apply
+        # follows the headers), so the staged re-check is exercised by
+        # pre-staging a forbidden change in the clone before step 2 runs.
+        tpath = os.path.join(clone, "sdr", "json", "sdr-class-b.json")
+        with open(tpath, "ab") as fh:
+            fh.write(b"\n# regenerated\n")
+        patch = subprocess.run(["git", "-C", clone, "diff", "--binary", "--", "."],
+                               capture_output=True, text=True).stdout
+        subprocess.run(["git", "-C", clone, "reset", "-q", "--hard", "HEAD"], check=True)
+        with open(os.path.join(tmp, "regenerated.patch"), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(patch)
+        with open(os.path.join(tmp, "changed-paths.txt"), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write("sdr/json/sdr-class-b.json\n")
+        r1 = run_step(step1)
+        check("staged-set probe: honest patch passes the boundary step", r1.returncode == 0,
+              (r1.stdout + r1.stderr).strip()[-200:])
+        with open(os.path.join(clone, "Makefile"), "ab") as fh:
+            fh.write(b"\n# smuggled\n")
+        subprocess.run(["git", "-C", clone, "add", "--", "Makefile"], check=True)
+        r2 = run_step(step2, refresh=True)
+        check("staged-set probe: the apply step refuses when the staged set exceeds the authorized set",
+              r2.returncode != 0 and "Staged paths differ" in r2.stdout, (r2.stdout + r2.stderr).strip()[-200:])
+        subprocess.run(["git", "-C", clone, "reset", "-q", "--hard", "HEAD"], check=True)
+
+
+def _apply_step_shell(wf):
+    """The apply step's run: block of the propose job, verbatim."""
+    for step in wf["jobs"]["propose"]["steps"]:
+        if str(step.get("name", "")).startswith("Apply the patch"):
+            return step["run"]
+    return ""
+
+
+def _propose_step_env(wf):
+    """The boundary step's env block (ALLOWLIST, PATCH, SIDECAR)."""
+    for step in wf["jobs"]["propose"]["steps"]:
+        if str(step.get("name", "")).startswith("Refuse a patch"):
+            return dict(step.get("env") or {})
+    return {}
 
 
 def _posix(p):

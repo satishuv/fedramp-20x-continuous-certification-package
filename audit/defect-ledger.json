@@ -1250,6 +1250,19 @@
       "mutation": "MUT-F94: the unstaged quiet diff regains `:(exclude)*.docx`; test_f94_attestation_reports_a_modified_docx_as_dirty goes RED (and the structural test too); expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F95",
+      "severity": "High",
+      "requirement": "At a privilege boundary the object authorized must be the object acted on. The living-SDR propose job exists so that a compromised collection path cannot turn a cloud credential into repository-write influence; a decision made on the collect job's own description of its output, rather than on the output, is a decision the collect job makes.",
+      "component": ".github/workflows/living-sdr-loop.yml (propose job: boundary step and apply step, header); automation/pipeline/test_living_sdr_privileges.py (F95 structural checks; real-patch verbatim harness)",
+      "description": "Found by an external re-audit of main f80b8f4 (2026-10-19) and reproduced verbatim: the propose job authorized changed-paths.txt, a sidecar the collect job wrote beside regenerated.patch, and the next step applied the patch. Both are members of one artifact uploaded by the same untrusted job, judged separately. With the step's shell run as shipped, a patch changing Makefile (or .github/workflows/release.yml, or the allowlist itself) accompanied by a sidecar naming sdr/json/sdr-class-b.json passed with 'Patch touches only tracked deliverables listed in automation/pipeline/living-sdr-allowed-paths.txt.' AUD-F89 introduced the sidecar and AUD-F93 hardened the rule set applied to it; neither asked whether the sidecar was the right object to judge. Branch protection and the required release-gate on the resulting PR remained downstream defences; the boundary itself did not hold what its comments claimed.",
+      "root_cause": "The collect job emitted `git diff --name-only` as a convenience list and the propose job consumed it as the authority, so the path set and the patch content could disagree with nothing comparing them.",
+      "fix_commit": "this PR -- the boundary step derives the path set from the patch (`git apply --numstat`, which parses the patch without touching the tree; renames and copies are refused outright since a regeneration never renames), authorizes THAT set against the allowlist, treats the sidecar as telemetry whose disagreement with the patch is itself refused, and dry-runs `git apply --check`; the apply step then stages the patch and refuses unless `git diff --cached --name-only` equals the authorized set and no untracked file appeared, resetting the tree on refusal. What was judged, what was applied and what will be committed are the same set",
+      "regression_test": "automation/pipeline/test_living_sdr_privileges.py: structural (path set from `git apply --numstat`, authorize_paths called on patch-paths.txt and never on changed-paths.txt, sidecar disagreement refused, `git apply --check` present, rename/copy refused, apply step re-authorizes `git diff --cached --name-only`) and the verbatim harness rebuilt to use REAL patches in a throwaway clone: 13 honest cases (4 deliverables admitted and shown to stage exactly the authorized path; 9 governance or script paths refused), 4 attack cases (patch=Makefile, patch=release.yml, patch=the allowlist, each with a benign sidecar; and an allowed patch with a lying sidecar) all refused, and a staged-set probe that pre-stages a forbidden file so the apply step's re-check is exercised and refuses. Red-first: 15 failures on the main f80b8f4 workflow including all four attack cases admitted; 0 after",
+      "mutation": "MUT-F95: the patch-derived path list is replaced by the sorted sidecar, so the self-reported list is the object judged again; the 'derives the path set from the patch itself' check and the four attack cases go RED; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }
