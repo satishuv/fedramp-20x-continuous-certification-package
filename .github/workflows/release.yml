@@ -7,13 +7,27 @@
 # a step a human can skip; this workflow cannot.
 #
 # Order:
-#   1. verify-tag   the tag is annotated, its signature VERIFIES against a key
-#                   listed in .github/release-allowed-signers (git verify-tag,
+#   1. verify-tag   the tag is annotated, it resolves to the commit this run is
+#                   building, THAT COMMIT IS ON PROTECTED MAIN (AUD-F91, below),
+#                   its signature VERIFIES against a key listed in
+#                   .github/release-allowed-signers (git verify-tag,
 #                   gpg.format=ssh; a valid signature from an unlisted key fails
-#                   with "No principal matched"), it resolves to the commit this
-#                   run is building, and its name equals the committed release
-#                   manifest's release_tag (tag <-> version identity). Fails
-#                   closed on any mismatch.
+#                   with "No principal matched"), and its name equals the
+#                   committed release manifest's release_tag (tag <-> version
+#                   identity). Fails closed on any mismatch.
+#
+# Why the ancestry check comes BEFORE the signature check (AUD-F91). The
+# allowed-signers file is read from the tagged commit's own tree, so without
+# this step a tag decided who was trusted to sign it: anyone able to push a
+# commit and a v* tag could put their own public key into that commit's
+# .github/release-allowed-signers, sign the tag with the matching private key,
+# and pass `git verify-tag`. Requiring the tagged commit to be an ancestor of
+# origin/main, fetched here by its own ref and never from the tag, means the
+# signers file in force is one that went through main's required release-gate
+# status check in a reviewed pull request. The branch protection on main
+# (required status check, strict up-to-date, no force push, no deletion) is
+# therefore part of this workflow's trust chain and is recorded as such in
+# docs/versioning.md.
 #   2. gate         the WHOLE validate workflow (validate + audit-gate +
 #                   attack-gate + security-scan + the aggregate release-gate)
 #                   re-run on the exact tagged commit.
@@ -46,15 +60,30 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           fetch-depth: 0
-      - name: Tag must be annotated, signed by a listed release key, on this commit, and equal the manifest's release_tag
+      - name: Tag must be annotated, on protected main, signed by a listed release key, on this commit, and equal the manifest's release_tag
         env:
           TAG: ${{ github.ref_name }}
           SIGNERS: .github/release-allowed-signers
+          PROTECTED_BRANCH: main
         run: |
           set -e
           kind=$(git cat-file -t "refs/tags/$TAG")
           if [ "$kind" != "tag" ]; then
             echo "FAIL. $TAG is a lightweight tag (object type: $kind). Releases need an annotated, signed tag: git tag -s $TAG -m '...'"
+            exit 1
+          fi
+          # AUD-F91: the tagged commit must be on the protected branch BEFORE
+          # anything in its tree is trusted. Fetch main by its own ref, so the
+          # comparison target comes from the branch protection on the server,
+          # not from the tag being judged. A tag on a side-branch commit fails
+          # here even when every later check would pass.
+          tag_commit=$(git rev-list -n 1 "refs/tags/$TAG")
+          git fetch --no-tags origin "+refs/heads/$PROTECTED_BRANCH:refs/remotes/origin/$PROTECTED_BRANCH"
+          if ! git merge-base --is-ancestor "$tag_commit" "refs/remotes/origin/$PROTECTED_BRANCH"; then
+            echo "FAIL. $TAG resolves to $tag_commit, which is not on protected $PROTECTED_BRANCH."
+            echo "A release tag may point only at a commit that reached $PROTECTED_BRANCH through its"
+            echo "required release-gate check; the allowed-signers file in that commit is the one"
+            echo "trusted below. Tag a commit on $PROTECTED_BRANCH, not a branch."
             exit 1
           fi
           if ! git cat-file -p "refs/tags/$TAG" | grep -qE 'BEGIN (PGP|SSH) SIGNATURE'; then
@@ -76,8 +105,8 @@ jobs:
             exit 1
           fi
           # The tag must point at the commit this run is building, so the gate
-          # and the published assets describe the same source.
-          tag_commit=$(git rev-list -n 1 "refs/tags/$TAG")
+          # and the published assets describe the same source. (tag_commit was
+          # resolved above, before the ancestry check.)
           if [ "$tag_commit" != "$GITHUB_SHA" ]; then
             echo "FAIL. $TAG resolves to $tag_commit but this run is for $GITHUB_SHA."
             exit 1
@@ -88,7 +117,7 @@ jobs:
             echo "Bump FRAMEWORK_VERSION in validation/scripts/build_release_manifest.py, rebuild, commit, then tag."
             exit 1
           fi
-          echo "Tag $TAG: annotated, signature verified against $SIGNERS, on $GITHUB_SHA, matches release manifest."
+          echo "Tag $TAG: annotated, on protected $PROTECTED_BRANCH, signature verified against $SIGNERS, on $GITHUB_SHA, matches release manifest."
 
   gate:
     needs: verify-tag
