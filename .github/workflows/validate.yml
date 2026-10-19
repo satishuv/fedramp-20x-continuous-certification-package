@@ -88,7 +88,7 @@ jobs:
             --only-fails --no-colour --ignore-exit-code-3
       - name: Upload validation and scan reports
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: validation-reports
           path: validation/reports/
@@ -121,7 +121,7 @@ jobs:
         run: python audit/release_gate.py audit
       - name: Upload gate results (audit)
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: gate-results-audit
           path: |
@@ -152,7 +152,7 @@ jobs:
         run: python audit/release_gate.py attack
       - name: Upload gate results (attack)
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: gate-results-attack
           path: |
@@ -180,7 +180,7 @@ jobs:
         run: python audit/release_gate.py attack-non-aws
       - name: Upload gate results (attack-non-aws)
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: gate-results-attack-non-aws
           path: |
@@ -217,13 +217,13 @@ jobs:
         run: python audit/release_gate.py security
       - name: Upload bandit report
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: bandit-security-report
           path: bandit-report.txt
       - name: Upload gate results (security)
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: gate-results-security
           path: |
@@ -263,7 +263,7 @@ jobs:
           ruff format --check . | tee ruff-format.txt
       - name: Upload quality report
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: quality-report
           path: |
