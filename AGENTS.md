@@ -55,7 +55,9 @@ development and is readiness-only here.
 ## Where things live
 
 - Requirements engine and validators: `validation/scripts/`
+- Release gate, mutation runner and defect ledger: `audit/` (`python audit/release_gate.py audit` runs the audit section locally; a fixed defect needs a mutation and a ledger record)
 - Provider facts you edit: `sdr/records/records-store.json` and `profiles/common/offering-profile.json`
 - Evidence adapters (opt-in): `automation/collectors/`
 - Generated package: `sdr/`, `package/`, `traceability/`, `artifacts/release-manifest.json`
+- Workflows: `.github/workflows/` (`validate.yml` on every push and PR with `release-gate` as the one required check; `drift-check.yml` daily; `release.yml` on a signed `v*` tag; `living-sdr-loop.yml` the opt-in scheduled collector)
 - One-command entry point: `python sdr.py all`

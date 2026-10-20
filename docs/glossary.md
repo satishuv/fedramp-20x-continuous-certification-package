@@ -28,15 +28,18 @@ The subsets, with how many rules each holds and which applicability layers they 
 | `USE` | 10 | `all` | Agency use of a certified service |
 | `QTR` | 10 | `all` | Quarterly continuous monitoring reviews |
 | `AGC` | 9 | `all` | Agency obligations |
-| `CSX` | 8 | `20x` only | The 20x-only rules |
 | `OCR` | 7 | `all` | Ongoing Certification Reports |
+| `CSX` | 7 | `20x` only | The 20x-only rules |
+| `EVA` | 7 | `all` | Vulnerability evaluation (the `VER-EVA-*` rules) |
 | `TRC` | 6 | `all` | Trust centers |
 | `CLA` | 6 | `all` | Certification class scoping |
+| `APP` | 6 | `all` | Applying for certification (the `FRC-APP-*` rules) |
+| `TRF` | 6 | `all` | Significant-change notification steps (the `SCN-TRF-*` rules) |
 | `RPT` | 6 | `all` | Vulnerability reporting |
 
-Sixteen more subsets hold five rules or fewer each.
+Ten more subsets hold five rules or fewer each, 26 subsets in all.
 
-The `CSX` subset matters more than its size suggests. Every 20x-only rule lives there and nowhere else, so an index built only from the `all` applicability layer misses all eight and will report real identifiers as fabricated. See the [traversal problem](architecture.md#the-traversal-problem-and-why-it-is-called-out-everywhere).
+The `CSX` subset matters more than its size suggests. Every 20x-only rule lives there and nowhere else, so an index built only from the `all` applicability layer misses all seven and will report real identifiers as fabricated. See the [traversal problem](architecture.md#the-traversal-problem-and-why-it-is-called-out-everywhere).
 
 ## Rule families
 

@@ -2,11 +2,11 @@
 
 This is the page you work from. It covers what each field in the record store means, how to fill one entry end to end, and how to decide when a status may move off `Not Implemented`.
 
-You edit two provider-owned files: `sdr/records/records-store.json` (the security-decision facts, holding 168 rule entries under `frr` and 46 indicator entries under `ksi`) and `profiles/common/offering-profile.json` (your offering identity, certification class, and the assessment, availability, and CPO inputs). This page focuses on the record store, where most of the work is; see [getting started](getting-started.md#describing-your-offering) for the offering profile. Nothing else in the repository is hand-edited, and the validator will catch you if you try.
+You edit two provider-owned files: `sdr/records/records-store.json` (the security-decision facts, holding 167 rule entries under `frr` and 46 indicator entries under `ksi`) and `profiles/common/offering-profile.json` (your offering identity, certification class, and the assessment, availability, and CPO inputs). This page focuses on the record store, where most of the work is; see [getting started](getting-started.md#describing-your-offering) for the offering profile. Nothing else in the repository is hand-edited, and the validator will catch you if you try.
 
 ## Let the scanner set your order
 
-168 entries is not a to-do list you read top to bottom. Ask the scanner what matters first.
+167 entries is not a to-do list you read top to bottom. Ask the scanner what matters first.
 
 ```bash
 python automation/sdrscan/sdrscan.py --only-fails --severity critical,high

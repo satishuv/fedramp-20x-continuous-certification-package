@@ -6,7 +6,7 @@ Never call the framework version a "FedRAMP version."
 ## Two versions, always both
 
 - Framework version: semantic version of this repository's code and generators (e.g. `1.0.0`).
-- CR26 dataset version: the pinned FedRAMP Consolidated Rules for 2026 release the package was built against (e.g. `2026.09.13.02`).
+- CR26 dataset version: the pinned FedRAMP Consolidated Rules for 2026 release the package was built against (e.g. `2026.10.13.01`).
 
 The release manifest (`artifacts/release-manifest.json`) records both, plus the
 pinned schema versions and a SHA-256 of every generated artifact, so any release
@@ -37,7 +37,7 @@ exact source tree.
 v<framework-version>-cr26-<dataset-version>
 ```
 
-Example: `v1.0.0-cr26-2026.09.13.02`
+Example: `v1.0.0-cr26-2026.10.13.01`
 
 The manifest emits this as `release_tag`. Tagging a release with this string
 means: this framework version, built against this CR26 dataset, produced the
@@ -64,10 +64,16 @@ PUBLIC keys trusted to sign a release, one per line in ssh-keygen
 from the tagged commit's own tree, so without the ancestry step a tag on a side
 branch could carry its own signer list and authorise itself. Requiring the
 commit to have reached `main` means the signers file in force is one that passed
-`main`'s required `release-gate` status check in a reviewed pull request; the
+`main`'s required `release-gate` status check in a pull request; the
 branch protection on `main` (required status check, strict up-to-date, no force
 push, no deletion) is therefore part of the release trust chain and is recorded
-in the workflow header. A tag signed by a key not on that list fails the
+in the workflow header. Two limits of that chain are repository settings, not
+code, and the owner decides them: `main` does not currently require an approving
+review, so "passed the gate" means the automated gate and not a second human;
+and administrators are not subject to the branch protection
+(`enforce_admins` is off). A `v*` tag ruleset restricting tag creation, update
+and deletion is the recommended defense in depth beside the ancestry check; none
+is configured today. A tag signed by a key not on that list fails the
 workflow with "No principal matched", however valid the signature is; so does an
 unsigned tag, a tag on a commit that is not on `main`, a tag that does not point
 at the commit being built, or a tag whose name differs from the manifest's
@@ -81,7 +87,7 @@ git verify-tag <tag>
 ```
 
 Rotating a key: add the new public key to `.github/release-allowed-signers` in
-a reviewed pull request and merge it BEFORE tagging with the new key; remove a
+a pull request that passes `release-gate` and merge it BEFORE tagging with the new key; remove a
 retired key only once every release it signed is superseded, since verifying
 those tags needs it. A GitHub Release created from a signed tag also carries the
 signature badge.
@@ -114,7 +120,8 @@ same probe list against the fictional Class C sample on a platform other than
 AWS, whose evidence comes through the adapter path, followed by its own
 tree-clean check. The security section is Bandit at
 medium-or-higher severity and confidence, and pip-audit over the hash-locked
-closure.
+closure, with both scanners themselves installed from the hash-locked
+`requirements-security.lock` (AUD-F92).
 
 ## Publishing a release
 
@@ -142,18 +149,12 @@ its release notes carry a correction.
 
 Every build emits a deterministic CycloneDX SBOM at `artifacts/sbom.cdx.json`,
 fingerprinted in the release manifest. A tool that asks providers to evidence
-their supply chain models its own. The SBOM covers the framework's own
-DIRECTLY-PINNED top-level dependencies (the `name==version` entries in the
-requirements files) and lets a consumer verify them against the manifest hash.
-
-Scope, stated honestly: the SBOM lists the top-level packages the framework pins
-directly. Their transitive dependencies are pinned indirectly (they resolve to
-whatever the top-level pins allow) and are not enumerated, and the SBOM's own
-metadata records this (`sbom:scope = direct-top-level-pins`,
-`sbom:transitive-included = false`). A fully-resolved closure with per-package
-hashes would require a committed lock file produced by a resolver (pip-compile or
-uv); that is a separate supply-chain-tooling change tracked as follow-up. Until
-then, do not read this SBOM as the complete resolved dependency set.
+their supply chain models its own. The SBOM is the fully resolved closure: every
+package in the committed `requirements.lock`, top-level and transitive, each
+with the hash the lock pins it to. Its metadata records the scope
+(`sbom:scope = resolved-closure-with-hashes`, `sbom:transitive-included = true`).
+`make lock` regenerates the lock and the SBOM together, so the two cannot
+disagree; the regenerate-and-diff gate fails a commit where they do.
 
 ## What a release means, and does not mean
 
@@ -177,5 +178,10 @@ in `requirements-dev.txt`; CI-only tools in `requirements-ci.txt`. Those are the
 INPUTS to `make lock`, which resolves the full closure with hashes into
 `requirements.lock`. Every CI path (GitHub Actions and both CodeBuild buildspecs)
 installs `requirements.lock` with `--require-hashes`, so a CI environment holds
-exactly the resolved closure and nothing else. GitHub Actions are pinned to full
-commit SHAs. This keeps the build inputs traceable.
+exactly the resolved closure and nothing else. The security scanners have the
+same shape: `requirements-security.txt` is the input and `make lock-security`
+resolves `requirements-security.lock`, constrained against `requirements.lock`
+so a shared transitive package resolves to one version. GitHub Actions are
+pinned to full commit SHAs. Dependabot proposes weekly version bumps to the
+input files; a bump lands only after the maintainer regenerates the affected
+lock and the SBOM on the branch. This keeps the build inputs traceable.

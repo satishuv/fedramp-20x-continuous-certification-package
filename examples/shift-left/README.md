@@ -13,16 +13,16 @@ pre-deploy gate that produces its own pass/fail and can emit its own evidence.
 ## What the example enforces
 
 Every `aws_s3_bucket` (or `AWS::S3::Bucket`) must have a bucket policy that
-denies non-TLS access (`aws:SecureTransport = false`) — the encryption-in-transit
+denies non-TLS access (`aws:SecureTransport = false`): the encryption-in-transit
 outcome the SDR tracks under the KSI-CNA / SC-8 family.
 
 ## Files
 
-- `policy/s3_tls.rego` — the OPA/Rego rule.
-- `policy/s3_tls.guard` — the equivalent CFN Guard rule (same intent).
-- `fixtures/plan-compliant.json` — a bucket with a TLS-enforcing policy (passes).
-- `fixtures/plan-noncompliant.json` — a bare bucket (blocked).
-- `run_policy.py` — a local runner that uses the `opa` binary if present, and
+- `policy/s3_tls.rego`: the OPA/Rego rule.
+- `policy/s3_tls.guard`: the equivalent CFN Guard rule (same intent).
+- `fixtures/plan-compliant.json`: a bucket with a TLS-enforcing policy (passes).
+- `fixtures/plan-noncompliant.json`: a bare bucket (blocked).
+- `run_policy.py`: a local runner that uses the `opa` binary if present, and
   otherwise a pure-Python evaluator of the same rule (so it runs in CI with no
   extra tooling).
 

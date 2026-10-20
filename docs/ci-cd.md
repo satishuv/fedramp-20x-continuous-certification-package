@@ -46,8 +46,12 @@ No AWS account needed. Free-tier friendly.
 
 | Workflow | Trigger | What it does |
 |---|---|---|
-| `.github/workflows/validate.yml` | push, pull request | Runs the four gates, the two anti-circular audit gates (below), refuses a stale scanner check catalog, attaches the readiness report as a build artifact |
+| `.github/workflows/validate.yml` | push, pull request | Runs the four gates, the two anti-circular audit gates and the two assessor-attack gates (below), the hard security gate, refuses a stale scanner check catalog, attaches the readiness report as a build artifact. A `release-gate` job aggregates the gate jobs into the one status check `main` requires |
 | `.github/workflows/drift-check.yml` | daily schedule | Hash-compares pinned FedRAMP sources against upstream, opens an issue on drift |
+| `.github/workflows/release.yml` | push of a `v*` tag | Refuses a tag that is unsigned, not on protected `main`, not signed by a listed key, or not the manifest's `release_tag`; re-runs the validate workflow; publishes the attested bundle (see [versioning](versioning.md#publishing-a-release)) |
+| `.github/workflows/living-sdr-loop.yml` | daily schedule, manual dispatch | The provider-deployable living loop: read-only collection, metric append, regeneration, a PR when a committed deliverable changes (see [automation](automation.md#persistence-and-retention)). Its `collect` job is skipped until the `AWS_OIDC_ROLE_ARN` repository variable is set, so on a fresh fork it records nothing |
+
+Dependabot (`.github/dependabot.yml`) opens weekly version-update pull requests for pip and GitHub Actions. A pip bump changes an INPUT file; the maintainer runs `make lock` (and `make lock-security` if a scanner moved) on the branch and commits the regenerated lock and SBOM, or the hash-locked CI install never sees the bump.
 
 ### Anti-circular-verification audit gate
 
@@ -68,9 +72,15 @@ Each gate job (`audit-gate`, `attack-gate`, `attack-gate-non-aws`, `security-sca
 
 Actions are pinned to full commit SHAs rather than tags, so a compromised or retagged upstream action cannot change what runs in your pipeline. Keep it that way when you add steps.
 
+### Security gate in CI
+
+The `security-scan` job runs the `security` section of the release gate: Bandit at medium-or-higher severity and confidence over the repository's Python, and pip-audit over the hash-locked runtime closure. Both are hard gates; a finding fails `release-gate`. The scanners themselves are installed from `requirements-security.lock` with `--require-hashes` (AUD-F92), so the tooling that produces the security verdict is byte-locked like the code it audits. `requirements-security.txt` is the input; `make lock-security` regenerates the lock, constrained against `requirements.lock` so a shared transitive dependency resolves identically in both closures.
+
+The `quality` job is report-only (AUD-F90): it runs Ruff lint and format checks with `continue-on-error`, uploads the findings as an artifact, and is deliberately not part of `release-gate`. Its findings are technical debt telemetry, not a release verdict.
+
 ## Local security gate (ASH and Fortify)
 
-Security scanning does not run in the external repo's CI. Both scanners are local pre-merge gates you run before committing to `main`, and again on a fresh local copy of `main` after a merge:
+Two deeper scanners run as local pre-push gates rather than in CI, before committing to `main` and again on a fresh local copy of `main` after a merge:
 
 | Scanner | Command | What it covers |
 |---|---|---|

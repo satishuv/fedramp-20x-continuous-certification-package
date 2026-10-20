@@ -52,7 +52,7 @@ The validator prints fourteen checks and one gating line:
 
 ```text
 PASS: official_schema_validation | 0 schema errors
-PASS: dataset_version_agreement | pinned dataset info.version 2026.10.05.01 vs profile 2026.10.05.01
+PASS: dataset_version_agreement | pinned dataset info.version 2026.10.13.01 vs profile 2026.10.13.01
 PASS: pinned_schema_version_guard | all 9 pinned schemas match expected $id and version
 PASS: rule_coverage | missing: [] extra: [] (157/157 rules)
 PASS: ksi_coverage | 46/46 KSIs present
@@ -76,7 +76,7 @@ Certification class          Class B
 Build gate                   BUILD PASS - structurally valid, hard failures: 0
 Checks                       12 of 14 passing
 Advisory failures            ksi_test_minimums, evidence_linkage_for_populated_musts
-Dataset                      deterministic check against dataset 2026.10.05.01
+Dataset                      deterministic check against dataset 2026.10.13.01
 Assessment readiness         24.3% (531 pass, 1657 fail, 407 manual of 2595 findings)
 ```
 
@@ -86,28 +86,31 @@ The two `FAIL` lines are expected and correct on a fresh clone. Both are `SHOULD
 
 ## Running the steps by hand
 
-`sdr.py build` runs the full pipeline (20 steps) so you do not have to, but the order matters if you run them individually, because each step consumes the previous step's output. The steps, in order, are:
+`sdr.py build` runs the full pipeline (23 steps) so you do not have to, but the order matters if you run them individually, because each step consumes the previous step's output. The list mirrors `BUILD_STEPS` in `sdr.py`; when the two disagree, `sdr.py` is right and this page needs a fix. The steps, in order, are:
 
 1. `validate_upstream.py` - validate the pinned dataset against the official rules schema and the lock hashes
 2. `build_catalogs.py` - rule and indicator catalogs from the pinned dataset
 3. `build_notes.py` - per-rule notes and family name expansions. The how-to-comply notes describe the platform the profile's `guidance_platform` names: AWS (built-in, the default) or a guidance file under `guidance/platforms/` (Google Cloud, Microsoft Azure and Oracle Cloud Infrastructure ship; see `guidance/platforms/README.md`). The notes are SAS advisory examples for that platform, labelled as such everywhere they are copied; an unknown label fails the build and never falls back to AWS.
 4. `build_profiles.py` - per-class profiles, the Class C overlay, the Class D register
 5. `build_collector_registry.py` - indicator to read-only AWS check map
-6. `build_sdr.py` - the official JSON, the extensions companion, and the plain-text record
-7. `build_cpo.py` - the Certification Package Overview (`CPO-CSO-OVR`)
-8. `build_ocr.py` - an example Ongoing Certification Report (`CCM-OCR-AVL`)
-9. `build_scg.py` - the Secure Configuration Guide scaffold (`SCG-CSO-RSC/AUP`)
-10. `build_events.py` - example incident, significant-change, and vulnerability artifacts
-11. `automation/exporters/oscal_export.py` - the OSCAL export of the SDR
-12. `build_docx.py` - the authoring Word document
-13. `build_crosswalk.py` - the NIST SP 800-53 Revision 5 to 20x crosswalk
-14. `build_applicability_decisions.py` - the applicability decision ledger (included and excluded, with reasons)
-15. `build_assurance_graph.py` - the unified assurance graph joining every artifact
-16. `build_sbom.py` - the CycloneDX software bill of materials of the framework's own pinned dependencies
-17. `build_release_manifest.py` - the cryptographic release manifest of the package (fingerprints the SBOM)
-18. `validate_package_consistency.py` - the cross-artifact consistency check
-19. `build_reports.py` - the evidence-coverage and reviewer reports
-20. `build_visualization.py` - a self-contained HTML assurance-graph view
+6. `build_inactive_classes.py` - the inactive classes' SDR outputs (JSON, text, Word), so the committed A, B and C artifacts never drift from one another
+7. `build_sdr.py` - the official JSON, the extensions companion, and the plain-text record
+8. `build_cpo.py` - the Certification Package Overview (`CPO-CSO-OVR`)
+9. `build_ocr.py` - an example Ongoing Certification Report (`CCM-OCR-AVL`)
+10. `build_scg.py` - the Secure Configuration Guide scaffold (`SCG-CSO-RSC/AUP`)
+11. `build_events.py` - example incident, significant-change, and vulnerability artifacts
+12. `automation/exporters/oscal_export.py` - the OSCAL export of the SDR
+13. `build_docx.py` - the authoring Word document
+14. `build_crosswalk.py` - the NIST SP 800-53 Revision 5 to 20x crosswalk
+15. `build_applicability_decisions.py` - the applicability decision ledger (included and excluded, with reasons)
+16. `build_assurance_graph.py` - the unified assurance graph joining every artifact
+17. `build_rule_test_map.py` - the reverse map from a rule to the gate, regression test and mutation that protect it
+18. `build_mas_coverage.py` - the MAS-by-KSI coverage report per class (`FRC-CSX-MAS`, advisory)
+19. `build_sbom.py` - the CycloneDX software bill of materials: the full hash-locked closure from `requirements.lock`
+20. `build_release_manifest.py` - the cryptographic release manifest of the package (fingerprints the SBOM)
+21. `validate_package_consistency.py` - the cross-artifact consistency check
+22. `build_reports.py` - the evidence-coverage and reviewer reports
+23. `build_visualization.py` - a self-contained HTML assurance-graph view
 
 Build scripts live in `validation/scripts/` except where a path is shown. If a step fails, the build stops, because later steps read what it writes.
 
@@ -131,7 +134,7 @@ The framework never assumes how or when your offering was built. It reads whatev
 
 **Brownfield** (an existing offering adopting 20x, often the more common case): point the read-only collectors at your existing account and let the pre-fill map the collected facts into a populated starting draft rather than a blank template. Without credentials, the customer can instead export AWS Config compliance and Security Hub findings with four read-only CLI commands and hand over the JSON; `automation/importers/import_findings.py` turns those into the same facts. An existing Rev5 OSCAL SSP and a Landing Zone Accelerator configuration import the same way (`import_oscal_ssp.py`, `import_landing_zone.py`), so each indicator's proposal quotes the provider's own control narrative and declared configuration instead of the official guidance alone (see [automation](automation.md)). Three honest frictions apply: the metric history still starts accumulating only at adoption; an established account usually needs a remediation pass, because the collectors surface real drift honestly; and the governance-evidence indicators still require you to wire up the evidence location the Config custom rules check.
 
-Either way the pipeline, the build gate, the drift check, and the trust boundary are identical — neither path shortcuts human verification or independent assessment.
+Either way the pipeline, the build gate, the drift check, and the trust boundary are identical: neither path shortcuts human verification or independent assessment.
 
 ## Describing your offering
 
@@ -158,7 +161,7 @@ Set `sdr_last_updated` when your content genuinely changes. It is manual on purp
 
 ## Then what
 
-Open `sdr/records/records-store.json`. It has 168 rule entries and 46 indicator entries, each pre-populated with `TBD` markers and inline guidance describing what the requirement is looking for.
+Open `sdr/records/records-store.json`. It has 167 rule entries and 46 indicator entries, each pre-populated with `TBD` markers and inline guidance describing what the requirement is looking for.
 
 Do not start at the top. Run the readiness scanner and let it order the work for you:
 

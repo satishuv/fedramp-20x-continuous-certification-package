@@ -40,7 +40,7 @@ Reading only `data["all"]` will make every `*-CSX-*` rule look nonexistent. That
 - Softening the readiness scanner so a template looks greener than it is.
 - Widening the collector's permissions. Every action it may call is in a read-only allowlist by design.
 - Real customer data, in any form, including in a test fixture.
-- Adding a dependency without a clear reason. Three is the current count and it is deliberate.
+- Adding a dependency without a clear reason. Five runtime packages is the current count (`requirements.txt`) and it is deliberate.
 
 ## Before you open a pull request
 
@@ -54,7 +54,16 @@ Confirm three things:
 2. `content_fidelity_against_dataset` passes, which proves you did not hand-edit a generated file.
 3. If you changed `automation/sdrscan/checks.py`, regenerate the catalog: `python automation/sdrscan/sdrscan.py --write-catalog`. Continuous integration refuses a stale one.
 
+Then, depending on what you changed:
+
+- **Fixed a defect.** Add a mutation to `audit/mutation_tests.py` that re-introduces it and a record to `audit/defect-ledger.json` naming the regression test. The `audit-gate` job fails on a surviving or skipped mutation and on a ledger that does not reconcile with the runner. `python audit/release_gate.py audit` runs it locally.
+- **Changed a dependency.** Edit the input file (`requirements.txt`, `requirements-dev.txt`, `requirements-ci.txt`, or `requirements-security.txt`), then run `make lock` (or `make lock-security` for the scanners) in a clean networked environment and commit the regenerated `requirements.lock` / `requirements-security.lock` and `artifacts/sbom.cdx.json`. CI installs with `--require-hashes`, so a bump without the lock is invisible to it.
+- **Changed the rendered SDR shape.** Rebuild every class (`SDR_BUILD_CLASS=a python sdr.py build`, then `=c`, then the active class) because all three classes' artifacts are committed and the regenerate-and-diff gate checks each.
+- **Changed a workflow.** `automation/pipeline/test_release_gate.py` and `test_living_sdr_privileges.py` pin the privilege split, the release trust chain and the patch-authorization boundary; read their comments before weakening a check.
+
 Generated files do belong in commits, because the repository ships as a working template. What must not happen is a generated file that does not match what the pipeline produces from the same inputs. The regenerate-then-diff gate catches that.
+
+Pull requests merge when the `release-gate` status check is green; `main` is protected (strict up-to-date, no force push, no deletion). No approving review is currently required, so the automated gate is the whole merge bar.
 
 ## Commit messages
 

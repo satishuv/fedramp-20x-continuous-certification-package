@@ -43,9 +43,9 @@ The exporter is a pure read - transform - write adapter. It:
 - **never** changes a status: `Not Implemented` maps to `not-satisfied`,
   `Implemented` to `satisfied`, and the raw SDR status is preserved verbatim in
   a property on every finding,
-- **never** invents satisfaction — a finding is `satisfied` only when the SDR
+- **never** invents satisfaction: a finding is `satisfied` only when the SDR
   already said `Implemented`,
-- **never** emits placeholder evidence — a `TBD` evidence entry with no location
+- **never** emits placeholder evidence: a `TBD` evidence entry with no location
   and no text is skipped rather than turned into a fake resource,
 - **never** queries AWS and does not run in the build pipeline; it reads a
   finished SDR file and writes a derived view.

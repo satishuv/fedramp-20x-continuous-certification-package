@@ -26,11 +26,11 @@ Amazon S3 location and is current within a review interval.
 
 ## Files
 
-- `evidence_existence_rule.py` — the shared, parameterized Lambda handler. Its
+- `evidence_existence_rule.py`: the shared, parameterized Lambda handler. Its
   `evaluate_evidence` function is pure and offline-testable.
-- `rules-manifest.json` — the 11 KSI-to-rule mappings, each with a suggested
+- `rules-manifest.json`: the 11 KSI-to-rule mappings, each with a suggested
   default review interval the provider confirms against their own policy.
-- `test_evidence_existence_rule.py` — offline tests of the handler logic.
+- `test_evidence_existence_rule.py`: offline tests of the handler logic.
 
 ## Deploy (per rule)
 
@@ -52,13 +52,13 @@ applicable FedRAMP interval before relying on it.
 equivalent, deterministic artifacts (re-run it after any manifest change so the
 two never drift):
 
-- `deploy/cloudformation.yaml` — one Lambda (the shared evidence-existence
+- `deploy/cloudformation.yaml`: one Lambda (the shared evidence-existence
   handler), a read-only execution role (`s3:GetObject`/`s3:GetObjectTagging` on
   the evidence bucket, `config:PutEvaluations`, basic logging), the
   `config.amazonaws.com` invoke permission, and 11 `AWS::Config::ConfigRule`
   resources. `EvidenceBucket`, `LambdaCodeS3Bucket`, and `LambdaCodeS3Key` are
   template parameters.
-- `deploy/cdk_stack.py` + `deploy/cdk_app.py` — a functional CDK v2 (Python)
+- `deploy/cdk_stack.py` + `deploy/cdk_app.py`: a functional CDK v2 (Python)
   reference stack, also read from the manifest. Not security-hardened to parity
   with `cloudformation.yaml` (the canonical hardened path: KMS-encrypted logs
   with 365-day retention, X-Ray tracing, reserved concurrency).

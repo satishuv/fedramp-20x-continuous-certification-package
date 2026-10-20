@@ -10,7 +10,7 @@ read-only collectors and run explicitly.
 
 `provision_store.py` provisions an S3 bucket in **your own account** with:
 
-- **Bucket versioning enabled** — the core feature. Every write keeps prior
+- **Bucket versioning enabled**: the core feature. Every write keeps prior
   versions, so history is recoverable and tamper-evident.
 - Optional **Object Lock (WORM)** (`--object-lock`) for write-once
   tamper-evidence, with a real default retention rule (`--object-lock-mode`
@@ -18,7 +18,7 @@ read-only collectors and run explicitly.
   a new bucket, or via PutObjectLockConfiguration on an existing versioned
   bucket. Object Lock retention is distinct from `--retention-days` lifecycle
   expiry, which merges with (never replaces) any existing lifecycle rules.
-- Optional **lifecycle retention** (`--retention-days N`) — a provider policy
+- Optional **lifecycle retention** (`--retention-days N`), a provider policy
   choice, not a default.
 
 ## Safety
