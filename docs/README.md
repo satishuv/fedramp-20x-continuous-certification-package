@@ -17,7 +17,10 @@
 | [Validation and readiness](validation.md) | The SDR build-gate checks, the full validation gate, submission-readiness preflight, the readiness scanner, determinism, upstream drift |
 | [Automation layers](automation.md) | What each layer may and may not decide, the read-only collectors, and the five opt-in AI-assist modules |
 | [OSCAL export](oscal-export.md) | Emitting the SDR as OSCAL for downstream governance, risk, and compliance tools |
-| [Continuous integration](ci-cd.md) | The four gates, GitHub Actions, the AWS CodePipeline reference |
+| [Continuous integration](ci-cd.md) | The four gates, the GitHub Actions workflows and what each gate job proves, the AWS CodePipeline reference |
+| [Deployment](deployment.md) | Local use, the GitHub Actions workflows on a fork, the opt-in living loop and the variables that turn it on, the provider pipeline |
+| [Versioning and releases](versioning.md) | The two versions, the release tag, the one release gate, signed tags and the release trust chain, the SBOM and the hash-locked dependencies |
+| [How this relates to official FedRAMP repos](comparison.md) | Capability comparison against FedRAMP/rules, /2026 and /2026-markdown |
 
 ## Reference
 

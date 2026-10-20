@@ -18,7 +18,7 @@ The sample fills narrative prose only. It does not fabricate an
 `implementation_status`, an `assessment`, `tests`, or `evidence`, because those
 are exactly the fields the framework's trust boundary reserves for a human
 judgment, an accredited assessor, and deterministic telemetry. As a result the
-readiness scanner honestly reports the sample as incomplete (findings remain) —
+readiness scanner honestly reports the sample as incomplete (findings remain), and
 that is correct: a populated narrative is not a finished, assessed record.
 
 ## How to build it
@@ -44,7 +44,7 @@ python examples/sample-offering/build_sample.py --emit
 
 ## Files
 
-- `build_sample.py` — generates the sample inputs, runs the gate, restores originals.
-- `records-store.sample.json` — the generated filled record store (fictional).
-- `offering-profile.sample.json` — the generated filled profile (fictional).
-- `generated/` — the rendered sample package (SDR JSON and text, CPO, OCR, SCG, event artifacts), committed so a reviewer can read a populated example directly.
+- `build_sample.py`: generates the sample inputs, runs the gate, restores originals.
+- `records-store.sample.json`: the generated filled record store (fictional).
+- `offering-profile.sample.json`: the generated filled profile (fictional).
+- `generated/`: the rendered sample package (SDR JSON and text, CPO, OCR, SCG, event artifacts), committed so a reviewer can read a populated example directly.

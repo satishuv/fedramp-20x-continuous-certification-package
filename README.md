@@ -35,15 +35,15 @@
 >
 > This framework is an authoring and formatting aid. It assembles a schema-valid document and scaffolds draft text. It does **not** assess, certify, or attest anything, and it **cannot** make you FedRAMP 20x compliant.
 >
-> - **Nothing generated here is compliant, verified, or authoritative.** Any Security Decision Record (SDR), Key Security Indicator (KSI) narrative, implementation text, validation text, evidence summary, finding explanation, or any other output — whether produced by the deterministic pipeline or by an optional AI-assist module — is an **unverified draft only**. It carries no assurance of accuracy, completeness, or correctness.
+> - **Nothing generated here is compliant, verified, or authoritative.** Any Security Decision Record (SDR), Key Security Indicator (KSI) narrative, implementation text, validation text, evidence summary, finding explanation, or any other output (whether produced by the deterministic pipeline or by an optional AI-assist module) is an **unverified draft only**. It carries no assurance of accuracy, completeness, or correctness.
 >
 > - **Producing a document with this repository does not guarantee, imply, or contribute to FedRAMP 20x compliance.** Passing the build gate means the file is *well-formed*, not that the *claims in it are true*. A green build is a formatting check, never a compliance determination.
 >
 > - **Every single letter must be independently re-checked and verified by a qualified human before any use.** Do not submit, rely on, or represent any output of this repository as fact, as evidence, or as a compliance position until a knowledgeable person has read it end to end, confirmed every statement against the actual system and the authoritative FedRAMP sources, and taken ownership of it. Treat all generated text as a starting draft to be rewritten, not as an answer.
 >
-> - **AI-assisted output is especially not to be trusted as-is.** The optional AI modules draft, explain, summarize, flag, and suggest. They can be wrong, incomplete, or misleading, and they may state things the underlying facts do not support. They never gather evidence, never set an implementation status, and never write an assessment — those remain human decisions with human sign-off. AI output is a suggestion for a human to verify, nothing more.
+> - **AI-assisted output is especially not to be trusted as-is.** The optional AI modules draft, explain, summarize, flag, and suggest. They can be wrong, incomplete, or misleading, and they may state things the underlying facts do not support. They never gather evidence, never set an implementation status, and never write an assessment, those remain human decisions with human sign-off. AI output is a suggestion for a human to verify, nothing more.
 >
-> - **Compliance is determined only by an accredited independent assessor and the authorizing body — never by this tool.** No software, and nothing in this repository, can grant, promise, or substitute for a real FedRAMP 20x authorization.
+> - **Compliance is determined only by an accredited independent assessor and the authorizing body, never by this tool.** No software, and nothing in this repository, can grant, promise, or substitute for a real FedRAMP 20x authorization.
 >
 > - **No warranty. Use entirely at your own risk.** This software is provided "as is," without warranty of any kind. The authors and rights holders accept no liability for any use, misuse, or reliance on it or on anything it produces.
 >
@@ -94,11 +94,12 @@ The consistent boundary across every row: the framework collects evidence and au
 - One command builds everything. `python sdr.py all` regenerates the full package for the active class, runs the validation gate, and prints a readiness summary, offline, with no cloud account.
 - Single source of truth. You edit two files (`offering-profile.json`, `records-store.json`); 157 rule statements and 46 KSI entries re-derive from the pinned dataset, so a fact is never hand-copied across JSON, text, docx, CPO, and crosswalk.
 - Deterministic and reproducible. CI regenerates every deliverable and fails if a committed file differs, plus a double-build byte-identical check, so the machine-readable and human-readable outputs, the Word document included, cannot silently drift.
-- Full-chain traceability. A 204-node assurance graph joins every rule and KSI to its evidence, so "which evidence backs this KSI" is a lookup, not a reconstruction; a Rev5-to-20x crosswalk relates each indicator to NIST SP 800-53 Rev. 5 controls.
+- Full-chain traceability. A 198-node assurance graph joins every rule and KSI to its evidence, so "which evidence backs this KSI" is a lookup, not a reconstruction; a Rev5-to-20x crosswalk relates each indicator to NIST SP 800-53 Rev. 5 controls.
 - Fail-closed validation. A 14-check validator gates the build on one exit code; a readiness scanner (`sdrscan`) emits one severity-ranked finding per rule and per indicator to tell you what to fix next.
 - Class-aware. Classes A, B, and C are supported end to end; Class D ships as a readiness register pending its FedRAMP pilot.
 - Cryptographic evidence integrity. Content-addressed evidence keys, versioned append-only storage, offline signature verification against an independently pinned signer, TLS-only isolation buckets.
-- Living loop, provider-deployable. A scheduled read-only collect-append-regenerate workflow keeps the package and its metric history current and opens a PR only when a committed deliverable changes; disabled by default until you wire a read-only role.
+- Living loop, provider-deployable. A scheduled read-only collect-append-regenerate workflow keeps the package and its metric history current and opens a PR only when a committed deliverable changes. The job holding the cloud credential cannot write to the repository, and the job that writes authorizes the patch it applies against a positive allowlist of deliverables; disabled by default until you wire a read-only role.
+- One release gate, cryptographically anchored. `audit/release_gate.py` is the single definition of release-ready; GitHub Actions, the AWS CodeBuild release path and `python sdr.py release` all run it. It includes a mutation runner that re-introduces every closed defect in `audit/defect-ledger.json` and fails if a test does not catch it. Release tags are SSH-signed, must verify against committed signer keys, and must point at a commit already on protected `main`.
 - Opt-in evidence and AI. Read-only AWS collectors and file-based CrowdStrike Falcon / Wiz evidence attach where relevant; opt-in AI modules draft and explain text for a human to verify. All off by default; the pipeline runs fully with zero AI.
 
 
@@ -142,7 +143,7 @@ Every JSON artifact below is validated against its official FedRAMP schema; the 
 You do not deploy this framework to run it: it is a local, offline generator. `python sdr.py all` produces every artifact on your machine with no cloud account and no network. Where "deployment" matters is publishing the finished package and wiring continuous verification. Three paths, smallest first:
 
 1. Local only. Clone, `pip install -r requirements.txt`, run `python sdr.py all`. This is the whole tool. Everything else is optional.
-2. Continuous integration. The included GitHub Actions `validate.yml` runs the build gate on every push and pull request, and runs two hard security gates: Bandit (fails the build on any medium-or-higher severity finding at medium-or-higher confidence) and pip-audit (fails the build on any published vulnerability in the hash-locked dependency closure); `drift-check.yml` hash-compares the pinned FedRAMP sources against upstream daily and opens an issue on any change. Fork, and all run for free with no secrets. The deeper SAST scanners (ASH and Fortify) run as a local pre-commit gate rather than in CI: install them once per clone with `scripts/install-fortify-hook.ps1`.
+2. Continuous integration. Four GitHub Actions workflows ship with the repository and run on a fork with no secrets. `validate.yml` runs on every push and pull request: the build gate, the audit gate (mutation runner and requirements oracle), the two assessor-attack gates, and a hard security gate (Bandit at medium-or-higher severity and confidence, pip-audit over the hash-locked closure, both installed from a hash-locked `requirements-security.lock`); a `release-gate` job aggregates them into the one status check `main` requires. `drift-check.yml` hash-compares the pinned FedRAMP sources against upstream daily and opens an issue on any change. `release.yml` publishes a GitHub Release only from a signed tag on protected `main`. `living-sdr-loop.yml` is the scheduled collector, skipped until you set `AWS_OIDC_ROLE_ARN`. Dependabot proposes weekly pip and Actions version updates. The deeper SAST scanners (ASH and Fortify) run as a local pre-push gate rather than in CI: install them once per clone with `scripts/install-fortify-hook.ps1`.
 3. Provider pipeline in your own AWS account. `automation/pipeline/` holds a deployable AWS CodePipeline reference (regenerate, validate, human-approval gate, publish to a versioned encrypted S3 bucket that can back a trust center). See [continuous integration](docs/ci-cd.md) and [the deployment guide](docs/deployment.md).
 
 Per-customer work belongs in a private fork: copy this repository, edit only `profiles/common/offering-profile.json` and `sdr/records/records-store.json`, and never commit customer values to the public template.
@@ -171,7 +172,7 @@ Both third-party evidence sources read a file the customer exports in their own 
 | A | 41 | 7 mandatory | 0 required | Supported |
 | B | 157 | 46 | 1 expected (SHOULD) | Supported |
 | C | 157 plus overlay | 46 | 2 required (MUST) | Supported |
-| D | 157 | 46 | 4 required (MUST) | Readiness register only. FedRAMP 20x Class D (High) is in Phase 4 development ([RFC-0033](https://www.fedramp.gov/rfcs/0033/)), pilot estimated FY27 Q1-Q2 |
+| D | 156 | 46 | 4 required (MUST) | Readiness register only. FedRAMP 20x Class D (High) is in Phase 4 development ([RFC-0033](https://www.fedramp.gov/rfcs/0033/)), pilot estimated FY27 Q1-Q2 |
 
 `FRD-CCL` describes the classes as assurance categories "increasing from minimal assurance at Class A to significant assurance at Class D." FedRAMP's current 20x guidance maps them to impact levels: Class A (Pilot), Class B (Low), Class C (Moderate), and the planned Class D (High), per the [FedRAMP 20x page](https://www.fedramp.gov/20x/). Those labels do not make the 20x indicator profile a renamed NIST SP 800-53B baseline, so this framework tracks the class but does not infer baseline equivalence.
 
@@ -183,7 +184,7 @@ Being direct about this matters more than adoption numbers. See the [caution ban
 
 - Not a compliance claim, and not a compliance generator. Every status ships as `Not Implemented` or `TBD`. Nothing here asserts that anyone meets a requirement, and no output of the pipeline or the AI modules is compliant or verified.
 - Not a shortcut past assessment. It produces a defensible draft record; an accredited independent assessor still does the assessing. A green build is a formatting check, not a compliance determination.
-- Not trustworthy without human verification. Every generated statement — deterministic or AI-assisted — is an unverified draft. Every letter must be re-checked and confirmed by a qualified human before any use.
+- Not trustworthy without human verification. Every generated statement (deterministic or AI-assisted) is an unverified draft. Every letter must be re-checked and confirmed by a qualified human before any use.
 - Not a place for customer data. No account identifiers, credentials, endpoints, or restricted report content, ever. Per-customer work belongs in a separate private repository. The validator actively scans for leaked secrets and fails on a hit.
 - Not affiliated with or endorsed by FedRAMP. FedRAMP publishes the rules; this repository consumes them. Nothing here is an official AWS position, product, or service.
 
@@ -192,12 +193,14 @@ Being direct about this matters more than adoption numbers. See the [caution ban
 | Guide | Read it when |
 |---|---|
 | [Getting started](docs/getting-started.md) | You want a validated SDR on your machine in five minutes |
+| [Quickstart for a platform other than AWS](docs/quickstart-non-aws.md) | Your offering does not run on AWS and you want evidence from your own exports behind the right indicators |
 | [Implementation guide](docs/implementation-guide.md) | You are filling in your own facts and need to know what each field wants |
 | [Architecture](docs/architecture.md) | You want to know why the pipeline is shaped this way |
-| [Certification classes](docs/certification-classes.md) | You are deciding between Class A, B, C, or planning for D |
+| [Certification classes](docs/certification-classes.md) | You are deciding between Class A, B, or C, or planning for D |
 | [Validation and readiness](docs/validation.md) | You want to understand the build gate and the readiness scanner |
-| [Continuous integration](docs/ci-cd.md) | You are wiring this into GitHub Actions or AWS CodePipeline |
+| [Continuous integration](docs/ci-cd.md) | You are wiring this into GitHub Actions or AWS CodePipeline, or want to know what each CI gate proves |
 | [Deployment](docs/deployment.md) | You want to publish the package and stand up continuous verification |
+| [OSCAL export](docs/oscal-export.md) | You need the SDR in OSCAL for a downstream governance tool |
 | [Optional evidence sources](examples/evidence-sources/README.md) | You run CrowdStrike Falcon or Wiz and want that telemetry as evidence |
 | [Third-party names notice](THIRD_PARTY_NOTICE.md) | You want to know why other vendors' product names appear here, and the rules and CI guard that bound their use |
 | [How this relates to official FedRAMP repos](docs/comparison.md) | You want the capability comparison against FedRAMP/rules, /2026, and /2026-markdown |

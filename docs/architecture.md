@@ -11,7 +11,7 @@ flowchart LR
     DSU["CR26 rules dataset<br/>github.com/FedRAMP/rules"]
     SCU["Official SDR schemas<br/>fedramp.gov"]
     PIN["Pinned in this repo<br/>references/ and artifacts/schemas/official/<br/>sha256 compared every session"]
-    RS["sdr/records/records-store.json<br/>168 rule entries, 46 indicator entries<br/>the security-decision facts you edit"]
+    RS["sdr/records/records-store.json<br/>167 rule entries, 46 indicator entries<br/>the security-decision facts you edit"]
     OP["profiles/common/offering-profile.json<br/>your identity, certification class,<br/>assessment and CPO inputs"]
     PIPE["Deterministic pipeline<br/>20 build steps, no network calls"]
     OUT["Deliverables<br/>SDR (JSON, extensions, text, Word, OSCAL),<br/>CPO, OCR, SCG, event artifacts,<br/>Rev 5 crosswalk, release manifest"]
@@ -50,7 +50,7 @@ Two inputs, one pipeline, two checkers with different jobs. The pinned dataset s
 
 The dotted edge is the one worth staring at. The gate does not read what the pipeline produced and assume it is right; it goes back to the pinned dataset and derives the same answer independently.
 
-Now the exact dependencies. This diagram shows the SDR-generation core; the full `build` runs 20 steps in dependency order (adding the CPO, OCR, SCG, event artifacts, OSCAL export, applicability ledger, assurance graph, and release manifest after the SDR is built - see [getting started](getting-started.md#running-the-steps-by-hand) for the complete list). Cylinders are files, rectangles are scripts, and the numbers are the order they run in:
+Now the exact dependencies. This diagram shows the SDR-generation core; the full `build` runs 23 steps in dependency order (adding the CPO, OCR, SCG, event artifacts, OSCAL export, applicability ledger, assurance graph, and release manifest after the SDR is built - see [getting started](getting-started.md#running-the-steps-by-hand) for the complete list). Cylinders are files, rectangles are scripts, and the numbers are the order they run in:
 
 ```mermaid
 flowchart LR
@@ -219,6 +219,6 @@ Honest list of places where a reasonable person would choose differently.
 
 **Word output at all.** It exists because reviewers ask for it. Until 1.5.0 it was the one deliverable that was not byte-stable; since AUD-F35 the build fixes the zip entry timestamps and derives the core properties from the dataset, so it is diffed, double-build hashed and fingerprinted in the release manifest like every other output.
 
-**Python with three dependencies.** Deliberately boring, so a provider's security team can read the whole pipeline in an afternoon.
+**Python with five pinned runtime dependencies.** Deliberately boring, so a provider's security team can read the whole pipeline in an afternoon.
 
 See [validation](validation.md) for what gets checked and [automation](automation.md) for the collector layers.
