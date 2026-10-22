@@ -85,6 +85,8 @@ def fetch_changelog(url: str = CHANGELOG_URL, timeout: int = 30) -> bytes:
     if scheme != "https":
         raise ValueError(f"refusing to fetch a non-https URL (scheme {scheme!r})")
     req = urllib.request.Request(url, method="GET")
+    # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
+    # The scheme is restricted to https above; the default URL is FedRAMP's public changelog.
     with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310  # nosec B310
         return resp.read()
 
