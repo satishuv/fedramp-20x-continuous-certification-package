@@ -49,11 +49,11 @@ validate: ## Run the build gate; 0 hard failures required to ship
 scan: ## Run the readiness scanner (reports, does not gate)
 	$(PYTHON) sdr.py scan
 
-gap-assessment: ## Score the collected facts store against the KSIs (CLASS=a|b|c, default c)
-	$(PYTHON) automation/assessment/gap_assessment.py --class $(or $(CLASS),c)
+gap-assessment: ## Score the collected facts store against the 46 Class C KSIs (one HTML page)
+	$(PYTHON) automation/assessment/gap_assessment.py
 
 gap-assessment-demo: ## Same page from a synthetic facts store, no AWS needed (labelled DEMO)
-	$(PYTHON) automation/assessment/gap_assessment.py --class $(or $(CLASS),c) --demo
+	$(PYTHON) automation/assessment/gap_assessment.py --demo
 
 clean: ## Remove caches and scanner reports
 	$(PYTHON) sdr.py clean

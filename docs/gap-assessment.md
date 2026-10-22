@@ -1,19 +1,23 @@
 # KSI gap assessment
 
 Score an existing AWS environment against the 46 Key Security Indicators (KSIs) of
-the pinned FedRAMP Consolidated Rules dataset, for one certification class, and get
-one page that answers: how many KSIs have every automated check passing, how many
-are partly passing, how many are failing, how many the collectors could not observe,
-which family is weakest, and where the largest failing footprint is.
+the pinned FedRAMP Consolidated Rules dataset at Class C, and get one page that
+answers: how many KSIs have every automated check passing, how many are partly
+passing, how many are failing, how many the collectors could not observe, which
+family is weakest, and where the largest failing footprint is.
+
+Class C only. It is the class most agencies will ask about (FedRAMP describes it as
+adequate for most Low and Moderate agency systems), every KSI applies at it, and it
+is the prerequisite for the Class D pilot (RFC-0033).
 
 ```
 python automation/collectors/collect_facts.py --profile READONLY --region us-east-1
-python automation/assessment/gap_assessment.py --class c
-# or: make gap-assessment CLASS=b
+python automation/assessment/gap_assessment.py
+# or: make gap-assessment
 ```
 
 Output lands in `automation/assessment/report/` (git-excluded, because it derives
-from a real account): `gap-assessment-class-<x>.html` and `.json`.
+from a real account): `gap-assessment.html` and `gap-assessment.json`.
 
 To see the page without an AWS account:
 
@@ -38,18 +42,10 @@ Then:
   then by the number of NIST SP 800-53 controls the KSI maps to in the dataset.
   The ranking rule is printed on the page so a reader can dispute it.
 - FRC-CSX-VVK automated-method minimum: for each observed KSI, how many distinct
-  automated method ids produced an outcome against the class minimum (A 0, B 1,
-  C 2), and which KSIs fall short.
-- A per-family table and an expandable entry for every applicable KSI with its
-  class statement, observed methods, failing checks and coverage gaps.
-
-## Which KSIs apply
-
-Derived from `profiles/common/ksi-profile.json`, which is built from the dataset.
-Class A: the 7 KSIs whose class-A obligation is mandatory. Class B: 41, which is
-all 46 minus the five whose class-B statement is marked Optional (KSI-CNA-EIS,
-KSI-MLA-ALA, KSI-SVC-PRR, KSI-SVC-RUD, KSI-SVC-VCM). Class C: all 46. The tests
-pin these counts.
+  automated method ids produced an outcome against the Class C minimum of 2, and
+  which KSIs fall short.
+- A per-family table and an expandable entry for every KSI with its Class C
+  statement, observed methods, failing checks and coverage gaps.
 
 ## Status vocabulary
 

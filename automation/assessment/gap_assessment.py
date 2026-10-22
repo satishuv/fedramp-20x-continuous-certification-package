@@ -19,9 +19,13 @@
 #     directory by default.
 #
 # Usage:
-#   python automation/assessment/gap_assessment.py --class c
-#   python automation/assessment/gap_assessment.py --class b --facts-dir PATH --out DIR
-#   python automation/assessment/gap_assessment.py --class c --demo
+#   python automation/assessment/gap_assessment.py
+#   python automation/assessment/gap_assessment.py --facts-dir PATH --out DIR
+#   python automation/assessment/gap_assessment.py --demo
+#
+# Class C only. It is the class most agencies will ask about (FedRAMP describes
+# it as adequate for most Low and Moderate agency systems), every KSI applies at
+# it, and it is the prerequisite for the Class D pilot (RFC-0033).
 
 import argparse
 import hashlib
@@ -40,7 +44,7 @@ sys.path.insert(0, os.path.join(BASE, "automation", "metrics"))
 import append_metrics as am  # noqa: E402
 from method_ids import config_method_id, parse_service_key, posture_method_id  # noqa: E402
 
-CLASSES = ("a", "b", "c")
+CLASS = "c"
 # Status vocabulary. Deliberately not "Implemented" / "Compliant": those words
 # belong to the human-signed record store and the assessor.
 PASSING = "passing"            # every observed automated check passed
@@ -63,35 +67,20 @@ def load_json(path):
         return json.load(f)
 
 
-def applicable_ksis(profile, cls):
-    """KSI ids that apply at `cls`, derived from the dataset-built profile.
-
-    Class A: class_a_obligation == mandatory. Class B: all 46 minus those whose
-    class-b statement is marked Optional. Class C: all 46.
-    """
-    out = {}
-    for ind in profile["indicators"]:
-        kid = ind["ksi_id"]
-        vbc = ind.get("varies_by_class") or {}
-        if cls == "a":
-            if ind.get("class_a_obligation") != "mandatory":
-                continue
-        elif cls == "b":
-            b_stmt = ((vbc.get("b") or {}).get("statement") or "")
-            if b_stmt.startswith("**Optional:**"):
-                continue
-        out[kid] = ind
-    return out
+def applicable_ksis(profile):
+    """Every KSI in the dataset-built profile applies at Class C (46)."""
+    return {ind["ksi_id"]: ind for ind in profile["indicators"]}
 
 
-def ksi_statement(ind, cls):
+def ksi_statement(ind):
     vbc = ind.get("varies_by_class") or {}
-    per = vbc.get(cls) or {}
+    per = vbc.get(CLASS) or {}
     return per.get("statement") or ind.get("statement") or ""
 
 
-def min_methods(ind, cls):
-    return int((ind.get("minimum_automated_methods") or {}).get(f"class_{cls}", 0))
+def min_methods(ind):
+    """FRC-CSX-VVK minimum automated validation methods at Class C (2)."""
+    return int((ind.get("minimum_automated_methods") or {}).get(f"class_{CLASS}", 0))
 
 
 def observed_method_ids(ksi_entry, config_by_rule, posture_by_service):
@@ -151,8 +140,8 @@ def classify(ksi_entry, dp):
     return PARTIAL
 
 
-def assess(registry, profile, cls, config_by_rule, posture_by_service, source_note):
-    applicable = applicable_ksis(profile, cls)
+def assess(registry, profile, config_by_rule, posture_by_service, source_note):
+    applicable = applicable_ksis(profile)
     rows = []
     for kid in sorted(applicable):
         ind = applicable[kid]
@@ -160,13 +149,13 @@ def assess(registry, profile, cls, config_by_rule, posture_by_service, source_no
         dp = am.datapoint_for_ksi(entry, config_by_rule, posture_by_service)
         status = classify(entry, dp)
         methods = observed_method_ids(entry, config_by_rule, posture_by_service)
-        need = min_methods(ind, cls)
+        need = min_methods(ind)
         rows.append({
             "ksi_id": kid,
             "name": ind["name"],
             "family": ind["family"],
             "family_name": ind["family_name"],
-            "statement": ksi_statement(ind, cls),
+            "statement": ksi_statement(ind),
             "controls": len(ind.get("controls") or []),
             "status": status,
             "passing": dp["passing"] if dp else 0,
@@ -211,7 +200,7 @@ def assess(registry, profile, cls, config_by_rule, posture_by_service, source_no
         "meta": {
             "title": "KSI gap assessment (automated-check view)",
             "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            "class": cls.upper(),
+            "class": CLASS.upper(),
             "dataset_version": registry["meta"]["dataset_version"],
             "profile_dataset_version": profile["meta"]["dataset_version"],
             "source": source_note,
@@ -433,8 +422,6 @@ Rules and KSIs: FedRAMP Consolidated Rules release {e(m["dataset_version"])} (gi
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--class", dest="cls", choices=CLASSES, required=True,
-                    help="certification class to assess against (a, b, c)")
     ap.add_argument("--facts-dir", default=None,
                     help="facts store directory (default automation/facts)")
     ap.add_argument("--out", default=DEFAULT_OUT, help="output directory")
@@ -475,10 +462,10 @@ def main(argv=None):
     finally:
         am.FACTS_DIR = saved
 
-    result = assess(registry, profile, args.cls, config_by_rule, posture_by_service, source)
+    result = assess(registry, profile, config_by_rule, posture_by_service, source)
     os.makedirs(args.out, exist_ok=True)
-    jpath = os.path.join(args.out, f"gap-assessment-class-{args.cls}.json")
-    hpath = os.path.join(args.out, f"gap-assessment-class-{args.cls}.html")
+    jpath = os.path.join(args.out, "gap-assessment.json")
+    hpath = os.path.join(args.out, "gap-assessment.html")
     with open(jpath, "w", encoding="utf-8", newline="\n") as f:
         json.dump(result, f, indent=1)
     with open(hpath, "w", encoding="utf-8", newline="\n") as f:
@@ -486,7 +473,7 @@ def main(argv=None):
 
     c = result["summary"]["counts"]
     n = result["meta"]["ksis_applicable"]
-    print(f"Class {args.cls.upper()}: {n} applicable KSIs. passing={c[PASSING]} partial={c[PARTIAL]} "
+    print(f"Class C: {n} applicable KSIs. passing={c[PASSING]} partial={c[PARTIAL]} "
           f"failing={c[FAILING]} not_observed={c[NOT_OBSERVED]} provider_evidence={c[PROVIDER_EVIDENCE]}")
     w = result["summary"]["weakest_family"]
     if w:

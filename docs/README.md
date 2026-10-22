@@ -16,7 +16,7 @@
 | [Architecture](architecture.md) | The build flow, the operational pipeline, why the design is shaped this way, and the dataset traversal problem |
 | [Validation and readiness](validation.md) | The SDR build-gate checks, the full validation gate, submission-readiness preflight, the readiness scanner, determinism, upstream drift |
 | [Automation layers](automation.md) | What each layer may and may not decide, the read-only collectors, and the five opt-in AI-assist modules |
-| [KSI gap assessment](gap-assessment.md) | One page scoring an existing environment's collected facts against the KSIs that apply at a class: passing, partial, failing, not observed, weakest family, highest risk, and the FRC-CSX-VVK method minimum |
+| [KSI gap assessment](gap-assessment.md) | One page scoring an existing environment's collected facts against the 46 Class C KSIs: passing, partial, failing, not observed, weakest family, highest risk, and the FRC-CSX-VVK method minimum |
 | [OSCAL export](oscal-export.md) | Emitting the SDR as OSCAL for downstream governance, risk, and compliance tools |
 | [Continuous integration](ci-cd.md) | The four gates, the GitHub Actions workflows and what each gate job proves, the AWS CodePipeline reference |
 | [Deployment](deployment.md) | Local use, the GitHub Actions workflows on a fork, the opt-in living loop and the variables that turn it on, the provider pipeline |
