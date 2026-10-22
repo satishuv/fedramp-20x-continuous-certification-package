@@ -109,6 +109,8 @@ def _fetch_headers(url):
             f"refusing to fetch a non-http(s) URL (scheme {scheme!r}); this check "
             "evaluates a public certification-JSON download URL only")
     req = urllib.request.Request(url, method="GET")
+    # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
+    # The scheme is restricted to http/https above; the URL is the provider's own public download URL.
     with urllib.request.urlopen(req, timeout=15) as resp:  # noqa: S310  # nosec B310 - scheme checked above
         return dict(resp.headers.items())
 

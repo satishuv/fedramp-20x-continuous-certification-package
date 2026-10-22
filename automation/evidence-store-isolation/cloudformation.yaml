@@ -68,6 +68,14 @@ Resources:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_18
+            comment: >-
+              This bucket IS the server-access-log destination for EvidenceBucket.
+              A log bucket cannot log to another log bucket without an infinite
+              chain (standard S3 log-bucket exception). Mirrored in .ash.yaml.
     Properties:
       BucketName: !Sub "${EvidenceBucketName}-access-logs"
       OwnershipControls:
@@ -78,6 +86,11 @@ Resources:
         BlockPublicPolicy: true
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
+      # Versioning protects delivered access-log objects from silent overwrite
+      # or deletion: the logs are themselves evidence of who read the evidence.
+      # Versioning is compatible with log delivery (Object Lock is not; see below).
+      VersioningConfiguration:
+        Status: Enabled
       # A server-access-log DESTINATION bucket MUST use SSE-S3 (AES256), not
       # SSE-KMS: AWS does not support delivering server access logs to a bucket
       # with SSE-KMS default encryption (the log objects would be encrypted with

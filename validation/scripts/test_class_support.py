@@ -145,6 +145,8 @@ def test_every_entry_point_stops_on_an_unsupported_class():
         path = _temp_profile(cls)
         try:
             for name, kind, detail in ENTRY_POINTS:
+                # nosemgrep: python.lang.security.audit.non-literal-import.non-literal-import
+                # `name` comes from the ENTRY_POINTS literal above, not from input.
                 mod = importlib.import_module(name)
                 saved = None
                 try:
