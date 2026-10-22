@@ -206,6 +206,7 @@ Being direct about this matters more than adoption numbers. See the [caution ban
 | [How this relates to official FedRAMP repos](docs/comparison.md) | You want the capability comparison against FedRAMP/rules, /2026, and /2026-markdown |
 | [Versioning and releases](docs/versioning.md) | You want the release-tag convention and what a release does and does not mean |
 | [Automation layers](docs/automation.md) | You want evidence collected from a live account rather than typed |
+| [KSI gap assessment](docs/gap-assessment.md) | You want one page saying how many of the 46 KSIs an existing environment's automated checks pass, which family is weakest and where the largest failing footprint is |
 | [Glossary](docs/glossary.md) | An acronym is in your way |
 | [Frequently asked questions](docs/faq.md) | Something surprised you |
 | [Vision and mission](docs/vision.md) | You want to know where this is going and what it refuses to do |

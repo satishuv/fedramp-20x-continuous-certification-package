@@ -110,3 +110,6 @@ validation/reports/matrix/
 ruff-lint.txt
 ruff-lint-statistics.txt
 ruff-format.txt
+
+# Gap-assessment reports derive from a real account's facts store: never commit.
+automation/assessment/report/
