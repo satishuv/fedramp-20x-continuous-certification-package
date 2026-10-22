@@ -4,5 +4,5 @@
 # `sdr.py release`). These pins are the single source of truth for
 # audit/release_gate.py's SECURITY_TOOL_PINS; test_collection_fail_closed.py
 # holds the two equal. After a bump, re-lock with: make lock-security
-bandit==1.8.6
+bandit==1.9.4
 pip-audit==2.10.1
