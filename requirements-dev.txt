@@ -1,4 +1,4 @@
 # Development / test dependencies (not needed to run the core pipeline).
 # The offline collector and evidence tests exercise botocore-shaped fixtures.
 -r requirements.txt
-boto3>=1.40,<2.0
+boto3>=1.43.114,<2.0
