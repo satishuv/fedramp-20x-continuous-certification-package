@@ -1007,7 +1007,7 @@
    "guidance_label": "The compliance guidance is SAS advisory content naming typical AWS approaches. It is not an official FedRAMP requirement; the indicator statement governs."
   },
   "KSI-SCR-MIT": {
-   "what_it_looks_for": "Persistently identify, review, and mitigate potential supply chain risks.",
+   "what_it_looks_for": "Potential supply chain risks are persistently identified, reviewed, and mitigated.",
    "evidence_required": [
     "Explanation of measures (and their objectives) that demonstrate the Key Security Indicator, or an explanation of the reason and resulting risk to customers for not having measures available for that Key Security Indicator.",
     "Explanation of the cycle for any measures that are implemented persistently (if applicable).",

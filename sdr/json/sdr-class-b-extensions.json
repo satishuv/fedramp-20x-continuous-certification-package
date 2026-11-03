@@ -11,8 +11,8 @@
   ],
   "sdr_version": "0.1.0",
   "schema_version": "2026-06-24",
-  "dataset_version": "2026.10.13.01",
-  "generated": "deterministic build from dataset 2026.10.13.01",
+  "dataset_version": "2026.11.02.01",
+  "generated": "deterministic build from dataset 2026.11.02.01",
   "source_of_update": "build_sdr.py generator"
  },
  "frr": {
@@ -3447,7 +3447,7 @@
    "family": "MKT",
    "family_name": "Marketplace Listing",
    "guidance": {
-    "what_it_looks_for": "Providers MUST notify FedRAMP using the FedRAMP Marketplace Providing Listing Request Form to request a listing in the FedRAMP Marketplace.",
+    "what_it_looks_for": "Providers MUST notify FedRAMP using the FedRAMP Marketplace Provider Listing Request Form to request a listing in the FedRAMP Marketplace.",
     "official_notes": [
      "FedRAMP does not accept applications for a FedRAMP Marketplace Listing via email!"
     ],
@@ -7845,7 +7845,7 @@
    "minimum_automated_methods": 1,
    "historical_metrics_required": "Summary of each metric over the past 30 days, and up to the past year where available.",
    "guidance": {
-    "what_it_looks_for": "Persistently identify, review, and mitigate potential supply chain risks.",
+    "what_it_looks_for": "Potential supply chain risks are persistently identified, reviewed, and mitigated.",
     "how_to_comply": "Persistently identify, review, and mitigate supply chain risks: supplier vetting, dependency review, risk register entries with mitigations. Evidence: the supply chain risk register with review dates and mitigation status.",
     "how_to_comply_platform": "AWS",
     "evidence_required": [

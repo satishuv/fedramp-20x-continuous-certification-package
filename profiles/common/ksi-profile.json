@@ -1,8 +1,8 @@
 {
  "meta": {
   "derived_from": "rule-catalog.json / ksi-catalog.json",
-  "dataset_version": "2026.10.13.01",
-  "generated": "deterministic build from dataset 2026.10.13.01",
+  "dataset_version": "2026.11.02.01",
+  "generated": "deterministic build from dataset 2026.11.02.01",
   "path": "FedRAMP 20x Program Certification",
   "filter": "rules whose affects includes Providers"
  },
@@ -1321,7 +1321,7 @@
    "family": "SCR",
    "family_name": "Supply Chain Risk",
    "name": "Mitigating Supply Chain Risk",
-   "statement": "Persistently identify, review, and mitigate potential supply chain risks.",
+   "statement": "Potential supply chain risks are persistently identified, reviewed, and mitigated.",
    "varies_by_class": null,
    "controls": [
     "ac-19",

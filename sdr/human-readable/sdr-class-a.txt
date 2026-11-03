@@ -8,7 +8,7 @@ AWS partition: aws (AWS Commercial)
 Primary region: us-east-1
 Disaster recovery region: us-west-2
 SDR version: 0.1.0
-Generated from dataset version: 2026.10.13.01
+Generated from dataset version: 2026.11.02.01
 Source of update: build_sdr.py generator
 
 This is a generic template record. Statements marked TBD require real
@@ -492,7 +492,26 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.26 VDR-CSO-DET Vulnerability Detection
+1.26 SDR-CSX-KSI Key Security Indicators
+FedRAMP rule: SDR-CSX-KSI
+Rule family: SDR (Security Decision Record)
+Force: MUST
+Class A obligation: mandatory (per FRC-CLA-MFR, RFR, or OFR)
+Status: Not Implemented
+Implementation: TBD: Information has not been provided.
+Validation: TBD: Information has not been provided.
+Independent assessment: TBD: Independent assessment has not been performed.
+Implementation or nonimplementation risk: TBD: Information has not been provided.
+Reason for not following the rule (if not followed): Not applicable: rule is followed
+Verification: TBD: Information has not been provided.
+Independent verification: TBD: Information has not been provided.
+Independent validation: TBD: Information has not been provided.
+Responses to independent review comments: None recorded
+Senior official acceptance (if not implemented): Not required: rule is followed
+Rule-specific artifacts: None recorded
+Owner: TBD: Information has not been provided.
+
+1.27 VDR-CSO-DET Vulnerability Detection
 FedRAMP rule: VDR-CSO-DET
 Rule family: VDR (Vulnerability Detection and Response)
 Force: MUST
@@ -511,7 +530,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.27 VDR-TFR-MVX Persistent Machine Verification and Validation for 20x
+1.28 VDR-TFR-MVX Persistent Machine Verification and Validation for 20x
 FedRAMP rule: VDR-TFR-MVX
 Rule family: VDR (Vulnerability Detection and Response)
 Force: SHOULD
@@ -530,7 +549,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.28 VDR-TFR-PCD Persistently Complete Detection
+1.29 VDR-TFR-PCD Persistently Complete Detection
 FedRAMP rule: VDR-TFR-PCD
 Rule family: VDR (Vulnerability Detection and Response)
 Force: SHOULD
@@ -549,7 +568,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.29 VDR-TFR-PDD Persistent Drift Detection
+1.30 VDR-TFR-PDD Persistent Drift Detection
 FedRAMP rule: VDR-TFR-PDD
 Rule family: VDR (Vulnerability Detection and Response)
 Force: SHOULD
@@ -568,7 +587,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.30 VDR-TFR-PSD Persistent Sample Detection
+1.31 VDR-TFR-PSD Persistent Sample Detection
 FedRAMP rule: VDR-TFR-PSD
 Rule family: VDR (Vulnerability Detection and Response)
 Force: SHOULD
@@ -587,7 +606,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.31 VDR-TFR-PVR Mitigation and Remediation Expectations
+1.32 VDR-TFR-PVR Mitigation and Remediation Expectations
 FedRAMP rule: VDR-TFR-PVR
 Rule family: VDR (Vulnerability Detection and Response)
 Force: SHOULD
@@ -606,7 +625,7 @@ Senior official acceptance (if not implemented): Not required: rule is followed
 Rule-specific artifacts: None recorded
 Owner: TBD: Information has not been provided.
 
-1.32 VER-TFR-EVU Evaluate Vulnerabilities Quickly
+1.33 VER-TFR-EVU Evaluate Vulnerabilities Quickly
 FedRAMP rule: VER-TFR-EVU
 Rule family: VER (Vulnerability Evaluation and Reporting)
 Force: SHOULD

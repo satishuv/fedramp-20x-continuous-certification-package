@@ -4157,7 +4157,7 @@
    "fill_guidance": {
     "read_me": "Fill implementation, validation, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs. Do not edit the generated files in sdr/json or sdr/human-readable.",
     "rule_family": "MKT (Marketplace Listing)",
-    "what_it_looks_for": "Providers MUST notify FedRAMP using the FedRAMP Marketplace Providing Listing Request Form to request a listing in the FedRAMP Marketplace.",
+    "what_it_looks_for": "Providers MUST notify FedRAMP using the FedRAMP Marketplace Provider Listing Request Form to request a listing in the FedRAMP Marketplace.",
     "how_to_comply": "Maintain an accurate FedRAMP Marketplace listing. If listing during Initial Implementation, schedule the assessment within 2 years (MKT-IIP-DLA). Keep listing data consistent with the certification data.",
     "how_to_comply_platform": "AWS",
     "evidence_required": [
@@ -9355,7 +9355,7 @@
    "fill_guidance": {
     "read_me": "Fill implementation, validation, tests, and the extension fields below with the provider's real facts, then run build_sdr.py to regenerate all outputs.",
     "ksi_family": "SCR (Supply Chain Risk)",
-    "what_it_looks_for": "Persistently identify, review, and mitigate potential supply chain risks.",
+    "what_it_looks_for": "Potential supply chain risks are persistently identified, reviewed, and mitigated.",
     "how_to_comply": "Persistently identify, review, and mitigate supply chain risks: supplier vetting, dependency review, risk register entries with mitigations. Evidence: the supply chain risk register with review dates and mitigation status.",
     "how_to_comply_platform": "AWS",
     "evidence_required": [

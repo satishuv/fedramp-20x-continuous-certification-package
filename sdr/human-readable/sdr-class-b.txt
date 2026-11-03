@@ -8,7 +8,7 @@ AWS partition: aws (AWS Commercial)
 Primary region: us-east-1
 Disaster recovery region: us-west-2
 SDR version: 0.1.0
-Generated from dataset version: 2026.10.13.01
+Generated from dataset version: 2026.11.02.01
 Source of update: build_sdr.py generator
 
 This is a generic template record. Statements marked TBD require real
@@ -3637,7 +3637,7 @@ Owner: TBD: Information has not been provided.
 2.35 KSI-SCR-MIT Mitigating Supply Chain Risk
 KSI: KSI-SCR-MIT
 Family: SCR (Supply Chain Risk)
-Security outcome: Persistently identify, review, and mitigate potential supply chain risks.
+Security outcome: Potential supply chain risks are persistently identified, reviewed, and mitigated.
 Status: Not Implemented
 Implementation: TBD: Information has not been provided.
 Validation: TBD: Information has not been provided.
