@@ -193,10 +193,11 @@ def test_f83_allowlist_prefixes_are_iam_signing_names():
     prefixes = {a.split(":", 1)[0] for a in collectors.READ_ONLY_ACTIONS}
     # Every prefix must be the signing name of SOME service the SDK knows.
     known = set()
-    for client in ("accessanalyzer", "backup", "cloudformation", "cloudtrail",
-                   "codepipeline", "config", "dynamodb", "ec2", "ecr", "events",
-                   "guardduty", "iam", "inspector2", "kms", "s3", "s3control",
-                   "securityhub", "sts", "wafv2"):
+    for client in ("accessanalyzer", "acm", "backup", "cloudformation",
+                   "cloudtrail", "codepipeline", "config", "dynamodb", "ec2",
+                   "ecr", "events", "guardduty", "iam", "imagebuilder",
+                   "inspector2", "kms", "s3", "s3control", "securityhub", "ssm",
+                   "sts", "wafv2"):
         known.add(sess.get_service_model(client).signing_name)
     bad = sorted(p for p in prefixes if p not in known)
     assert not bad, f"allowlist prefixes that IAM does not evaluate: {bad}"
@@ -638,3 +639,90 @@ def _run_all():
 
 if __name__ == "__main__":
     sys.exit(_run_all())
+
+
+# --- Stage 4 platform-hardening use case (image, certificate, secrets) --------
+
+def test_image_hardening_scan_on_push_and_tested_pipeline():
+    ecr = FakeClient(responses={"describe_repositories": {"repositories": [
+        {"imageScanningConfiguration": {"scanOnPush": True}},
+        {"imageScanningConfiguration": {"scanOnPush": False}},
+        {},
+    ]}})
+    ib = FakeClient(responses={
+        "list_image_pipelines": {"imagePipelineList": [
+            {"imageRecipeArn": "arn:r1"}, {"containerRecipeArn": "arn:c1"}]},
+        "get_image_recipe": {"imageRecipe": {"components": [
+            {"componentArn": "arn:aws:imagebuilder:us-east-1:aws:component/stig-build-linux-high/1.0.0"},
+            {"componentArn": "arn:aws:imagebuilder:us-east-1:aws:component/reboot-test-linux/1.0.0"}]}},
+        "get_container_recipe": {"containerRecipe": {"components": [
+            {"componentArn": "arn:aws:imagebuilder:us-east-1:aws:component/update-linux/1.0.0"}]}},
+    })
+    by = facts_by_check(collectors.collect_image_hardening(
+        FakeSession({"ecr": ecr, "imagebuilder": ib}), "us-east-1"))
+    assert by["scan_on_push"]["status"] == "OBSERVED"
+    assert by["scan_on_push"]["measured"] == 1 and by["scan_on_push"]["total"] == 3
+    assert by["pipelines"]["measured"] == 1 and by["pipelines"]["total"] == 2
+
+
+def test_image_hardening_nothing_configured_is_not_a_failure():
+    sess = FakeSession({
+        "ecr": FakeClient(responses={"describe_repositories": {"repositories": []}}),
+        "imagebuilder": FakeClient(responses={"list_image_pipelines": {"imagePipelineList": []}}),
+    })
+    by = facts_by_check(collectors.collect_image_hardening(sess, "us-east-1"))
+    assert by["scan_on_push"]["status"] == "NO_REPOS"
+    assert by["pipelines"]["status"] == "NOT_CONFIGURED"
+    assert "measured" not in by["pipelines"] or by["pipelines"].get("measured") is None
+
+
+def test_image_hardening_access_denied_is_error_not_zero():
+    sess = FakeSession({
+        "ecr": FakeClient(errors={"describe_repositories": FakeClientError("AccessDeniedException")}),
+        "imagebuilder": FakeClient(errors={"list_image_pipelines": FakeClientError("AccessDeniedException")}),
+    })
+    by = facts_by_check(collectors.collect_image_hardening(sess, "us-east-1"))
+    assert by["scan_on_push"]["status"] == "ERROR:AccessDeniedException"
+    assert by["pipelines"]["status"] == "ERROR:AccessDeniedException"
+
+
+def test_certificate_management_eligibility_and_expiry():
+    from datetime import datetime, timedelta, timezone
+    now = datetime.now(timezone.utc)
+    acm = FakeClient(responses={"list_certificates": {"CertificateSummaryList": [
+        {"CertificateArn": "a", "RenewalEligibility": "ELIGIBLE",
+         "NotAfter": now + timedelta(days=200)},
+        {"CertificateArn": "b", "RenewalEligibility": "INELIGIBLE",
+         "NotAfter": now + timedelta(days=5)},
+    ]}})
+    by = facts_by_check(collectors.collect_certificate_management(
+        FakeSession({"acm": acm}), "us-east-1"))
+    assert by["renewal_eligible"]["measured"] == 1 and by["renewal_eligible"]["total"] == 2
+    assert by["expiring_soon"]["measured"] == 1 and by["expiring_soon"]["total"] == 2
+
+
+def test_certificate_management_no_certificates():
+    acm = FakeClient(responses={"list_certificates": {"CertificateSummaryList": []}})
+    fact = collectors.collect_certificate_management(FakeSession({"acm": acm}), "us-east-1")[0]
+    assert fact["status"] == "NO_CERTIFICATES"
+
+
+def test_parameter_store_secure_string_and_customer_key():
+    ssm = FakeClient(responses={"describe_parameters": {"Parameters": [
+        {"Name": "/app/db-password", "Type": "String"},
+        {"Name": "/app/api-key", "Type": "SecureString", "KeyId": "alias/aws/ssm"},
+        {"Name": "/app/token", "Type": "SecureString",
+         "KeyId": "arn:aws:kms:us-east-1:111122223333:key/1234abcd"},
+    ]}})
+    by = facts_by_check(collectors.collect_parameter_store(
+        FakeSession({"ssm": ssm}), "us-east-1"))
+    assert by["secure_string"]["measured"] == 2 and by["secure_string"]["total"] == 3
+    assert by["customer_key"]["measured"] == 1 and by["customer_key"]["total"] == 2
+
+
+def test_parameter_store_no_parameters_and_access_denied():
+    empty = FakeSession({"ssm": FakeClient(responses={"describe_parameters": {"Parameters": []}})})
+    assert collectors.collect_parameter_store(empty, "us-east-1")[0]["status"] == "NO_PARAMETERS"
+    denied = FakeSession({"ssm": FakeClient(
+        errors={"describe_parameters": FakeClientError("AccessDeniedException")})})
+    assert collectors.collect_parameter_store(denied, "us-east-1")[0]["status"] == "ERROR:AccessDeniedException"

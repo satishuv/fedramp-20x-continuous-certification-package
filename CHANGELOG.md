@@ -6,10 +6,42 @@ One project-specific convention: the pinned FedRAMP dataset version is recorded 
 
 ## Unreleased
 
-Pinned dataset: `2026.10.13.01` (adopted 2026-10-14 in #223: 46 KSIs unchanged
-in id, name, family and statement; 40 KSI NIST control lists changed, 0 rules
-added or removed, 0 force changes; the AWS service-KSI map was re-verified by
-diff against the previous dataset and its pin advanced)
+Pinned dataset: `2026.11.02.01` (adopted 2026-11-04 in #274: FRD-MAS definition
+added; FRC-CLA-MFR gained SDR-CSX-KSI, so Class A resolves 42 rules, up from 41;
+FRC-CLA-RFR dropped CPO-CSF-CPM; KSI-SCR-MIT reworded with no material change;
+46 KSIs unchanged in id and family. FedRAMP moves to a monthly release cadence
+from this release. The Class A anchor moved in six places: two validation tests,
+the requirements oracle, the certification-classes doc, the README table and
+mutation MUT-F86's target text.)
+
+### Use-case profiles: a workstream's slice of the 46 indicators
+
+- `profiles/use-cases/platform-hardening.json` selects the 16 KSIs that image
+  hardening (AMI and container), certificate management, secrets and
+  configuration management, networking and observability/logging satisfy with
+  native AWS tooling, and records for each domain the controls the collectors
+  read and the provider evidence still required. It includes the Parameter
+  Store compensating-control pattern: how to record a time-boxed exception on
+  KSI-SVC-ASM with controls the collectors can observe. A use-case profile
+  narrows which indicators are reported; it never changes a statement, force
+  or class applicability.
+- `gap_assessment.py --use-case PATH` renders the gap assessment for that
+  slice, titled with the use case and the "N of 46" count. The loader refuses a
+  profile whose domain lists and `ksis_in_scope` disagree, and an indicator id
+  the dataset does not carry is an error, not a silent skip.
+- Three read-only collectors for the gaps the use case exposed:
+  `image_hardening` (ECR scan-on-push; Image Builder pipelines whose recipe
+  carries a test component), `certificate_management` (ACM managed-renewal
+  eligibility; certificates not expiring within 30 days) and `parameter_store`
+  (SecureString share; customer managed KMS key use). Six read-only IAM
+  actions added to the allowlist and the deployed collector role together;
+  metric routes are check-scoped (`ecr:scan_on_push` to CNA-IBP and SCR-MON,
+  `imagebuilder:pipelines` to CNA-IBP and CMT-RMV, `acm:*` to SVC-ASM,
+  `ssm:secure_string` to SVC-ASM and SVC-SIN, `ssm:customer_key` to SVC-SIN).
+  Registry regenerated: the five KSIs gain the new metric routes; check and
+  KSI-level counts are unchanged (136 checks, 82 collectable; 35 KSIs
+  collectable now, 11 provider-deployed only).
+- `docs/use-case-platform-hardening.md` is the pattern page.
 
 ### Release trust is anchored to protected main, not to the tagged commit (AUD-F91)
 

@@ -399,6 +399,8 @@ Resources:
                 Action:
                   - access-analyzer:ListAnalyzers
                   - access-analyzer:ListFindings
+                  - acm:DescribeCertificate
+                  - acm:ListCertificates
                   - backup:ListBackupPlans
                   - backup:ListProtectedResources
                   - backup:ListRestoreTestingPlans
@@ -428,6 +430,9 @@ Resources:
                   - iam:ListAccessKeys
                   - iam:ListRoles
                   - iam:ListUsers
+                  - imagebuilder:GetContainerRecipe
+                  - imagebuilder:GetImageRecipe
+                  - imagebuilder:ListImagePipelines
                   - inspector2:BatchGetAccountStatus
                   - inspector2:ListCoverage
                   - inspector2:ListFindings
@@ -440,6 +445,7 @@ Resources:
                   - s3:ListAllMyBuckets
                   - securityhub:DescribeHub
                   - securityhub:GetFindings
+                  - ssm:DescribeParameters
                   - sts:GetCallerIdentity
                   - wafv2:ListResourcesForWebACL
                   - wafv2:ListWebACLs

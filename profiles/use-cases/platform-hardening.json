@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "title": "Use-case profile: platform hardening (images, certificates, secrets, networking, logging)",
+    "use_case_id": "platform-hardening",
+    "purpose": "Scope the evidence package and the gap assessment to the Key Security Indicators that a platform-hardening workstream touches, so a team that owns image builds, certificates, secrets, network controls and logging can collect, review and publish evidence for exactly those indicators with native AWS tooling.",
+    "boundary": "A use-case profile narrows WHICH indicators are reported. It never changes a statement, a force or a class applicability: those come from the pinned CR26 dataset. A green use-case report means the automated checks observed for these indicators passed; it is not an implementation status and not a compliance determination. Statuses change only through human sign-off, and FedRAMP Certification decisions belong to the assessor and the authorizing agency.",
+    "selection_rule": "An indicator is in scope when a native AWS control in one of the five domains below is the primary technical mechanism by which the indicator is satisfied. Indicators that the domains only support indirectly (for example KSI-PIY-GIV inventories) are listed under supporting_ksis and are reported but not scored as part of the use case."
+  },
+  "domains": [
+    {
+      "domain_id": "image-hardening",
+      "name": "Image hardening (AMI and container images)",
+      "ksis": ["KSI-CNA-IBP", "KSI-CMT-RMV", "KSI-SVC-VRI", "KSI-SCR-MON"],
+      "native_aws_controls": [
+        "EC2 Image Builder pipelines with a hardening build component (for example the AWS-managed STIG or CIS components) and at least one test component, so a hardened image is produced by a pipeline and validated before distribution",
+        "Amazon ECR scan-on-push (basic or enhanced scanning through Amazon Inspector) on every repository",
+        "Amazon ECR immutable image tags so a tag always resolves to the same digest",
+        "Amazon Inspector EC2 and ECR scanning enabled for the account",
+        "Golden-AMI replacement through redeploy (new launch template version) rather than in-place patching of running instances"
+      ],
+      "collectors": ["image_hardening", "ecr_integrity", "supply_chain_scanning", "config_conformance", "cfn_drift"],
+      "collector_checks": ["ecr:scan_on_push", "imagebuilder:pipelines", "ecr:image_immutability", "inspector2:coverage", "inspector2:scanning_status", "config:conformance_compliance", "cloudformation:drift"],
+      "provider_evidence_still_required": [
+        "The hardening baseline the build component enforces (which benchmark, which version) and who approved deviations",
+        "Image distribution policy: which accounts and regions receive the image and how old an image may be before it is retired"
+      ]
+    },
+    {
+      "domain_id": "certificate-management",
+      "name": "Certificate management",
+      "ksis": ["KSI-SVC-ASM"],
+      "native_aws_controls": [
+        "AWS Certificate Manager issued certificates with managed renewal (DNS validation so renewal needs no human step)",
+        "AWS Config managed rule acm-certificate-expiration-check with a days-to-expiry threshold",
+        "Load balancer and CloudFront listeners using ACM certificates and a current TLS security policy"
+      ],
+      "collectors": ["certificate_management", "config"],
+      "collector_checks": ["acm:renewal_eligible", "acm:expiring_soon", "config:acm-certificate-expiration-check", "config:elb-tls-https-listeners-only", "config:alb-http-to-https-redirection-check"],
+      "provider_evidence_still_required": [
+        "Inventory of certificates issued outside ACM (imported or third-party) and their rotation procedure",
+        "Private CA policy if AWS Private CA is in use"
+      ]
+    },
+    {
+      "domain_id": "secrets-and-configuration",
+      "name": "Secrets and configuration management (Secrets Manager, Parameter Store, third-party)",
+      "ksis": ["KSI-SVC-ASM", "KSI-SVC-ACM", "KSI-SVC-SIN"],
+      "native_aws_controls": [
+        "AWS Secrets Manager with automatic rotation for database and service credentials",
+        "AWS Config managed rules secretsmanager-rotation-enabled-check and secretsmanager-scheduled-rotation-success-check",
+        "AWS Systems Manager Parameter Store SecureString parameters encrypted with a customer managed KMS key",
+        "AWS Config recorder and conformance packs for configuration drift; AWS CloudFormation drift detection for IaC-managed resources"
+      ],
+      "collectors": ["parameter_store", "config", "config_conformance", "cfn_drift", "kms"],
+      "collector_checks": ["ssm:secure_string", "ssm:customer_key", "config:secretsmanager-rotation-enabled-check", "config:secretsmanager-scheduled-rotation-success-check", "config:conformance_compliance", "cloudformation:drift", "kms:key_rotation"],
+      "parameter_store_compensating_control": {
+        "question": "Can a team keep secrets in Parameter Store (rather than Secrets Manager) for a short time with additional compensating controls?",
+        "what_the_rules_say": "KSI-SVC-ASM requires that management, protection and regular rotation of secrets is automated and persistently reviewed. The indicator names the outcome, not the service. Parameter Store SecureString with a customer managed key satisfies protection; it does not provide automated rotation, so rotation must be supplied another way or the gap recorded.",
+        "how_to_record_it": "Use the record store's exception block on KSI-SVC-ASM: name the parameters (by path pattern, never by value), the compensating controls, the owner, the review date and the end date. The exception is time-boxed and is re-reviewed on the record's validation frequency. The compensating controls below are the ones the collectors can observe.",
+        "compensating_controls_observable": [
+          "Every secret-bearing parameter is SecureString (ssm:secure_string reaches 100 percent)",
+          "Every SecureString uses a customer managed KMS key with rotation enabled (ssm:customer_key and kms:key_rotation)",
+          "Access to the parameter path is restricted by IAM policy and read through CloudTrail data events (provider evidence: the policy and a sample of the trail)",
+          "A scheduled rotation job (EventBridge plus Lambda or Step Functions) rewrites the parameter on a fixed interval; its last successful run is the evidence of rotation"
+        ],
+        "exit_criterion": "Secret migrated to Secrets Manager with rotation enabled, or the rotation job accepted as the permanent mechanism and the exception closed with that decision recorded."
+      },
+      "provider_evidence_still_required": [
+        "Secret inventory by class (database, API key, signing key) and the rotation interval for each",
+        "Third-party secret stores (for example HashiCorp Vault): the export the thirdparty_adapters path consumes, or a scaffolded adapter"
+      ]
+    },
+    {
+      "domain_id": "networking",
+      "name": "Networking controls",
+      "ksis": ["KSI-CNA-RNT", "KSI-CNA-ULN", "KSI-CNA-MAT", "KSI-CNA-DFP"],
+      "native_aws_controls": [
+        "VPC security groups and network ACLs restricting inbound and outbound traffic to named ports",
+        "AWS Config managed rules vpc-default-security-group-closed, vpc-sg-open-only-to-authorized-ports, restricted-common-ports, restricted-ssh",
+        "AWS WAF on internet-facing endpoints; ALB HTTP to HTTPS redirection",
+        "VPC Flow Logs enabled on every VPC"
+      ],
+      "collectors": ["network_segmentation", "waf", "config"],
+      "collector_checks": ["ec2:security_groups", "wafv2:web_acls", "config:vpc-default-security-group-closed", "config:vpc-sg-open-only-to-authorized-ports", "config:restricted-common-ports", "config:restricted-ssh", "config:alb-http-to-https-redirection-check", "config:vpc-flow-logs-enabled"],
+      "provider_evidence_still_required": [
+        "Network architecture diagram naming each trust boundary and the allowed flows across it"
+      ]
+    },
+    {
+      "domain_id": "observability-logging",
+      "name": "Observability and logging",
+      "ksis": ["KSI-MLA-LET", "KSI-MLA-OSM", "KSI-MLA-RVL", "KSI-MLA-EVC", "KSI-CMT-LMC"],
+      "native_aws_controls": [
+        "AWS CloudTrail organization or multi-region trail with log file validation, delivered to a central account",
+        "Amazon CloudWatch Logs with KMS-encrypted log groups and retention set",
+        "AWS Security Hub as the aggregation point (or a SIEM fed from CloudTrail and Security Hub)",
+        "AWS Config managed rules cloudtrail-enabled, multi-region-cloudtrail-enabled, cloud-trail-log-file-validation-enabled, cloudwatch-log-group-encrypted, vpc-flow-logs-enabled"
+      ],
+      "collectors": ["cloudtrail", "cloudtrail_integrity", "siem_posture", "config"],
+      "collector_checks": ["cloudtrail:siem_capture", "cloudtrail:log_validation", "securityhub:siem_aggregation", "config:cloudtrail-enabled", "config:multi-region-cloudtrail-enabled", "config:cloud-trail-log-file-validation-enabled", "config:cloudwatch-log-group-encrypted", "config:vpc-flow-logs-enabled"],
+      "provider_evidence_still_required": [
+        "The logged event-type list KSI-MLA-LET asks for, and the review cadence and reviewer for KSI-MLA-RVL (log review is a human activity the collectors can only show is possible, not that it happened)"
+      ]
+    }
+  ],
+  "supporting_ksis": ["KSI-PIY-GIV", "KSI-SVC-EIS"],
+  "ksis_in_scope": [
+    "KSI-CMT-LMC", "KSI-CMT-RMV",
+    "KSI-CNA-DFP", "KSI-CNA-IBP", "KSI-CNA-MAT", "KSI-CNA-RNT", "KSI-CNA-ULN",
+    "KSI-MLA-EVC", "KSI-MLA-LET", "KSI-MLA-OSM", "KSI-MLA-RVL",
+    "KSI-SCR-MON",
+    "KSI-SVC-ACM", "KSI-SVC-ASM", "KSI-SVC-SIN", "KSI-SVC-VRI"
+  ]
+}

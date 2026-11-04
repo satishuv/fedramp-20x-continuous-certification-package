@@ -17,6 +17,7 @@
 | [Validation and readiness](validation.md) | The SDR build-gate checks, the full validation gate, submission-readiness preflight, the readiness scanner, determinism, upstream drift |
 | [Automation layers](automation.md) | What each layer may and may not decide, the read-only collectors, and the five opt-in AI-assist modules |
 | [KSI gap assessment](gap-assessment.md) | One page scoring an existing environment's collected facts against the 46 Class C KSIs: passing, partial, failing, not observed, weakest family, highest risk, and the FRC-CSX-VVK method minimum |
+| [Use case: platform hardening](use-case-platform-hardening.md) | Narrow the gap assessment and evidence collection to the 16 KSIs that image hardening, certificate management, secrets and configuration, networking and logging satisfy with native AWS tooling; includes the Parameter Store compensating-control pattern |
 | [OSCAL export](oscal-export.md) | Emitting the SDR as OSCAL for downstream governance, risk, and compliance tools |
 | [Continuous integration](ci-cd.md) | The four gates, the GitHub Actions workflows and what each gate job proves, the AWS CodePipeline reference |
 | [Deployment](deployment.md) | Local use, the GitHub Actions workflows on a fork, the opt-in living loop and the variables that turn it on, the provider pipeline |

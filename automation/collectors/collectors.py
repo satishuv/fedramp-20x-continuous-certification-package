@@ -87,6 +87,13 @@ READ_ONLY_ACTIONS = {
     "backup:ListRestoreTestingPlans",
     # Durable-store verification (read-side complement to provision_store.py).
     "s3:GetBucketVersioning",
+    # Stage 4 platform-hardening use case (image, certificate, secrets): read-only.
+    "imagebuilder:ListImagePipelines",
+    "imagebuilder:GetImageRecipe",
+    "imagebuilder:GetContainerRecipe",
+    "acm:ListCertificates",
+    "acm:DescribeCertificate",
+    "ssm:DescribeParameters",
 }
 
 
@@ -1190,6 +1197,141 @@ def collect_bucket_versioning(session, region, bucket=None):
                       "Could not read bucket versioning.", region)]
 
 
+# --- Stage 4: platform-hardening use case (image, certificate, secrets) --------
+# Added for the use-case profile profiles/use-cases/platform-hardening.json:
+# image hardening (AMI and container), certificate management, and secrets or
+# configuration management in Secrets Manager and Parameter Store. Read-only.
+
+
+def collect_image_hardening(session, region):
+    """Container and machine image hardening signals.
+      ecr:scan_on_push        repositories that scan every pushed image
+      imagebuilder:pipelines  Image Builder pipelines whose recipe carries at
+                              least one TEST component (hardening validated in
+                              the build, not after)
+    Maps: CNA-IBP, CMT-RMV, SCR-MON."""
+    facts = []
+    try:
+        ecr = session.client("ecr")
+        repos, more = _paginate(ecr, "describe_repositories", "repositories")
+        if not repos:
+            facts.append(_fact("ecr", "scan_on_push", "NO_REPOS",
+                               "No ECR repositories in this region", region))
+        else:
+            good = sum(1 for r in repos
+                       if (r.get("imageScanningConfiguration") or {}).get("scanOnPush"))
+            facts.append(_ratio_fact("ecr", "scan_on_push", region, good, len(repos),
+                                     len(repos), more, "repository",
+                                     "scan every image on push"))
+    except Exception as e:  # noqa: BLE001
+        facts.append(_fact("ecr", "scan_on_push", f"ERROR:{_client_error_name(e)}",
+                           "Could not describe ECR repositories", region))
+    try:
+        ib = session.client("imagebuilder")
+        pipes, more = _paginate(ib, "list_image_pipelines", "imagePipelineList")
+        if not pipes:
+            facts.append(_fact("imagebuilder", "pipelines", "NOT_CONFIGURED",
+                               "No EC2 Image Builder pipelines in this region", region))
+        else:
+            evaluated = tested = 0
+            for p in pipes:
+                arn = p.get("imageRecipeArn") or p.get("containerRecipeArn")
+                if not arn:
+                    continue
+                try:
+                    if p.get("containerRecipeArn"):
+                        recipe = ib.get_container_recipe(containerRecipeArn=arn).get(
+                            "containerRecipe", {})
+                    else:
+                        recipe = ib.get_image_recipe(imageRecipeArn=arn).get(
+                            "imageRecipe", {})
+                except Exception:  # noqa: BLE001 - unreadable recipe is unknown, not bad
+                    continue
+                evaluated += 1
+                comps = recipe.get("components") or []
+                if any("test" in (c.get("componentArn") or "").lower() for c in comps):
+                    tested += 1
+            facts.append(_ratio_fact("imagebuilder", "pipelines", region, tested,
+                                     evaluated, len(pipes), more, "pipeline",
+                                     "carry a test component in the recipe"))
+    except Exception as e:  # noqa: BLE001
+        facts.append(_fact("imagebuilder", "pipelines", f"ERROR:{_client_error_name(e)}",
+                           "Could not list Image Builder pipelines", region))
+    return facts
+
+
+def collect_certificate_management(session, region):
+    """AWS Certificate Manager posture.
+      acm:renewal_eligible   issued certificates ACM can renew on its own
+      acm:expiring_soon      issued certificates expiring within 30 days
+                             (measured = NOT expiring soon, so higher is better)
+    Maps: SVC-ASM."""
+    try:
+        acm = session.client("acm")
+        certs, more = _paginate(acm, "list_certificates", "CertificateSummaryList",
+                                CertificateStatuses=["ISSUED"])
+    except Exception as e:  # noqa: BLE001
+        return [_fact("acm", "renewal_eligible", f"ERROR:{_client_error_name(e)}",
+                      "Could not list ACM certificates", region)]
+    if not certs:
+        return [_fact("acm", "renewal_eligible", "NO_CERTIFICATES",
+                      "No issued ACM certificates in this region", region)]
+    from datetime import datetime, timedelta, timezone
+    horizon = datetime.now(timezone.utc) + timedelta(days=30)
+    evaluated = eligible = not_soon = 0
+    for c in certs:
+        arn = c.get("CertificateArn")
+        detail = c
+        if "RenewalEligibility" not in c or "NotAfter" not in c:
+            try:
+                detail = acm.describe_certificate(CertificateArn=arn).get("Certificate", {})
+            except Exception:  # noqa: BLE001
+                continue
+        evaluated += 1
+        if detail.get("RenewalEligibility") == "ELIGIBLE":
+            eligible += 1
+        not_after = detail.get("NotAfter")
+        if not_after is None or not_after > horizon:
+            not_soon += 1
+    return [
+        _ratio_fact("acm", "renewal_eligible", region, eligible, evaluated, len(certs),
+                    more, "certificate", "are eligible for managed renewal"),
+        _ratio_fact("acm", "expiring_soon", region, not_soon, evaluated, len(certs),
+                    more, "certificate", "expire later than 30 days from now"),
+    ]
+
+
+def collect_parameter_store(session, region):
+    """AWS Systems Manager Parameter Store secrets posture.
+      ssm:secure_string   parameters stored as SecureString (encrypted)
+      ssm:customer_key    SecureString parameters encrypted with a customer
+                          managed KMS key rather than the AWS managed key
+    A String parameter holding a secret is the gap Parameter Store users most
+    often carry; the use-case profile pairs this fact with a time-boxed
+    compensating-control exception record.
+    Maps: SVC-ASM, SVC-SIN."""
+    try:
+        ssm = session.client("ssm")
+        params, more = _paginate(ssm, "describe_parameters", "Parameters")
+    except Exception as e:  # noqa: BLE001
+        return [_fact("ssm", "secure_string", f"ERROR:{_client_error_name(e)}",
+                      "Could not describe SSM parameters", region)]
+    if not params:
+        return [_fact("ssm", "secure_string", "NO_PARAMETERS",
+                      "No Parameter Store parameters in this region", region)]
+    secure = [p for p in params if p.get("Type") == "SecureString"]
+    cmk = sum(1 for p in secure
+              if p.get("KeyId") and p["KeyId"] != "alias/aws/ssm"
+              and not p["KeyId"].endswith(":alias/aws/ssm"))
+    facts = [_ratio_fact("ssm", "secure_string", region, len(secure), len(params),
+                         len(params), more, "parameter", "are SecureString")]
+    if secure:
+        facts.append(_ratio_fact("ssm", "customer_key", region, cmk, len(secure),
+                                 len(secure), more, "SecureString parameter",
+                                 "use a customer managed KMS key"))
+    return facts
+
+
 COLLECTORS = [
     ("security_hub", collect_security_hub),    ("access_analyzer", collect_access_analyzer),
     ("inspector", collect_inspector),
@@ -1217,4 +1359,8 @@ COLLECTORS = [
     ("supply_chain_scanning", collect_supply_chain_scanning),
     ("restore_testing", collect_restore_testing),
     ("bucket_versioning", collect_bucket_versioning),
+    # Stage 4 platform-hardening use case (image, certificate, secrets):
+    ("image_hardening", collect_image_hardening),
+    ("certificate_management", collect_certificate_management),
+    ("parameter_store", collect_parameter_store),
 ]

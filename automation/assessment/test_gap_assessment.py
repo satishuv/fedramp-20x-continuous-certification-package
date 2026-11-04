@@ -115,3 +115,79 @@ def test_cli_refuses_to_run_without_a_facts_store():
                         capture_output=True, text=True)
     assert rc.returncode == 3
     assert "collect_facts.py" in rc.stderr
+
+
+# --- use-case profiles (profiles/use-cases/*.json) ------------------------------
+
+USE_CASE = os.path.join(BASE, "profiles", "use-cases", "platform-hardening.json")
+
+
+def test_use_case_profile_is_consistent_and_narrows_the_report():
+    uc = ga.load_use_case(USE_CASE)
+    app = ga.applicable_ksis(PROFILE, uc)
+    assert len(app) == 16 and len(ga.applicable_ksis(PROFILE)) == 46
+    assert set(app) == set(uc["ksis_in_scope"])
+    # Every domain names only in-scope indicators, and all five hardening
+    # domains are present in the documented order.
+    assert [d["domain_id"] for d in uc["domains"]] == [
+        "image-hardening", "certificate-management", "secrets-and-configuration",
+        "networking", "observability-logging"]
+    # Every collector check a domain cites is one a collector emits or a Config
+    # rule the registry knows, so the profile cannot cite a check that does not exist.
+    emitted = set()
+    for entry in REGISTRY["ksis"].values():
+        for key in entry.get("metric_service_keys", []) or []:
+            emitted.add(key)
+        for chk in entry.get("checks", []):
+            if chk.get("type") == "config_managed_rule":
+                emitted.add("config:" + chk["target"])
+    cited = {c for d in uc["domains"] for c in d["collector_checks"]}
+    assert cited <= emitted, sorted(cited - emitted)
+
+
+def test_use_case_statements_and_minimums_are_unchanged():
+    uc = ga.load_use_case(USE_CASE)
+    narrowed = ga.applicable_ksis(PROFILE, uc)
+    full = ga.applicable_ksis(PROFILE)
+    for kid, ind in narrowed.items():
+        assert ind is full[kid]
+        assert ga.ksi_statement(ind) == ga.ksi_statement(full[kid])
+        assert ga.min_methods(ind) == 2
+
+
+def test_use_case_unknown_ksi_is_an_error_not_a_silent_skip():
+    bad = {"meta": {"use_case_id": "x", "boundary": ""},
+           "domains": [{"domain_id": "d", "name": "d", "ksis": ["KSI-ZZZ-NOP"]}],
+           "ksis_in_scope": ["KSI-ZZZ-NOP"]}
+    try:
+        ga.applicable_ksis(PROFILE, bad)
+    except ValueError as e:
+        assert "KSI-ZZZ-NOP" in str(e)
+    else:
+        raise AssertionError("unknown KSI id was silently skipped")
+
+
+def test_use_case_domain_list_drift_is_refused():
+    tmp = tempfile.mkdtemp(prefix="gap-uc-")
+    uc = ga.load_json(USE_CASE)
+    uc["ksis_in_scope"] = uc["ksis_in_scope"][:-1]
+    p = os.path.join(tmp, "uc.json")
+    with open(p, "w", encoding="utf-8") as f:
+        json.dump(uc, f)
+    try:
+        ga.load_use_case(p)
+    except ValueError as e:
+        assert "disagree" in str(e)
+    else:
+        raise AssertionError("domains / ksis_in_scope drift was accepted")
+
+
+def test_use_case_assess_labels_meta_and_keeps_boundary():
+    uc = ga.load_use_case(USE_CASE)
+    cbr, pbs = _demo_inputs()
+    res = ga.assess(REGISTRY, PROFILE, cbr, pbs, "test", uc)
+    assert res["meta"]["ksis_applicable"] == 16
+    assert res["meta"]["use_case"]["use_case_id"] == "platform-hardening"
+    assert "not a compliance determination" in res["meta"]["boundary"]
+    assert "not a compliance determination" in res["meta"]["use_case"]["boundary"]
+    assert {r["ksi_id"] for r in res["ksis"]} == set(uc["ksis_in_scope"])

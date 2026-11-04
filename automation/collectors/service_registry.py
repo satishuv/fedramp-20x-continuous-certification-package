@@ -35,6 +35,10 @@ SERVICE_DISPLAY_NAMES = {
     "dynamodb": "Amazon DynamoDB",
     "events": "Amazon EventBridge",
     "codepipeline": "AWS CodePipeline",
+    # Stage 4 platform-hardening use case (image, certificate, secrets):
+    "imagebuilder": "EC2 Image Builder",
+    "acm": "AWS Certificate Manager",
+    "ssm": "AWS Systems Manager Parameter Store",
 }
 
 # Services intentionally collected as raw telemetry only, with no downstream

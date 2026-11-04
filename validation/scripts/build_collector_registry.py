@@ -163,6 +163,18 @@ METRIC_SOURCE_MAP = {
     # supply-chain scanning coverage and enablement
     "inspector2:coverage": ["KSI-SCR-MIT", "KSI-SCR-MON"],
     "inspector2:scanning_status": ["KSI-SCR-MIT", "KSI-SCR-MON"],
+    # Stage 4 platform-hardening use case. Image hardening: scan-on-push is
+    # upstream-vulnerability monitoring of third-party layers (SCR-MON) and a
+    # provider-best-practice comparison (CNA-IBP); a tested Image Builder
+    # recipe is the redeploy-not-modify path (CMT-RMV). Certificates and
+    # parameters are the secrets-management signal (SVC-ASM); encrypted
+    # parameters also secure information at rest (SVC-SIN).
+    "ecr:scan_on_push": ["KSI-CNA-IBP", "KSI-SCR-MON"],
+    "imagebuilder:pipelines": ["KSI-CNA-IBP", "KSI-CMT-RMV"],
+    "acm:renewal_eligible": ["KSI-SVC-ASM"],
+    "acm:expiring_soon": ["KSI-SVC-ASM"],
+    "ssm:secure_string": ["KSI-SVC-ASM", "KSI-SVC-SIN"],
+    "ssm:customer_key": ["KSI-SVC-SIN"],
 }
 
 

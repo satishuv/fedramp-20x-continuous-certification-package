@@ -156,7 +156,8 @@
     "IAM"
    ],
    "metric_service_keys": [
-    "cloudformation:drift"
+    "cloudformation:drift",
+    "imagebuilder:pipelines"
    ],
    "checks": [
     {
@@ -400,7 +401,9 @@
     "AWS Config"
    ],
    "metric_service_keys": [
-    "config:conformance_compliance"
+    "config:conformance_compliance",
+    "ecr:scan_on_push",
+    "imagebuilder:pipelines"
    ],
    "checks": [
     {
@@ -2054,6 +2057,7 @@
     "Amazon SNS"
    ],
    "metric_service_keys": [
+    "ecr:scan_on_push",
     "inspector2:coverage",
     "inspector2:scanning_status"
    ],
@@ -2143,7 +2147,11 @@
     "AWS Secrets Manager",
     "AWS Certificate Manager"
    ],
-   "metric_service_keys": [],
+   "metric_service_keys": [
+    "acm:expiring_soon",
+    "acm:renewal_eligible",
+    "ssm:secure_string"
+   ],
    "checks": [
     {
      "check_id": "KSI-SVC-ASM:verify:config:secretsmanager-rotation-enabled-check",
@@ -2341,7 +2349,10 @@
     "AWS KMS",
     "Amazon S3"
    ],
-   "metric_service_keys": [],
+   "metric_service_keys": [
+    "ssm:customer_key",
+    "ssm:secure_string"
+   ],
    "checks": [
     {
      "check_id": "KSI-SVC-SIN:verify:config:s3-bucket-server-side-encryption-enabled",
