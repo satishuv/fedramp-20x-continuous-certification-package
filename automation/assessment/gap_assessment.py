@@ -67,9 +67,33 @@ def load_json(path):
         return json.load(f)
 
 
-def applicable_ksis(profile):
-    """Every KSI in the dataset-built profile applies at Class C (46)."""
-    return {ind["ksi_id"]: ind for ind in profile["indicators"]}
+def applicable_ksis(profile, use_case=None):
+    """Every KSI in the dataset-built profile applies at Class C (46). A
+    use-case profile (profiles/use-cases/*.json) narrows the REPORT to its
+    ksis_in_scope; it never changes a statement, force or class applicability,
+    and an id it names that the dataset does not carry is an error, not a
+    silent skip (a mistyped id would otherwise vanish from the report)."""
+    all_ksis = {ind["ksi_id"]: ind for ind in profile["indicators"]}
+    if use_case is None:
+        return all_ksis
+    wanted = list(use_case["ksis_in_scope"])
+    unknown = sorted(set(wanted) - set(all_ksis))
+    if unknown:
+        raise ValueError(f"use-case profile names KSIs not in the dataset: {unknown}")
+    return {kid: all_ksis[kid] for kid in wanted}
+
+
+def load_use_case(path):
+    """Load and sanity-check a use-case profile: every domain KSI must appear in
+    ksis_in_scope and vice versa, so the two lists cannot drift apart."""
+    uc = load_json(path)
+    from_domains = {k for d in uc["domains"] for k in d["ksis"]}
+    listed = set(uc["ksis_in_scope"])
+    if from_domains != listed:
+        raise ValueError("use-case profile: domains and ksis_in_scope disagree: "
+                         f"only in domains {sorted(from_domains - listed)}, "
+                         f"only in list {sorted(listed - from_domains)}")
+    return uc
 
 
 def ksi_statement(ind):
@@ -140,8 +164,9 @@ def classify(ksi_entry, dp):
     return PARTIAL
 
 
-def assess(registry, profile, config_by_rule, posture_by_service, source_note):
-    applicable = applicable_ksis(profile)
+def assess(registry, profile, config_by_rule, posture_by_service, source_note,
+           use_case=None):
+    applicable = applicable_ksis(profile, use_case)
     rows = []
     for kid in sorted(applicable):
         ind = applicable[kid]
@@ -198,7 +223,15 @@ def assess(registry, profile, config_by_rule, posture_by_service, source_note):
 
     return {
         "meta": {
-            "title": "KSI gap assessment (automated-check view)",
+            "title": ("KSI gap assessment (automated-check view)" if use_case is None else
+                      f"KSI gap assessment, use case: {use_case['meta']['use_case_id']} "
+                      f"({len(rows)} of {profile['count']} indicators)"),
+            "use_case": None if use_case is None else {
+                "use_case_id": use_case["meta"]["use_case_id"],
+                "domains": [{"domain_id": d["domain_id"], "name": d["name"], "ksis": d["ksis"]}
+                            for d in use_case["domains"]],
+                "boundary": use_case["meta"]["boundary"],
+            },
             "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "class": CLASS.upper(),
             "dataset_version": registry["meta"]["dataset_version"],
@@ -429,10 +462,14 @@ def main(argv=None):
                     help="use a deterministic synthetic facts store (no AWS); labelled DEMO")
     ap.add_argument("--registry", default=REGISTRY)
     ap.add_argument("--profile", default=KSI_PROFILE)
+    ap.add_argument("--use-case", default=None, metavar="PATH",
+                    help="use-case profile (profiles/use-cases/*.json) that narrows the "
+                         "report to its ksis_in_scope; statements and forces are unchanged")
     args = ap.parse_args(argv)
 
     registry = load_json(args.registry)
     profile = load_json(args.profile)
+    use_case = load_use_case(args.use_case) if args.use_case else None
     if registry["meta"]["dataset_version"] != profile["meta"]["dataset_version"]:
         print("ERROR: registry and ksi-profile were built from different dataset versions; "
               "run the profile build first.", file=sys.stderr)
@@ -462,7 +499,7 @@ def main(argv=None):
     finally:
         am.FACTS_DIR = saved
 
-    result = assess(registry, profile, config_by_rule, posture_by_service, source)
+    result = assess(registry, profile, config_by_rule, posture_by_service, source, use_case)
     os.makedirs(args.out, exist_ok=True)
     jpath = os.path.join(args.out, "gap-assessment.json")
     hpath = os.path.join(args.out, "gap-assessment.html")
@@ -473,6 +510,8 @@ def main(argv=None):
 
     c = result["summary"]["counts"]
     n = result["meta"]["ksis_applicable"]
+    if use_case is not None:
+        print(f"use case {use_case['meta']['use_case_id']}: {n} of {profile['count']} KSIs reported")
     print(f"Class C: {n} applicable KSIs. passing={c[PASSING]} partial={c[PARTIAL]} "
           f"failing={c[FAILING]} not_observed={c[NOT_OBSERVED]} provider_evidence={c[PROVIDER_EVIDENCE]}")
     w = result["summary"]["weakest_family"]
