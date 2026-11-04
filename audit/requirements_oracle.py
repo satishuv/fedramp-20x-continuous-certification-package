@@ -176,12 +176,13 @@ def oracle_frr_class_a(dataset):
     return out
 
 
-# Pinned anchors: the counts an independent reconciliation of the 2026.10.08.01
-# dataset produced (41 / 157 / 157; 158 at B and C before FRC-CSX-MOT was
-# removed in that release). An oracle that reconciles 0 against 0 is not an
-# oracle (RULE 7), so these guard against a silent empty-set pass. They move
-# only with a dataset adoption, by hand, after the recount.
-EXPECTED_COUNTS = {"a": 41, "b": 157, "c": 157}
+# Pinned anchors: the counts an independent reconciliation of the 2026.11.02.01
+# dataset produced (42 / 157 / 157). History: 41 at A on 2026.10.08.01 until
+# 2026.11.02.01 added SDR-CSX-KSI to FRC-CLA-MFR; 158 at B and C before
+# FRC-CSX-MOT was removed in 2026.10.08.01. An oracle that reconciles 0 against
+# 0 is not an oracle (RULE 7), so these guard against a silent empty-set pass.
+# They move only with a dataset adoption, by hand, after the recount.
+EXPECTED_COUNTS = {"a": 42, "b": 157, "c": 157}
 COMPARED_FIELDS = ("force", "statement", "timeframe_type", "timeframe_num",
                    "timeframe_num_min", "timeframe_num_max")
 
