@@ -1,8 +1,8 @@
 {
  "meta": {
   "derived_from": "rule-catalog.json / ksi-catalog.json",
-  "dataset_version": "2026.10.13.01",
-  "generated": "deterministic build from dataset 2026.10.13.01",
+  "dataset_version": "2026.11.02.01",
+  "generated": "deterministic build from dataset 2026.11.02.01",
   "path": "FedRAMP 20x Program Certification",
   "filter": "rules whose affects includes Providers",
   "class_a_note": "Class A applicability is enumerated by FRC-CLA-MFR (mandatory), FRC-CLA-RFR (recommended), and FRC-CLA-OFR (optional), parsed directly from the canonical dataset. It is NOT blanket provider-rule applicability. On-ramp: SOC 2 Type II, Rev5, or GovRAMP completed within the past 12 months (FRC-CLA-ASF). Agencies are limited to 12 months of use unless the provider actively pursues Class B, C, or D (AGU-USE-CLA).",
@@ -15,12 +15,10 @@
    "KSI-INR-RIR": "mandatory",
    "KSI-SVC-SIN": "mandatory"
   },
-  "unresolved_rule_ids": [
-   "CPO-CSF-CPM"
-  ],
+  "unresolved_rule_ids": [],
   "unresolved_note": "Rules listed by FRC-CLA-RFR/OFR but absent from the catalog. Known case: CPO-CSF-CPM is Rev5-only (Certification Package Maintenance for Rev5); the RFR list marks it 'if applicable' and it does not apply to a 20x Program Certification profile."
  },
- "count": 41,
+ "count": 42,
  "rules": [
   {
    "rule_id": "AFC-CSO-CRA",
@@ -537,6 +535,25 @@
    "timeframe_num_min": null,
    "timeframe_num_max": null,
    "resolution": "class_variant",
+   "schema": {
+    "name": "FedRAMP Security Decision Record Schema",
+    "url": "https://fedramp.gov/schemas/fedramp-security-decision-record-schema-2026-06-24.json"
+   }
+  },
+  {
+   "rule_id": "SDR-CSX-KSI",
+   "family": "SDR",
+   "family_name": "Security Decision Record",
+   "subset": "CSX",
+   "name": "Key Security Indicators",
+   "class_a_obligation": "mandatory",
+   "force": "MUST",
+   "statement": "Providers MUST also include short and simple high-level summaries of at least the following for each applicable Key Security Indicator:",
+   "timeframe_type": null,
+   "timeframe_num": null,
+   "timeframe_num_min": null,
+   "timeframe_num_max": null,
+   "resolution": "top_level",
    "schema": {
     "name": "FedRAMP Security Decision Record Schema",
     "url": "https://fedramp.gov/schemas/fedramp-security-decision-record-schema-2026-06-24.json"

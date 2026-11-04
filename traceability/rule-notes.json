@@ -1517,7 +1517,8 @@
    "what_it_looks_for": "The rule text below is the requirement; the force keyword (MUST, SHOULD, MAY) sets how binding it is for this class.",
    "official_notes": [
     "Upgrade paths include moving from A to B, C, or D; B to C or D; and C to D.",
-    "The preferred path is to incrementally update the implementation and assurance commitments within the current Certification Class until the provider has met all requirements for the target Certification Class, then apply for the new Certification Class."
+    "The preferred path is to incrementally update the implementation and assurance commitments within the current Certification Class until the provider has met all requirements for the target Certification Class, then apply for the new Certification Class.",
+    "All applicable CR26 requirements are based on the obtain deadlines in each CR26 ruleset when applying to obtain a new FedRAMP Certification, even if it is an upgrade. FedRAMP may make case-by-case exceptions based on individual circumstances and critical government need, however, so please contact FedRAMP for guidance when planning an upgrade in 2027."
    ],
    "evidence_required": [
     "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
@@ -1535,7 +1536,7 @@
    "what_it_looks_for": "The rule text below is the requirement; the force keyword (MUST, SHOULD, MAY) sets how binding it is for this class.",
    "official_notes": [
     "Downgrade paths include moving from D to C, B, or A; C to B or A; or B to A.",
-    "FRC-CCL-DNP (Downgrade Notification Period) applies - please DO NOT downgrade Certification Class with providing advance notification to all necessary parties!"
+    "FRC-CCL-DNP (Downgrade Notification Period) applies - please DO NOT downgrade Certification Class without providing advance notification to all necessary parties!"
    ],
    "evidence_required": [
     "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",

@@ -11,8 +11,8 @@
   ],
   "sdr_version": "0.1.0",
   "schema_version": "2026-06-24",
-  "dataset_version": "2026.10.13.01",
-  "generated": "deterministic build from dataset 2026.10.13.01",
+  "dataset_version": "2026.11.02.01",
+  "generated": "deterministic build from dataset 2026.11.02.01",
   "source_of_update": "build_sdr.py generator"
  },
  "frr": {
@@ -1007,6 +1007,46 @@
      "The code for the automated process used to generate the machine readable output."
     ],
     "evidence_source": "rule-specific artifacts list",
+    "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
+   },
+   "owner": "TBD: Information has not been provided.",
+   "verification": "TBD: Information has not been provided.",
+   "validation_frequency": "TBD: Information has not been provided.",
+   "failure_condition": "TBD: Information has not been provided.",
+   "failure_response": "TBD: Information has not been provided.",
+   "evidence_freshness": "TBD: Information has not been provided.",
+   "exception_reference": "None recorded",
+   "customer_risk": "TBD: Information has not been provided.",
+   "responsibility": {
+    "aws": "TBD: Information has not been provided.",
+    "provider": "TBD: Information has not been provided.",
+    "customer": "TBD: Information has not been provided."
+   },
+   "independent_verification": "TBD: Information has not been provided.",
+   "independent_validation": "TBD: Information has not been provided.",
+   "assessor_responses": "None recorded",
+   "rule_artifacts": [],
+   "senior_official_acceptance": "Not required: rule is followed",
+   "class_a_obligation": "mandatory"
+  },
+  "SDR-CSX-KSI": {
+   "name": "Key Security Indicators",
+   "force": "MUST",
+   "family": "SDR",
+   "family_name": "Security Decision Record",
+   "guidance": {
+    "what_it_looks_for": "Providers MUST also include short and simple high-level summaries of at least the following for each applicable Key Security Indicator:",
+    "official_notes": [],
+    "how_to_comply": "Maintain the Security Decision Record in both human-readable and JSON form, schema-valid, with an entry for every applicable rule and KSI, metadata (version, last updated, update source), and the per-class historical metrics.",
+    "how_to_comply_platform": "AWS",
+    "evidence_required": [
+     "Explanation of how the rule is followed, or an explanation of the reason and resulting risk to customers for not following the rule.",
+     "Verification that the implementation is appropriate for the rule, or that the reason for not implementing is accepted by a senior official.",
+     "Validation that the implementation is in place and working as intended, or that the reason for not implementing is accepted by a senior official.",
+     "Independent verification.",
+     "Independent validation."
+    ],
+    "evidence_source": "FedRAMP default artifact expectations for rules",
     "note": "How to comply is SAS advisory guidance describing typical AWS implementation approaches. It is not FedRAMP text and not the provider's own statement; a provider on another platform reads it as an example only. Fill the TBD fields below with the provider's real implementation, validation, and owner."
    },
    "owner": "TBD: Information has not been provided.",

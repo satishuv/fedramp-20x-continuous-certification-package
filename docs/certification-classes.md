@@ -9,7 +9,7 @@ A note on impact levels. FedRAMP's current public 20x guidance maps the classes 
 <!-- Table rendered from the canonical data by validation/scripts/class_table.py (profiles, Class D register, KSI profile, dataset forces). Do not edit by hand: run `python validation/scripts/class_table.py --write`; test_docs_class_table.py fails on a hand edit. -->
 | | Class A | Class B | Class C | Class D |
 |---|---|---|---|---|
-| Provider rules resolved | 41 | 157 | 157 plus overlay | 156 in readiness register |
+| Provider rules resolved | 42 | 157 | 157 plus overlay | 156 in readiness register |
 | Indicators in scope | 7 mandatory of 46 | 41 baseline plus 5 optional, up to 46 | all 46 | all 46 |
 | Automated methods per indicator (`FRC-CSX-VVK`) | none required | at least 1 | at least 2 | at least 4 |
 | Historical KSI metrics including persistent-validation status (`SDR-CSX-KMT`) | `MAY` include | `SHOULD` include 30-day and one-year summaries | `MUST`: summaries plus all daily data up to the past year, where available | `MUST` significantly supersede lower classes (specifics pending) |
@@ -27,7 +27,7 @@ At Class A, `SDR-CSX-KMT` is `MAY` include, so historical KSI metrics are suppre
 
 ## Class A is enumerated, not scaled down
 
-Class A is the one that behaves unlike the others. It is not "Class B with fewer rules by severity." Applicability is enumerated explicitly by `FRC-CLA-MFR`, so the 41 rules are the ones FedRAMP named, not the ones a filter selected. Same for the indicators: 7 are mandatory at Class A and the other 39 carry `not required for Class A` in the profile.
+Class A is the one that behaves unlike the others. It is not "Class B with fewer rules by severity." Applicability is enumerated explicitly by `FRC-CLA-MFR`, so the 42 rules are the ones FedRAMP named, not the ones a filter selected. Same for the indicators: 7 are mandatory at Class A and the other 39 carry `not required for Class A` in the profile.
 
 The seven mandatory indicators at Class A:
 
@@ -43,7 +43,7 @@ Names below are the dataset's own, not paraphrases.
 | `KSI-INR-RIR` | Incident Response | Reviewing Incident Response Procedures |
 | `KSI-SVC-SIN` | Service Configuration | Securing Information |
 
-If you are treating Class A as a starting point on the way to Class B, know that the jump is large: 41 rules to 157, and 7 indicators to 41 (46 once the five optional Class B indicators are selected). Plan it as a separate project rather than an increment.
+If you are treating Class A as a starting point on the way to Class B, know that the jump is large: 42 rules to 157, and 7 indicators to 41 (46 once the five optional Class B indicators are selected). Plan it as a separate project rather than an increment.
 
 ## Choosing
 

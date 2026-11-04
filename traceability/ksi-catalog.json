@@ -1,8 +1,8 @@
 {
  "meta": {
   "derived_from": "fedramp-consolidated-rules.json",
-  "dataset_version": "2026.10.13.01",
-  "generated": "deterministic build from dataset 2026.10.13.01",
+  "dataset_version": "2026.11.02.01",
+  "generated": "deterministic build from dataset 2026.11.02.01",
   "scope": "FRR requirements applicable to 20x (data.all and data.20x); all KSI indicators"
  },
  "count": 46,
@@ -888,7 +888,7 @@
    "family_name": "Supply Chain Risk",
    "family_status": "stable",
    "name": "Mitigating Supply Chain Risk",
-   "statement": "Persistently identify, review, and mitigate potential supply chain risks.",
+   "statement": "Potential supply chain risks are persistently identified, reviewed, and mitigated.",
    "controls": [
     "ac-19",
     "ac-20",
