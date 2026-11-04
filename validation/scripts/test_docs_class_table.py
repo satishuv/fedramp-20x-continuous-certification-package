@@ -44,8 +44,8 @@ def main():
     r = facts["rules"]
     total, mand_a, base_b = facts["ksi_total"], facts["ksi_mandatory_a"], facts["ksi_baseline_b"]
     opt_b = facts["ksi_optional_b"]
-    check("canonical anchors hold (41 / 157 / 157 / 156 rules; 46 KSIs, 7 mandatory at A, 5 optional at B)",
-          (r["a"], r["b"], r["c"], r["d"]) == (41, 157, 157, 156) and total == 46
+    check("canonical anchors hold (42 / 157 / 157 / 156 rules; 46 KSIs, 7 mandatory at A, 5 optional at B)",
+          (r["a"], r["b"], r["c"], r["d"]) == (42, 157, 157, 156) and total == 46
           and mand_a == 7 and len(opt_b) == 5, str(facts))
     check("the five optional Class B indicators are the Class-C-specific ones",
           opt_b == ["KSI-CNA-EIS", "KSI-MLA-ALA", "KSI-SVC-PRR", "KSI-SVC-RUD", "KSI-SVC-VCM"], str(opt_b))
