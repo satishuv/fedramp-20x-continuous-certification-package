@@ -347,46 +347,29 @@ def main():
     # inside is the real signal. Assert each pinned schema still carries the
     # $id and $schemaVersion the framework was built against, so a swapped or
     # upstream-bumped schema is caught at the gate, not only by the daily drift
-    # hash job. Update EXPECTED_SCHEMAS deliberately when adopting a new schema.
+    # hash job. The expected values come from sources.lock.json (see below).
+    # The expected $id and $schemaVersion of every pinned schema are READ from
+    # references/sources.lock.json (schema_id / schema_version), which
+    # update_sources_lock.py regenerates from the files on disk during an
+    # adoption and which changes only in a reviewed PR. A retyped copy here
+    # drifted on every schema bump (common-definitions 0.4.2 and CPO 0.2.0 on
+    # 2026-11-09 each needed a hand edit); the lock is the single source now.
+    # The guard still catches a swapped file: sources_lock_consistency hashes
+    # it, and this compares the live $id/$schemaVersion to the lock's record.
+    with open(os.path.join(BASE, "references", "sources.lock.json"), encoding="utf-8") as _lf:
+        _lock_sources = json.load(_lf).get("sources", {})
     EXPECTED_SCHEMAS = {
-        SDR_SCHEMA: {
-            "$id": "https://fedramp.gov/schemas/fedramp-security-decision-record-schema-2026-06-24.json",
-            "$schemaVersion": "1.1.1",
-        },
-        COMMON_SCHEMA: {
-            "$id": "https://fedramp.gov/schemas/fedramp-common-definitions-schema-2026-06-24.json",
-            "$schemaVersion": "0.4.2",
-        },
-        os.path.join(SCHEMA_DIR, "fedramp-certification-package-overview-schema-2026-06-24.json"): {
-            "$id": "https://fedramp.gov/schemas/fedramp-certification-package-overview-schema-2026-06-24.json",
-            "$schemaVersion": "0.2.0",
-        },
-        os.path.join(SCHEMA_DIR, "fedramp-ongoing-certification-report-schema-2026-06-24.json"): {
-            "$id": "https://fedramp.gov/schemas/fedramp-ongoing-certification-report-schema-2026-06-24.json",
-            "$schemaVersion": "0.2.1",
-        },
-        os.path.join(SCHEMA_DIR, "fedramp-incident-report-schema-2026-06-24.json"): {
-            "$id": "https://fedramp.gov/schemas/fedramp-incident-report-schema-2026-06-24.json",
-            "$schemaVersion": "0.2.1",
-        },
-        os.path.join(SCHEMA_DIR, "fedramp-significant-change-notifications-schema-2026-06-24.json"): {
-            "$id": "https://fedramp.gov/schemas/fedramp-significant-change-notifications-schema-2026-06-24.json",
-            "$schemaVersion": "0.1.3",
-        },
-        os.path.join(SCHEMA_DIR, "fedramp-accepted-vulnerability-info-schema-2026-06-24.json"): {
-            "$id": "https://fedramp.gov/schemas/fedramp-accepted-vulnerability-info-schema-2026-06-24.json",
-            "$schemaVersion": "0.1.1",
-        },
-        os.path.join(SCHEMA_DIR, "fedramp-vulnerability-detail-report-schema-2026-06-24.json"): {
-            "$id": "https://fedramp.gov/schemas/fedramp-vulnerability-detail-report-schema-2026-06-24.json",
-            "$schemaVersion": "0.1.1",
-        },
-        os.path.join(SCHEMA_DIR, "fedramp-historical-ver-activity-schema-2026-06-24.json"): {
-            "$id": "https://fedramp.gov/schemas/fedramp-historical-ver-activity-schema-2026-06-24.json",
-            "$schemaVersion": "0.1.1",
-        },
+        os.path.join(BASE, ent["pinned_path"]): {"$id": ent["schema_id"],
+                                                 "$schemaVersion": ent["schema_version"]}
+        for ent in _lock_sources.values()
+        if ent.get("pinned_path") and ent.get("schema_id") and ent.get("schema_version")
     }
-    schema_problems = []
+    if len(EXPECTED_SCHEMAS) < 9:
+        schema_problems_seed = [f"only {len(EXPECTED_SCHEMAS)} schemas carry schema_id and "
+                                "schema_version in sources.lock.json (expected 9 or more)"]
+    else:
+        schema_problems_seed = []
+    schema_problems = list(schema_problems_seed)
     for path, expected in EXPECTED_SCHEMAS.items():
         doc = load(path)
         for key, want in expected.items():

@@ -1,0 +1,10 @@
+{
+  "dataset_version": "2026.11.02.01",
+  "note": "Independent recount by audit/requirements_oracle.py --write-anchors. Moves only with a dataset adoption; every consumer reads this file.",
+  "rules": {
+    "a": 42,
+    "b": 157,
+    "c": 157
+  },
+  "class_a_optional": 9
+}

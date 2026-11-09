@@ -176,13 +176,52 @@ def oracle_frr_class_a(dataset):
     return out
 
 
-# Pinned anchors: the counts an independent reconciliation of the 2026.11.02.01
-# dataset produced (42 / 157 / 157). History: 41 at A on 2026.10.08.01 until
-# 2026.11.02.01 added SDR-CSX-KSI to FRC-CLA-MFR; 158 at B and C before
-# FRC-CSX-MOT was removed in 2026.10.08.01. An oracle that reconciles 0 against
-# 0 is not an oracle (RULE 7), so these guard against a silent empty-set pass.
-# They move only with a dataset adoption, by hand, after the recount.
-EXPECTED_COUNTS = {"a": 42, "b": 157, "c": 157}
+# Pinned anchors live in ONE file, references/anchors.json, written by this
+# oracle's own independent walk (`--write-anchors`) during a dataset adoption
+# and read by every consumer (this oracle, the class-table and Class A scope
+# tests, the class docs). An oracle that reconciles 0 against 0 is not an
+# oracle (RULE 7), so the anchors still guard against a silent empty-set pass:
+# a count below the floor, or an anchors file whose dataset_version is not the
+# pinned dataset's, is a hard finding. The tripwire is preserved; what changed
+# is that the number is recorded once and moves only in a reviewable adoption
+# diff instead of being retyped in six places by hand (as it was when
+# 2026.11.02.01 added SDR-CSX-KSI to FRC-CLA-MFR and Class A went 41 -> 42).
+ANCHORS = os.path.join(BASE, "references", "anchors.json")
+# Floors: below these the dataset walk has visibly broken, whatever the release.
+ANCHOR_FLOORS = {"a": 20, "b": 100, "c": 100}
+
+
+def load_anchors():
+    with open(ANCHORS, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def anchors_from_dataset(dataset):
+    """Recount every anchor from the raw dataset with this module's own walk."""
+    a = oracle_frr_class_a(dataset)
+    cla = ((dataset.get("FRR") or {}).get("FRC") or {}).get("data", {}).get("all", {}).get("CLA", {})
+    import re
+    rule_pat = re.compile(r"\b([A-Z]{3}-[A-Z]{3}-[A-Z]{3})\b")
+    optional_a = set()
+    for item in (cla.get("FRC-CLA-OFR") or {}).get("following_information") or []:
+        text = item if isinstance(item, str) else json.dumps(item)
+        optional_a.update(m for m in rule_pat.findall(text) if m in a)
+    return {
+        "dataset_version": dataset["info"]["version"],
+        "note": ("Independent recount by audit/requirements_oracle.py --write-anchors. "
+                 "Moves only with a dataset adoption; every consumer reads this file."),
+        "rules": {"a": len(a),
+                  "b": len(oracle_frr_class(dataset, "b")),
+                  "c": len(oracle_frr_class(dataset, "c"))},
+        "class_a_optional": len(optional_a),
+    }
+
+
+def _expected_counts():
+    anc = load_anchors()
+    return anc["rules"], anc["dataset_version"]
+
+
 COMPARED_FIELDS = ("force", "statement", "timeframe_type", "timeframe_num",
                    "timeframe_num_min", "timeframe_num_max")
 
@@ -193,9 +232,17 @@ def reconcile_frr(dataset, cls, profile_rules):
     expected = oracle_frr_class_a(dataset) if cls == "a" else oracle_frr_class(dataset, cls)
     actual = {r["rule_id"]: r for r in profile_rules}
     findings = []
-    if len(expected) != EXPECTED_COUNTS[cls]:
+    counts, anchor_version = _expected_counts()
+    if anchor_version != dataset["info"]["version"]:
+        findings.append(("anchors.json is for a different dataset than the pinned one",
+                         {"anchors": anchor_version, "dataset": dataset["info"]["version"],
+                          "fix": "python audit/requirements_oracle.py --write-anchors"}))
+    if len(expected) < ANCHOR_FLOORS[cls]:
+        findings.append((f"Class {cls.upper()} oracle count below floor (RULE 7)",
+                         {"oracle": len(expected), "floor": ANCHOR_FLOORS[cls]}))
+    if len(expected) != counts[cls]:
         findings.append((f"Class {cls.upper()} oracle count != pinned anchor",
-                         {"oracle": len(expected), "anchor": EXPECTED_COUNTS[cls]}))
+                         {"oracle": len(expected), "anchor": counts[cls]}))
     if set(expected) != set(actual):
         findings.append((f"Class {cls.upper()} rule set mismatch",
                          {"only_profile": sorted(set(actual) - set(expected)),
@@ -209,9 +256,23 @@ def reconcile_frr(dataset, cls, profile_rules):
     return findings, len(expected)
 
 
-def main():
+def main(argv=None):
+    argv = sys.argv[1:] if argv is None else argv
     with open(DATASET, encoding="utf-8") as f:
         dataset = json.load(f)
+    if "--write-anchors" in argv:
+        anc = anchors_from_dataset(dataset)
+        for cls, n in anc["rules"].items():
+            if n < ANCHOR_FLOORS[cls]:
+                print(f"REFUSED: Class {cls.upper()} recount {n} is below the floor "
+                      f"{ANCHOR_FLOORS[cls]}; the walk is broken, not the dataset.")
+                return 1
+        with open(ANCHORS, "w", encoding="utf-8", newline="\n") as f:
+            json.dump(anc, f, indent=2)
+            f.write("\n")
+        print(f"anchors written for {anc['dataset_version']}: {anc['rules']} "
+              f"(Class A optional {anc['class_a_optional']})")
+        return 0
     all_oracle, optional_oracle = oracle_sets(dataset)
 
     # The derived KSI profile is what the production pipeline ACTUALLY consumes
@@ -272,9 +333,10 @@ def main():
     print(f"Derived profile KSIs: {len(profile_ids)}")
     print(f"Production C: {len(prod_all_c)}  B-baseline: {len(prod_all_b)}  "
           f"optional: {len(prod_optional)}")
+    anchor_counts, _v = _expected_counts()
     for cls, (n_oracle, n_profile) in frr_counts.items():
         print(f"FRR Class {cls.upper()}: oracle {n_oracle} rules, profile {n_profile} rules "
-              f"(anchor {EXPECTED_COUNTS[cls]}); force/statement/timeframes compared")
+              f"(anchor {anchor_counts[cls]}); force/statement/timeframes compared")
     if not findings:
         print("\nRECONCILED: dataset == derived profile == production applicability "
               "(KSIs and FRRs, classes A/B/C). EMPTY discrepancy report.")

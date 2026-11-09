@@ -5,6 +5,7 @@ prose anchors that quote a count carry the same numbers. A hand edit that
 disagrees with the generated profiles, the Class D register, the KSI profile or
 the dataset's SDR-CSX-KMT forces fails here.
 """
+import json
 import os
 import re
 import sys
@@ -44,8 +45,16 @@ def main():
     r = facts["rules"]
     total, mand_a, base_b = facts["ksi_total"], facts["ksi_mandatory_a"], facts["ksi_baseline_b"]
     opt_b = facts["ksi_optional_b"]
-    check("canonical anchors hold (42 / 157 / 157 / 156 rules; 46 KSIs, 7 mandatory at A, 5 optional at B)",
-          (r["a"], r["b"], r["c"], r["d"]) == (42, 157, 157, 156) and total == 46
+    with open(os.path.join(BASE, "references", "anchors.json"), encoding="utf-8") as fh:
+        anchors = json.load(fh)
+    ar = anchors["rules"]
+    with open(os.path.join(BASE, "references", "fedramp-consolidated-rules.json"), encoding="utf-8") as fh:
+        ds_version = json.load(fh)["info"]["version"]
+    check("anchors.json is for the pinned dataset", anchors["dataset_version"] == ds_version,
+          f"{anchors['dataset_version']} vs {ds_version}")
+    check(f"canonical anchors hold ({ar['a']} / {ar['b']} / {ar['c']} / 156 rules; "
+          "46 KSIs, 7 mandatory at A, 5 optional at B; rule counts from anchors.json)",
+          (r["a"], r["b"], r["c"], r["d"]) == (ar["a"], ar["b"], ar["c"], 156) and total == 46
           and mand_a == 7 and len(opt_b) == 5, str(facts))
     check("the five optional Class B indicators are the Class-C-specific ones",
           opt_b == ["KSI-CNA-EIS", "KSI-MLA-ALA", "KSI-SVC-PRR", "KSI-SVC-RUD", "KSI-SVC-VCM"], str(opt_b))

@@ -304,7 +304,9 @@ DRIFT_WF = os.path.join(BASE, ".github", "workflows", "drift-check.yml")
 
 def _drift_regenerate_step():
     wf = _read(DRIFT_WF)
-    start = wf.find("Regenerate from the new dataset and open a review PR")
+    # The adoption step was renamed when it grew from dataset-only to every
+    # upstream source (2026-11-09); the invariants below are unchanged.
+    start = wf.find("Adopt the upstream change and open a review PR")
     assert start > 0
     return wf[start:]
 
@@ -380,16 +382,44 @@ def test_f44_review_body_carries_fedramps_own_changelog_entry():
         "the printf arguments must match the four placeholders in order"
 
 
-def test_f44_markdown_only_drift_issue_names_the_human_rebaseline_path():
-    """A markdown change with no dataset change stays issue-only for a human;
-    the issue must say how to close it with the same helper."""
+def test_f44_markdown_only_drift_is_adopted_in_a_pr_with_the_entry_quoted():
+    """A changelog change with no dataset change used to stay issue-only for a
+    human to rebaseline by hand. Since 2026-11-09 it is adopted like every
+    other drift: the baseline is advanced from the fetched file (fail-closed
+    download, same hash the check step uses) and the PR quotes FedRAMP's
+    newest entry so the reviewer reads what changed before merging."""
+    step = _drift_regenerate_step()
+    md = step.find('elif [ "$MD_CHANGED" = "1" ]; then')
+    assert md > 0, "the adoption step must handle a changelog-only drift"
+    block = step[md:md + 600]
+    assert "sha256sum /tmp/changelog.md" in block and ".markdown-changelog-baseline" in block
+    assert "CHANGELOG_ENTRY=$(awk" in block, "the newest entry must be quoted for the reviewer"
+    assert 'changelog) BRANCH="drift/changelog-' in step
+
+
+def test_drift_is_red_only_when_no_review_pr_exists():
+    """Three red emails for one drift (Nov 1 to 3, 2026) taught nobody
+    anything. The run fails only when drift exists and no PR could be made;
+    an already-open PR for the same drift is a green notice."""
     wf = _read(DRIFT_WF)
-    start = wf.find("Open an issue on drift")
-    end = wf.find("Set up Python for regeneration")
-    assert 0 < start < end
-    issue_step = wf[start:end]
-    assert "markdown_changelog.py --fetch --write-baseline .github/.markdown-changelog-baseline" in issue_step
-    assert "FedRAMP/2026-markdown/commits/main/changelog.md" in issue_step
+    outcome = wf[wf.find("- name: Outcome"):]
+    assert "exists)" in outcome and "exit 1" not in outcome.split("exists)")[1].split("nothing)")[0]
+    assert '*)       echo "::error::drift detected and no review PR exists' in outcome
+    # The check step itself no longer exits non-zero on drift.
+    check = wf[wf.find("id: check"):wf.find("Seed markdown changelog baseline")]
+    assert '[ -z "$DRIFT" ]' not in check
+
+
+def test_drift_dispatches_ci_on_the_adoption_branch_and_closes_issues():
+    """PRs the Actions token opens get no pull_request run; the workflow must
+    dispatch validate-sdr on the branch itself and say so on the PR when it
+    cannot. Open drift issues are closed by the PR, not by a person."""
+    wf = _read(DRIFT_WF)
+    assert 'gh workflow run validate.yml --ref "$BRANCH"' in wf
+    assert "gh pr comment" in wf[wf.find("Start CI on the adoption branch"):]
+    assert 'Closes #' in wf
+    validate = _read(VALIDATE_WF)
+    assert "workflow_dispatch:" in validate[:validate.find("permissions:")]
 
 
 def _run_all():

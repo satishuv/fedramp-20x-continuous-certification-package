@@ -51,8 +51,9 @@ def main():
         findings, n = ro.reconcile_frr(dataset, cls, profiles[cls])
         check(f"class {cls.upper()}: committed profile reconciles clean", findings == [],
               json.dumps(findings[:2]))
-        check(f"class {cls.upper()}: oracle count equals pinned anchor {ro.EXPECTED_COUNTS[cls]}",
-              n == ro.EXPECTED_COUNTS[cls], f"n={n}")
+        anchor = ro.load_anchors()["rules"][cls]
+        check(f"class {cls.upper()}: oracle count equals pinned anchor {anchor} (anchors.json)",
+              n == anchor, f"n={n}")
 
     b = profiles["b"]
     # Tamper 1: drop a rule.

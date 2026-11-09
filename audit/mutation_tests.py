@@ -42,6 +42,10 @@ import sys
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+with open(os.path.join(BASE, "references", "fedramp-consolidated-rules.json"),
+          encoding="utf-8") as _f:
+    _PINNED_DATASET_VERSION = json.load(_f)["info"]["version"]
+
 
 def _read(p):
     with open(p, encoding="utf-8") as f:
@@ -324,16 +328,16 @@ MUTATIONS = [
     # run swallowed GitHub's refusal as "PR may already exist" and exited 0.
     ("MUT-F43",
      ".github/workflows/drift-check.yml",
-     '          if gh pr create --title "CR26 dataset update: adopt $NEWVER" --body "$BODY"; then\n            exit 0\n          fi\n',
-     '          gh pr create --title "CR26 dataset update: adopt $NEWVER" --body "$BODY" || echo "PR may already exist for this dataset version."  # MUTATION fail-open hand-off\n          exit 0\n',
+     '          if ! PR_URL=$(gh pr create --title "$TITLE" --body "$BODY"); then\n',
+     '          PR_URL=$(gh pr create --title "$TITLE" --body "$BODY") || echo "PR may already exist for this dataset version."  # MUTATION fail-open hand-off\n          if false; then\n',
      "automation/collectors/test_collection_fail_closed.py"),
     # AUD-F44: a dataset adoption advances the markdown-changelog baseline in
     # the adoption commit; the 2026.10.08.01 adoption left it behind and the
     # next scheduled run (38051982680) re-reported the entry as drift (#211).
     ("MUT-F44",
      ".github/workflows/drift-check.yml",
-     '          python validation/scripts/markdown_changelog.py --file /tmp/changelog.md \\\n            --version "$NEWVER" --entry-out /tmp/changelog-entry.txt \\\n            --write-baseline .github/.markdown-changelog-baseline\n',
-     '          echo "(changelog entry unavailable)" > /tmp/changelog-entry.txt  # MUTATION adoption forgets the markdown baseline\n',
+     '            python validation/scripts/markdown_changelog.py --file /tmp/changelog.md \\\n              --version "$NEWVER" --entry-out /tmp/changelog-entry.txt \\\n              --write-baseline .github/.markdown-changelog-baseline\n',
+     '            echo "(changelog entry unavailable)" > /tmp/changelog-entry.txt  # MUTATION adoption forgets the markdown baseline\n',
      "automation/collectors/test_collection_fail_closed.py"),
     # AUD-F45: `init --set` accepts the dotted key its own gap report prints for
     # a flat block and refuses a key that is not a question; the consultant-flow
@@ -661,8 +665,12 @@ MUTATIONS = [
      "automation/collectors/test_multi_account_config_rules.py"),
     ("MUT-F86",
      "README.md",
-     "CR26%20dataset-2026.11.02.01-0b7285",
-     "CR26%20dataset-2026.10.13.01-0b7285",
+     # Target text is derived from the pinned dataset at import time so this
+     # mutation never goes stale on an adoption (it skipped, and a skipped
+     # mutation is a hard fail, when 2026.11.02.01 landed). The badge reverts
+     # to a release that can never be current.
+     "CR26%20dataset-" + _PINNED_DATASET_VERSION + "-0b7285",
+     "CR26%20dataset-2026.01.01.01-0b7285",
      "validation/scripts/test_docs_facts.py"),
     ("MUT-F87",
      "setup.py",
