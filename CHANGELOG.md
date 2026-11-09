@@ -14,6 +14,36 @@ from this release. The Class A anchor moved in six places: two validation tests,
 the requirements oracle, the certification-classes doc, the README table and
 mutation MUT-F86's target text.)
 
+### Hands-off adoption of upstream FedRAMP changes
+
+The 2026.11.02.01 adoption (#274) took four human pushes and the schema bump
+of 2026-11-09 (#278) took two; FedRAMP now releases monthly. The drift
+workflow now produces one ready-to-review PR for any drift, and nothing is
+retyped by hand:
+
+- Dataset, rules-schema, official JSON schema and changelog drift all take
+  the same adoption path: copy the changed upstream files, regenerate the
+  lock from disk, rebuild, recount, re-sync docs, one branch, one PR.
+- `references/anchors.json` is the single home of the per-class rule counts
+  and the Class A optional count, written by
+  `audit/requirements_oracle.py --write-anchors` from the oracle's own walk.
+  The oracle, `test_docs_class_table.py` and `test_class_a_applicable_scope.py`
+  read it; the oracle refuses an anchors file for a different dataset version
+  or a count below a floor (RULE 7 kept). `class_table.py --write` now also
+  rewrites the count-bearing prose sentences and the README class rows.
+- The pinned-schema version guard in `validate_sdr.py` reads expected `$id`
+  and `$schemaVersion` from `sources.lock.json` instead of a retyped table.
+- Mutation MUT-F86 derives its target from the pinned dataset version so it
+  cannot skip after an adoption.
+- The PR body carries `Closes #N` for every open drift issue, and the
+  workflow dispatches `validate-sdr` on the branch (`workflow_dispatch` added
+  to validate.yml) so CI runs without a PAT or an empty commit.
+- The run is red only when drift has no review PR; an existing PR is a green
+  notice. New regression tests in `test_collection_fail_closed.py` hold each
+  of these; MUT-F43 and MUT-F44 retargeted to the unified step.
+- `docs/ci-cd.md` documents the flow and the one repository setting a fork
+  needs.
+
 ### Use-case profiles: a workstream's slice of the 46 indicators
 
 - `profiles/use-cases/platform-hardening.json` selects the 16 KSIs that image

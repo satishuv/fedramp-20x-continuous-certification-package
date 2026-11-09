@@ -3,11 +3,12 @@
 #
 # Defect locked here (found at e24308a): build_sdr.py excluded
 # unselected FRC-CLA-OFR optional (MAY) rules from the submitted Class A SDR, but
-# preflight computed its applicable-record set from the FULL 42-rule Class A
+# preflight computed its applicable-record set from the FULL Class A
 # profile. The readiness gate therefore evaluated a different rule set than the
 # SDR it was gating - it would demand implementation records for the 9 optional
 # rules the SDR does not include. The earlier submission-readiness test masked
-# this because it filled records for all 42 profile rules before preflight.
+# this because it filled records for all profile rules before preflight.
+# Counts come from references/anchors.json, written by the oracle's recount.
 #
 # The fix routes BOTH consumers through sdr.submitted_rule_ids(); these tests
 # assert that helper against the real Class A profile so builder and gate agree.
@@ -40,15 +41,19 @@ def main():
     optional = [r["rule_id"] for r in rules if r.get("class_a_obligation") == "optional"]
     all_a = {r["rule_id"] for r in rules}
 
-    check("Class A profile still carries all 42 rules (catalog intact)",
-          len(all_a) == 42)
-    check("exactly 9 optional (MAY) rules in the Class A profile",
-          len(optional) == 9)
+    with open(os.path.join(BASE, "references", "anchors.json"), encoding="utf-8") as fh:
+        anchors = json.load(fh)
+    n_all, n_opt = anchors["rules"]["a"], anchors["class_a_optional"]
+    check(f"Class A profile still carries all {n_all} rules (catalog intact, anchors.json)",
+          len(all_a) == n_all)
+    check(f"exactly {n_opt} optional (MAY) rules in the Class A profile",
+          len(optional) == n_opt)
 
     # Default (empty selection): the 9 optional rules are NOT submitted, so
     # preflight must not treat them as applicable.
     submitted = sdr.submitted_rule_ids(rules, "a", None)
-    check("default: submitted scope is 42 - 9 = 33 rules", len(submitted) == 33)
+    check(f"default: submitted scope is {n_all} - {n_opt} = {n_all - n_opt} rules",
+          len(submitted) == n_all - n_opt)
     check("default: no optional rule is in the submitted/applicable scope",
           all(rid not in submitted for rid in optional))
     check("default: every mandatory/recommended rule stays in scope",
@@ -58,8 +63,8 @@ def main():
     one = optional[0]
     submitted_sel = sdr.submitted_rule_ids(rules, "a", [one])
     check("selected: chosen optional rule enters the submitted scope",
-          one in submitted_sel and len(submitted_sel) == 34)
-    check("selected: the other 8 optional rules stay excluded",
+          one in submitted_sel and len(submitted_sel) == n_all - n_opt + 1)
+    check(f"selected: the other {n_opt - 1} optional rules stay excluded",
           all(rid not in submitted_sel for rid in optional if rid != one))
 
     # Non-Class-A classes submit all profile rules (filter is Class A only).

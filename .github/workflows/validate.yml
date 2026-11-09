@@ -24,6 +24,11 @@ on:
   # The release workflow (release.yml) calls this whole workflow on a tag so a
   # published release has re-run the identical gate on the exact tagged commit.
   workflow_call:
+  # The drift workflow dispatches this on an adoption branch: GitHub does not
+  # run pull_request workflows for a PR the Actions token opened, but it does
+  # run a workflow_dispatch from that token, and the checks attach to the PR
+  # because they run on its head commit.
+  workflow_dispatch:
 
 permissions:
   contents: read

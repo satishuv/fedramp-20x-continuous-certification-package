@@ -47,7 +47,7 @@ No AWS account needed. Free-tier friendly.
 | Workflow | Trigger | What it does |
 |---|---|---|
 | `.github/workflows/validate.yml` | push, pull request | Runs the four gates, the two anti-circular audit gates and the two assessor-attack gates (below), the hard security gate, refuses a stale scanner check catalog, attaches the readiness report as a build artifact. A `release-gate` job aggregates the gate jobs into the one status check `main` requires |
-| `.github/workflows/drift-check.yml` | daily schedule | Hash-compares pinned FedRAMP sources against upstream, opens an issue on drift |
+| `.github/workflows/drift-check.yml` | daily schedule | Hash-compares pinned FedRAMP sources against upstream and, on drift, opens a ready-to-review adoption PR (see "Hands-off adoption" below) |
 | `.github/workflows/release.yml` | push of a `v*` tag | Refuses a tag that is unsigned, not on protected `main`, not signed by a listed key, or not the manifest's `release_tag`; re-runs the validate workflow; publishes the attested bundle (see [versioning](versioning.md#publishing-a-release)) |
 | `.github/workflows/living-sdr-loop.yml` | daily schedule, manual dispatch | The provider-deployable living loop: read-only collection, metric append, regeneration, a PR when a committed deliverable changes (see [automation](automation.md#persistence-and-retention)). Its `collect` job is skipped until the `AWS_OIDC_ROLE_ARN` repository variable is set, so on a fresh fork it records nothing |
 
@@ -143,3 +143,19 @@ python automation/pipeline/check_json_download_headers.py --headers-file headers
 ```
 
 It exits 0 by default and labels each header with its source (the rule or the guidance); pass `--strict` to make an absent header a non-zero exit in your own deployment gate.
+
+## Hands-off adoption of FedRAMP changes
+
+FedRAMP publishes the rules dataset monthly (first week of the month since release 2026.11.02.01) and edits the official JSON schemas in place between releases. The daily drift check handles both without a person retyping anything. When any pinned source differs from upstream, the workflow:
+
+1. Copies each changed upstream file into its pinned path, after confirming it parses as JSON. An error page is a download failure, never content.
+2. Regenerates `references/sources.lock.json` from the files on disk (`update_sources_lock.py`), so the lock and the files agree inside one reviewable commit. The pinned-schema version guard in `validate_sdr.py` reads its expected `$id` and `$schemaVersion` from that lock.
+3. Rebuilds the complete package (`sdr.py build`), recounts the class rule anchors into `references/anchors.json` with the requirements oracle's own independent walk (`requirements_oracle.py --write-anchors`), and re-syncs the class table, the count-bearing prose in `docs/certification-classes.md` and the README class rows (`class_table.py --write`). Every test that pins a class count reads `anchors.json`; the oracle still refuses an anchor file for a different dataset version or a count below its floor, so the empty-against-empty tripwire is kept.
+4. Advances the 2026-markdown changelog baseline when FedRAMP has published the entry for the new version, or on a changelog-only change, and quotes that entry in the PR body.
+5. Pushes one branch per drift (`drift/dataset-<version>`, `drift/schemas-<date>` or `drift/changelog-<date>`), opens one PR carrying the material rule and KSI diff, the downstream impact, the anchor changes and `Closes #N` for every open drift issue, then starts `validate-sdr` on that branch by `workflow_dispatch`. GitHub does not run `pull_request` workflows for a PR the Actions token opened; it does run a dispatch from the same token, and the checks attach to the PR because they share the head commit. No personal access token is involved.
+
+The run is red only when drift exists and no review PR could be produced. A drift that already has an open PR reports green with a notice, so a red email always means new drift with nothing reviewing it yet.
+
+What stays human: reading the PR body and the diff, and clicking merge. The PR regenerates requirement text and counts; it never changes an implementation status or an assessment field.
+
+For a fork: the workflow needs the repository setting "Allow GitHub Actions to create and approve pull requests" turned on (Settings, Actions, General, Workflow permissions). If it is off, the branch is still pushed and the review body is posted on an issue with a compare link, and the run fails so the gap is visible.

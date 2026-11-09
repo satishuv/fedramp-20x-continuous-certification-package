@@ -1,8 +1,29 @@
 # Daily upstream drift check, GitHub Actions edition. Hash-compares the
 # pinned FedRAMP sources against the live copies (FedRAMP updates schema
 # files in place without renaming, so hashes are the only reliable signal).
-# On drift the job fails and opens an issue so the change is visible even to
-# watchers who ignore CI emails.
+#
+# Hands-off adoption (since 2026-11-09). On ANY drift the job:
+#   1. copies every changed upstream file into its pinned path (dataset,
+#      rules schema, each official JSON schema), after checking it parses;
+#   2. regenerates sources.lock.json from disk (update_sources_lock.py),
+#      recounts the class anchors (requirements_oracle.py --write-anchors),
+#      rebuilds the complete package, re-syncs the class table, prose and
+#      README row (class_table.py --write) and runs the gate without tests;
+#   3. advances the 2026-markdown changelog baseline when FedRAMP's entry for
+#      the new dataset version exists (or on a changelog-only drift);
+#   4. pushes one branch, opens one PR whose body carries FedRAMP's changelog
+#      entry, the material rule/KSI diff and the downstream impact, with
+#      "Closes #N" for every open drift issue;
+#   5. starts the validate-sdr workflow on that branch by workflow_dispatch.
+#      GitHub does not run pull_request workflows for a PR the Actions token
+#      opened; a workflow_dispatch from the same token DOES run, and the checks
+#      land on the PR because they share the head commit. No PAT is needed.
+# The run is RED only when drift exists and no review PR could be produced.
+# A drift that already has an open PR is reported green with a notice, so a
+# red email always means "new drift, nothing reviewing it yet".
+#
+# Review stays human: the PR regenerates requirement text and counts; it never
+# touches a status or an assessment field, and merging is a person's click.
 name: fedramp-drift-check
 
 on:
@@ -14,6 +35,7 @@ permissions:
   contents: write
   issues: write
   pull-requests: write
+  actions: write
 
 jobs:
   drift:
@@ -26,6 +48,7 @@ jobs:
           set -euo pipefail
           DRIFT=""
           DATASET_CHANGED=0
+          : > /tmp/changed-sources.tsv
           check () {
             NAME="$1"; URL="$2"; PINNED="$3"
             # Fetch to a temp file with --fail so an HTTP error is a DOWNLOAD
@@ -46,6 +69,7 @@ jobs:
             else
               echo "$NAME: CHANGED upstream (live $LIVE vs pinned $LOCAL)"
               DRIFT="$DRIFT $NAME;"
+              printf '%s\t%s\t%s\n' "$NAME" "$URL" "$PINNED" >> /tmp/changed-sources.tsv
               # Plain `if`, never `[ test ] && var=1`: under `set -e` a false
               # test as the function's last command makes check() return 1,
               # which aborts the whole step on the FIRST non-dataset drift.
@@ -87,6 +111,7 @@ jobs:
           rm -f "$MDTMP"
           echo "live_md=$LIVE_MD" >> "$GITHUB_OUTPUT"
           BASE_MD=$(cat .github/.markdown-changelog-baseline 2>/dev/null || echo "")
+          MD_CHANGED=0
           if [ -z "$BASE_MD" ]; then
             echo "2026-markdown-changelog: baseline not yet recorded (will seed this run)"
           elif [ "$LIVE_MD" = "$BASE_MD" ]; then
@@ -94,10 +119,26 @@ jobs:
           else
             echo "2026-markdown-changelog: CHANGED upstream (live $LIVE_MD vs baseline $BASE_MD)"
             DRIFT="$DRIFT 2026-markdown-changelog;"
+            MD_CHANGED=1
           fi
           echo "drift=$DRIFT" >> "$GITHUB_OUTPUT"
           echo "dataset_changed=$DATASET_CHANGED" >> "$GITHUB_OUTPUT"
-          [ -z "$DRIFT" ]
+          echo "md_changed=$MD_CHANGED" >> "$GITHUB_OUTPUT"
+          # Branch name is a function of WHAT drifted, so the same drift on
+          # consecutive days finds its own open PR instead of making another.
+          if [ "$DATASET_CHANGED" = "1" ]; then
+            KIND="dataset"
+          elif [ -s /tmp/changed-sources.tsv ]; then
+            KIND="schemas"
+          elif [ "$MD_CHANGED" = "1" ]; then
+            KIND="changelog"
+          else
+            KIND=""
+          fi
+          echo "kind=$KIND" >> "$GITHUB_OUTPUT"
+          if [ -n "$DRIFT" ]; then
+            echo "::notice::upstream drift detected:$DRIFT (adoption PR follows)"
+          fi
       - name: Seed markdown changelog baseline on first run
         if: always()
         env:
@@ -111,133 +152,179 @@ jobs:
             git commit -m "chore: seed FedRAMP 2026-markdown changelog drift baseline"
             git push
           fi
-      - name: Open an issue on drift
-        # Only when the check step recorded drift. A download failure (exit 2)
-        # or any other abort leaves `drift` empty and must fail the run WITHOUT
-        # filing an issue that claims upstream changed (issue #188 was such an
-        # empty-titled false report).
-        if: failure() && steps.check.outputs.drift != ''
-        env:
-          GH_TOKEN: ${{ github.token }}
-          DRIFT: ${{ steps.check.outputs.drift }}
-        run: |
-          TITLE="FedRAMP upstream sources changed: $DRIFT"
-          EXISTING=$(gh issue list --state open --search "$TITLE in:title" --json number --jq length)
-          if [ "$EXISTING" = "0" ]; then
-            ISSUE_BODY="$(printf 'Upstream FedRAMP sources changed. Re-pull the changed sources, diff against the pinned copies, re-run the pipeline and validation, and review before relying on the pinned copies. Detected by the scheduled drift-check workflow.\n\nIf only `2026-markdown-changelog` drifted (no dataset change), read the new entry at https://github.com/FedRAMP/2026-markdown/commits/main/changelog.md, then advance the baseline with `python validation/scripts/markdown_changelog.py --fetch --write-baseline .github/.markdown-changelog-baseline` and commit it. A dataset adoption advances this baseline itself once FedRAMP publishes the entry for the new version.')"
-            gh issue create --title "$TITLE" --body "$ISSUE_BODY"
-          fi
-      - name: Set up Python for regeneration
-        if: failure() && steps.check.outputs.dataset_changed == '1'
+      - name: Set up Python for adoption
+        if: steps.check.outputs.drift != ''
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
-      - name: Regenerate from the new dataset and open a review PR
-        # Only when the DATASET itself drifted: regenerating requirement text
-        # only makes sense from a new dataset. A schema-only or markdown-only
-        # change stays issue-only for a human to interpret. The PR regenerates
-        # requirement text; it never touches a status or the assessment field.
-        if: failure() && steps.check.outputs.dataset_changed == '1'
+      - name: Adopt the upstream change and open a review PR
+        id: adopt
+        if: steps.check.outputs.drift != ''
         env:
           GH_TOKEN: ${{ github.token }}
+          DRIFT: ${{ steps.check.outputs.drift }}
+          KIND: ${{ steps.check.outputs.kind }}
+          DATASET_CHANGED: ${{ steps.check.outputs.dataset_changed }}
+          MD_CHANGED: ${{ steps.check.outputs.md_changed }}
         run: |
           set -euo pipefail
           pip install --quiet --require-hashes -r requirements.lock
           cp references/fedramp-consolidated-rules.json /tmp/dataset-old.json
-          # Fetch to temp files with --fail so an HTTP error cannot overwrite the
-          # canonical pinned files with an error page; validate JSON parses before
-          # replacing; only then move into place.
-          curl --fail --show-error --silent --location --retry 3 --max-time 60 \
-            "https://raw.githubusercontent.com/FedRAMP/rules/main/fedramp-consolidated-rules.json" \
-            -o /tmp/dataset-new.json
-          python -c "import json,sys; json.load(open('/tmp/dataset-new.json')); print('dataset JSON OK')"
-          curl --fail --show-error --silent --location --retry 3 --max-time 60 \
-            "https://raw.githubusercontent.com/FedRAMP/rules/main/schemas/fedramp-consolidated-rules.schema.json" \
-            -o /tmp/rules-schema-new.json
-          python -c "import json,sys; json.load(open('/tmp/rules-schema-new.json')); print('rules schema JSON OK')"
-          mv /tmp/dataset-new.json references/fedramp-consolidated-rules.json
-          mv /tmp/rules-schema-new.json references/fedramp-consolidated-rules.schema.json
+          OLDVER=$(python -c "import json;print(json.load(open('references/fedramp-consolidated-rules.json'))['info']['version'])")
+
+          # 1. Copy every changed upstream file into its pinned path. Fetch to a
+          # temp file with --fail so an error page can never overwrite a pinned
+          # copy; confirm it parses as JSON; only then move it into place.
+          CHANGED_NAMES=""
+          while IFS=$'\t' read -r NAME URL PINNED; do
+            [ -n "$NAME" ] || continue
+            TMP=$(mktemp)
+            curl --fail --show-error --silent --location --retry 3 --max-time 60 "$URL" -o "$TMP"
+            python -c "import json,sys; json.load(open(sys.argv[1])); print(sys.argv[2], 'JSON OK')" "$TMP" "$NAME"
+            mv "$TMP" "$PINNED"
+            CHANGED_NAMES="$CHANGED_NAMES $NAME"
+          done < /tmp/changed-sources.tsv
+          # The rules schema and the dataset ship together; when the dataset
+          # moved, take the schema too even if its hash happened to match.
+          if [ "$DATASET_CHANGED" = "1" ]; then
+            curl --fail --show-error --silent --location --retry 3 --max-time 60 \
+              "https://raw.githubusercontent.com/FedRAMP/rules/main/schemas/fedramp-consolidated-rules.schema.json" \
+              -o /tmp/rules-schema-new.json
+            python -c "import json; json.load(open('/tmp/rules-schema-new.json')); print('rules schema JSON OK')"
+            mv /tmp/rules-schema-new.json references/fedramp-consolidated-rules.schema.json
+          fi
           NEWVER=$(python -c "import json;print(json.load(open('references/fedramp-consolidated-rules.json'))['info']['version'])")
           UPSTREAM_SHA=$(git ls-remote https://github.com/FedRAMP/rules main | cut -f1)
-          # Report material rule + KSI changes for the PR body.
-          python validation/scripts/dataset_diff.py /tmp/dataset-old.json \
-            references/fedramp-consolidated-rules.json --json /tmp/dataset-diff.json \
-            | tee /tmp/dataset-diff.txt
-          python validation/scripts/change_impact.py --diff /tmp/dataset-diff.json \
-            --json /tmp/change-impact.json \
-            | tee /tmp/change-impact.txt
-          # Generate the proposed source lock as PART of the reviewable PR, so
-          # the new file and the lock agree (do NOT disable the lock check).
-          python validation/scripts/update_sources_lock.py --upstream-commit "$UPSTREAM_SHA"
-          # Regenerate the COMPLETE package (one build definition) and run the
-          # full validation suite - not a partial script list.
-          python sdr.py build
-          python sdr.py validate --no-tests
-          # AUD-F44: FedRAMP rebuilds 2026-markdown from fedramp/rules on every
-          # dataset release, so changelog.md gains an entry for $NEWVER. Fetch
-          # it (--fail, so an error page is a download failure, never content),
-          # put FedRAMP's own description of the change in the review body, and
-          # advance the markdown drift baseline ONLY when that entry exists: the
-          # reviewer of this PR reads it, so the next scheduled check must not
-          # re-report it as drift (issue #211 did exactly that after the
-          # 2026.10.08.01 adoption; PR #205 re-set it by hand after 2026.10.05.01).
-          # When the entry is not published yet the baseline is left alone and
-          # the daily check surfaces it when it lands.
+          TODAY=$(date -u +%Y-%m-%d)
+
+          # 2. Regenerate everything derived, in dependency order.
+          DIFF_SUMMARY="(dataset unchanged)"; IMPACT_SUMMARY="(dataset unchanged)"
+          if [ "$DATASET_CHANGED" = "1" ]; then
+            python validation/scripts/dataset_diff.py /tmp/dataset-old.json \
+              references/fedramp-consolidated-rules.json --json /tmp/dataset-diff.json \
+              | tee /tmp/dataset-diff.txt
+            python validation/scripts/change_impact.py --diff /tmp/dataset-diff.json \
+              --json /tmp/change-impact.json | tee /tmp/change-impact.txt
+            DIFF_SUMMARY=$(cat /tmp/dataset-diff.txt)
+            IMPACT_SUMMARY=$(cat /tmp/change-impact.txt)
+          fi
+          if [ -s /tmp/changed-sources.tsv ]; then
+            # Lock from disk (never a hand-edited hash); --verified-on records
+            # the day the pinned copies were confirmed current.
+            python validation/scripts/update_sources_lock.py --upstream-commit "$UPSTREAM_SHA" --verified-on "$TODAY"
+            # Complete package from one build definition, then the anchors the
+            # tests and docs read (independent recount by the oracle), then the
+            # class table, prose and README row from the regenerated profiles.
+            python sdr.py build
+            python audit/requirements_oracle.py --write-anchors
+            python validation/scripts/class_table.py --write
+            python audit/requirements_oracle.py
+            python sdr.py validate --no-tests
+          fi
+          ANCHOR_NOTE=$(git diff --unified=0 -- references/anchors.json | grep -E '^[-+]\s+"(a|b|c|class_a_optional)"' || true)
+
+          # 3. The 2026-markdown changelog. On a dataset adoption, advance the
+          # baseline only when FedRAMP has published the entry for $NEWVER
+          # (AUD-F44); on a changelog-only drift, advance it and quote the
+          # newest entry so the reviewer reads what FedRAMP changed.
+          CHANGELOG_ENTRY="(no changelog entry for this change)"
           curl --fail --show-error --silent --location --retry 3 --max-time 30 \
-            "https://raw.githubusercontent.com/FedRAMP/2026-markdown/main/changelog.md" \
-            -o /tmp/changelog.md
-          python validation/scripts/markdown_changelog.py --file /tmp/changelog.md \
-            --version "$NEWVER" --entry-out /tmp/changelog-entry.txt \
-            --write-baseline .github/.markdown-changelog-baseline
-          BRANCH="drift/dataset-$NEWVER"
+            "https://raw.githubusercontent.com/FedRAMP/2026-markdown/main/changelog.md" -o /tmp/changelog.md
+          if [ "$DATASET_CHANGED" = "1" ]; then
+            python validation/scripts/markdown_changelog.py --file /tmp/changelog.md \
+              --version "$NEWVER" --entry-out /tmp/changelog-entry.txt \
+              --write-baseline .github/.markdown-changelog-baseline
+            CHANGELOG_ENTRY=$(cat /tmp/changelog-entry.txt 2>/dev/null || echo "(FedRAMP has not yet published the changelog entry for $NEWVER; the baseline was left alone and the daily check will surface it)")
+          elif [ "$MD_CHANGED" = "1" ]; then
+            sha256sum /tmp/changelog.md | cut -d' ' -f1 > .github/.markdown-changelog-baseline
+            # Newest entry: from the first "## " heading to the next one.
+            CHANGELOG_ENTRY=$(awk '/^## /{n++} n==1{print} n==2{exit}' /tmp/changelog.md)
+          fi
+
+          # 4. One branch per drift kind and version/day, one PR.
+          case "$KIND" in
+            dataset)   BRANCH="drift/dataset-$NEWVER"; TITLE="CR26 dataset update: adopt $NEWVER" ;;
+            schemas)   BRANCH="drift/schemas-$(date -u +%Y%m%d)"; TITLE="Adopt FedRAMP schema updates:$CHANGED_NAMES" ;;
+            changelog) BRANCH="drift/changelog-$(date -u +%Y%m%d)"; TITLE="FedRAMP 2026-markdown changelog changed (baseline advanced)" ;;
+          esac
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          EXISTING_PR=$(gh pr list --head "$BRANCH" --state open --json number --jq 'length')
+          if [ "$EXISTING_PR" != "0" ]; then
+            echo "a PR for $BRANCH is already open; nothing to create"
+            echo "pr_state=exists" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           git checkout -b "$BRANCH"
-          # Everything the build regenerated, Word documents included: since
-          # AUD-F35 the .docx is byte-reproducible and CI refuses a tree whose
-          # generated files differ from the committed ones, so excluding it
-          # here made every adoption PR fail that gate (AUD-F40).
+          # Everything regenerated, Word documents included (byte-reproducible
+          # since AUD-F35; excluding them failed the regenerate-and-diff gate,
+          # AUD-F40).
           git add -- .
-          git commit -m "chore: adopt CR26 dataset $NEWVER (lock + full regenerate)"
-          # AUD-F43: every hand-off below is fail-VISIBLE. The 2026-10-09 run
-          # (37935122018) regenerated, validated and pushed the adoption branch,
-          # then GitHub refused the PR ("GitHub Actions is not permitted to
-          # create or approve pull requests") and this step said "PR may already
-          # exist" and exited 0: the review path was never established and
-          # nothing reported it. Now: a push that fails for any reason other
-          # than the branch already being on the remote is an error; when the
-          # PR cannot be opened, the branch, the compare link and the full
-          # review body are posted on the drift issue so a human can open the
-          # PR in one click, and the step exits non-zero so the log says why.
-          REPO="${GITHUB_REPOSITORY}"
+          if git diff --cached --quiet; then
+            echo "drift reported but nothing changed on disk; nothing to adopt"
+            echo "pr_state=nothing" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git commit -m "chore: adopt FedRAMP upstream change ($KIND:$CHANGED_NAMES)"
+          # AUD-F43: every hand-off is fail-VISIBLE. A push that fails for any
+          # reason other than the branch already being on the remote is an
+          # error (no `|| true`); an existing branch is detected, not assumed.
           if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
             echo "branch $BRANCH already exists on the remote; leaving it as is"
           else
             git push -u origin "$BRANCH"
           fi
-          DIFF_SUMMARY=$(cat /tmp/dataset-diff.txt 2>/dev/null || echo "(diff unavailable)")
-          IMPACT_SUMMARY=$(cat /tmp/change-impact.txt 2>/dev/null || echo "(impact unavailable)")
-          CHANGELOG_ENTRY=$(cat /tmp/changelog-entry.txt 2>/dev/null || echo "(changelog entry unavailable)")
-          BODY="$(printf 'The pinned CR26 dataset drifted from upstream. This PR validates the new dataset against the official rules schema, updates the source lock (version/hash/upstream commit), and regenerates the COMPLETE package via `python sdr.py build` + `python sdr.py validate`.\n\n## FedRAMP changelog entry for %s\n\n%s\n\n## Material rule and KSI changes\n```\n%s\n```\n\n## Downstream impact on this package\n```\n%s\n```\n\nREVIEW the diff and impact before merging. No status was changed and no assessment was written.' "$NEWVER" "$CHANGELOG_ENTRY" "$DIFF_SUMMARY" "$IMPACT_SUMMARY")"
-          EXISTING_PR=$(gh pr list --head "$BRANCH" --state open --json number --jq 'length')
-          if [ "$EXISTING_PR" != "0" ]; then
-            echo "a PR for $BRANCH is already open; nothing to create"
-            exit 0
+
+          # Every open drift issue is closed by this PR on merge.
+          CLOSES=$(gh issue list --state open --search "FedRAMP upstream sources changed in:title" --json number --jq '.[] | "Closes #\(.number)"' | tr '\n' ' ')
+          BODY="$(printf 'Upstream FedRAMP sources drifted:%s\n\nThis PR copies the changed upstream files into their pinned paths, regenerates `references/sources.lock.json` from disk, recounts the class anchors (`references/anchors.json`), rebuilds the COMPLETE package and re-syncs the class table, prose and README row. Dataset: %s to %s.\n\n## FedRAMP changelog entry for %s\n\n%s\n\n## Material rule and KSI changes\n```\n%s\n```\n\n## Downstream impact on this package\n```\n%s\n```\n\n## Anchor changes (class rule counts)\n```\n%s\n```\n\nREVIEW the diff and impact before merging. No status was changed and no assessment was written. CI was started on this branch by the drift workflow; its checks appear below.\n\n%s' "$DRIFT" "$OLDVER" "$NEWVER" "$NEWVER" "$CHANGELOG_ENTRY" "$DIFF_SUMMARY" "$IMPACT_SUMMARY" "${ANCHOR_NOTE:-(none)}" "$CLOSES")"
+          if ! PR_URL=$(gh pr create --title "$TITLE" --body "$BODY"); then
+            # PR creation refused (usually the repository setting "Allow GitHub
+            # Actions to create and approve pull requests" is off). Hand the
+            # review to a human through an issue, then fail loudly (AUD-F43).
+            COMPARE_URL="https://github.com/${GITHUB_REPOSITORY}/compare/main...${BRANCH}?expand=1"
+            NOTE="$(printf 'The drift workflow adopted the upstream change on branch `%s` (commit %s) but could not open the review PR: GitHub refused the request (usually the repository setting "Allow GitHub Actions to create and approve pull requests" is off). Open the PR here: %s\n\n---\n\n%s' "$BRANCH" "$(git rev-parse --short HEAD)" "$COMPARE_URL" "$BODY")"
+            ISSUE=$(gh issue list --state open --search "FedRAMP upstream sources changed in:title" --json number --jq '.[0].number // empty')
+            if [ -n "$ISSUE" ]; then
+              gh issue comment "$ISSUE" --body "$NOTE"
+              echo "::error::PR creation refused; review hand-off posted on issue #$ISSUE ($COMPARE_URL)"
+            else
+              gh issue create --title "Adoption PR for upstream drift could not be opened ($KIND)" --body "$NOTE"
+              echo "::error::PR creation refused; review hand-off filed as a new issue ($COMPARE_URL)"
+            fi
+            echo "pr_state=refused" >> "$GITHUB_OUTPUT"
+            exit 1
           fi
-          if gh pr create --title "CR26 dataset update: adopt $NEWVER" --body "$BODY"; then
-            exit 0
-          fi
-          # PR creation refused (most likely the repository setting "Allow GitHub
-          # Actions to create and approve pull requests" is off). Hand the review
-          # to a human through the drift issue, then fail loudly.
-          COMPARE_URL="https://github.com/${REPO}/compare/main...${BRANCH}?expand=1"
-          ISSUE=$(gh issue list --state open --search "FedRAMP upstream sources changed in:title" --json number --jq '.[0].number // empty')
-          NOTE="$(printf 'The drift workflow regenerated and validated the package against CR26 dataset %s and pushed branch `%s` (commit %s), but could not open the review PR: GitHub refused the request (usually because the repository setting "Allow GitHub Actions to create and approve pull requests" is off). Open the PR here: %s\n\nThe PR body it would have used follows.\n\n---\n\n%s' "$NEWVER" "$BRANCH" "$(git rev-parse --short HEAD)" "$COMPARE_URL" "$BODY")"
-          if [ -n "$ISSUE" ]; then
-            gh issue comment "$ISSUE" --body "$NOTE"
-            echo "::error::PR creation refused; review hand-off posted on issue #$ISSUE ($COMPARE_URL)"
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+          echo "pr_state=created" >> "$GITHUB_OUTPUT"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "::notice::review PR opened: $PR_URL"
+      - name: Start CI on the adoption branch
+        # pull_request workflows do not run for a PR the Actions token opened;
+        # a workflow_dispatch from that token does, and the checks attach to the
+        # PR because they run on its head commit. Fail-visible: if dispatch is
+        # refused, say so on the PR so a reviewer knows to push an empty commit.
+        if: steps.adopt.outputs.pr_state == 'created'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.adopt.outputs.branch }}
+          PR_URL: ${{ steps.adopt.outputs.pr_url }}
+        run: |
+          if gh workflow run validate.yml --ref "$BRANCH"; then
+            echo "validate-sdr dispatched on $BRANCH"
           else
-            gh issue create --title "Adoption PR for CR26 dataset $NEWVER could not be opened" --body "$NOTE"
-            echo "::error::PR creation refused; review hand-off filed as a new issue ($COMPARE_URL)"
+            gh pr comment "$PR_URL" --body "The drift workflow could not start validate-sdr on this branch (workflow_dispatch refused). Push an empty commit to run CI: git commit --allow-empty -m ci && git push"
+            echo "::warning::could not dispatch validate-sdr on $BRANCH"
           fi
-          exit 1
+      - name: Outcome
+        if: always() && steps.check.outputs.drift != ''
+        env:
+          STATE: ${{ steps.adopt.outputs.pr_state }}
+          DRIFT: ${{ steps.check.outputs.drift }}
+        run: |
+          case "$STATE" in
+            created) echo "drift adopted; review PR open and CI dispatched" ;;
+            exists)  echo "drift already has an open review PR; nothing new" ;;
+            nothing) echo "::warning::drift reported but no file changed on disk:$DRIFT" ;;
+            *)       echo "::error::drift detected and no review PR exists:$DRIFT"; exit 1 ;;
+          esac

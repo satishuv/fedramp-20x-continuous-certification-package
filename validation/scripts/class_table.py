@@ -110,29 +110,80 @@ def doc_table(text):
     return (i, j) if j > i else None
 
 
+README = os.path.join(BASE, "README.md")
+
+
+def sync_prose(text, facts=None):
+    """Rewrite the count-bearing sentences of docs/certification-classes.md that
+    test_docs_class_table.py anchors, so an adoption that changes a class count
+    (2026.11.02.01 moved Class A from 41 to 42) needs no hand edit. Each
+    pattern replaces only the digits; the sentence shape is unchanged."""
+    import re
+    f = facts or class_facts()
+    r = f["rules"]
+    mand_a, total, base_b = f["ksi_mandatory_a"], f["ksi_total"], f["ksi_baseline_b"]
+    subs = [
+        (r"so the \d+ rules are the ones FedRAMP named",
+         f"so the {r['a']} rules are the ones FedRAMP named"),
+        (r"\d+ are mandatory at Class A and the other \d+ carry",
+         f"{mand_a} are mandatory at Class A and the other {total - mand_a} carry"),
+        (r"\d+ rules to \d+, and \d+ indicators to \d+",
+         f"{r['a']} rules to {r['b']}, and {mand_a} indicators to {base_b}"),
+        (r"holds \d+ rules resolved against the class D variants",
+         f"holds {r['d']} rules resolved against the class D variants"),
+    ]
+    for pat, rep in subs:
+        text = re.sub(pat, rep, text)
+    return text
+
+
+def sync_readme(text, facts=None):
+    """Rewrite the 'Rules resolved' cell of the README class rows (A to D)."""
+    import re
+    f = facts or class_facts()
+    r = f["rules"]
+    cells = {"A": f"{r['a']}", "B": f"{r['b']}", "C": f"{r['c']} plus overlay", "D": f"{r['d']}"}
+    for cls, cell in cells.items():
+        text = re.sub(rf"^\| {cls} \| [^|]+ \|", f"| {cls} | {cell} |", text, count=1, flags=re.M)
+    return text
+
+
 def main(argv=None):
     argv = sys.argv[1:] if argv is None else argv
-    table = render_table()
+    facts = class_facts()
+    table = render_table(facts)
     if "--check" in argv or "--write" in argv:
         with open(DOC, encoding="utf-8") as fh:
             text = fh.read()
+        with open(README, encoding="utf-8") as fh:
+            readme = fh.read()
         span = doc_table(text)
         if span is None:
             print(f"{os.path.relpath(DOC, BASE)}: no table found after '{HEADER}'")
             return 1
         lines = text.split("\n")
         current = "\n".join(lines[span[0]:span[1]])
-        if current == table:
-            print("class table: docs match the canonical data")
+        lines[span[0]:span[1]] = table.split("\n")
+        new_text = sync_prose("\n".join(lines), facts)
+        new_readme = sync_readme(readme, facts)
+        if new_text == text and new_readme == readme:
+            print("class table: docs match the canonical data (table, prose and README row)")
             return 0
         if "--write" in argv:
-            lines[span[0]:span[1]] = table.split("\n")
-            with open(DOC, "w", encoding="utf-8", newline="\n") as fh:
-                fh.write("\n".join(lines))
-            print(f"class table: rewrote {os.path.relpath(DOC, BASE)} from the canonical data")
+            if new_text != text:
+                with open(DOC, "w", encoding="utf-8", newline="\n") as fh:
+                    fh.write(new_text)
+                print(f"class table: rewrote {os.path.relpath(DOC, BASE)} from the canonical data")
+            if new_readme != readme:
+                with open(README, "w", encoding="utf-8", newline="\n") as fh:
+                    fh.write(new_readme)
+                print("class table: rewrote the README class rows from the canonical data")
             return 0
-        print("class table: docs/certification-classes.md DIFFERS from the canonical data.")
-        print("--- doc\n" + current + "\n--- canonical\n" + table)
+        print("class table: docs DIFFER from the canonical data.")
+        if current != table:
+            print("--- doc\n" + current + "\n--- canonical\n" + table)
+        else:
+            print("(table matches; a prose sentence or the README class row differs)")
         print("Run: python validation/scripts/class_table.py --write")
         return 1
     print(table)
