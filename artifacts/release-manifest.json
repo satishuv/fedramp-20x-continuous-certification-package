@@ -10,12 +10,12 @@
    "sha256": "2c17ba6e21abd1951e29cf59d90e69d39468c01eb1ad69a6c690233e196f68e2"
   },
   "common_definitions_schema": {
-   "version": "0.4.0",
-   "sha256": "62c59d20731cbbd3151951c6772a5cd75439f338dc4f7f1adb522dcfc7424cc9"
+   "version": "0.4.2",
+   "sha256": "19dd37691779171f745ab887444f3604287006af78d261ad76c0cf2dd718e16d"
   },
   "cpo_schema": {
-   "version": "0.1.6",
-   "sha256": "23fa88449e501b7a07ca51cbcdd0169e1072ea82d927c4c13380858035b79379"
+   "version": "0.2.0",
+   "sha256": "3870303570bf608dc723cf338cbc3b2295ebd79475003c63699876ac0b89262d"
   },
   "cr26_rules_schema": {
    "version": null,

@@ -355,11 +355,11 @@ def main():
         },
         COMMON_SCHEMA: {
             "$id": "https://fedramp.gov/schemas/fedramp-common-definitions-schema-2026-06-24.json",
-            "$schemaVersion": "0.4.0",
+            "$schemaVersion": "0.4.2",
         },
         os.path.join(SCHEMA_DIR, "fedramp-certification-package-overview-schema-2026-06-24.json"): {
             "$id": "https://fedramp.gov/schemas/fedramp-certification-package-overview-schema-2026-06-24.json",
-            "$schemaVersion": "0.1.6",
+            "$schemaVersion": "0.2.0",
         },
         os.path.join(SCHEMA_DIR, "fedramp-ongoing-certification-report-schema-2026-06-24.json"): {
             "$id": "https://fedramp.gov/schemas/fedramp-ongoing-certification-report-schema-2026-06-24.json",

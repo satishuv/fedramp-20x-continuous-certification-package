@@ -1,6 +1,6 @@
 {
  "lock_note": "Provenance lock for every official source input this framework pins. Records the upstream URL, the exact version, a SHA-256 of the pinned copy on disk, and the date it was verified current against upstream. The daily drift-check workflow hash-compares the pinned copies against these upstreams; this file is the human-readable record of what the pins mean and where they came from. Update deliberately, in the same change that bumps a pin, and never by hand-editing a hash to make a check pass.",
- "verified_current_on": "2026-10-14",
+ "verified_current_on": "2026-11-09",
  "sources": {
   "cr26_consolidated_rules": {
    "description": "FedRAMP Consolidated Rules for 2026, the canonical machine-readable requirements dataset and source of truth for rule text, identifiers, force, class applicability, KSIs, and definitions.",
@@ -25,20 +25,20 @@
   },
   "common_definitions_schema": {
    "description": "Official FedRAMP common-definitions JSON schema, referenced by the SDR schema.",
-   "schema_version": "0.4.0",
+   "schema_version": "0.4.2",
    "schema_id": "https://fedramp.gov/schemas/fedramp-common-definitions-schema-2026-06-24.json",
    "pinned_path": "artifacts/schemas/official/fedramp-common-definitions-schema-2026-06-24.json",
-   "sha256": "62c59d20731cbbd3151951c6772a5cd75439f338dc4f7f1adb522dcfc7424cc9",
+   "sha256": "19dd37691779171f745ab887444f3604287006af78d261ad76c0cf2dd718e16d",
    "status": "current",
    "notes": "Refreshed 0.3.0 -> 0.4.0 on 2026-09-26: upstream added a reusable $defs/contactInformation object (pointOfContactName, jobTitle, email, phone, companyWebsite; all required within the object). No existing definition changed, so every previously valid document stays valid."
   },
   "cpo_schema": {
    "description": "Official FedRAMP Certification Package Overview JSON schema (CPO-CSO-OVR).",
-   "schema_version": "0.1.6",
+   "schema_version": "0.2.0",
    "schema_id": "https://fedramp.gov/schemas/fedramp-certification-package-overview-schema-2026-06-24.json",
    "upstream": "https://fedramp.gov/schemas/fedramp-certification-package-overview-schema-2026-06-24.json",
    "pinned_path": "artifacts/schemas/official/fedramp-certification-package-overview-schema-2026-06-24.json",
-   "sha256": "23fa88449e501b7a07ca51cbcdd0169e1072ea82d927c4c13380858035b79379",
+   "sha256": "3870303570bf608dc723cf338cbc3b2295ebd79475003c63699876ac0b89262d",
    "status": "current",
    "notes": "Refreshed 0.1.4 -> 0.1.6 on 2026-09-26: upstream added an OPTIONAL top-level advisors array (items require only name). The required set (serviceIdentification, serviceProperties, contactInformation) is unchanged, so the generated CPO stays valid; build_cpo.py does not emit advisors until a provider supplies them."
   },

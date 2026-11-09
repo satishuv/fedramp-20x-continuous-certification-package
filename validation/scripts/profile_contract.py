@@ -64,21 +64,42 @@ def business_categories(value):
     return out
 
 
-CONTACT_PHONE_PATTERN = re.compile(r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$")
+def _contact_phone_pattern():
+    """The contactPhone pattern READ from the pinned CPO schema, never retyped.
+    CPO schema 0.2.0 widened it (optional +1, parentheses, dots or spaces,
+    toll-free numbers, extensions); a retyped copy drifted the moment that
+    landed, so the schema is the only source."""
+    pat = ((_cpo_schema().get("$defs") or {}).get("contactInfo", {})
+           .get("properties", {}).get("contactPhone", {}).get("pattern"))
+    if not pat:
+        raise RuntimeError("pinned CPO schema carries no contactInfo.contactPhone pattern")
+    return re.compile(pat)
+
+
+CONTACT_PHONE_PATTERN = _contact_phone_pattern()
+
+# The canonical form this framework WRITES. It is one of the forms the schema
+# accepts; writing one shape keeps the generated CPO byte-reproducible.
+_CANONICAL_PHONE = re.compile(r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$")
 
 
 def normalize_phone(value):
-    """CPO contactInfo.contactPhone is '###-###-####'. Accepts that form, or any
-    input with exactly ten digits (optionally with a leading +1 / 1), which is
-    reformatted. Returns None when the number cannot be expressed that way."""
+    """Return contactPhone in the canonical '###-###-####' form. Accepts that
+    form as is, or any input with exactly ten digits (optionally with a leading
+    +1 / 1, parentheses, dots, spaces). An extension cannot be carried in the
+    canonical form, so input with an extension is refused (None) rather than
+    silently truncated. Returns None when the number cannot be expressed."""
     s = str(value or "").strip()
-    if CONTACT_PHONE_PATTERN.match(s):
+    if _CANONICAL_PHONE.match(s):
         return s
+    if re.search(r"(?i)\b(x|ext\.?|extension)\s*[0-9]", s):
+        return None
     digits = re.sub(r"\D", "", s)
     if len(digits) == 11 and digits.startswith("1"):
         digits = digits[1:]
     if len(digits) == 10:
-        return f"{digits[:3]}-{digits[3:6]}-{digits[6:]}"
+        out = f"{digits[:3]}-{digits[3:6]}-{digits[6:]}"
+        return out if CONTACT_PHONE_PATTERN.match(out) else None
     return None
 
 # ---- Required at every class: (field, FedRAMP source, plain-English question) ----
