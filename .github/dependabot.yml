@@ -2,35 +2,48 @@
 # repository and no version-update schedule existed, so an advisory against a
 # pinned dependency surfaced only when pip-audit failed the release gate.
 #
-# How an update lands here: requirements.txt, requirements-dev.txt and
-# requirements-ci.txt are INPUTS; requirements.lock is the hash-locked closure
-# every CI path installs (docs/versioning.md). A Dependabot PR that bumps an
-# input must have `make lock` run on it (clean, networked environment) and the
-# regenerated requirements.lock and artifacts/sbom.cdx.json committed, or the
-# release gate's hashed install does not see the bump. Dependabot does not run
-# `make lock`; the maintainer does, on the PR branch, before merging.
+# How an update lands here: requirements.txt, requirements-dev.txt,
+# requirements-ci.txt and requirements-security.txt are INPUTS;
+# requirements.lock and requirements-security.lock are the hash-locked closures
+# every CI path installs (docs/versioning.md). Dependabot does not regenerate
+# those locks. The dependabot-lock workflow
+# (.github/workflows/dependabot-lock.yml) does: on every dependabot branch it
+# runs the Makefile lock targets, rebuilds the SBOM and release manifest, and
+# pushes the result to the same branch, so the PR reaches CI complete. The
+# maintainer merges on green; nothing is retyped by hand.
+#
+# Monthly and grouped (since 2026-11-10): one pip PR and one Actions PR a
+# month instead of one PR per package a week. Security advisories are not
+# delayed by this: pip-audit in the release gate fails on a known
+# vulnerability regardless of the schedule.
 version: 2
 updates:
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     # Wait 7 days after a release before proposing it. Hijacked or malicious
     # package versions are usually pulled within days of publication; the
     # cooldown keeps this repo out of that window (supply-chain hardening).
     cooldown:
       default-days: 7
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
     labels: ["dependencies"]
     commit-message:
       prefix: "chore(deps)"
+    groups:
+      python-dependencies:
+        patterns: ["*"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     cooldown:
       default-days: 7
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
     labels: ["dependencies"]
     commit-message:
       prefix: "chore(ci)"
+    groups:
+      github-actions:
+        patterns: ["*"]
