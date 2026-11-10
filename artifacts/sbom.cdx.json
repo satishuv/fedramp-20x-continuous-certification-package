@@ -1,7 +1,7 @@
 {
  "bomFormat": "CycloneDX",
  "specVersion": "1.5",
- "serialNumber": "urn:uuid:9dc6f17b-03d9-1140-a296-b1ccda38b337",
+ "serialNumber": "urn:uuid:4dc87100-7887-293d-4696-04530b8bc679",
  "version": 1,
  "metadata": {
   "component": {
@@ -45,16 +45,16 @@
   {
    "type": "library",
    "name": "aws-cdk-asset-awscli-v1",
-   "version": "2.2.273",
-   "purl": "pkg:pypi/aws-cdk-asset-awscli-v1@2.2.273",
+   "version": "2.2.292",
+   "purl": "pkg:pypi/aws-cdk-asset-awscli-v1@2.2.292",
    "hashes": [
     {
      "alg": "SHA-256",
-     "content": "1a0994afa7b48f63b580603be64c7a99d19ed6777bdf81d3c2435d8b43cf0d71"
+     "content": "01cfb33e2913df2d63448b0954ea4ed1bcb1d064514b4b7aa266eda915e8ebfc"
     },
     {
      "alg": "SHA-256",
-     "content": "6580dad3416e53712db434f81add6fb4a314e1a80f9c57cc42606df1f64c8e0f"
+     "content": "06da203eeaecbbbf5f1ecd3b12140104e6a59b6a7f6182cfbda5c5deda4b6344"
     }
    ]
   },
@@ -77,64 +77,64 @@
   {
    "type": "library",
    "name": "aws-cdk-cloud-assembly-schema",
-   "version": "53.28.0",
-   "purl": "pkg:pypi/aws-cdk-cloud-assembly-schema@53.28.0",
+   "version": "55.4.0",
+   "purl": "pkg:pypi/aws-cdk-cloud-assembly-schema@55.4.0",
    "hashes": [
     {
      "alg": "SHA-256",
-     "content": "12e28dc44026e5f062041ba1450a510b1acddcfbe8358f73cfda8df993712d42"
+     "content": "6171413a327abba6f2a25aef2700dfe174e519458b0757e4babacc7abd69de64"
     },
     {
      "alg": "SHA-256",
-     "content": "c5de34f4a0d61eb48574a0264a9567175f601c27b4d053fb24ad1157c4ea0d99"
+     "content": "f58506906fbea5689a98687359905977c23f746ec465351f522b8c2bf36a2ba8"
     }
    ]
   },
   {
    "type": "library",
    "name": "aws-cdk-lib",
-   "version": "2.253.0",
-   "purl": "pkg:pypi/aws-cdk-lib@2.253.0",
+   "version": "2.275.0",
+   "purl": "pkg:pypi/aws-cdk-lib@2.275.0",
    "hashes": [
     {
      "alg": "SHA-256",
-     "content": "58997c8a5af49d5328f5106468581a14235a1356dfe7574bb14656799594a2b5"
+     "content": "0902d7368e4600588cad9eab9124ade10d7d9d463ccf86ae18272e4369b1936b"
     },
     {
      "alg": "SHA-256",
-     "content": "6db33e164f9afd6207698d382579bf62f762f14325f4b6d77643865e92448f20"
+     "content": "223e5b8c67bee9802d714493b380251a2e8ce55c8c477e5d44ca2c85f3b322ee"
     }
    ]
   },
   {
    "type": "library",
    "name": "boto3",
-   "version": "1.40.70",
-   "purl": "pkg:pypi/boto3@1.40.70",
+   "version": "1.43.123",
+   "purl": "pkg:pypi/boto3@1.43.123",
    "hashes": [
     {
      "alg": "SHA-256",
-     "content": "191443707b391232ed15676bf6bba7e53caec1e71aafa12ccad2e825c5ee15cc"
+     "content": "055fabb990c5d2f31fce4ca569255bd640cdd11a3ca68c9ecad35f4f8a5b83b5"
     },
     {
      "alg": "SHA-256",
-     "content": "e8c2f4f4cb36297270f1023ebe5b100333e0e88ab6457a9687d80143d2e15bf9"
+     "content": "d18d66e1e13faa0c25d0b1b8c5ce946e29fb5fc0b6456b655a93a678ff4cc313"
     }
    ]
   },
   {
    "type": "library",
    "name": "botocore",
-   "version": "1.40.76",
-   "purl": "pkg:pypi/botocore@1.40.76",
+   "version": "1.43.127",
+   "purl": "pkg:pypi/botocore@1.43.127",
    "hashes": [
     {
      "alg": "SHA-256",
-     "content": "2b16024d68b29b973005adfb5039adfe9099ebe772d40a90ca89f2e165c495dc"
+     "content": "93bae360fb3a6f1b8e36593faa8bbbfa05b19866f7a37e9606a98f13394156f8"
     },
     {
      "alg": "SHA-256",
-     "content": "fe425d386e48ac64c81cbb4a7181688d813df2e2b4c78b95ebe833c9e868c6f4"
+     "content": "aa0e3188679a2164a2098a14ea9b59520520cb573aaee9999d852480691e134a"
     }
    ]
   },
@@ -565,16 +565,16 @@
   {
    "type": "library",
    "name": "constructs",
-   "version": "10.5.1",
-   "purl": "pkg:pypi/constructs@10.5.1",
+   "version": "10.8.1",
+   "purl": "pkg:pypi/constructs@10.8.1",
    "hashes": [
     {
      "alg": "SHA-256",
-     "content": "c0e90bb2b9c2782f292017820b91714321cb78393c8965c9362b0b624bfaf23b"
+     "content": "9f6e4eb1f6b8b1ac8dcbc85457dcbb1e3f9bd93bbeef03154f6cc7fbbba74b06"
     },
     {
      "alg": "SHA-256",
-     "content": "fc5c14f6b2770c8542a43e298aa29b63dee4b18701763e8c0fdce202624c3a7c"
+     "content": "f71297db64723889147c82de46dcacaa76b120f856d5b5ac5f65abb22ea88355"
     }
    ]
   },
@@ -841,16 +841,16 @@
   {
    "type": "library",
    "name": "jsii",
-   "version": "1.140.0",
-   "purl": "pkg:pypi/jsii@1.140.0",
+   "version": "1.142.0",
+   "purl": "pkg:pypi/jsii@1.142.0",
    "hashes": [
     {
      "alg": "SHA-256",
-     "content": "454c874d963a862f6b90bc013c45a720e51292659f57249d9cae7cb2a189ec0e"
+     "content": "16d6b3e25bbaa081dd39eabe910b07f646fe4988302d8aae401690f247baf7df"
     },
     {
      "alg": "SHA-256",
-     "content": "aa24f27d15d8d7db1ff32a9c56074bc87e728b30330ead97fb149419a3721a50"
+     "content": "2fe1c5f2a5a405a5fbaaafb8b362cdf6a30171589e508c01682f33c5d529172f"
     }
    ]
   },
@@ -2453,16 +2453,16 @@
   {
    "type": "library",
    "name": "s3transfer",
-   "version": "0.14.0",
-   "purl": "pkg:pypi/s3transfer@0.14.0",
+   "version": "0.19.3",
+   "purl": "pkg:pypi/s3transfer@0.19.3",
    "hashes": [
     {
      "alg": "SHA-256",
-     "content": "ea3b790c7077558ed1f02a3072fb3cb992bbbd253392f4b6e9e8976941c7d456"
+     "content": "24eb7535804306355e31c952a90022bf5b2f9d760f9a11062c7493a217c08553"
     },
     {
      "alg": "SHA-256",
-     "content": "eff12264e7c8b4985074ccce27a3b38a485bb7f7422cc8046fee9be4983e4125"
+     "content": "8326acc3d056d7f7b8a37110c7d2aea41f67e83f6ae79cd3b5fbcca34c726406"
     }
    ]
   },
