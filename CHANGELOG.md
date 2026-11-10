@@ -14,6 +14,19 @@ from this release. The Class A anchor moved in six places: two validation tests,
 the requirements oracle, the certification-classes doc, the README table and
 mutation MUT-F86's target text.)
 
+### Dependabot bumps complete themselves
+
+- `.github/workflows/dependabot-lock.yml` runs on every Dependabot pip branch
+  (`pull_request_target`, actor-guarded): re-resolves `requirements.lock` and
+  `requirements-security.lock` with the Makefile flags, rebuilds the SBOM and
+  the package, pushes one commit to the branch. Four of the five Dependabot
+  PRs open on 2026-11-09 were red because this step was manual.
+- `.github/dependabot.yml` moves to monthly, grouped (one pip PR, one Actions
+  PR). pip-audit in the release gate still fails on any known vulnerability on
+  every run, so advisories are not delayed.
+- `test_quality_telemetry.py` holds the new contract (grouping, the workflow's
+  actor guard, both locks, SBOM before push).
+
 ### Hands-off adoption of upstream FedRAMP changes
 
 The 2026.11.02.01 adoption (#274) took four human pushes and the schema bump

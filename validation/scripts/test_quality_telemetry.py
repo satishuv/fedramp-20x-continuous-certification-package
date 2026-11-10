@@ -75,8 +75,10 @@ def main():
           set(gate_needs) >= {"validate", "audit-gate", "attack-gate", "attack-gate-non-aws",
                               "security-scan"})
 
-    # 3. Dependabot: pip and github-actions, weekly, with the lock-regeneration
-    #    note (an input bump without `make lock` never reaches the hashed CI).
+    # 3. Dependabot: pip and github-actions on a schedule, grouped so a month's
+    #    bumps arrive as one PR, and a workflow that regenerates the hash locks
+    #    on the Dependabot branch (an input bump without the lock never reaches
+    #    the hashed CI; four of five PRs were red for that on 2026-11-09).
     check("dependabot.yml exists", os.path.exists(DEPENDABOT))
     if os.path.exists(DEPENDABOT):
         with open(DEPENDABOT, encoding="utf-8") as fh:
@@ -84,11 +86,26 @@ def main():
         eco = {u["package-ecosystem"]: u for u in db.get("updates", [])}
         check("dependabot watches pip", "pip" in eco)
         check("dependabot watches github-actions", "github-actions" in eco)
-        check("dependabot schedules are weekly",
-              all(u.get("schedule", {}).get("interval") == "weekly" for u in eco.values()))
+        check("dependabot schedules are weekly or monthly",
+              all(u.get("schedule", {}).get("interval") in ("weekly", "monthly") for u in eco.values()))
+        check("dependabot groups each ecosystem into one PR",
+              all(u.get("groups") for u in eco.values()))
         text = open(DEPENDABOT, encoding="utf-8").read()
-        check("dependabot.yml states that an input bump needs `make lock` before it reaches CI",
-              "make lock" in text and "requirements.lock" in text)
+        check("dependabot.yml names the lock-regeneration workflow and the lock file",
+              "dependabot-lock.yml" in text and "requirements.lock" in text)
+        lock_wf = os.path.join(BASE, ".github", "workflows", "dependabot-lock.yml")
+        check("dependabot-lock workflow exists", os.path.exists(lock_wf))
+        if os.path.exists(lock_wf):
+            wf = open(lock_wf, encoding="utf-8").read()
+            check("dependabot-lock runs only for the dependabot actor",
+                  "github.actor == 'dependabot[bot]'" in wf)
+            check("dependabot-lock resolves both hash locks with the Makefile flags",
+                  "--output-file requirements.lock" in wf
+                  and "--output-file requirements-security.lock" in wf
+                  and "--generate-hashes" in wf)
+            check("dependabot-lock rebuilds the SBOM and the package before pushing",
+                  "build_sbom.py" in wf and "sdr.py build" in wf
+                  and wf.find("build_sbom.py") < wf.find("git push"))
 
     print(f"\n{'PASS' if _fail == 0 else 'FAIL'}: quality_telemetry ({_fail} failures)")
     return 1 if _fail else 0

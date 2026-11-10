@@ -1,0 +1,87 @@
+# Complete a Dependabot pip bump so it can merge on green.
+#
+# Dependabot edits an INPUT file (requirements*.txt). Every CI path installs
+# from the hash-locked closures (requirements.lock, requirements-security.lock)
+# and the regenerate-and-diff gate checks the SBOM and the release manifest,
+# so a bare bump fails validate-sdr until someone runs the Makefile lock
+# targets and commits the result. Four of the five Dependabot PRs open on
+# 2026-11-09 were red for exactly that reason and were finished by hand.
+#
+# This workflow does that step on the Dependabot branch itself: resolve both
+# locks with uv (same flags as `make lock` and `make lock-security`), rebuild
+# the SBOM and the package (which refreshes the release manifest), and push
+# the result as one commit to the same branch. The push triggers the normal
+# pull_request run of validate-sdr, so the PR shows real checks. If the locks
+# were already current, nothing is pushed.
+#
+# Scope: pip branches only. A GitHub Actions bump touches no lock. The job
+# writes only the lock files, the SBOM and regenerated artifacts; it never
+# touches a status, a record or a requirement text.
+name: dependabot-lock
+
+on:
+  # pull_request_target, not pull_request: GitHub runs pull_request for a
+  # Dependabot PR under Dependabot's read-only token, which cannot push.
+  # pull_request_target runs in the context of main with this repository's
+  # token. The usual hazard of pull_request_target (running untrusted PR code
+  # with write permission) is bounded here by the actor guard below, by
+  # checking out the head only AFTER the guard, and by the fact that the only
+  # code executed from the branch is the repository's own build tooling that
+  # Dependabot does not modify (it edits requirements*.txt alone).
+  pull_request_target:
+    branches: [main]
+    paths:
+      - "requirements.txt"
+      - "requirements-ci.txt"
+      - "requirements-dev.txt"
+      - "requirements-security.txt"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  lock:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ github.token }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Install uv
+        run: pip install --quiet uv
+      - name: Resolve the hash-locked closures (same flags as the Makefile)
+        run: |
+          set -euo pipefail
+          uv pip compile requirements.txt requirements-ci.txt --generate-hashes \
+            --python-platform linux --python-version 3.12 --no-header \
+            --output-file requirements.lock
+          uv pip compile requirements-security.txt -c requirements.lock --generate-hashes \
+            --python-platform linux --python-version 3.12 --no-header \
+            --output-file requirements-security.lock
+      - name: Rebuild the SBOM and the package from the new lock
+        run: |
+          set -euo pipefail
+          pip install --quiet --require-hashes -r requirements.lock
+          python validation/scripts/build_sbom.py
+          python sdr.py build
+      - name: Commit and push the completed bump to the Dependabot branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add requirements.lock requirements-security.lock artifacts
+          if git diff --cached --quiet; then
+            echo "locks, SBOM and manifest already current; nothing to push"
+            exit 0
+          fi
+          git commit -m "chore(deps): regenerate hash locks, SBOM and manifest for this bump"
+          git push origin HEAD:"${{ github.event.pull_request.head.ref }}"
+          gh pr comment "$PR" --body "Hash locks (requirements.lock, requirements-security.lock), SBOM and release manifest regenerated for this bump by the dependabot-lock workflow. validate-sdr now runs on the completed branch; merge on green."

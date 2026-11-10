@@ -51,7 +51,7 @@ No AWS account needed. Free-tier friendly.
 | `.github/workflows/release.yml` | push of a `v*` tag | Refuses a tag that is unsigned, not on protected `main`, not signed by a listed key, or not the manifest's `release_tag`; re-runs the validate workflow; publishes the attested bundle (see [versioning](versioning.md#publishing-a-release)) |
 | `.github/workflows/living-sdr-loop.yml` | daily schedule, manual dispatch | The provider-deployable living loop: read-only collection, metric append, regeneration, a PR when a committed deliverable changes (see [automation](automation.md#persistence-and-retention)). Its `collect` job is skipped until the `AWS_OIDC_ROLE_ARN` repository variable is set, so on a fresh fork it records nothing |
 
-Dependabot (`.github/dependabot.yml`) opens weekly version-update pull requests for pip and GitHub Actions. A pip bump changes an INPUT file; the maintainer runs `make lock` (and `make lock-security` if a scanner moved) on the branch and commits the regenerated lock and SBOM, or the hash-locked CI install never sees the bump.
+Dependabot (`.github/dependabot.yml`) opens one grouped pull request a month for pip and one for GitHub Actions. A pip bump changes an INPUT file, and the hash-locked CI install only sees `requirements.lock`; `.github/workflows/dependabot-lock.yml` completes the bump on the Dependabot branch (both locks re-resolved with the Makefile flags, SBOM and release manifest rebuilt, one commit pushed), so the PR arrives at CI complete and merges on green. Nothing is run by hand. Security advisories are not delayed by the monthly schedule: pip-audit in the release gate fails on a known vulnerability on every run.
 
 ### Anti-circular-verification audit gate
 
