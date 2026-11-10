@@ -47,6 +47,10 @@ BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 RECORD_STORE = os.path.join(BASE, "sdr", "records", "records-store.json")
 PREFILL_SIDECAR = os.path.join(BASE, "sdr", "records", "records-store.prefilled.json")
 AI_SIDECAR = os.path.join(BASE, "sdr", "records", "records-store.ai-draft.json")
+# Third-party (Falcon, Wiz, mapping-driven) evidence used to be written straight
+# into the record store by apply_third_party_evidence.py, skipping review. It
+# now lands here and is accepted or rejected per KSI like collector prefill.
+THIRDPARTY_SIDECAR = os.path.join(BASE, "sdr", "records", "records-store.thirdparty.json")
 FIELD_REVIEW_LOG = os.path.join(BASE, "sdr", "reviews", "field-review-log.json")
 
 sys.path.insert(0, os.path.join(BASE, "validation", "scripts"))
@@ -130,7 +134,7 @@ def _authored_by(src_name, path, prop):
     structured tests/evidence only (prefill_from_facts.py); the drafter writes
     DRAFT-labelled narrative prose only (draft_narratives.py DRAFTABLE_FIELDS).
     Anything else in a sidecar is the snapshot it was copied from."""
-    if src_name == "prefill":
+    if src_name in ("prefill", "thirdparty"):
         return path[0] in STRUCTURED_FIELDS
     if src_name == "ai-draft":
         return path[0] in NARRATIVE_FIELDS and _is_draft(prop)
@@ -152,7 +156,7 @@ def _reviewable_paths(section, record):
     return paths
 
 
-def proposals(store, prefill=None, ai_draft=None):
+def proposals(store, prefill=None, ai_draft=None, thirdparty=None):
     """Every pending proposal, in a stable order. Each item:
     {key, section, record_id, path, current, proposed, source, provenance}.
 
@@ -169,7 +173,8 @@ def proposals(store, prefill=None, ai_draft=None):
         for record_id in sorted(records):
             record = records[record_id]
             seen = set()
-            for src_name, sidecar in (("prefill", prefill), ("ai-draft", ai_draft)):
+            for src_name, sidecar in (("prefill", prefill), ("thirdparty", thirdparty),
+                                      ("ai-draft", ai_draft)):
                 if not sidecar:
                     continue
                 cand = (sidecar.get(section, {}) or {}).get(record_id)
@@ -350,11 +355,148 @@ def apply_decisions(store, items, decisions, reviewer, role, log=None, now=None)
     return new_store, new_log, applied
 
 
+# ---- Provider-authored answers (review finding 1 and 2, 2026-11-09) ----------
+#
+# Before this, the only way to answer a TBD placeholder with the provider's OWN
+# words was to edit records-store.json by hand, which left no entry in this log
+# and so no trace of who wrote what. validate_reviews.py now refuses a populated
+# field with no log entry. These helpers give the honest path: an answer is
+# written through the same apply step as an accepted proposal, logged with
+# source "provider-authored" and the author's name and role, bound to the hash
+# of the value written. They never touch implementation_status or assessment.
+
+def placeholder_items(store, section_filter=None, record_ids=None):
+    """Every reviewable field still holding a TBD placeholder (or empty), as
+    pseudo-proposals with source 'provider-authored'. Structured KSI
+    tests/evidence are excluded: those come from a collector or an import and
+    are reviewed as collected, never typed."""
+    out = []
+    for section in ("frr", "ksi"):
+        if section_filter and section != section_filter:
+            continue
+        records = store.get(section, {}) or {}
+        for record_id in sorted(records):
+            if record_ids and record_id not in record_ids:
+                continue
+            record = records[record_id]
+            for path in _reviewable_paths(section, record):
+                if path[0] in STRUCTURED_FIELDS:
+                    continue
+                cur = _get(record, path)
+                if not _is_placeholder(cur):
+                    continue
+                out.append({
+                    "key": _field_key(section, record_id, path),
+                    "section": section, "record_id": record_id, "path": list(path),
+                    "current": cur, "proposed": None, "source": "provider-authored",
+                    "provenance": {"note": "answer typed by the named author through sdr.py author"},
+                })
+    return out
+
+
+def _is_placeholder(value):
+    if value is None:
+        return True
+    if isinstance(value, list):
+        strings = [v for v in value if isinstance(v, str)]
+        return not value or (bool(strings) and all(_is_placeholder(v) for v in strings))
+    if not isinstance(value, str):
+        return False
+    s = value.strip()
+    return not s or s.startswith("TBD") or "has not been provided" in s.lower() \
+        or s == "None recorded"
+
+
+def author_answers(store, answers, author, role, log=None, now=None):
+    """Write provider-authored ``answers`` ({key: text}) into ``store`` with one
+    log entry each. Returns (new_store, new_log, applied). Refuses an unknown
+    key, a forbidden path, a structured path, a labelled or too-short answer,
+    or a non-human author. Pure with respect to inputs."""
+    _check_reviewer(author, role)
+    new_store = copy.deepcopy(store)
+    new_log = copy.deepcopy(log) if log else {"log_note": LOG_NOTE, "reviews": []}
+    new_log.setdefault("reviews", [])
+    stamp = now or _now()
+    applied = 0
+    for key in sorted(answers):
+        text = answers[key]
+        if "/" not in key or "." not in key:
+            raise ReviewError(f"{key}: not a field key (section/RECORD.path)")
+        section, rest = key.split("/", 1)
+        record_id, dotted = rest.split(".", 1)
+        path = tuple(dotted.split("."))
+        record = (new_store.get(section) or {}).get(record_id)
+        if record is None:
+            raise ReviewError(f"{key}: no such record")
+        if path[0] in FORBIDDEN_FIELDS:
+            raise ReviewError(f"{key}: {path[0]} is never authored here")
+        if path[0] in STRUCTURED_FIELDS:
+            raise ReviewError(f"{key}: {path[0]} come from a collector or import, not prose")
+        if path not in [tuple(p) for p in _reviewable_paths(section, record)]:
+            raise ReviewError(f"{key}: not a reviewable field")
+        if not isinstance(text, str) or len(text.strip()) < 3:
+            raise ReviewError(f"{key}: an answer needs real text")
+        if is_unreviewed(text):
+            raise ReviewError(f"{key}: an answer may not start with a proposal label")
+        cur = _get(record, path)
+        value = [text.strip()] if isinstance(cur, list) else text.strip()
+        _set(record, path, value)
+        new_log["reviews"].append({
+            "review_id": f"FR-{uuid.uuid4().hex[:12]}",
+            "field": key,
+            "section": section,
+            "record_id": record_id,
+            "decision": "edited",
+            "reviewer": author.strip(),
+            "role": role.strip(),
+            "reviewed_at": stamp,
+            "source": "provider-authored",
+            "provenance": {"note": "answer typed by the named author"},
+            "proposed_sha256": _sha256(cur),
+            "applied_sha256": _sha256(value),
+        })
+        applied += 1
+    return new_store, new_log, applied
+
+
+def log_for_filled_store(template_store, filled_store, author, role, now=None):
+    """Build a review log that gives every field ``filled_store`` populated
+    (relative to ``template_store``) a provider-authored entry by ``author``.
+    Used by the sample offerings, whose fictional answers are generated rather
+    than typed: the log says so in the role, and the gate holds the same way it
+    holds for a real provider. Structured KSI tests/evidence are logged as
+    'accepted' from source 'sample-collector'."""
+    _check_reviewer(author, role)
+    log = {"log_note": LOG_NOTE, "reviews": []}
+    stamp = now or _now()
+    for section in ("frr", "ksi"):
+        for record_id, record in sorted((filled_store.get(section) or {}).items()):
+            tmpl = ((template_store.get(section) or {}).get(record_id)) or {}
+            for path in _reviewable_paths(section, record):
+                value = _get(record, path)
+                if _is_placeholder(value) or value == _get(tmpl, path):
+                    continue
+                structured = path[0] in STRUCTURED_FIELDS
+                log["reviews"].append({
+                    "review_id": f"FR-{uuid.uuid4().hex[:12]}",
+                    "field": _field_key(section, record_id, path),
+                    "section": section, "record_id": record_id,
+                    "decision": "accepted" if structured else "edited",
+                    "reviewer": author.strip(), "role": role.strip(), "reviewed_at": stamp,
+                    "source": "sample-collector" if structured else "provider-authored",
+                    "provenance": {"note": "generated sample value, logged so the provenance gate holds"},
+                    "proposed_sha256": _sha256(_get(tmpl, path)),
+                    "applied_sha256": _sha256(value),
+                })
+    return log
+
+
 LOG_NOTE = (
     "Field-level review log. Each entry records ONE named human's decision on ONE "
-    "proposed field (from the collector prefill sidecar, the AI-draft sidecar, or a "
-    "labelled example shipped in the template): accepted (proposal applied, label "
-    "stripped), edited (the reviewer's text applied) or rejected (record untouched). "
+    "proposed field (from the collector prefill sidecar, the AI-draft sidecar, the "
+    "third-party evidence sidecar, a labelled example shipped in the template, or an "
+    "answer the named author typed through sdr.py author): accepted (proposal applied, label "
+    "stripped), edited (the reviewer's or author's text applied) or rejected (record untouched). "
     "applied_sha256 binds the decision to the exact value written; "
     "validate_reviews.py fails when a reviewed field was changed afterwards without "
     "a new decision. This log is not approval of a rule or KSI (that is the review "
@@ -429,6 +571,150 @@ def walk(items, reviewer, role, prompt=input, out=print):
     return decisions
 
 
+# ---- Guided authoring (sdr.py author) ----------------------------------------
+
+def _rule_context(record_id, cls=None):
+    """The dataset-grounded explanation sdr.py explain prints, so the author
+    reads the real requirement before answering. Never typed by hand here."""
+    try:
+        import explain as _ex  # validation/scripts on sys.path (module header)
+        return _ex.explain(record_id, cls)
+    except Exception as e:  # noqa: BLE001 - context is a convenience, not a gate
+        return f"(rule text unavailable: {type(e).__name__})"
+
+
+FIELD_HINTS = {
+    "implementation": "How you meet this, in your own words. Name the mechanism, not the intent.",
+    "validation": "How you check, on a schedule, that the implementation still holds.",
+    "owner": "Named person or role accountable for this item.",
+    "verification": "What is checked and by what means to confirm the implementation.",
+    "validation_frequency": "How often the validation runs (daily, weekly, continuous).",
+    "failure_condition": "What observation means this has failed.",
+    "failure_response": "What happens, and who acts, when it fails.",
+    "evidence_freshness": "How old evidence may be before it no longer counts.",
+    "customer_risk": "The risk a customer carries if this is not met.",
+    "measures": "What is measured for this indicator.",
+    "operating_cycle": "The cadence of the measurement.",
+    "metric_source": "Where the measurement comes from.",
+    "pass_condition": "The value or state that counts as passing.",
+    "method": "The method used.",
+    "independent_verification": "Who independently verifies, and how.",
+    "independent_validation": "Who independently validates, and how.",
+    "aws": "What AWS is responsible for.",
+    "provider": "What you, the provider, are responsible for.",
+    "customer": "What the customer is responsible for.",
+}
+
+
+def author_walk(items, author, role, prompt=input, out=print, context=_rule_context):
+    """Interactive placeholder-by-placeholder authoring. Groups by record so the
+    rule text is shown once per record. Returns {key: text}. ``context`` is
+    injectable for tests."""
+    answers = {}
+    total = len(items)
+    last_record = None
+    for i, it in enumerate(items, 1):
+        rid = it["record_id"]
+        if rid != last_record:
+            out("")
+            out("=" * 72)
+            out(context(rid))
+            out("=" * 72)
+            last_record = rid
+        leaf = it["path"][-1]
+        out("")
+        out(f"[{i}/{total}] {it['key']}")
+        hint = FIELD_HINTS.get(leaf)
+        if hint:
+            out(f"  {hint}")
+        while True:
+            ans = prompt("  your answer ([s]kip, [q]uit) > ").strip()
+            if ans.lower() in ("q", "quit"):
+                return answers
+            if ans.lower() in ("s", "skip", ""):
+                break
+            if len(ans) < 3:
+                out("  need real text; try again")
+                continue
+            if is_unreviewed(ans):
+                out("  an answer may not start with a proposal label (DRAFT / Example)")
+                continue
+            if ans.strip().upper().startswith("TBD"):
+                out("  that is still a placeholder; skip it instead")
+                continue
+            answers[it["key"]] = ans
+            break
+    return answers
+
+
+def run_author(args, out=print, prompt=input):
+    """sdr.py author: walk the TBD placeholders for the records in scope, show
+    the rule text, check each answer's shape, and write it through the review
+    log with the author's name and role. Never touches implementation_status
+    or assessment."""
+    store = _load(RECORD_STORE)
+    if store is None:
+        out("Could not load sdr/records/records-store.json")
+        return 2
+    log = _load(FIELD_REVIEW_LOG)
+    section = getattr(args, "section", None)
+    only = getattr(args, "only", None)
+    ids = None
+    if only:
+        ids = {x.strip().upper() for x in only.split(",") if x.strip()}
+    items = placeholder_items(store, section, ids)
+    if not items:
+        out("No placeholders left in scope. Every reviewable field is answered or is a "
+            "pending proposal (see `python sdr.py review --list`).")
+        return 0
+    if getattr(args, "list", False) or not (getattr(args, "walk", False)
+                                            or getattr(args, "answers", None)):
+        by_rec = {}
+        for it in items:
+            by_rec[it["record_id"]] = by_rec.get(it["record_id"], 0) + 1
+        out(f"Placeholders to author: {len(items)} across {len(by_rec)} record(s)")
+        for rid, n in list(by_rec.items())[:60]:
+            out(f"  {rid}: {n} field(s)")
+        if len(by_rec) > 60:
+            out(f"  ... {len(by_rec) - 60} more records")
+        out("")
+        out("Author with: python sdr.py author --walk --author \"<name>\" --role \"<role>\" "
+            "[--only VDR-TFR-MVF,KSI-SVC-ASM] [--section frr|ksi]")
+        out("Or from a file: python sdr.py author --answers answers.json --author ... --role ...")
+        return 0
+    author = getattr(args, "author", None)
+    role = getattr(args, "role", None)
+    try:
+        _check_reviewer(author, role)
+    except ReviewError as e:
+        out(f"REFUSED: {e}")
+        return 2
+    if getattr(args, "answers", None):
+        answers = _load(args.answers)
+        if not isinstance(answers, dict):
+            out(f"Could not read answers file {args.answers}")
+            return 2
+    else:
+        answers = author_walk(items, author, role, prompt=prompt, out=out)
+        if not answers:
+            out("No answers given; nothing written.")
+            return 0
+    try:
+        new_store, new_log, applied = author_answers(store, answers, author, role, log=log)
+    except ReviewError as e:
+        out(f"REFUSED: {e}")
+        return 2
+    write_store(new_store)
+    write_log(new_log)
+    out("")
+    out(f"Wrote {applied} answer(s) to the record store, each logged in "
+        f"sdr/reviews/field-review-log.json as provider-authored by {author.strip()} "
+        f"({role.strip()}).")
+    out("Rebuild with `python sdr.py all`. implementation_status and assessment were not "
+        "touched: a status still needs its passing check and the sign-off in the review register.")
+    return 0
+
+
 # ---- Entry point used by sdr.py ---------------------------------------------
 
 def run(args, out=print, prompt=input):
@@ -438,8 +724,9 @@ def run(args, out=print, prompt=input):
         return 2
     prefill = _load(PREFILL_SIDECAR)
     ai_draft = _load(AI_SIDECAR)
+    thirdparty = _load(THIRDPARTY_SIDECAR)
     log = _load(FIELD_REVIEW_LOG)
-    items, violations = proposals(store, prefill, ai_draft)
+    items, violations = proposals(store, prefill, ai_draft, thirdparty)
     for v in violations:
         out(f"WARNING: {v}")
     if getattr(args, "source", None):

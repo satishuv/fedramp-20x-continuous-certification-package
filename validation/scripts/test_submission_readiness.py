@@ -243,6 +243,20 @@ def _fill_records(root):
     for kid in list(recs.get("ksi", {})):
         if kid in applicable_ksi:
             recs["ksi"][kid] = answer(recs["ksi"][kid], kid, True)
+    # Review finding 1 (2026-11-09): the gate refuses a populated field with no
+    # review-log entry naming its author. This filler is the test's stand-in
+    # for a provider typing answers, so it logs them the way `sdr.py author`
+    # does, against the template as baseline, before the store is overwritten.
+    sys.path.insert(0, os.path.join(root, "automation", "review"))
+    import importlib
+    _rp = importlib.import_module("review_proposals")
+    template = json.load(open(rp, encoding="utf-8"))
+    field_log = _rp.log_for_filled_store(
+        template, recs, "Jane Provider, VP Security",
+        "test filler (fictional answers, not an attestation)")
+    with open(os.path.join(root, "sdr", "reviews", "field-review-log.json"), "w",
+              encoding="utf-8", newline="\n") as f:
+        json.dump(field_log, f, indent=1)
     json.dump(recs, open(rp, "w", encoding="utf-8", newline="\n"), indent=1)
 
     # SDR-CSX-KMT (dataset 2026.10.08.01): Class C supplies daily metric data

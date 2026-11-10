@@ -34,6 +34,7 @@ reads. Without it the pointers are sdr://placeholder/ pseudo-URIs, which
 package-preflight refuses at Class C; the driver says so when it applies them.
 """
 
+import datetime as dt
 import json
 import os
 import sys
@@ -46,6 +47,8 @@ import thirdparty_adapters  # noqa: E402,F401  (registers the adapters)
 
 PROFILE = os.path.join(BASE, "profiles", "common", "offering-profile.json")
 RECORDS = os.path.join(BASE, "sdr", "records", "records-store.json")
+# Proposals land here, never in RECORDS (review finding 1, 2026-11-09).
+SIDECAR = os.path.join(BASE, "sdr", "records", "records-store.thirdparty.json")
 # Env names shared with the collector path (collect_multi_account.py,
 # prefill_from_facts.py).
 SCOPE_KEY_ENV = "SDR_EVIDENCE_SCOPE_KEY"
@@ -250,10 +253,24 @@ def main(argv=None):
     if code != 0:
         return code
     if total_attached:
-        with open(RECORDS, "w", encoding="utf-8", newline="\n") as f:
+        # Review finding 1 (2026-11-09): third-party evidence used to be written
+        # straight into the record store, the one path that skipped the review
+        # log. It now lands in a sidecar that `sdr.py review` offers per KSI as
+        # source "thirdparty"; a named human accepts or rejects it, and the
+        # decision is logged with the evidence hash like collector prefill.
+        records.setdefault("meta", {})
+        records["meta"] = {
+            "sidecar": "thirdparty",
+            "generated_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
+            "note": "Third-party evidence proposals. Nothing here is in the record store "
+                    "until a named human accepts it with `python sdr.py review --walk`.",
+        }
+        with open(SIDECAR, "w", encoding="utf-8", newline="\n") as f:
             json.dump(records, f, indent=1)
-        print(f"Record store updated: {total_attached} evidence entries attached. "
-              "Run build_sdr.py to regenerate the SDR. A human still owns the status.")
+        print(f"{total_attached} evidence entries proposed in "
+              f"{os.path.relpath(SIDECAR, BASE)}. Nothing was written to the record store: "
+              "accept or reject them per KSI with `python sdr.py review --walk` "
+              "(source: thirdparty). A human still owns the status.")
     return 0
 
 

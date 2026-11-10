@@ -20,8 +20,9 @@
 #   python automation/prefill/prefill_from_facts.py --write    # write sidecar
 #
 # The sidecar (records-store.prefilled.json) is git-excluded like the facts
-# store; the provider diffs it, keeps the lines that are right, and edits the
-# real record store by hand. Nothing here decides compliance.
+# store; a named human accepts or rejects each proposal with `sdr.py review`,
+# which logs the decision (a hand edit of the real store leaves no author and
+# the gate refuses it). Nothing here decides compliance.
 
 import argparse
 import copy
@@ -348,15 +349,16 @@ def main():
         print(f"  {note}")
     print(f"\n{filled} KSI(s) had at least one field pre-filled from facts.")
     print("This is a PROPOSAL. implementation_status and assessment were not "
-          "touched. Review each line, then hand-edit the real record store; a "
+          "touched. Decide each line with `python sdr.py review --walk` (a hand "
+          "edit of the record store leaves no author and the gate refuses it); a "
           "passing check is telemetry, not a compliance conclusion.")
 
     if args.write:
         with open(SIDECAR, "w", encoding="utf-8", newline="\n") as f:
             json.dump(proposed, f, indent=1)
         print(f"\nWrote proposed record store to {os.path.relpath(SIDECAR, BASE)} "
-              "(git-excluded). Diff it against the real store and apply what is "
-              "correct by hand.")
+              "(git-excluded). Accept or reject each proposal with "
+              "`python sdr.py review --walk --reviewer \"<name>\" --role \"<role>\"`.")
     return 0
 
 

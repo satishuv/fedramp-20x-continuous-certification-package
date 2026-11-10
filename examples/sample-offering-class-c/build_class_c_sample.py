@@ -48,7 +48,29 @@ REAL_REPORTS = (
 # restore would discard a provider's own uncommitted sign-offs and needs a git
 # checkout to exist (the sample also runs inside copied test trees).
 REAL_REGISTER = os.path.join(BASE, "sdr", "reviews", "review-register.json")
-BACKED_UP = (REAL_STORE, REAL_PROFILE, REAL_HISTORY, REAL_REGISTER) + REAL_REPORTS
+# The field review log too: since review finding 1 (2026-11-09) every populated
+# field must carry a named author, and the sample's generated answers are
+# logged as such (role says they are generated), so the gate holds for the
+# fictional offering exactly as for a real one.
+REAL_FIELD_LOG = os.path.join(BASE, "sdr", "reviews", "field-review-log.json")
+BACKED_UP = (REAL_STORE, REAL_PROFILE, REAL_HISTORY, REAL_REGISTER, REAL_FIELD_LOG) + REAL_REPORTS
+
+SAMPLE_AUTHOR = "J. Rivera, BFC Security Engineering (fictional)"
+SAMPLE_AUTHOR_ROLE = "sample author (generated fictional answers, not an attestation)"
+
+
+def write_field_log(filled_store):
+    """Write the field review log that gives every populated field of the
+    filled sample store a provider-authored entry (review_proposals.log_for_
+    filled_store), against the committed template as the baseline."""
+    sys.path.insert(0, os.path.join(BASE, "automation", "review"))
+    import review_proposals as _rp
+    with open(REAL_STORE, encoding="utf-8") as f:
+        template = json.load(f)
+    log = _rp.log_for_filled_store(template, filled_store, SAMPLE_AUTHOR, SAMPLE_AUTHOR_ROLE)
+    with open(REAL_FIELD_LOG, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(log, f, indent=1)
+    return log
 
 
 def _backup(tmp):
@@ -399,6 +421,7 @@ def _preflight_rc(store, profile, history, post_sign=None, signoff=None):
     baks = _backup(tmp)
     history_existed = os.path.exists(REAL_HISTORY)
     try:
+        write_field_log(store)
         json.dump(store, open(REAL_STORE, "w", encoding="utf-8", newline="\n"), indent=1)
         json.dump(profile, open(REAL_PROFILE, "w", encoding="utf-8", newline="\n"), indent=1)
         json.dump(history, open(REAL_HISTORY, "w", encoding="utf-8", newline="\n"), indent=1)
@@ -1138,6 +1161,7 @@ def run(argv):
     history = generate_history(store)
     history_existed = os.path.exists(REAL_HISTORY)
     try:
+        write_field_log(store)  # reads the template store, so before the overwrite
         with open(REAL_STORE, "w", encoding="utf-8", newline="\n") as f:
             json.dump(store, f, indent=1)
         with open(REAL_PROFILE, "w", encoding="utf-8", newline="\n") as f:

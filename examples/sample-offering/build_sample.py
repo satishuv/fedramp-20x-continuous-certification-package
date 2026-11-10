@@ -193,7 +193,25 @@ def run_gate_with_sample(emit_dir=None):
             b = os.path.join(tmp, os.path.basename(real) + ".bak")
             shutil.copy2(real, b)
             report_baks[real] = b
+    field_log = os.path.join(BASE, "sdr", "reviews", "field-review-log.json")
+    log_bak = os.path.join(tmp, "field-log.bak")
+    log_existed = os.path.exists(field_log)
+    if log_existed:
+        shutil.copy2(field_log, log_bak)
     try:
+        # Provenance gate (review finding 1): the sample's generated answers are
+        # logged to a named fictional author before the store is swapped in.
+        sys.path.insert(0, os.path.join(BASE, "automation", "review"))
+        import review_proposals as _rp
+        with open(REAL_STORE, encoding="utf-8") as f:
+            template = json.load(f)
+        with open(SAMPLE_STORE, encoding="utf-8") as f:
+            filled = json.load(f)
+        log = _rp.log_for_filled_store(
+            template, filled, "P. Chen, Acme Cloud Widgets Compliance (fictional)",
+            "sample author (generated fictional answers, not an attestation)")
+        with open(field_log, "w", encoding="utf-8", newline="\n") as f:
+            json.dump(log, f, indent=1)
         shutil.copy2(SAMPLE_STORE, REAL_STORE)
         shutil.copy2(SAMPLE_PROFILE, REAL_PROFILE)
         proc = subprocess.run(
@@ -203,6 +221,10 @@ def run_gate_with_sample(emit_dir=None):
             _emit_generated(emit_dir)
         return proc.returncode, (proc.stdout or "") + (proc.stderr or "")
     finally:
+        if log_existed:
+            shutil.copy2(log_bak, field_log)
+        elif os.path.exists(field_log):
+            os.remove(field_log)
         shutil.copy2(store_bak, REAL_STORE)
         if profile_exists:
             shutil.copy2(profile_bak, REAL_PROFILE)

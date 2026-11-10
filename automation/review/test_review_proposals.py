@@ -179,11 +179,15 @@ def test_end_to_end_through_run_and_validator_binding():
     accepts the log, and fails once a reviewed field is edited behind its back."""
     tmp = tempfile.mkdtemp(prefix="sdr-review-")
     try:
-        for rel in ("sdr/records", "sdr/reviews", "validation/scripts", "traceability"):
+        for rel in ("sdr/records", "sdr/reviews", "validation/scripts", "traceability",
+                    "automation/review"):
             os.makedirs(os.path.join(tmp, rel), exist_ok=True)
         for fn in ("validate_reviews.py", "unreviewed_text.py"):
             shutil.copy(os.path.join(BASE, "validation", "scripts", fn),
                         os.path.join(tmp, "validation", "scripts", fn))
+        # The validator reads the review tool's reviewable-path definition.
+        shutil.copy(os.path.join(HERE, "review_proposals.py"),
+                    os.path.join(tmp, "automation", "review", "review_proposals.py"))
         s = store()
         with open(os.path.join(tmp, "sdr", "records", "records-store.json"), "w", encoding="utf-8") as f:
             json.dump(s, f)
@@ -392,6 +396,157 @@ def test_f47_structured_tests_and_evidence_cannot_be_edited_into_prose():
     rp.walk(prose, "Jane Doe", "lead", prompt=lambda p: (prompts2.append(p), "s")[1], out=lambda _l: None)
     assert any("[e]dit" in p for p in prompts2)
     print("PASS: test_f47_structured_tests_and_evidence_cannot_be_edited_into_prose")
+
+
+# ---- Review finding 1 and 2 (2026-11-09): provenance for every populated field,
+# and the guided authoring path that replaces the hand edit -------------------
+
+def _gate_in(tmp_base, store_obj, log_obj):
+    """Run validate_reviews.py against a store and log placed in a scratch tree."""
+    os.makedirs(os.path.join(tmp_base, "sdr", "records"))
+    os.makedirs(os.path.join(tmp_base, "sdr", "reviews"))
+    os.makedirs(os.path.join(tmp_base, "traceability"))
+    os.makedirs(os.path.join(tmp_base, "validation", "scripts"))
+    os.makedirs(os.path.join(tmp_base, "automation", "review"))
+    for name in ("validate_reviews.py", "unreviewed_text.py"):
+        shutil.copy2(os.path.join(BASE, "validation", "scripts", name),
+                     os.path.join(tmp_base, "validation", "scripts", name))
+    shutil.copy2(os.path.join(HERE, "review_proposals.py"),
+                 os.path.join(tmp_base, "automation", "review", "review_proposals.py"))
+    with open(os.path.join(tmp_base, "sdr", "records", "records-store.json"), "w", encoding="utf-8") as f:
+        json.dump(store_obj, f)
+    with open(os.path.join(tmp_base, "sdr", "reviews", "field-review-log.json"), "w", encoding="utf-8") as f:
+        json.dump(log_obj, f)
+    with open(os.path.join(tmp_base, "sdr", "reviews", "review-register.json"), "w", encoding="utf-8") as f:
+        json.dump({"reviews": []}, f)
+    p = subprocess.run([sys.executable, os.path.join(tmp_base, "validation", "scripts", "validate_reviews.py")],
+                       capture_output=True, text=True)
+    return p.returncode, p.stdout + p.stderr
+
+
+def test_f1_hand_typed_value_with_no_log_entry_fails_the_gate():
+    s = store()
+    s["frr"]["AFC-CSO-INB"]["implementation"] = ["Typed straight into the JSON."]
+    with tempfile.TemporaryDirectory() as tmp:
+        code, out = _gate_in(tmp, s, {"reviews": []})
+    assert code == 1 and "frr/AFC-CSO-INB.implementation" in out and "no review-log entry" in out, out
+    print("PASS: test_f1_hand_typed_value_with_no_log_entry_fails_the_gate")
+
+
+def test_f1_label_stripped_by_hand_fails_the_gate():
+    s = store()
+    # The template's Example value with its label deleted by hand: reads as an
+    # answer, has no decision behind it.
+    s["frr"]["AFC-CSO-INB"]["validation"] = ["A monthly synthetic test email."]
+    with tempfile.TemporaryDirectory() as tmp:
+        code, out = _gate_in(tmp, s, {"reviews": []})
+    assert code == 1 and "frr/AFC-CSO-INB.validation" in out, out
+    print("PASS: test_f1_label_stripped_by_hand_fails_the_gate")
+
+
+def test_f1_template_placeholders_and_labelled_examples_are_not_gaps():
+    s = store()
+    with tempfile.TemporaryDirectory() as tmp:
+        code, out = _gate_in(tmp, s, {"reviews": []})
+    assert code == 0 and "0 populated field(s)" in out, out
+    print("PASS: test_f1_template_placeholders_and_labelled_examples_are_not_gaps")
+
+
+def test_f1_thirdparty_sidecar_is_a_review_source_not_a_store_write():
+    s = store()
+    tp = copy.deepcopy(s)
+    tp["meta"] = {"sidecar": "thirdparty", "generated_at": "2026-11-09T00:00:00+00:00"}
+    tp["ksi"]["KSI-IAM-SUS"]["evidence"] = [{"evidenceType": "Report", "evidenceDescription": "Falcon export",
+                                             "evidenceLocation": "https://ev.example.invalid/x.json",
+                                             "lastUpdated": "2026-11-09"}]
+    items, violations = rp.proposals(s, None, None, thirdparty=tp)
+    keys = {it["key"]: it for it in items}
+    assert keys["ksi/KSI-IAM-SUS.evidence"]["source"] == "thirdparty", keys.keys()
+    assert not violations
+    # Accepting it logs the decision like prefill; the store changes only then.
+    new, log, applied = rp.apply_decisions(s, items, {"ksi/KSI-IAM-SUS.evidence": {"decision": "accepted"}},
+                                           "Jane Doe", "Compliance lead")
+    assert applied == 1 and new["ksi"]["KSI-IAM-SUS"]["evidence"][0]["evidenceDescription"] == "Falcon export"
+    assert log["reviews"][-1]["source"] == "thirdparty"
+    assert s["ksi"]["KSI-IAM-SUS"]["evidence"] == []  # input untouched
+    print("PASS: test_f1_thirdparty_sidecar_is_a_review_source_not_a_store_write")
+
+
+def test_f2_author_answers_are_logged_and_pass_the_gate():
+    s = store()
+    items = rp.placeholder_items(s)
+    keys = {it["key"] for it in items}
+    assert "frr/AFC-CSO-INB.implementation" in keys and "frr/AFC-CSO-INB.extension.verification" in keys
+    assert "frr/AFC-CSO-INB.validation" not in keys, "a labelled example is a proposal for review, not a placeholder"
+    assert "ksi/KSI-IAM-SUS.tests" not in keys, "structured fields are never typed"
+    new, log, applied = rp.author_answers(
+        s, {"frr/AFC-CSO-INB.implementation": "The inbox is monitored by the on-call rotation.",
+            "frr/AFC-CSO-INB.extension.verification": "Monthly synthetic email, logged."},
+        "Jane Doe", "Compliance lead", now="2026-11-09T12:00:00+00:00")
+    assert applied == 2
+    assert new["frr"]["AFC-CSO-INB"]["implementation"] == ["The inbox is monitored by the on-call rotation."]
+    e = {x["field"]: x for x in log["reviews"]}["frr/AFC-CSO-INB.implementation"]
+    assert e["source"] == "provider-authored" and e["decision"] == "edited" and e["reviewer"] == "Jane Doe"
+    assert e["applied_sha256"] == rp._sha256(["The inbox is monitored by the on-call rotation."])
+    with tempfile.TemporaryDirectory() as tmp:
+        code, out = _gate_in(tmp, new, log)
+    assert code == 0 and "2 populated field(s) all carry a named author" in out, out
+    # A later silent edit of an authored field is caught as stale AND as a gap.
+    new["frr"]["AFC-CSO-INB"]["implementation"] = ["changed afterwards"]
+    with tempfile.TemporaryDirectory() as tmp:
+        code, out = _gate_in(tmp, new, log)
+    assert code == 1 and "changed after it was edited" in out, out
+    print("PASS: test_f2_author_answers_are_logged_and_pass_the_gate")
+
+
+def test_f2_author_refusals():
+    s = store()
+    _raises(lambda: rp.author_answers(s, {"frr/AFC-CSO-INB.implementation_status": "Implemented"}, "Jane Doe", "lead"),
+            "never authored")
+    _raises(lambda: rp.author_answers(s, {"ksi/KSI-IAM-SUS.tests": "a test"}, "Jane Doe", "lead"),
+            "collector or import")
+    _raises(lambda: rp.author_answers(s, {"frr/AFC-CSO-INB.implementation": DRAFT}, "Jane Doe", "lead"),
+            "proposal label")
+    _raises(lambda: rp.author_answers(s, {"frr/AFC-CSO-INB.implementation": "ok"}, "Jane Doe", "lead"),
+            "real text")
+    _raises(lambda: rp.author_answers(s, {"frr/NOPE-XXX-YYY.implementation": "text here"}, "Jane Doe", "lead"),
+            "no such record")
+    _raises(lambda: rp.author_answers(s, {"frr/AFC-CSO-INB.implementation": "text here"}, "pipeline", "bot"),
+            "named human")
+    print("PASS: test_f2_author_refusals")
+
+
+def test_f2_author_walk_shows_rule_text_once_per_record_and_validates_input():
+    s = store()
+    items = rp.placeholder_items(s, record_ids={"AFC-CSO-INB"})
+    answers_in = iter(["TBD still", "x", "DRAFT (x): nope", "A real answer here.", "s", "q"])
+    shown = []
+    out_lines = []
+    answers = rp.author_walk(items, "Jane Doe", "lead",
+                             prompt=lambda _p: next(answers_in), out=out_lines.append,
+                             context=lambda rid: shown.append(rid) or f"RULE {rid}")
+    assert shown == ["AFC-CSO-INB"], shown  # context once per record
+    assert answers == {items[0]["key"]: "A real answer here."}, answers
+    assert any("still a placeholder" in l for l in out_lines)
+    assert any("need real text" in l for l in out_lines)
+    assert any("proposal label" in l for l in out_lines)
+    print("PASS: test_f2_author_walk_shows_rule_text_once_per_record_and_validates_input")
+
+
+def test_f1_log_for_filled_store_covers_every_populated_field():
+    s = store()
+    filled = copy.deepcopy(s)
+    filled["frr"]["AFC-CSO-INB"]["implementation"] = ["Generated sample text."]
+    filled["frr"]["AFC-CSO-INB"]["extension"]["owner"] = "J. Sample"
+    filled["ksi"]["KSI-IAM-SUS"]["tests"] = [{"method_id": "m1", "automated": True, "method": "x"}]
+    log = rp.log_for_filled_store(s, filled, "J. Sample (fictional)", "sample author (generated)")
+    sources = {e["field"]: e["source"] for e in log["reviews"]}
+    assert sources["frr/AFC-CSO-INB.implementation"] == "provider-authored"
+    assert sources["ksi/KSI-IAM-SUS.tests"] == "sample-collector"
+    with tempfile.TemporaryDirectory() as tmp:
+        code, out = _gate_in(tmp, filled, log)
+    assert code == 0, out
+    print("PASS: test_f1_log_for_filled_store_covers_every_populated_field")
 
 
 def _run_all():
