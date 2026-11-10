@@ -53,7 +53,7 @@
  "artifacts": {
   "artifacts/mas-ksi-coverage-class-b.json": "sha256:69bf90f44794a4eaa59be24999d8535910a8558a61162453480cabade66a0d2c",
   "artifacts/mas-ksi-coverage-class-b.md": "sha256:75c9ef12cb3b7d55f5c53f72eac763992dba9e7e536606681eb43c46917aab6a",
-  "artifacts/sbom.cdx.json": "sha256:09c8695590b1aab455002d367f2319ac5683df0be489620b57a9a8d1ddf1e31d",
+  "artifacts/sbom.cdx.json": "sha256:f39656a10238123b23343f368ae127d88f0fcf33720fc9c1b34059dac0b06788",
   "package/certification-package-manifest.json": "sha256:9cae6d6ee3216e60c35fcdc427b1e485d5033c1eeb79f234b83e55ea6b6e1a0d",
   "package/cpo/cpo.json": "sha256:1a4112b63ab740da5e93b6451527b948ae5f24fbc006092e5392d49d8e43dbc2",
   "package/cpo/cpo.md": "sha256:622d6dd5d404c0d88f5acdbd8d4d0dfd3b9fcc246a59c34a55aca001d44e4c88",
@@ -80,7 +80,7 @@
  "release_tag": "v1.6.0-cr26-2026.11.02.01",
  "source_provenance": {
   "requirements_sha256": "sha256:375627a835a23624ffd3374004a247067032028ce152d30c0379a9d9018e839b",
-  "requirements_ci_sha256": "sha256:dc19795e881cd4de90e07c3c3ec5bd86fd4329261acf3bc6786c07ec43237491",
+  "requirements_ci_sha256": "sha256:34294f31a28665e7ea5f2758b984c1deffab4d355e41aa5f66604312e72b04b3",
   "source_commit": null,
   "source_tree": null,
   "provenance_note": "Exact git commit/tree are recorded in artifacts/release-attestation.json at release time, not here, so this manifest stays byte-stable and a human signoff bound to its hash is never invalidated by adding provenance."
