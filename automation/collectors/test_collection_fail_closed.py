@@ -259,7 +259,21 @@ def test_f92_security_lock_is_hashed_complete_and_matches_the_pins():
     # without `make lock-security` fails here), and the gate reads the pins
     # from that same input file.
     pins = rg._security_tool_pins(SECURITY_REQ)
-    assert set(pins) == {"bandit", "pip-audit"}, pins
+    # 2026-11-11: three scanners an external DSR review ran that the gate had
+    # not (cfn-lint, zizmor, detect-secrets) join the closure. checkov is
+    # locked separately (requirements-checkov.lock): it pins boto3 1.35.x.
+    assert set(pins) == {"bandit", "pip-audit", "cfn-lint", "zizmor", "detect-secrets"}, pins
+    names = [n for n, _ in rg.SECTIONS["security"]]
+    assert names == ["bandit", "pip-audit", "checkov", "cfn-lint", "zizmor", "detect-secrets"], names
+    assert os.path.isfile(os.path.join(BASE, "requirements-checkov.lock"))
+    assert "checkov==" in _read(os.path.join(BASE, "requirements-checkov.lock"))
+    assert "--require-hashes -r requirements-checkov.lock" in _read(VALIDATE_WF)
+    assert os.path.isfile(os.path.join(BASE, ".secrets.baseline"))
+    import json as _json
+    base = _json.loads(_read(os.path.join(BASE, ".secrets.baseline")))
+    for f, entries in base["results"].items():
+        for e in entries:
+            assert e.get("is_secret") is False and e.get("reason"), f"{f}: unaudited baseline entry"
     for name, version in pins.items():
         assert lock.get(name, (None,))[0] == version, (name, version, lock.get(name))
     assert rg.SECURITY_TOOL_PINS == pins

@@ -6,7 +6,7 @@
 PYTHON ?= python
 
 .DEFAULT_GOAL := help
-.PHONY: help install install-locked all build validate scan clean reproducible catalog lock lock-security
+.PHONY: help install install-locked all build validate scan clean reproducible catalog lock lock-security lock-checkov venv-checkov
 
 help: ## Show this help
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -29,13 +29,24 @@ lock: ## Resolve a fully-hashed requirements.lock, then rebuild the SBOM from it
 	@echo "requirements.lock written and SBOM regenerated from the resolved closure."
 	@echo "Commit requirements.lock and the regenerated artifacts/sbom.cdx.json together."
 
-lock-security: ## Resolve the hash-locked closure of the security-gate tools (Bandit, pip-audit)
+lock-security: ## Resolve the hash-locked closure of the security-gate tools (Bandit, pip-audit, cfn-lint, zizmor, detect-secrets)
 	@echo "Resolving requirements-security.txt into requirements-security.lock with hashes,"
 	@echo "constrained to requirements.lock so a shared transitive cannot diverge."
 	uv pip compile requirements-security.txt -c requirements.lock --generate-hashes \
 		--python-platform linux --python-version 3.12 --no-header \
 		--output-file requirements-security.lock
 	@echo "requirements-security.lock written. Commit it with requirements-security.txt."
+
+lock-checkov: ## Resolve checkov's own hash-locked closure (it pins boto3 1.35.x and cannot share requirements.lock)
+	uv pip compile requirements-checkov.txt --generate-hashes \
+		--python-platform linux --python-version 3.12 --no-header \
+		--output-file requirements-checkov.lock
+	@echo "requirements-checkov.lock written. Commit it with requirements-checkov.txt."
+
+venv-checkov: ## Build checkov's isolated venv from its lock (the security gate runs checkov from here)
+	$(PYTHON) -m venv .venv-checkov
+	.venv-checkov/bin/pip install --quiet --require-hashes -r requirements-checkov.lock
+	@echo "Run the gate with: CHECKOV_PYTHON=.venv-checkov/bin/python $(PYTHON) audit/release_gate.py security"
 
 all: ## Build, validate, scan, then print a readiness summary
 	$(PYTHON) sdr.py all

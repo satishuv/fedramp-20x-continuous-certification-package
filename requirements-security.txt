@@ -6,3 +6,10 @@
 # holds the two equal. After a bump, re-lock with: make lock-security
 bandit==1.9.4
 pip-audit==2.10.1
+# Added 2026-11-11 after an external DSR review ran these and the gate had not.
+cfn-lint==1.60.0
+zizmor==1.32.0
+detect-secrets==1.5.0
+# checkov is pinned in requirements-checkov.txt and locked separately
+# (requirements-checkov.lock): it hard-pins an old boto3 that cannot share a
+# closure with the runtime lock. It is installed into its own venv by the gate.

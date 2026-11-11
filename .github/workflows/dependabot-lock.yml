@@ -1,40 +1,48 @@
 # Complete a Dependabot pip bump so it can merge on green.
 #
 # Dependabot edits an INPUT file (requirements*.txt). Every CI path installs
-# from the hash-locked closures (requirements.lock, requirements-security.lock)
-# and the regenerate-and-diff gate checks the SBOM and the release manifest,
-# so a bare bump fails validate-sdr until someone runs the Makefile lock
-# targets and commits the result. Four of the five Dependabot PRs open on
-# 2026-11-09 were red for exactly that reason and were finished by hand.
+# from the hash-locked closures (requirements.lock, requirements-security.lock,
+# requirements-checkov.lock) and the regenerate-and-diff gate checks the SBOM
+# and the release manifest, so a bare bump fails validate-sdr until someone
+# runs the Makefile lock targets and commits the result. Four of the five
+# Dependabot PRs open on 2026-11-09 were red for exactly that reason and were
+# finished by hand.
 #
-# This workflow does that step on the Dependabot branch itself: resolve both
-# locks with uv (same flags as `make lock` and `make lock-security`), rebuild
-# the SBOM and the package (which refreshes the release manifest), and push
-# the result as one commit to the same branch. The push triggers the normal
-# pull_request run of validate-sdr, so the PR shows real checks. If the locks
-# were already current, nothing is pushed.
+# This workflow does that step on the Dependabot branch itself: resolve the
+# locks with uv (same flags as the Makefile targets), rebuild the SBOM and the
+# package (which refreshes the release manifest), and push the result as one
+# commit to the same branch. The push triggers the normal pull_request run of
+# validate-sdr, so the PR shows real checks. If the locks were already current,
+# nothing is pushed.
 #
-# Scope: pip branches only. A GitHub Actions bump touches no lock. The job
-# writes only the lock files, the SBOM and regenerated artifacts; it never
-# touches a status, a record or a requirement text.
+# Trigger and trust (zizmor review, 2026-11-11). GitHub runs pull_request for
+# a Dependabot PR under a read-only token, so a push needs a privileged
+# context. pull_request_target is the usual answer and zizmor is right that it
+# is almost always used insecurely: it runs with write permission against code
+# the PR author controls. The hazard is bounded here in four ways, each named:
+#   1. The job runs only when the PR AUTHOR, read from the event payload
+#      (github.event.pull_request.user.login), is dependabot[bot]. The actor
+#      context (github.actor) is spoofable and is not used.
+#   2. The head is checked out only AFTER that guard, into a subdirectory,
+#      and the only code executed from it is the repository's own build
+#      tooling, which Dependabot does not modify (it edits requirements*.txt).
+#      The tooling itself (sdr.py, validation/, Makefile) is taken from the
+#      BASE ref, not the head, so a PR cannot swap it.
+#   3. No expression is expanded inside a shell line: every value crosses
+#      into the shell through an environment variable (template-injection).
+#   4. Permissions are the minimum: contents: write for the push, nothing
+#      else. The token is never written to git config beyond this job.
 name: dependabot-lock
 
 on:
-  # pull_request_target, not pull_request: GitHub runs pull_request for a
-  # Dependabot PR under Dependabot's read-only token, which cannot push.
-  # pull_request_target runs in the context of main with this repository's
-  # token. The usual hazard of pull_request_target (running untrusted PR code
-  # with write permission) is bounded here by the actor guard below, by
-  # checking out the head only AFTER the guard, and by the fact that the only
-  # code executed from the branch is the repository's own build tooling that
-  # Dependabot does not modify (it edits requirements*.txt alone).
-  pull_request_target:
+  pull_request_target:  # zizmor: ignore[dangerous-triggers] bounded as documented in the header
     branches: [main]
     paths:
       - "requirements.txt"
       - "requirements-ci.txt"
       - "requirements-dev.txt"
       - "requirements-security.txt"
+      - "requirements-checkov.txt"
 
 permissions:
   contents: write
@@ -42,20 +50,36 @@ permissions:
 
 jobs:
   lock:
-    if: github.actor == 'dependabot[bot]'
+    # The PR's author from the event payload, not github.actor (spoofable).
+    if: github.event.pull_request.user.login == 'dependabot[bot]'  # zizmor: ignore[bot-conditions] payload author, not actor
     runs-on: ubuntu-latest
     steps:
+      # Base ref first: the tooling that runs comes from main, never from the PR.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          persist-credentials: false
+      # Head ref into a subdirectory, with credentials, because the push below
+      # goes to it. Only its requirements*.txt are read by the steps that follow.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.ref }}
-          token: ${{ github.token }}
+          path: head
           # persist-credentials kept on: this job pushes with git below.
           persist-credentials: true
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
       - name: Install uv
         run: pip install --quiet uv
+      - name: Take ONLY the requirement inputs from the head
+        # Everything else (tooling, templates, records) stays as main has it.
+        run: |
+          set -euo pipefail
+          for f in requirements.txt requirements-ci.txt requirements-dev.txt \
+                   requirements-security.txt requirements-checkov.txt; do
+            if [ -f "head/$f" ]; then cp "head/$f" "$f"; fi
+          done
       - name: Resolve the hash-locked closures (same flags as the Makefile)
         run: |
           set -euo pipefail
@@ -65,6 +89,9 @@ jobs:
           uv pip compile requirements-security.txt -c requirements.lock --generate-hashes \
             --python-platform linux --python-version 3.12 --no-header \
             --output-file requirements-security.lock
+          uv pip compile requirements-checkov.txt --generate-hashes \
+            --python-platform linux --python-version 3.12 --no-header \
+            --output-file requirements-checkov.lock
       - name: Rebuild the SBOM and the package from the new lock
         run: |
           set -euo pipefail
@@ -75,15 +102,21 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euo pipefail
+          # Copy the regenerated outputs into the head checkout and commit there.
+          cp requirements.lock requirements-security.lock requirements-checkov.lock head/
+          rm -rf head/artifacts
+          cp -r artifacts head/artifacts
+          cd head
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add requirements.lock requirements-security.lock artifacts
+          git add requirements.lock requirements-security.lock requirements-checkov.lock artifacts
           if git diff --cached --quiet; then
             echo "locks, SBOM and manifest already current; nothing to push"
             exit 0
           fi
           git commit -m "chore(deps): regenerate hash locks, SBOM and manifest for this bump"
-          git push origin HEAD:"${{ github.event.pull_request.head.ref }}"
-          gh pr comment "$PR" --body "Hash locks (requirements.lock, requirements-security.lock), SBOM and release manifest regenerated for this bump by the dependabot-lock workflow. validate-sdr now runs on the completed branch; merge on green."
+          git push origin "HEAD:$HEAD_REF"
+          gh pr comment "$PR" --body "Hash locks (requirements.lock, requirements-security.lock, requirements-checkov.lock), SBOM and release manifest regenerated for this bump by the dependabot-lock workflow. validate-sdr now runs on the completed branch; merge on green."
