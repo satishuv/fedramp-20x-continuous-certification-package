@@ -1327,7 +1327,7 @@
     "-r",
     ".",
     "--exclude",
-    "./automation/collectors/testdata,./.git",
+    "./automation/collectors/testdata,./.git,./.venv-checkov",
     "--skip",
     "B101",
     "--severity-level",
@@ -1338,6 +1338,48 @@
     "txt",
     "--output",
     "bandit-report.txt"
+   ]
+  },
+  "security.cfn-lint": {
+   "kind": "release-gate-step",
+   "section": "security",
+   "argv": [
+    "python",
+    "-c",
+    "import sys, cfnlint.runner as r; sys.exit(r.main())",
+    "--ignore-checks",
+    "E3004",
+    "--",
+    "automation/config-rules/deploy/cloudformation.yaml",
+    "automation/pipeline/sdr-pipeline.yaml",
+    "automation/evidence-store-isolation/cloudformation.yaml"
+   ]
+  },
+  "security.checkov": {
+   "kind": "release-gate-step",
+   "section": "security",
+   "argv": [
+    "@CHECKOV_PYTHON",
+    "-m",
+    "checkov.main",
+    "--quiet",
+    "--compact",
+    "--framework",
+    "cloudformation",
+    "-f",
+    "automation/config-rules/deploy/cloudformation.yaml",
+    "-f",
+    "automation/pipeline/sdr-pipeline.yaml",
+    "-f",
+    "automation/evidence-store-isolation/cloudformation.yaml"
+   ]
+  },
+  "security.detect-secrets": {
+   "kind": "release-gate-step",
+   "section": "security",
+   "argv": [
+    "python",
+    "audit/secrets_gate.py"
    ]
   },
   "security.pip-audit": {
@@ -1353,6 +1395,17 @@
     "--strict",
     "--progress-spinner",
     "off"
+   ]
+  },
+  "security.zizmor": {
+   "kind": "release-gate-step",
+   "section": "security",
+   "argv": [
+    "@console:zizmor",
+    "--min-severity",
+    "medium",
+    "--offline",
+    ".github/workflows"
    ]
   },
   "validate.validate_assurance_graph": {

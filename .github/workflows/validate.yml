@@ -225,10 +225,19 @@ jobs:
         # requirements-security.txt (make lock-security). A version pin alone
         # constrained the version, not the bytes.
         run: pip install --quiet --require-hashes -r requirements-security.lock
-      - name: Security section of the release gate (Bandit, HARD GATE)
+      - name: Install checkov into its own hash-locked venv
+        # checkov pins boto3 1.35.x and cannot share the runtime closure, so it
+        # gets its own lock (requirements-checkov.lock) and its own venv; the
+        # gate runs it from there via CHECKOV_PYTHON.
+        run: |
+          python -m venv .venv-checkov
+          .venv-checkov/bin/pip install --quiet --require-hashes -r requirements-checkov.lock
+      - name: Security section of the release gate (Bandit, pip-audit, checkov, cfn-lint, zizmor, detect-secrets; HARD GATE)
         # Argument list lives in audit/release_gate.py (one definition for
         # CI, the AWS release build, and sdr.py release). The report is
         # written for the artifact upload below; a finding fails the step.
+        env:
+          CHECKOV_PYTHON: .venv-checkov/bin/python
         run: python audit/release_gate.py security
       - name: Upload bandit report
         if: always()

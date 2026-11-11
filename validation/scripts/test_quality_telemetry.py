@@ -97,8 +97,17 @@ def main():
         check("dependabot-lock workflow exists", os.path.exists(lock_wf))
         if os.path.exists(lock_wf):
             wf = open(lock_wf, encoding="utf-8").read()
-            check("dependabot-lock runs only for the dependabot actor",
-                  "github.actor == 'dependabot[bot]'" in wf)
+            # zizmor (2026-11-11): github.actor is spoofable; the guard reads the
+            # PR author from the event payload, tooling runs from the base ref,
+            # and no expression is expanded inside a shell line.
+            check("dependabot-lock runs only when the PR AUTHOR (payload, not actor) is dependabot",
+                  "github.event.pull_request.user.login == 'dependabot[bot]'" in wf
+                  and "github.actor ==" not in wf)
+            check("dependabot-lock runs the tooling from the base ref, head only for requirements inputs",
+                  "ref: ${{ github.event.pull_request.base.ref }}" in wf
+                  and "path: head" in wf)
+            check("dependabot-lock expands no expression inside a shell line",
+                  'HEAD:"${{' not in wf and 'git push origin "HEAD:$HEAD_REF"' in wf)
             check("dependabot-lock resolves both hash locks with the Makefile flags",
                   "--output-file requirements.lock" in wf
                   and "--output-file requirements-security.lock" in wf

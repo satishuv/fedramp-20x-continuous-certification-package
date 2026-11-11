@@ -14,6 +14,29 @@ from this release. The Class A anchor moved in six places: two validation tests,
 the requirements oracle, the certification-classes doc, the README table and
 mutation MUT-F86's target text.)
 
+### The gate runs every scanner the external review ran
+
+- The `security` section of the release gate grows from two steps to six:
+  checkov, cfn-lint, zizmor and detect-secrets join Bandit and pip-audit,
+  each a hard step. An external DSR review (2026-11-10) found 254 items with
+  those four that this gate had never run. Baselines are audited, not blanket:
+  `.secrets.baseline` carries a reason on every one of its 70 entries,
+  template skips sit on the resource they cover with their reason, and
+  cfn-lint ignores one rule (E3004, a false circular-dependency warning).
+- Findings the new scanners made on this tree, fixed rather than suppressed:
+  the Dependabot lock workflow used the spoofable `github.actor`, expanded an
+  expression inside a shell line, and ran head-controlled code under
+  `pull_request_target`; it now reads the PR author from the event payload,
+  runs the tooling from the base ref with only the requirements inputs taken
+  from the head, and passes every value through an environment variable. The
+  pipeline log bucket used the legacy `LogDeliveryWrite` ACL; it now grants
+  log delivery by bucket policy scoped to this account with ACLs disabled.
+- checkov pins boto3 1.35.x and cannot share the runtime lock, so it has its
+  own hash-locked closure (`requirements-checkov.txt` / `.lock`, `make
+  lock-checkov`) and venv (`make venv-checkov`); the gate runs it from there.
+  `test_collection_fail_closed.py` holds the six-step list, the pins, both
+  locks and the audited baseline.
+
 ### A decision is tied to the rule text it judged (AUD-F97)
 
 - **AUD-F97 (High).** External SAS review of main `85ccced` (2026-11-09,

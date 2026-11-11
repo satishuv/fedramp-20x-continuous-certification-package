@@ -83,10 +83,12 @@ Resources:
               chain, so it is intentionally omitted (standard S3 log-bucket
               exception).
     Properties:
-      AccessControl: LogDeliveryWrite
+      # AccessControl: LogDeliveryWrite is the legacy ACL form (cfn-lint W3045).
+      # Log delivery is granted below by LogBucketPolicy to logging.s3.amazonaws.com
+      # instead, scoped to this account's source buckets; ACLs stay disabled.
       OwnershipControls:
         Rules:
-          - ObjectOwnership: BucketOwnerPreferred
+          - ObjectOwnership: BucketOwnerEnforced
       VersioningConfiguration:
         Status: Enabled
       BucketEncryption:
@@ -106,6 +108,17 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
+          # S3 server access log delivery, replacing the legacy LogDeliveryWrite
+          # ACL: only this account's buckets may be the log source.
+          - Sid: AllowS3ServerAccessLogDelivery
+            Effect: Allow
+            Principal:
+              Service: logging.s3.amazonaws.com
+            Action: s3:PutObject
+            Resource: !Sub "${LogBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
           - Sid: DenyInsecureTransport
             Effect: Deny
             Principal: "*"

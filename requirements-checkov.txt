@@ -1,0 +1,8 @@
+# checkov, the CloudFormation policy scanner the security gate runs. Kept in
+# its own hash-locked closure (requirements-checkov.lock, resolved WITHOUT the
+# runtime constraint) because checkov pins boto3==1.35.49 while the runtime
+# closure carries a current boto3; the two cannot share one lock. The gate
+# installs this closure into an isolated venv (.venv-checkov) and runs checkov
+# from there, so its old transitive pins never reach the package's own
+# environment. Re-lock with: make lock-checkov
+checkov==3.4.4

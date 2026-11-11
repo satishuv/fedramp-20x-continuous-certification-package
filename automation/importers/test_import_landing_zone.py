@@ -25,7 +25,7 @@ import draft_narratives as dn  # noqa: E402
 REGISTRY = json.load(open(lz.REGISTRY, encoding="utf-8"))
 RECORD_STORE = json.load(open(os.path.join(BASE, "sdr", "records", "records-store.json"),
                               encoding="utf-8"))
-SECRET_EMAIL = "soc-alerts@acme.example"
+SECRET_EMAIL = "soc-alerts@acme.example"  # pragma: allowlist secret  (fixture email the test proves is REDACTED from output)
 
 SECURITY = """
 centralSecurityServices:

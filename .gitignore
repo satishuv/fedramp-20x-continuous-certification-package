@@ -116,3 +116,6 @@ ruff-format.txt
 
 # Gap-assessment reports derive from a real account's facts store: never commit.
 automation/assessment/report/
+
+# checkov's isolated venv (requirements-checkov.lock); built by the security gate
+.venv-checkov/
