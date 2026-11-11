@@ -30,7 +30,7 @@ RECORD_STORE = json.load(open(os.path.join(BASE, "sdr", "records", "records-stor
 
 COMP_IAM = "11111111-1111-4111-8111-111111111111"
 COMP_SIEM = "22222222-2222-4222-8222-222222222222"
-PARTY_SECRET = "Jane Q. Public, CISO, 555-0100, jane@acme.example"
+PARTY_SECRET = "Jane Q. Public, CISO, 555-0100, jane@acme.example"  # pragma: allowlist secret  (fictional contact the test proves is REDACTED)
 SYSTEM_ID_SECRET = "F00000001"
 
 

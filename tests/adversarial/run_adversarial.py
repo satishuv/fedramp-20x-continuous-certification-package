@@ -107,7 +107,7 @@ def test_aws_key_in_content_is_detected():
 def test_private_key_block_is_detected():
     import re
     pat = re.compile(r"-----BEGIN (RSA |EC )?PRIVATE KEY-----")
-    assert pat.search("-----BEGIN RSA PRIVATE KEY-----") is not None
+    assert pat.search("-----BEGIN RSA PRIVATE KEY-----") is not None  # pragma: allowlist secret  (bare PEM header, no key material; proves the scanner refuses it)
 
 
 # --- Review: an AI/pipeline-authored approval is rejected ---------------------
