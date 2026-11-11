@@ -700,6 +700,11 @@ def main():
             for _l in rmach.stdout.splitlines():
                 if "[BLOCK]" in _l or "gate" in _l.lower():
                     print("      detail:", _l[:240])
+            _g = subprocess.run([sys.executable, "sdr.py", "validate", "--no-tests"],
+                                cwd=root, capture_output=True, text=True)
+            for _l in (_g.stdout + _g.stderr).splitlines():
+                if "FAIL" in _l or "    - " in _l:
+                    print("      gate:", _l[:240])
         check("Class C remains package-ready without a machine-readable SCG URI "
               "(SCG-ENH-MRG is a SHOULD, not a package blocker)",
               rmach.returncode == 0
