@@ -75,6 +75,8 @@ jobs:
       SDR_METRIC_HISTORY_BUCKET: ${{ vars.SDR_METRIC_HISTORY_BUCKET }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
@@ -179,6 +181,9 @@ jobs:
       pull-requests: write # to open the PR
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # persist-credentials kept on: this job pushes with git below.
+          persist-credentials: true
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: living-sdr-regenerated

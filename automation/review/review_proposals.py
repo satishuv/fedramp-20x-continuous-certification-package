@@ -55,6 +55,17 @@ FIELD_REVIEW_LOG = os.path.join(BASE, "sdr", "reviews", "field-review-log.json")
 
 sys.path.insert(0, os.path.join(BASE, "validation", "scripts"))
 from unreviewed_text import is_unreviewed, strip_label  # noqa: E402
+import rule_fingerprint as _rf  # noqa: E402
+
+
+def _stamp(record_id):
+    """Dataset version and rule fingerprint the decision is taken against
+    (review finding 8). Missing dataset (unit tests with synthetic stores)
+    yields an unstamped entry rather than a crash."""
+    try:
+        return _rf.stamp(record_id)
+    except (OSError, ValueError):
+        return {}
 
 # Fields a review decision may write. Narrative prose, the extension's
 # human-stated facts, and (prefill only) the structured KSI tests/evidence.
@@ -319,6 +330,7 @@ def apply_decisions(store, items, decisions, reviewer, role, log=None, now=None)
             "source": it["source"],
             "provenance": it["provenance"],
             "proposed_sha256": _sha256(it["proposed"]),
+            **_stamp(it["record_id"]),
         }
         if decision == "accepted":
             value = _strip(it["proposed"])
@@ -351,7 +363,11 @@ def apply_decisions(store, items, decisions, reviewer, role, log=None, now=None)
             entry["applied_sha256"] = None
             if d.get("reason"):
                 entry["reason"] = str(d["reason"])[:500]
-        new_log["reviews"].append(entry)
+        if d.get("bulk"):
+            # Review finding 3: a bulk accept is logged as such, so it reads
+            # differently from a per-field decision in every later audit.
+            entry["bulk"] = True
+        _chain_append(new_log, entry)
     return new_store, new_log, applied
 
 
@@ -441,7 +457,7 @@ def author_answers(store, answers, author, role, log=None, now=None):
         cur = _get(record, path)
         value = [text.strip()] if isinstance(cur, list) else text.strip()
         _set(record, path, value)
-        new_log["reviews"].append({
+        _chain_append(new_log, {
             "review_id": f"FR-{uuid.uuid4().hex[:12]}",
             "field": key,
             "section": section,
@@ -454,6 +470,7 @@ def author_answers(store, answers, author, role, log=None, now=None):
             "provenance": {"note": "answer typed by the named author"},
             "proposed_sha256": _sha256(cur),
             "applied_sha256": _sha256(value),
+            **_stamp(record_id),
         })
         applied += 1
     return new_store, new_log, applied
@@ -477,7 +494,7 @@ def log_for_filled_store(template_store, filled_store, author, role, now=None):
                 if _is_placeholder(value) or value == _get(tmpl, path):
                     continue
                 structured = path[0] in STRUCTURED_FIELDS
-                log["reviews"].append({
+                _chain_append(log, {
                     "review_id": f"FR-{uuid.uuid4().hex[:12]}",
                     "field": _field_key(section, record_id, path),
                     "section": section, "record_id": record_id,
@@ -487,6 +504,7 @@ def log_for_filled_store(template_store, filled_store, author, role, now=None):
                     "provenance": {"note": "generated sample value, logged so the provenance gate holds"},
                     "proposed_sha256": _sha256(_get(tmpl, path)),
                     "applied_sha256": _sha256(value),
+                    **_stamp(record_id),
                 })
     return log
 
@@ -502,6 +520,23 @@ LOG_NOTE = (
     "a new decision. This log is not approval of a rule or KSI (that is the review "
     "register) and never records implementation_status or assessment."
 )
+
+
+def entry_chain_hash(entry):
+    """Chain hash of one log entry: sha256 over the entry WITHOUT its own
+    prev_sha256 (so the hash covers the decision, not the link), canonical
+    JSON. The next entry records this as its prev_sha256 (review finding 3)."""
+    body = {k: v for k, v in entry.items() if k != "prev_sha256"}
+    canon = json.dumps(body, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return "sha256:" + hashlib.sha256(canon.encode("utf-8")).hexdigest()
+
+
+def _chain_append(log, entry):
+    """Append ``entry`` to ``log['reviews']`` with prev_sha256 set to the chain
+    hash of the current last entry (None when the log is empty)."""
+    reviews = log.setdefault("reviews", [])
+    entry["prev_sha256"] = entry_chain_hash(reviews[-1]) if reviews else None
+    reviews.append(entry)
 
 
 def write_store(store, path=None):
@@ -785,7 +820,7 @@ def run(args, out=print, prompt=input):
             out("REFUSED: --accept-all applies only to 'prefill' (deterministic collector "
                 "facts). Prose proposals are decided one at a time.")
             return 2
-        decisions = {it["key"]: {"decision": "accepted"}
+        decisions = {it["key"]: {"decision": "accepted", "bulk": True}
                      for it in items if it["source"] == "prefill"}
         if not decisions:
             out("No prefill proposals pending.")

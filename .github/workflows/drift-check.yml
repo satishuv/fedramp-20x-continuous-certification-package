@@ -42,6 +42,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # persist-credentials kept on: this job pushes with git below.
+          persist-credentials: true
       - name: Compare pinned sources against upstream
         id: check
         run: |
@@ -212,6 +215,23 @@ jobs:
             # Lock from disk (never a hand-edited hash); --verified-on records
             # the day the pinned copies were confirmed current.
             python validation/scripts/update_sources_lock.py --upstream-commit "$UPSTREAM_SHA" --verified-on "$TODAY"
+            # Review finding 8: advancing the profile's dataset_version keeps the
+            # build coherent, but confirming the provider's answers against the
+            # new release is the provider's act. Mark the profile as unconfirmed
+            # for the new version so preflight blocks until a named person runs
+            # `sdr.py confirm-dataset`; the PR body says so.
+            if [ "$DATASET_CHANGED" = "1" ]; then
+              python - <<'PY'
+          import json
+          p = "profiles/common/offering-profile.json"
+          prof = json.load(open(p, encoding="utf-8"))
+          prof.setdefault("dataset_version_confirmed_for", "")
+          prof.setdefault("dataset_version_confirmed_by", "")
+          prof.setdefault("dataset_version_confirmed_at", "")
+          json.dump(prof, open(p, "w", encoding="utf-8", newline="\n"), indent=1, ensure_ascii=False)
+          open(p, "a", encoding="utf-8", newline="\n").write("\n")
+          PY
+            fi
             # Complete package from one build definition, then the anchors the
             # tests and docs read (independent recount by the oracle), then the
             # class table, prose and README row from the regenerated profiles.
@@ -277,7 +297,7 @@ jobs:
 
           # Every open drift issue is closed by this PR on merge.
           CLOSES=$(gh issue list --state open --search "FedRAMP upstream sources changed in:title" --json number --jq '.[] | "Closes #\(.number)"' | tr '\n' ' ')
-          BODY="$(printf 'Upstream FedRAMP sources drifted:%s\n\nThis PR copies the changed upstream files into their pinned paths, regenerates `references/sources.lock.json` from disk, recounts the class anchors (`references/anchors.json`), rebuilds the COMPLETE package and re-syncs the class table, prose and README row. Dataset: %s to %s.\n\n## FedRAMP changelog entry for %s\n\n%s\n\n## Material rule and KSI changes\n```\n%s\n```\n\n## Downstream impact on this package\n```\n%s\n```\n\n## Anchor changes (class rule counts)\n```\n%s\n```\n\nREVIEW the diff and impact before merging. No status was changed and no assessment was written. CI was started on this branch by the drift workflow; its checks appear below.\n\n%s' "$DRIFT" "$OLDVER" "$NEWVER" "$NEWVER" "$CHANGELOG_ENTRY" "$DIFF_SUMMARY" "$IMPACT_SUMMARY" "${ANCHOR_NOTE:-(none)}" "$CLOSES")"
+          BODY="$(printf 'Upstream FedRAMP sources drifted:%s\n\nThis PR copies the changed upstream files into their pinned paths, regenerates `references/sources.lock.json` from disk, recounts the class anchors (`references/anchors.json`), rebuilds the COMPLETE package and re-syncs the class table, prose and README row. Dataset: %s to %s.\n\n## FedRAMP changelog entry for %s\n\n%s\n\n## Material rule and KSI changes\n```\n%s\n```\n\n## Downstream impact on this package\n```\n%s\n```\n\n## Anchor changes (class rule counts)\n```\n%s\n```\n\nREVIEW the diff and impact before merging. No status was changed and no assessment was written. CI was started on this branch by the drift workflow; its checks appear below.\n\n## After merging (provider action)\n\nThe records named under "Downstream impact" were decided against the previous rule text; `python sdr.py validate` now reports them as needing re-review (each field decision carries the rule fingerprint it judged). Re-review them with `python sdr.py review --walk --all` or re-author with `python sdr.py author`, then record your confirmation of this release with `python sdr.py confirm-dataset --by "<name>" --role "<role>"`. Preflight blocks submission until both are done. Offline copies: `python sdr.py drift` reports the same drift this workflow detected.\n\n%s' "$DRIFT" "$OLDVER" "$NEWVER" "$NEWVER" "$CHANGELOG_ENTRY" "$DIFF_SUMMARY" "$IMPACT_SUMMARY" "${ANCHOR_NOTE:-(none)}" "$CLOSES")"
           if ! PR_URL=$(gh pr create --title "$TITLE" --body "$BODY"); then
             # PR creation refused (usually the repository setting "Allow GitHub
             # Actions to create and approve pull requests" is off). Hand the

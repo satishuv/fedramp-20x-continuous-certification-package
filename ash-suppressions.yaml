@@ -1,0 +1,40 @@
+# Suppressions for the AWS Automated Security Helper (ASH) secret scanners, with
+# a reason per path (SAST review of main 85ccced, 2026-11-10: 13 HIGH secret
+# findings, all false positives). A suppression names what the string IS; it is
+# never a blanket exclusion of a scanner. The pre-commit sensitive-pattern gate
+# (validate_sdr.py no_sensitive_patterns) remains in force on generated output.
+suppressions:
+  - path: references/sources.lock.json
+    reason: >
+      sha256 digests of the pinned FedRAMP dataset and schemas. A content hash is
+      high-entropy by construction and is the integrity control, not a secret.
+  - path: automation/importers/config-rule-name-map.json
+    reason: >
+      sha256 provenance digest of the generated name map (high entropy, not a key).
+  - path: automation/collectors/test_evidence_wiring.py
+    reason: >
+      Fixture value shaped like an AWS access key id (AKIA + placeholder) used to
+      prove the sensitive-pattern scanner REFUSES it. Not a credential.
+  - path: automation/importers/test_import_findings.py
+    reason: >
+      Fixture base64 blob standing in for a Security Hub finding payload. Not a key.
+  - path: automation/collectors/test_multi_account.py
+    reason: >
+      Fixture string shaped like a cloud IAM key, used to assert redaction. Not a key.
+  - path: validation/scripts/test_unreviewed_text.py
+    reason: >
+      Fixture string shaped like a cloud IAM key, used to assert the unreviewed-text
+      gate treats it as content, not a label. Not a key.
+  - path: tests/adversarial/run_adversarial.py
+    reason: >
+      A throwaway test-only private key generated at run time to prove signature
+      stripping is refused (AUD-F88 archetype). Never a real signer.
+  - path: automation/collectors/test_config_rule_resolution.py
+    reason: >
+      The word "secret" appears in a Config rule NAME (secretsmanager-rotation-enabled-check).
+  - path: automation/importers/test_import_landing_zone.py
+    reason: >
+      The word "secret" appears in a Landing Zone Accelerator config key name in a fixture.
+  - path: automation/importers/test_import_oscal_ssp.py
+    reason: >
+      The word "secret" appears in an OSCAL control narrative fixture.

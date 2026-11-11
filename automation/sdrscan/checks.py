@@ -29,6 +29,25 @@ _BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__
 sys.path.insert(0, os.path.join(_BASE, "validation", "scripts"))
 from unreviewed_text import is_unreviewed  # noqa: E402  (AUD-F38, single definition)
 
+
+def _freshness_window_days():
+    """The ONE evidence-freshness window: the offering's
+    evidence_freshness_policy_days, else sdr.DEFAULT_EVIDENCE_FRESHNESS_DAYS."""
+    try:
+        with open(os.path.join(_BASE, "profiles", "common", "offering-profile.json"),
+                  encoding="utf-8") as f:
+            days = json.load(f).get("evidence_freshness_policy_days")
+        if isinstance(days, int) and days > 0:
+            return days
+    except (OSError, ValueError):
+        pass
+    try:
+        sys.path.insert(0, _BASE)
+        import sdr as _sdr  # noqa: E402
+        return int(_sdr.DEFAULT_EVIDENCE_FRESHNESS_DAYS)
+    except Exception:  # noqa: BLE001
+        return 90
+
 # Placeholder vocabulary from CLAUDE.md. These are honest markers for missing
 # facts, so a field containing one is "not yet stated", never a pass.
 PLACEHOLDER = re.compile(
@@ -192,10 +211,16 @@ def package_checks(ctx):
     # FRC-CSX-VVR: the record has to be persistently verified and validated, so
     # a stale lastUpdated is itself a finding. Age is measured against the
     # pinned dataset date, keeping the check deterministic.
+    # Review finding 7 (2026-11-09): one freshness window, the offering's
+    # evidence_freshness_policy_days (default sdr.DEFAULT_EVIDENCE_FRESHNESS_DAYS),
+    # instead of a 90 hardcoded here. Repository policy, not a CR26 rule: no
+    # rule sets an evidence age, so the finding says so.
     age = ctx.record_age_days
+    window = _freshness_window_days()
     out.append(("sdr_record_freshness", "SDR", "Security Decision Record",
-                age is not None and age <= 90,
-                f"metadata.lastUpdated is {age} days from the pinned dataset date"
+                age is not None and age <= window,
+                f"metadata.lastUpdated is {age} days from the pinned dataset date "
+                f"(window {window} days: repository policy, no CR26 rule sets an evidence age)"
                 if age is not None else "metadata.lastUpdated is unparseable"))
     return out
 

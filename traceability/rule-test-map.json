@@ -969,6 +969,16 @@
    "severity": "High",
    "component": "validation/scripts/validate_reviews.py (provenance_gaps, populated_count); automation/review/review_proposals.py (placeholder_items, author_answers, author_walk, run_author, log_for_filled_store, thirdparty source); automation/collectors/apply_third_party_evidence.py (sidecar, not store); sdr.py (author command, next-step message); the three sample builders and test_submission_readiness._fill_records (log their generated answers)"
   },
+  "ledger.AUD-F97": {
+   "kind": "closed-defect",
+   "severity": "High",
+   "component": "validation/scripts/rule_fingerprint.py (new); automation/review/review_proposals.py (_stamp on every log entry); validation/scripts/validate_reviews.py (rereview_gaps); sdr.py (confirm-dataset, drift, preflight dataset-confirmation blocker); .github/workflows/drift-check.yml (unconfirms the profile on a dataset move; PR body names the provider action)"
+  },
+  "ledger.AUD-F98": {
+   "kind": "closed-defect",
+   "severity": "Medium",
+   "component": "automation/review/review_proposals.py (entry_chain_hash, _chain_append, bulk flag); validation/scripts/validate_reviews.py (chain walk, bulk note, imported FORBIDDEN_REVIEWERS)"
+  },
   "scan.frr_artifacts_referenced": {
    "kind": "readiness-scan",
    "severity": "medium",

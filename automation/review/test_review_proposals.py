@@ -182,7 +182,7 @@ def test_end_to_end_through_run_and_validator_binding():
         for rel in ("sdr/records", "sdr/reviews", "validation/scripts", "traceability",
                     "automation/review"):
             os.makedirs(os.path.join(tmp, rel), exist_ok=True)
-        for fn in ("validate_reviews.py", "unreviewed_text.py"):
+        for fn in ("validate_reviews.py", "unreviewed_text.py", "rule_fingerprint.py"):
             shutil.copy(os.path.join(BASE, "validation", "scripts", fn),
                         os.path.join(tmp, "validation", "scripts", fn))
         # The validator reads the review tool's reviewable-path definition.
@@ -408,11 +408,19 @@ def _gate_in(tmp_base, store_obj, log_obj):
     os.makedirs(os.path.join(tmp_base, "traceability"))
     os.makedirs(os.path.join(tmp_base, "validation", "scripts"))
     os.makedirs(os.path.join(tmp_base, "automation", "review"))
-    for name in ("validate_reviews.py", "unreviewed_text.py"):
+    for name in ("validate_reviews.py", "unreviewed_text.py", "rule_fingerprint.py"):
         shutil.copy2(os.path.join(BASE, "validation", "scripts", name),
                      os.path.join(tmp_base, "validation", "scripts", name))
     shutil.copy2(os.path.join(HERE, "review_proposals.py"),
                  os.path.join(tmp_base, "automation", "review", "review_proposals.py"))
+    # The re-review check (finding 8) recomputes rule fingerprints from the pinned
+    # dataset for the active class; give the scratch tree both.
+    os.makedirs(os.path.join(tmp_base, "references"))
+    os.makedirs(os.path.join(tmp_base, "profiles", "common"))
+    shutil.copy2(os.path.join(BASE, "references", "fedramp-consolidated-rules.json"),
+                 os.path.join(tmp_base, "references", "fedramp-consolidated-rules.json"))
+    shutil.copy2(os.path.join(BASE, "profiles", "common", "offering-profile.json"),
+                 os.path.join(tmp_base, "profiles", "common", "offering-profile.json"))
     with open(os.path.join(tmp_base, "sdr", "records", "records-store.json"), "w", encoding="utf-8") as f:
         json.dump(store_obj, f)
     with open(os.path.join(tmp_base, "sdr", "reviews", "field-review-log.json"), "w", encoding="utf-8") as f:
@@ -556,6 +564,109 @@ def _run_all():
     print(f"\n{len(tests)}/{len(tests)} passed")
     return 0
 
+
+
+# ---- Review finding 8 (2026-11-09): a decision is tied to the rule text it judged
+
+def test_f8_decisions_are_stamped_with_dataset_version_and_rule_fingerprint():
+    import rule_fingerprint as rf
+    s = store()
+    new, log, _ = rp.author_answers(
+        s, {"frr/AFC-CSO-INB.implementation": "Monitored by the on-call rotation."},
+        "Jane Doe", "Compliance lead")
+    e = log["reviews"][0]
+    assert e["dataset_version"] == rf.dataset_version(), e
+    assert e["rule_sha256"] == rf.fingerprint("AFC-CSO-INB"), e
+    items, _ = rp.proposals(s, prefill(s), ai_draft(s))
+    _, log2, _ = rp.apply_decisions(s, items, {"ksi/KSI-IAM-SUS.tests": {"decision": "accepted"}},
+                                    "Jane Doe", "Compliance lead")
+    assert log2["reviews"][-1]["rule_sha256"] == rf.fingerprint("KSI-IAM-SUS")
+    print("PASS: test_f8_decisions_are_stamped_with_dataset_version_and_rule_fingerprint")
+
+
+def test_f8_rule_text_change_forces_rereview_and_unstamped_is_advisory():
+    import rule_fingerprint as rf
+    s = store()
+    new, log, _ = rp.author_answers(
+        s, {"frr/AFC-CSO-INB.implementation": "Monitored by the on-call rotation."},
+        "Jane Doe", "Compliance lead")
+    # Current dataset: clean.
+    with tempfile.TemporaryDirectory() as tmp:
+        code, out = _gate_in(tmp, new, log)
+    assert code == 0, out
+    # The rule text FedRAMP publishes changes (fingerprint taken against an
+    # older release): the field must be re-reviewed, hard.
+    stale = copy.deepcopy(log)
+    stale["reviews"][0]["rule_sha256"] = "sha256:" + "00" * 32
+    stale["reviews"][0]["dataset_version"] = "2026.01.01.01"
+    with tempfile.TemporaryDirectory() as tmp:
+        code, out = _gate_in(tmp, new, stale)
+    assert code == 1 and "has since changed" in out and "frr/AFC-CSO-INB.implementation" in out, out
+    # A pre-fingerprint entry (older log) is advisory only, not a failure.
+    old = copy.deepcopy(log)
+    old["reviews"][0].pop("rule_sha256", None)
+    old["reviews"][0].pop("dataset_version", None)
+    with tempfile.TemporaryDirectory() as tmp:
+        code, out = _gate_in(tmp, new, old)
+    assert code == 0 and "predate rule fingerprints" in out, out
+    assert rf.fingerprint("NOT-A-REAL-RULE") is None
+    print("PASS: test_f8_rule_text_change_forces_rereview_and_unstamped_is_advisory")
+
+
+# ---- Review finding 3 (2026-11-09): the log is chained, bulk accepts are flagged,
+# and the validator uses the review tool's banned-reviewer list ---------------
+
+def test_f3_log_is_a_hash_chain_and_tamper_breaks_it():
+    s = store()
+    new, log, _ = rp.author_answers(
+        s, {"frr/AFC-CSO-INB.implementation": "Monitored by the on-call rotation.",
+            "frr/AFC-CSO-INB.extension.verification": "Monthly synthetic email, logged."},
+        "Jane Doe", "Compliance lead")
+    r = log["reviews"]
+    assert r[0]["prev_sha256"] is None and r[1]["prev_sha256"] == rp.entry_chain_hash(r[0])
+    with tempfile.TemporaryDirectory() as tmp:
+        code, out = _gate_in(tmp, new, log)
+    assert code == 0, out
+    # Remove the first entry: the second's prev no longer matches -> hard fail.
+    cut = copy.deepcopy(log); cut["reviews"] = cut["reviews"][1:]
+    with tempfile.TemporaryDirectory() as tmp:
+        code, out = _gate_in(tmp, new, cut)
+    assert code == 1 and "chain broken" in out, out
+    # Edit an earlier entry's reviewer: its chain hash changes -> the next link breaks.
+    ed = copy.deepcopy(log); ed["reviews"][0]["reviewer"] = "Someone Else"
+    with tempfile.TemporaryDirectory() as tmp:
+        code, out = _gate_in(tmp, new, ed)
+    assert code == 1 and "chain broken" in out, out
+    # Pre-chain entries (no prev_sha256) are advisory, not failures.
+    old = copy.deepcopy(log)
+    for e in old["reviews"]:
+        e.pop("prev_sha256", None)
+    with tempfile.TemporaryDirectory() as tmp:
+        code, out = _gate_in(tmp, new, old)
+    assert code == 0 and "predate log chaining" in out, out
+    print("PASS: test_f3_log_is_a_hash_chain_and_tamper_breaks_it")
+
+
+def test_f3_bulk_accept_is_flagged_and_banned_reviewers_are_one_list():
+    s = store()
+    items, _ = rp.proposals(s, prefill(s), ai_draft(s))
+    new, log, _ = rp.apply_decisions(s, items, {"ksi/KSI-IAM-SUS.tests": {"decision": "accepted", "bulk": True}},
+                                     "Jane Doe", "Compliance lead")
+    assert log["reviews"][-1]["bulk"] is True
+    with tempfile.TemporaryDirectory() as tmp:
+        code, out = _gate_in(tmp, new, log)
+    assert code == 0 and "bulk accept" in out, out
+    import importlib, validate_reviews as vr
+    importlib.reload(vr)
+    assert vr.FORBIDDEN_REVIEWERS is rp.FORBIDDEN_REVIEWERS
+    # A reviewer the tool bans ("collector") must fail the gate too.
+    bad = copy.deepcopy(log); bad["reviews"][-1]["reviewer"] = "collector"
+    # Rechain so only the reviewer check fires.
+    bad["reviews"][-1]["prev_sha256"] = None
+    with tempfile.TemporaryDirectory() as tmp:
+        code, out = _gate_in(tmp, new, bad)
+    assert code == 1 and "not a human identity" in out, out
+    print("PASS: test_f3_bulk_accept_is_flagged_and_banned_reviewers_are_one_list")
 
 if __name__ == "__main__":
     sys.exit(_run_all())

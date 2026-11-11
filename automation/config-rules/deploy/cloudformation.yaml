@@ -40,6 +40,18 @@ Resources:
           - kms:GenerateDataKey*
           - kms:Describe*
           Resource: '*'
+        - Sid: AllowLambdaDeadLetterQueue
+          Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action:
+          - kms:GenerateDataKey*
+          - kms:Decrypt
+          Resource: '*'
+          Condition:
+            StringEquals:
+              aws:SourceAccount:
+                Ref: AWS::AccountId
   EvidenceRuleLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -81,10 +93,30 @@ Resources:
             - xray:PutTraceSegments
             - xray:PutTelemetryRecords
             Resource: '*'
+          - Effect: Allow
+            Action: sqs:SendMessage
+            Resource:
+              Fn::GetAtt:
+              - EvidenceRuleDeadLetterQueue
+              - Arn
+  EvidenceRuleDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      KmsMasterKeyId:
+        Fn::GetAtt:
+        - EvidenceRuleLogKey
+        - Arn
+      MessageRetentionPeriod: 1209600
   EvidenceRuleFunction:
     Type: AWS::Lambda::Function
     DependsOn:
     - EvidenceRuleLogGroup
+    Metadata:
+      checkov:
+        skip:
+        - id: CKV_AWS_117
+          comment: Calls only S3 and Config service endpoints; no VPC resources are
+            accessed, so VPC placement adds a NAT path and no isolation.
     Properties:
       Handler: evidence_existence_rule.lambda_handler
       Runtime: python3.12
@@ -92,6 +124,11 @@ Resources:
       ReservedConcurrentExecutions: 10
       TracingConfig:
         Mode: Active
+      DeadLetterConfig:
+        TargetArn:
+          Fn::GetAtt:
+          - EvidenceRuleDeadLetterQueue
+          - Arn
       LoggingConfig:
         LogFormat: JSON
         ApplicationLogLevel: INFO
@@ -116,6 +153,8 @@ Resources:
         - EvidenceRuleFunction
         - Arn
       Principal: config.amazonaws.com
+      SourceAccount:
+        Ref: AWS::AccountId
   SdrCedRatTrainingRecordsRule:
     Type: AWS::Config::ConfigRule
     DependsOn:

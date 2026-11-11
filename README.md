@@ -187,6 +187,7 @@ Being direct about this matters more than adoption numbers. See the [caution ban
 - Not trustworthy without human verification. Every generated statement (deterministic or AI-assisted) is an unverified draft. Every letter must be re-checked and confirmed by a qualified human before any use.
 - Not a place for customer data. No account identifiers, credentials, endpoints, or restricted report content, ever. Per-customer work belongs in a separate private repository. The validator actively scans for leaked secrets and fails on a hit.
 - Not affiliated with or endorsed by FedRAMP. FedRAMP publishes the rules; this repository consumes them. Nothing here is an official AWS position, product, or service.
+- Not a substitute for independence. The cloud service provider owns every input and every review decision in this package. Whoever advises a provider on building its package, including anyone using this framework in an advisory capacity, should not also be the FedRAMP Recognized assessment service that assesses that same package. FedRAMP's rules place the assessment with an independent, recognized assessor; keeping the advisor and the assessor separate is what makes that independence real.
 
 ## Documentation
 

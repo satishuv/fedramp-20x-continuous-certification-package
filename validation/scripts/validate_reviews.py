@@ -58,8 +58,11 @@ def _field_value(store, key):
         node = node[part]
     return node
 # A reviewer must be a real name/identity, never the pipeline.
-FORBIDDEN_REVIEWERS = {"", "deterministic", "pipeline", "sdr.py", "automation",
-                       "system", "bot"}
+# ONE banned-reviewer list, the review tool's (review finding 3, 2026-11-09:
+# this validator's copy was shorter, so a reviewer the tool refused could
+# still pass the gate if written into the log another way).
+sys.path.insert(0, os.path.join(BASE, "automation", "review"))
+from review_proposals import FORBIDDEN_REVIEWERS, entry_chain_hash  # noqa: E402
 
 
 def load(path, default=None):
@@ -222,6 +225,36 @@ def main():
     field_reviews = field_log.get("reviews", []) if isinstance(field_log, dict) else []
     store = load(STORE) or {}
     latest = {}
+    # Review finding 3: the log is an append-only hash chain. Each entry carries
+    # prev_sha256, the chain hash of the entry before it (None for the first);
+    # the validator recomputes every link. Deleting, reordering or editing an
+    # entry breaks the chain at that point and is a hard failure. Entries from
+    # before chaining existed carry no prev_sha256 and are reported once as
+    # advisory; the chain is enforced from the first chained entry onward.
+    prev = None
+    chained_from = None
+    unchained = 0
+    for i, r in enumerate(field_reviews):
+        if "prev_sha256" in r:
+            if chained_from is None:
+                chained_from = i
+            if r.get("prev_sha256") != prev:
+                problems.append(f"{r.get('review_id', f'field#{i}')}: review-log chain broken "
+                                f"(prev_sha256 does not match the preceding entry); an entry "
+                                "was edited, removed or reordered")
+        elif chained_from is not None:
+            problems.append(f"{r.get('review_id', f'field#{i}')}: unchained entry after the chain "
+                            "began; every new entry must carry prev_sha256")
+        else:
+            unchained += 1
+        prev = entry_chain_hash(r)
+    if unchained:
+        print(f"ADVISORY: {unchained} field decision(s) predate log chaining; the chain is "
+              "enforced from the first chained entry onward.")
+    bulk = sum(1 for r in field_reviews if r.get("bulk"))
+    if bulk:
+        print(f"NOTE: {bulk} field decision(s) were bulk accepts (--accept-all prefill), "
+              "flagged as such in the log; a bulk accept is a decision on collector facts, not a read of prose.")
     for i, r in enumerate(field_reviews):
         where = r.get("review_id", f"field#{i}")
         for f in FIELD_REQUIRED:
@@ -264,6 +297,22 @@ def main():
     # applied_sha256 equals its current value. Structured KSI tests/evidence
     # count too: third-party and collector evidence reaches the store only
     # through the same review step since this check exists.
+    # Re-review after a dataset change (review finding 8). Each decision carries
+    # the fingerprint of the rule text it judged; when the pinned dataset's text
+    # for that rule differs now, the answer was given against a requirement
+    # that has since changed, and a named person must look again. Entries from
+    # before fingerprints existed are advisory, not failures.
+    needs_rereview, unstamped = rereview_gaps(store, latest)
+    if needs_rereview:
+        shown = ", ".join(needs_rereview[:8]) + (" ..." if len(needs_rereview) > 8 else "")
+        problems.append(f"{len(needs_rereview)} populated field(s) were decided against rule "
+                        f"text that the pinned dataset has since changed: {shown}. Re-review "
+                        "them with `python sdr.py review --walk --all` or re-author with "
+                        "`python sdr.py author`; the decision must name the current text.")
+    if unstamped:
+        print(f"ADVISORY: {len(unstamped)} field decision(s) predate rule fingerprints and cannot "
+              "be checked for dataset drift; the next decision on each will stamp it.")
+
     unprovenanced = provenance_gaps(store, latest)
     if unprovenanced:
         shown = ", ".join(unprovenanced[:8]) + (" ..." if len(unprovenanced) > 8 else "")
@@ -342,6 +391,39 @@ def provenance_gaps(store, latest):
                 elif _canon_sha256(value) != r.get("applied_sha256"):
                     gaps.append(key)  # already reported as stale above; listed for the count
     return gaps
+
+
+def rereview_gaps(store, latest):
+    """(needs_rereview, unstamped): populated fields whose latest decision's
+    rule fingerprint differs from the pinned dataset's, and those with no
+    fingerprint at all."""
+    import rule_fingerprint as _rf
+    try:
+        ds = _rf.load_dataset()
+    except (OSError, ValueError):
+        return [], []
+    cls = _rf.active_class()
+    needs, unstamped = [], []
+    cache = {}
+    for section in ("frr", "ksi"):
+        for record_id, record in sorted((store.get(section) or {}).items()):
+            if not isinstance(record, dict):
+                continue
+            for key, value in _reviewable_keys(section, record_id, record):
+                if not _is_populated(value):
+                    continue
+                r = latest.get(key)
+                if not r or r.get("decision") not in ("accepted", "edited"):
+                    continue  # reported by provenance_gaps
+                fp = r.get("rule_sha256")
+                if not fp:
+                    unstamped.append(key)
+                    continue
+                if record_id not in cache:
+                    cache[record_id] = _rf.fingerprint(record_id, cls, ds)
+                if cache[record_id] != fp:
+                    needs.append(key)
+    return needs, unstamped
 
 
 def populated_count(store):
