@@ -413,8 +413,10 @@ def test_apply_driver_end_to_end_with_the_scc_source():
                 "mapping_path": "fixtures/example-google-cloud-scc.mapping.json"}}}, f)
         with open(rec_path, "w", encoding="utf-8") as f:
             json.dump(records, f)
-        saved = (ap.BASE, ap.PROFILE, ap.RECORDS, os.environ.get("SDR_EVIDENCE_SCOPE_KEY"))
-        ap.BASE, ap.PROFILE, ap.RECORDS = tmp, prof_path, rec_path
+        # AUD-F96: the driver proposes into a sidecar; the record store is never written.
+        side_path = os.path.join(tmp, "records-store.thirdparty.json")
+        saved = (ap.BASE, ap.PROFILE, ap.RECORDS, ap.SIDECAR, os.environ.get("SDR_EVIDENCE_SCOPE_KEY"))
+        ap.BASE, ap.PROFILE, ap.RECORDS, ap.SIDECAR = tmp, prof_path, rec_path, side_path
         try:
             os.environ.pop("SDR_EVIDENCE_SCOPE_KEY", None)
             with _NoNetwork(), redirect_stdout(io.StringIO()) as out:
@@ -428,6 +430,9 @@ def test_apply_driver_end_to_end_with_the_scc_source():
             printed = out.getvalue()
             assert "DEFAULT_NETWORK" in printed and "undeclared_checks: skip" in printed
             with open(rec_path, encoding="utf-8") as f:
+                assert json.load(f) == records, "the driver must not write the record store"
+            assert os.path.exists(side_path), "proposals must land in the thirdparty sidecar"
+            with open(side_path, encoding="utf-8") as f:
                 after = json.load(f)
             n = {k: len(after["ksi"][k]["evidence"]) for k in kids}
             # bucket x2 -> MAT + EVC; firewall -> RNT; MFA -> APM; audit + flow
@@ -441,11 +446,11 @@ def test_apply_driver_end_to_end_with_the_scc_source():
             assert "scope-" in blob and "rec-" in blob
             assert "DEFAULT_NETWORK" not in blob
         finally:
-            ap.BASE, ap.PROFILE, ap.RECORDS = saved[0], saved[1], saved[2]
-            if saved[3] is None:
+            ap.BASE, ap.PROFILE, ap.RECORDS, ap.SIDECAR = saved[0], saved[1], saved[2], saved[3]
+            if saved[4] is None:
                 os.environ.pop("SDR_EVIDENCE_SCOPE_KEY", None)
             else:
-                os.environ["SDR_EVIDENCE_SCOPE_KEY"] = saved[3]
+                os.environ["SDR_EVIDENCE_SCOPE_KEY"] = saved[4]
 
 
 def main():

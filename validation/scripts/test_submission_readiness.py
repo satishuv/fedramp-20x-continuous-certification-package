@@ -696,6 +696,10 @@ def main():
         reg["package_signoff"]["release_tag"] = tag
         json.dump(reg, open(register, "w", encoding="utf-8", newline="\n"), indent=1)
         rmach = _preflight(root)
+        if rmach.returncode != 0:
+            for _l in rmach.stdout.splitlines():
+                if "[BLOCK]" in _l or "gate" in _l.lower():
+                    print("      detail:", _l[:240])
         check("Class C remains package-ready without a machine-readable SCG URI "
               "(SCG-ENH-MRG is a SHOULD, not a package blocker)",
               rmach.returncode == 0

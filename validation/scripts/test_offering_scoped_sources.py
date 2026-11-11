@@ -217,14 +217,18 @@ def test_6_cli_honours_flag_and_environment_and_apply_sources_writes_nothing():
             json.dump({"evidence_sources": {"example-posture-scanner": {
                 "enabled": True, "export_path": "fixtures/example-posture-scanner.export.jsonl",
                 "mapping_path": "fixtures/example-posture-scanner.mapping.json"}}}, f)
-        saved = (ap.BASE, ap.PROFILE, ap.RECORDS,
+        # AUD-F96: the driver proposes into a sidecar; the record store is never written.
+        side_path = os.path.join(tmp, "records-store.thirdparty.json")
+        saved = (ap.BASE, ap.PROFILE, ap.RECORDS, ap.SIDECAR,
                  os.environ.get(ap.SCOPE_KEY_ENV), os.environ.get(ap.LOCATION_BASE_ENV))
-        ap.BASE, ap.PROFILE, ap.RECORDS = tmp, prof_path, rec_path
+        ap.BASE, ap.PROFILE, ap.RECORDS, ap.SIDECAR = tmp, prof_path, rec_path, side_path
         os.environ[ap.SCOPE_KEY_ENV] = _KEY
         try:
             def run(argv, env_base):
                 with open(rec_path, "w", encoding="utf-8") as f:
                     json.dump(_records(), f)
+                if os.path.exists(side_path):
+                    os.remove(side_path)
                 if env_base is None:
                     os.environ.pop(ap.LOCATION_BASE_ENV, None)
                 else:
@@ -237,6 +241,8 @@ def test_6_cli_honours_flag_and_environment_and_apply_sources_writes_nothing():
                 finally:
                     sys.stdout = real
                 with open(rec_path, encoding="utf-8") as f:
+                    assert json.load(f) == _records(), "the driver must not write the record store"
+                with open(side_path, encoding="utf-8") as f:
                     after = json.load(f)
                 locs = [e["evidenceLocation"] for k in after["ksi"].values() for e in k["evidence"]]
                 return rc, locs, out.getvalue()
@@ -260,8 +266,8 @@ def test_6_cli_honours_flag_and_environment_and_apply_sources_writes_nothing():
             check("apply_sources writes nothing to disk (the caller owns the write)",
                   open(rec_path, encoding="utf-8").read() == before)
         finally:
-            ap.BASE, ap.PROFILE, ap.RECORDS = saved[:3]
-            for var, val in ((ap.SCOPE_KEY_ENV, saved[3]), (ap.LOCATION_BASE_ENV, saved[4])):
+            ap.BASE, ap.PROFILE, ap.RECORDS, ap.SIDECAR = saved[:4]
+            for var, val in ((ap.SCOPE_KEY_ENV, saved[4]), (ap.LOCATION_BASE_ENV, saved[5])):
                 if val is None:
                     os.environ.pop(var, None)
                 else:
