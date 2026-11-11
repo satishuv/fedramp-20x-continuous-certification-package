@@ -154,8 +154,7 @@ SECTIONS = {
         # interpreter; absent it, the step fails closed rather than running a
         # checkov of unknown provenance.
         ("checkov",
-         [os.environ.get("CHECKOV_PYTHON", os.path.join(BASE, ".venv-checkov", "bin", "python")),
-          "-m", "checkov.main", "--quiet", "--compact",
+         ["@CHECKOV_PYTHON", "-m", "checkov.main", "--quiet", "--compact",
           "--framework", "cloudformation",
           "-f", "automation/config-rules/deploy/cloudformation.yaml",
           "-f", "automation/pipeline/sdr-pipeline.yaml",
@@ -173,7 +172,7 @@ SECTIONS = {
         # point; _console_script resolves the executable the locked install
         # placed beside the interpreter, never a PATH lookup.
         ("zizmor",
-         [_console_script("zizmor"), "--min-severity", "medium", "--offline",
+         ["@console:zizmor", "--min-severity", "medium", "--offline",
           ".github/workflows"]),
         # detect-secrets-hook is the gate form of detect-secrets: it compares
         # every tracked file against the audited baseline and fails on a new
@@ -181,7 +180,7 @@ SECTIONS = {
         # entry. The file list comes from git so an untracked scratch file
         # cannot fail or pass the gate.
         ("detect-secrets",
-         [sys.executable, os.path.join(BASE, "audit", "secrets_gate.py")]),
+         [sys.executable, "audit/secrets_gate.py"]),
     ],
 }
 
@@ -231,10 +230,26 @@ def run_step(name, argv, cwd=BASE, section=None):
     failure, including a tool that cannot be started. The record's gate_id
     (`<section>.<name>`) is the id traceability/rule-test-map.json registers."""
     print(f"--- release-gate step: {name}")
-    print("    " + " ".join(argv))
+    # The recorded argv is machine-independent: the interpreter is written as
+    # "python", and the two placeholders below are resolved only for execution
+    # (traceability/rule-test-map.json is generated from this list and must be
+    # byte-identical on every runner).
     record = {"gate_id": f"{section}.{name}" if section else name, "section": section,
               "name": name,
               "argv": [("python" if a == sys.executable else a) for a in argv]}
+    resolved = []
+    for a in argv:
+        if a == "@CHECKOV_PYTHON":
+            # checkov's isolated venv (requirements-checkov.lock). Fails closed:
+            # no venv means no checkov of unknown provenance is run instead.
+            a = os.environ.get("CHECKOV_PYTHON") or os.path.join(
+                BASE, ".venv-checkov", "Scripts" if os.name == "nt" else "bin",
+                "python.exe" if os.name == "nt" else "python")
+        elif a.startswith("@console:"):
+            a = _console_script(a.split(":", 1)[1])
+        resolved.append(a)
+    argv = resolved
+    print("    " + " ".join(argv))
     try:
         r = subprocess.run(argv, cwd=cwd)
         code = r.returncode
