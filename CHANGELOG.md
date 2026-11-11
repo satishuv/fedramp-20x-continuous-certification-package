@@ -14,6 +14,28 @@ from this release. The Class A anchor moved in six places: two validation tests,
 the requirements oracle, the certification-classes doc, the README table and
 mutation MUT-F86's target text.)
 
+### Every populated field carries a named author (AUD-F96)
+
+- **AUD-F96 (High).** External SAS review of main `85ccced` (2026-11-09,
+  findings 1 and 2). The field review log bound a reviewed field to its value
+  but asserted nothing about a field nobody reviewed: a value typed into
+  `records-store.json`, or a DRAFT / Example label deleted by hand, read as
+  the provider's answer with no entry naming who wrote it; third-party
+  evidence was written straight into the store with no review at all; and the
+  tool's own next-step message told the provider to edit the 3,417-placeholder
+  file by hand. Now `validate_reviews.py` hard-fails any populated reviewable
+  field whose latest decision is not an accepted or edited entry bound to the
+  current value (the reviewable-path definition is imported from the review
+  tool, never retyped). `apply_third_party_evidence.py` writes a sidecar that
+  `sdr.py review` offers as source `thirdparty`, accepted or rejected per KSI.
+  New `sdr.py author` (`--list`, `--walk`, `--answers`) walks the placeholders
+  in scope with the dataset-grounded rule text on screen, checks each answer's
+  shape, and writes it as `provider-authored` by a named person; the next-step
+  message points to it. The sample offerings and the readiness filler log
+  their generated answers through the same helper, so the gate holds for them
+  as for a provider. README, implementation guide, AGENTS.md and the prefill
+  messages no longer say to edit the store by hand. Mutation MUT-F96.
+
 ### Dependabot bumps complete themselves
 
 - `.github/workflows/dependabot-lock.yml` runs on every Dependabot pip branch

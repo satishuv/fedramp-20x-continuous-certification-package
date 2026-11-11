@@ -483,6 +483,7 @@ def run(argv):
     sign_package(store, history, key)
     history_existed = os.path.exists(aws.REAL_HISTORY)
     try:
+        aws.write_field_log(store)  # provenance gate: before the template is overwritten
         with open(aws.REAL_STORE, "w", encoding="utf-8", newline="\n") as f:
             json.dump(store, f, indent=1)
         with open(aws.REAL_PROFILE, "w", encoding="utf-8", newline="\n") as f:

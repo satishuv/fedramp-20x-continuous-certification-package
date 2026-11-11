@@ -254,14 +254,104 @@ def main():
             problems.append(f"{where}: field '{key}' changed after it was {r['decision']} "
                             "(review is stale; decide it again with sdr.py review)")
 
+    # Provenance for every populated field (review finding 1, 2026-11-09). The
+    # checks above bind a REVIEWED field to its value. They said nothing about a
+    # field nobody reviewed: a value typed straight into records-store.json, or
+    # a DRAFT / Example proposal whose label was deleted by hand, read as the
+    # provider's answer with no entry anywhere saying who wrote it. So: every
+    # reviewable field in the store that is populated (not TBD, not a labelled
+    # proposal) must have a latest accepted/edited decision whose
+    # applied_sha256 equals its current value. Structured KSI tests/evidence
+    # count too: third-party and collector evidence reaches the store only
+    # through the same review step since this check exists.
+    unprovenanced = provenance_gaps(store, latest)
+    if unprovenanced:
+        shown = ", ".join(unprovenanced[:8]) + (" ..." if len(unprovenanced) > 8 else "")
+        problems.append(f"{len(unprovenanced)} populated field(s) have no review-log entry "
+                        f"binding a named author to the current value: {shown}. Author "
+                        "them with `python sdr.py author` or decide them with "
+                        "`python sdr.py review --walk`; hand edits to the record store "
+                        "are not provenance.")
+
     if problems:
         for p in problems[:20]:
             print(f"    - {p}")
         return 1
     print(f"PASS: review register valid ({len(reviews)} review(s); "
           f"{len(field_reviews)} field decision(s) bound to current values; "
+          f"{populated_count(store)} populated field(s) all carry a named author; "
           "no machine-authored approvals; all decisions human and well-formed).")
     return 0
+
+
+# ---- Provenance for populated fields -------------------------------------------
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(BASE, "automation", "review"))
+from unreviewed_text import is_unreviewed  # noqa: E402
+# ONE definition of "reviewable field": the review tool's. A second list here
+# drifted on the first run (the KSI extension's measures/operating_cycle were
+# reviewable to the tool and not to the gate), so the gate reads the tool's.
+from review_proposals import _reviewable_paths  # noqa: E402
+
+
+def _reviewable_keys(section, record_id, record):
+    for p in _reviewable_paths(section, record):
+        node = record
+        for part in p:
+            node = node.get(part) if isinstance(node, dict) else None
+        yield f"{section}/{record_id}." + ".".join(p), node
+
+
+def _is_populated(value):
+    """A value a reader would take as the provider's answer: not empty, not a
+    TBD placeholder, not a labelled proposal, not the template's 'None recorded'."""
+    if value is None:
+        return False
+    if isinstance(value, list):
+        if not value:
+            return False
+        if all(isinstance(v, dict) for v in value):
+            return True  # structured tests/evidence objects
+        strings = [v for v in value if isinstance(v, str)]
+        return any(_is_populated(v) for v in strings)
+    if isinstance(value, dict):
+        return bool(value)
+    s = str(value).strip()
+    if not s or s.startswith("TBD") or "has not been provided" in s.lower():
+        return False
+    if s in ("None recorded",):
+        return False
+    return not is_unreviewed(s)
+
+
+def provenance_gaps(store, latest):
+    """Keys of populated reviewable fields whose latest decision is not an
+    accepted/edited entry bound to the current value."""
+    gaps = []
+    for section in ("frr", "ksi"):
+        for record_id, record in sorted((store.get(section) or {}).items()):
+            if not isinstance(record, dict):
+                continue
+            for key, value in _reviewable_keys(section, record_id, record):
+                if not _is_populated(value):
+                    continue
+                r = latest.get(key)
+                if not r or r.get("decision") not in ("accepted", "edited"):
+                    gaps.append(key)
+                elif _canon_sha256(value) != r.get("applied_sha256"):
+                    gaps.append(key)  # already reported as stale above; listed for the count
+    return gaps
+
+
+def populated_count(store):
+    n = 0
+    for section in ("frr", "ksi"):
+        for record_id, record in (store.get(section) or {}).items():
+            if isinstance(record, dict):
+                n += sum(1 for _k, v in _reviewable_keys(section, record_id, record)
+                         if _is_populated(v))
+    return n
 
 
 if __name__ == "__main__":

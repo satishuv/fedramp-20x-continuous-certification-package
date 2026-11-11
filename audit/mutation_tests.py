@@ -717,6 +717,11 @@ MUTATIONS = [
      '          git apply --numstat "$PATCH" | cut -f3- | sort -u > /tmp/living-sdr/patch-paths.txt\n',
      '          sort -u "$SIDECAR" > /tmp/living-sdr/patch-paths.txt  # MUTATION the self-reported sidecar is the object judged again\n',
      "automation/pipeline/test_living_sdr_privileges.py"),
+    ("MUT-F96",
+     "validation/scripts/validate_reviews.py",
+     "    unprovenanced = provenance_gaps(store, latest)\n",
+     "    unprovenanced = []  # MUTATION a populated field no longer needs an author again\n",
+     "automation/review/test_review_proposals.py"),
 ]
 
 

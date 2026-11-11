@@ -35,7 +35,7 @@ Never:
 - set or change an implementation status, or write an assessment;
 - treat generated or AI-authored content as evidence;
 - edit the pinned official sources (`references/`, `artifacts/schemas/official/`) by hand;
-- edit generated files by hand (edit `sdr/records/records-store.json` and regenerate; `content_fidelity_against_dataset` will catch hand edits);
+- edit generated files by hand (`content_fidelity_against_dataset` will catch hand edits), or type answers straight into `sdr/records/records-store.json` (every populated field needs a review-log entry naming its author; use `sdr.py author` for provider answers and `sdr.py review` for proposals, then regenerate);
 - record an approval anywhere except `sdr/reviews/review-register.json`, and only as a human act.
 
 Always:

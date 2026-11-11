@@ -363,8 +363,11 @@ def test_apply_driver_end_to_end_with_a_mapping_source():
 
         with open(rec_path, "w", encoding="utf-8") as f:
             json.dump(records, f)
-        saved = (ap.BASE, ap.PROFILE, ap.RECORDS, os.environ.get("SDR_EVIDENCE_SCOPE_KEY"))
-        ap.BASE, ap.PROFILE, ap.RECORDS = tmp, prof_path, rec_path
+        # Review finding 1 (2026-11-09): the driver proposes into a sidecar and
+        # never writes the record store; a named human accepts per KSI.
+        side_path = os.path.join(tmp, "records-store.thirdparty.json")
+        saved = (ap.BASE, ap.PROFILE, ap.RECORDS, ap.SIDECAR, os.environ.get("SDR_EVIDENCE_SCOPE_KEY"))
+        ap.BASE, ap.PROFILE, ap.RECORDS, ap.SIDECAR = tmp, prof_path, rec_path, side_path
         try:
             # 1. Raw project identifiers with no scope key: refused, store untouched.
             write_profile()
@@ -373,12 +376,17 @@ def test_apply_driver_end_to_end_with_a_mapping_source():
                 assert ap.main() == 1
             with open(rec_path, encoding="utf-8") as f:
                 assert json.load(f) == records
-            # 2. With a scope key: evidence attached to exactly the mapped KSIs.
+            # 2. With a scope key: evidence PROPOSED for exactly the mapped KSIs,
+            # in the sidecar; the record store itself is untouched until review.
             os.environ["SDR_EVIDENCE_SCOPE_KEY"] = "test-scope-key-not-a-secret"
             with _NoNetwork():
                 assert ap.main() == 0
             with open(rec_path, encoding="utf-8") as f:
+                assert json.load(f) == records, "the driver must not write the record store"
+            assert os.path.exists(side_path), "proposals must land in the thirdparty sidecar"
+            with open(side_path, encoding="utf-8") as f:
                 after = json.load(f)
+            assert after["meta"]["sidecar"] == "thirdparty"
             # Attached by DECLARED binding (MCE-03): MFA_NOT_ENFORCED is narrowed
             # to KSI-MLA-OSM by check_bindings, the other three go to both.
             assert len(after["ksi"]["KSI-MLA-EVC"]["evidence"]) == 3
@@ -406,11 +414,11 @@ def test_apply_driver_end_to_end_with_a_mapping_source():
             with _NoNetwork():
                 assert ap.main() == 1
         finally:
-            ap.BASE, ap.PROFILE, ap.RECORDS = saved[0], saved[1], saved[2]
-            if saved[3] is None:
+            ap.BASE, ap.PROFILE, ap.RECORDS, ap.SIDECAR = saved[0], saved[1], saved[2], saved[3]
+            if saved[4] is None:
                 os.environ.pop("SDR_EVIDENCE_SCOPE_KEY", None)
             else:
-                os.environ["SDR_EVIDENCE_SCOPE_KEY"] = saved[3]
+                os.environ["SDR_EVIDENCE_SCOPE_KEY"] = saved[4]
 
 
 def main():

@@ -243,6 +243,25 @@ def _fill_records(root):
     for kid in list(recs.get("ksi", {})):
         if kid in applicable_ksi:
             recs["ksi"][kid] = answer(recs["ksi"][kid], kid, True)
+    # Review finding 1 (2026-11-09): the gate refuses a populated field with no
+    # review-log entry naming its author. This filler is the test's stand-in
+    # for a provider typing answers, so it logs them the way `sdr.py author`
+    # does, against the template as baseline, before the store is overwritten.
+    sys.path.insert(0, os.path.join(root, "automation", "review"))
+    import importlib
+    _rp = importlib.import_module("review_proposals")
+    # Baseline is the COMMITTED template, not the file on disk: this filler
+    # runs several times on one tree, and on the second run the on-disk store
+    # is already filled, so diffing against it logged nothing and wiped the
+    # log the first run wrote (the SCG case then failed on 1762 unlogged fields).
+    template = json.load(open(os.path.join(BASE, "sdr", "records", "records-store.json"),
+                              encoding="utf-8"))
+    field_log = _rp.log_for_filled_store(
+        template, recs, "Jane Provider, VP Security",
+        "test filler (fictional answers, not an attestation)")
+    with open(os.path.join(root, "sdr", "reviews", "field-review-log.json"), "w",
+              encoding="utf-8", newline="\n") as f:
+        json.dump(field_log, f, indent=1)
     json.dump(recs, open(rp, "w", encoding="utf-8", newline="\n"), indent=1)
 
     # SDR-CSX-KMT (dataset 2026.10.08.01): Class C supplies daily metric data
@@ -682,6 +701,15 @@ def main():
         reg["package_signoff"]["release_tag"] = tag
         json.dump(reg, open(register, "w", encoding="utf-8", newline="\n"), indent=1)
         rmach = _preflight(root)
+        if rmach.returncode != 0:
+            for _l in rmach.stdout.splitlines():
+                if "[BLOCK]" in _l or "gate" in _l.lower():
+                    print("      detail:", _l[:240])
+            _g = subprocess.run([sys.executable, "sdr.py", "validate", "--no-tests"],
+                                cwd=root, capture_output=True, text=True)
+            for _l in (_g.stdout + _g.stderr).splitlines():
+                if "FAIL" in _l or "    - " in _l:
+                    print("      gate:", _l[:240])
         check("Class C remains package-ready without a machine-readable SCG URI "
               "(SCG-ENH-MRG is a SHOULD, not a package blocker)",
               rmach.returncode == 0

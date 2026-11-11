@@ -1498,6 +1498,21 @@ def cmd_diff(args):
     return code
 
 
+def cmd_author(args):
+    """Guided authoring of the record store (review finding 2, 2026-11-09).
+
+    Walks every TBD placeholder for the rules and indicators in scope, shows the
+    dataset-grounded rule text (as `sdr.py explain` does), checks each answer's
+    shape, and writes it through the field review log as provider-authored by a
+    NAMED person. Replaces the hand edit of records-store.json, which left no
+    trace of who wrote what and which the gate now refuses. Never writes
+    implementation_status or assessment.
+    """
+    sys.path.insert(0, os.path.join(BASE, "automation", "review"))
+    import review_proposals  # noqa: E402
+    return review_proposals.run_author(args, out=out)
+
+
 def cmd_review(args):
     """Report the human review register (read-only, the default), or walk the
     pending field proposals (--list / --walk / --decisions / --accept-all).
@@ -3692,9 +3707,11 @@ def summary():
                 f"({s.get('pass', '?')} pass, {s.get('fail', '?')} fail, "
                 f"{s.get('manual', '?')} manual of {s.get('total', '?')} findings)")
     out()
-    out("Next step: open sdr/records/records-store.json and replace the "
-        "placeholders for the rules and indicators you own. "
-        "See docs/implementation-guide.md.")
+    out("Next step: answer the placeholders for the rules and indicators you own with "
+        "`python sdr.py author --walk --author \"<name>\" --role \"<role>\"`, and decide "
+        "collector, import and draft proposals with `python sdr.py review --walk`. "
+        "Both log every answer to its author; a hand edit of the record store does not, "
+        "and the gate refuses an unlogged answer. See docs/implementation-guide.md.")
 
 
 def cmd_all(args):
@@ -3773,7 +3790,7 @@ def build_parser():
     review_p.add_argument("--accept-all", metavar="SOURCE", dest="accept_all",
                           help="accept every pending proposal from one source; only "
                                "'prefill' (deterministic collector facts) is allowed")
-    review_p.add_argument("--source", choices=["prefill", "ai-draft", "template-example"],
+    review_p.add_argument("--source", choices=["prefill", "thirdparty", "ai-draft", "template-example"],
                           help="restrict to proposals from one source")
     review_p.add_argument("--only", metavar="PREFIX",
                           help="restrict to field keys starting with PREFIX, e.g. frr/AFC-")
@@ -3782,6 +3799,22 @@ def build_parser():
                                "a decided proposal is not re-asked; see field-review-log.json)")
     review_p.add_argument("--reviewer", help="the named human making the decisions")
     review_p.add_argument("--role", help="that person's role")
+    author_p = sub.add_parser(
+        "author",
+        help="answer the record store's TBD placeholders in your own words, guided by the "
+             "rule text, with every answer logged to its named author (replaces hand edits)")
+    author_p.add_argument("--list", action="store_true",
+                          help="list the placeholders still to answer, by record (read-only)")
+    author_p.add_argument("--walk", action="store_true",
+                          help="answer each placeholder interactively; the rule text is shown "
+                               "once per record (needs --author and --role)")
+    author_p.add_argument("--answers", metavar="FILE",
+                          help="apply answers from a JSON file {\"frr/<ID>.implementation\": \"text\", ...}")
+    author_p.add_argument("--section", choices=["frr", "ksi"], help="restrict to rules or indicators")
+    author_p.add_argument("--only", metavar="IDS",
+                          help="comma-separated record ids, e.g. VDR-TFR-MVF,KSI-SVC-ASM")
+    author_p.add_argument("--author", help="the named person writing the answers")
+    author_p.add_argument("--role", help="that person's role")
     rel_p = sub.add_parser("release", help="build, run the full gate + reproducibility, print the tag")
     sub.add_parser("preflight", help="alias for application-preflight (read-only)")
     sub.add_parser("package-preflight", help="check the generated package for submission blockers (read-only)")
@@ -3809,6 +3842,7 @@ def main(argv=None):
         "explain": cmd_explain,
         "diff": cmd_diff,
         "review": cmd_review,
+        "author": cmd_author,
         "release": cmd_release,
         "preflight": cmd_preflight,
         "package-preflight": cmd_preflight,
