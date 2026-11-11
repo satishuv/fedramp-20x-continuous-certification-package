@@ -28,11 +28,22 @@ def main():
     files = subprocess.run(["git", "ls-files", "-z"], cwd=BASE, capture_output=True, text=True,  # nosec B603 B607 - fixed git argv
                            encoding="utf-8").stdout.split("\0")
     files = [f for f in files if f]
+    if os.name == "nt":
+        # detect-secrets 1.5 compares baseline entries by filename and loads
+        # baseline keys through os.path, so on Windows every POSIX-keyed entry
+        # reads as a new finding. The gate's verdict is CI's (Linux); a
+        # Windows developer gets the same scan, reported, with the mismatch
+        # named, rather than a false FAIL or a silent skip.
+        print("NOTE: detect-secrets baseline matching is path-separator sensitive; on Windows "
+              "every audited entry re-reports. The authoritative run is CI on Linux. Run under WSL "
+              "for a faithful local verdict.")
     if not files:
         print("FAIL: git ls-files returned nothing; refusing to pass an empty scan.")
         return 1
-    argv = [sys.executable, "-m", "detect_secrets.pre_commit_hook", "--baseline", BASELINE,
-            "--exclude-files", EXCLUDE] + files
+    # The exclude pattern lives IN the baseline (filters_used); passing it on
+    # the command line as well makes detect-secrets treat the baseline as
+    # mismatched and re-raise every entry.
+    argv = [sys.executable, "-m", "detect_secrets.pre_commit_hook", "--baseline", BASELINE] + files
     r = subprocess.run(argv, cwd=BASE)  # nosec B603 - fixed interpreter and module, file list from git
     if r.returncode == 0:
         print(f"PASS: secret scan over {len(files)} tracked files; no finding outside the audited baseline.")
