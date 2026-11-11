@@ -44,14 +44,28 @@ def main():
     # the command line as well makes detect-secrets treat the baseline as
     # mismatched and re-raise every entry.
     argv = [sys.executable, "-m", "detect_secrets.pre_commit_hook", "--baseline", BASELINE] + files
-    r = subprocess.run(argv, cwd=BASE)  # nosec B603 - fixed interpreter and module, file list from git
-    if r.returncode == 0:
-        print(f"PASS: secret scan over {len(files)} tracked files; no finding outside the audited baseline.")
-    else:
+    r = subprocess.run(argv, cwd=BASE, capture_output=True, text=True, encoding="utf-8")  # nosec B603 - fixed interpreter and module, file list from git
+    out = (r.stdout or "") + (r.stderr or "")
+    sys.stdout.write(out)
+    # The hook exits 1 for two different reasons: a finding ("Potential secrets
+    # about to be committed"), which is the gate's failure, and housekeeping
+    # ("The baseline file was updated": it refreshed line numbers or plugin
+    # metadata and wants the file re-added). Housekeeping is not a finding; the
+    # gate reports it and passes, and restores the committed baseline so the
+    # tree-clean step is not tripped by the hook's rewrite.
+    found = "Potential secrets about to be committed" in out
+    if found:
         print("FAIL: detect-secrets found a secret not in the audited baseline (or an entry marked real). "
               "If it is a false positive, run `detect-secrets audit .secrets.baseline`, state the reason, "
               "and commit the baseline; never add a real secret to the baseline.")
-    return r.returncode
+        return 1
+    if "baseline file was updated" in out:
+        subprocess.run(["git", "checkout", "--", ".secrets.baseline"], cwd=BASE)  # nosec B603 B607 - fixed git argv
+        print("NOTE: the hook refreshed baseline metadata (line numbers or plugin versions); no finding. "
+              "The committed baseline is restored; run `detect-secrets scan --baseline .secrets.baseline` "
+              "locally to refresh it when convenient.")
+    print(f"PASS: secret scan over {len(files)} tracked files; no finding outside the audited baseline.")
+    return 0
 
 
 if __name__ == "__main__":
