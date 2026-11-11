@@ -91,11 +91,23 @@ def resolved_text(record_id, cls=None, ds=None):
 
 
 def fingerprint(record_id, cls=None, ds=None):
-    """sha256 over the resolved statement and force, or None when unresolved."""
-    rt = resolved_text(record_id, cls, ds)
-    if rt is None:
+    """sha256 over the rule's or indicator's requirement text as FedRAMP
+    publishes it: the top-level statement and force plus every class variant.
+    Deliberately NOT narrowed to one class: a provider that changes its
+    certification class has not had a rule changed under it, so the same
+    decision stays valid, while any edit FedRAMP makes to the statement or
+    force at any class moves the fingerprint. ``cls`` is accepted for call-site
+    compatibility and ignored. None when the identifier does not resolve."""
+    ds = ds or load_dataset()
+    node = _rules(ds).get(record_id) if RULE_RE.match(record_id) else _ksis(ds).get(record_id)
+    if node is None:
         return None
-    canon = json.dumps({"id": record_id, "statement": rt[0], "force": rt[1]},
+    variants = {}
+    for c, per in (node.get("varies_by_class") or {}).items():
+        if isinstance(per, dict):
+            variants[c] = {"statement": per.get("statement"), "force": per.get("force")}
+    canon = json.dumps({"id": record_id, "statement": node.get("statement"),
+                        "force": node.get("force"), "varies_by_class": variants},
                        sort_keys=True, ensure_ascii=False, separators=(",", ":"))
     return "sha256:" + hashlib.sha256(canon.encode("utf-8")).hexdigest()
 
