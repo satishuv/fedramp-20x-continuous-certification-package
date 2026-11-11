@@ -637,7 +637,8 @@ def mot_continuity(window_dates, today, max_gap_days=MOT_MAX_GAP_DAYS_DEFAULT,
     largest = max(deltas)
     trailing = (today - win[-1]).days
     leading = (win[0] - window_start).days if window_start is not None else 0
-    gappy = (largest > max_gap_days or trailing > max_gap_days)  # MUTATION
+    gappy = (largest > max_gap_days or trailing > max_gap_days
+             or leading > max_gap_days)
     # Surface the leading gap in `largest` when it dominates, so the reported
     # number reflects the actual worst coverage hole (F06).
     largest = max(largest, leading)
@@ -1571,8 +1572,15 @@ def cmd_drift(args):
     out(f"Checking {len(checks)} pinned source(s) against upstream (read-only)")
     out(RULE)
     for key, url, pinned in checks:
+        # Only https to the two official hosts; a lock entry pointing anywhere
+        # else is reported, never fetched (Bandit B310).
+        if not url.startswith(("https://raw.githubusercontent.com/FedRAMP/",
+                               "https://www.fedramp.gov/", "https://fedramp.gov/")):
+            out(f"  {key:40s} REFUSED: upstream {url} is not an official FedRAMP host")
+            drifted += 1
+            continue
         try:
-            with urllib.request.urlopen(url, timeout=30) as r:
+            with urllib.request.urlopen(url, timeout=30) as r:  # nosec B310 - scheme and host checked above
                 live = hashlib.sha256(r.read()).hexdigest()
         except Exception as e:  # noqa: BLE001
             out(f"  {key:40s} DOWNLOAD FAILED ({type(e).__name__}); not treated as drift")
