@@ -250,7 +250,12 @@ def _fill_records(root):
     sys.path.insert(0, os.path.join(root, "automation", "review"))
     import importlib
     _rp = importlib.import_module("review_proposals")
-    template = json.load(open(rp, encoding="utf-8"))
+    # Baseline is the COMMITTED template, not the file on disk: this filler
+    # runs several times on one tree, and on the second run the on-disk store
+    # is already filled, so diffing against it logged nothing and wiped the
+    # log the first run wrote (the SCG case then failed on 1762 unlogged fields).
+    template = json.load(open(os.path.join(BASE, "sdr", "records", "records-store.json"),
+                              encoding="utf-8"))
     field_log = _rp.log_for_filled_store(
         template, recs, "Jane Provider, VP Security",
         "test filler (fictional answers, not an attestation)")
