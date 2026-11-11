@@ -100,6 +100,16 @@ def build_cfn(manifest):
                         ],
                         "Resource": "*",
                     },
+                    {
+                        # The Lambda service writes failed invocations to the
+                        # KMS-encrypted dead-letter queue on the function's behalf.
+                        "Sid": "AllowLambdaDeadLetterQueue",
+                        "Effect": "Allow",
+                        "Principal": {"Service": "lambda.amazonaws.com"},
+                        "Action": ["kms:GenerateDataKey*", "kms:Decrypt"],
+                        "Resource": "*",
+                        "Condition": {"StringEquals": {"aws:SourceAccount": {"Ref": "AWS::AccountId"}}},
+                    },
                 ],
             },
         },
@@ -155,21 +165,52 @@ def build_cfn(manifest):
                             ],
                             "Resource": "*",
                         },
+                        {
+                            "Effect": "Allow",
+                            "Action": "sqs:SendMessage",
+                            "Resource": {"Fn::GetAtt": ["EvidenceRuleDeadLetterQueue", "Arn"]},
+                        },
                     ],
                 },
             }],
         },
     }
 
+    # Dead-letter queue for the evidence rule (SAST review 2026-11-10,
+    # CKV_AWS_116). Encrypted with the same customer managed key as the log
+    # group; 14-day retention, the SQS maximum, so a stuck rule is visible for
+    # the whole Config evaluation cycle.
+    template["Resources"]["EvidenceRuleDeadLetterQueue"] = {
+        "Type": "AWS::SQS::Queue",
+        "Properties": {
+            "KmsMasterKeyId": {"Fn::GetAtt": ["EvidenceRuleLogKey", "Arn"]},
+            "MessageRetentionPeriod": 1209600,
+        },
+    }
+
+    # VPC placement (CKV_AWS_117) is deliberately NOT applied: the function
+    # calls only the S3 and Config service endpoints and touches no VPC
+    # resource, so a VPC adds a NAT path and cost with no isolation gained.
+    # The skip is recorded on the resource so a scanner reads the reason.
     template["Resources"]["EvidenceRuleFunction"] = {
         "Type": "AWS::Lambda::Function",
         "DependsOn": ["EvidenceRuleLogGroup"],
+        "Metadata": {
+            "checkov": {"skip": [{"id": "CKV_AWS_117",
+                                  "comment": "Calls only S3 and Config service endpoints; "
+                                             "no VPC resources are accessed, so VPC placement adds a NAT path and no isolation."}]},
+        },
         "Properties": {
             "Handler": handler,
             "Runtime": "python3.12",
             "Timeout": 30,
             "ReservedConcurrentExecutions": 10,
             "TracingConfig": {"Mode": "Active"},
+            # A failed evaluation is itself telemetry (SAST review 2026-11-10,
+            # CKV_AWS_116): invocations Lambda could not complete land in a
+            # KMS-encrypted dead-letter queue instead of vanishing, so a stuck
+            # rule is visible rather than silently NOT_APPLICABLE.
+            "DeadLetterConfig": {"TargetArn": {"Fn::GetAtt": ["EvidenceRuleDeadLetterQueue", "Arn"]}},
             "LoggingConfig": {
                 "LogFormat": "JSON",
                 "ApplicationLogLevel": "INFO",
@@ -184,13 +225,16 @@ def build_cfn(manifest):
         },
     }
 
-    # AWS Config must be permitted to invoke the function.
+    # AWS Config must be permitted to invoke the function. SourceAccount pins
+    # the permission to THIS account's Config service (CKV_AWS_364: a service
+    # principal alone would let Config in any account invoke the function).
     template["Resources"]["EvidenceRuleInvokePermission"] = {
         "Type": "AWS::Lambda::Permission",
         "Properties": {
             "Action": "lambda:InvokeFunction",
             "FunctionName": {"Fn::GetAtt": ["EvidenceRuleFunction", "Arn"]},
             "Principal": "config.amazonaws.com",
+            "SourceAccount": {"Ref": "AWS::AccountId"},
         },
     }
 

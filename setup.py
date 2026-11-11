@@ -212,8 +212,9 @@ def main():
     collect(args.profile, args.region, interactive, args.no_collect)
     code = build_and_validate()
     out()
-    out("Done. Next: open sdr/records/records-store.json and replace the "
-        "remaining TBDs with your facts, then re-run `python sdr.py all`.")
+    out("Done. Next: answer the record store with `python sdr.py author --walk` and decide "
+        "proposals with `python sdr.py review --walk` (both log every answer to its author; "
+        "the gate refuses a hand edit), then re-run `python sdr.py all`.")
     if code == 0:
         out("The build gate passed (0 hard failures). Open items are expected "
             "on a fresh record; they are your fill-in list, not errors.")

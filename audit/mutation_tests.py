@@ -722,6 +722,16 @@ MUTATIONS = [
      "    unprovenanced = provenance_gaps(store, latest)\n",
      "    unprovenanced = []  # MUTATION a populated field no longer needs an author again\n",
      "automation/review/test_review_proposals.py"),
+    ("MUT-F97",
+     "validation/scripts/validate_reviews.py",
+     "    needs_rereview, unstamped = rereview_gaps(store, latest)\n",
+     "    needs_rereview, unstamped = [], []  # MUTATION a changed rule no longer forces re-review again\n",
+     "automation/review/test_review_proposals.py"),
+    ("MUT-F98",
+     "validation/scripts/validate_reviews.py",
+     "            if r.get(\"prev_sha256\") != prev:\n",
+     "            if False:  # MUTATION a broken review-log chain is ignored again\n",
+     "automation/review/test_review_proposals.py"),
 ]
 
 

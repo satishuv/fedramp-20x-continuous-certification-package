@@ -14,6 +14,52 @@ from this release. The Class A anchor moved in six places: two validation tests,
 the requirements oracle, the certification-classes doc, the README table and
 mutation MUT-F86's target text.)
 
+### A decision is tied to the rule text it judged (AUD-F97)
+
+- **AUD-F97 (High).** External SAS review of main `85ccced` (2026-11-09,
+  finding 8). Every field-review-log entry now carries `dataset_version` and
+  `rule_sha256`, the fingerprint of the resolved rule or indicator text at the
+  moment of the decision (`validation/scripts/rule_fingerprint.py`, one module
+  for the tool, the samples and the gate). `validate_reviews.py` hard-fails a
+  populated field whose latest decision judged different text than the pinned
+  dataset now carries; pre-fingerprint entries are advisory. The drift adoption
+  marks the offering profile unconfirmed for the new release, preflight blocks
+  until a named person runs `sdr.py confirm-dataset --by --role` (which
+  refuses while the review gate is not clean), and the adoption PR body names
+  that action. New `sdr.py drift` hash-compares every pinned source against
+  upstream for copies without GitHub Actions. Mutation MUT-F97.
+
+### The review log is a hash chain; bulk accepts are flagged (AUD-F98)
+
+- **AUD-F98 (Medium).** Finding 3 of the same review. Each log entry carries
+  `prev_sha256`, the canonical hash of the entry before it; the gate recomputes
+  every link and fails a removed, edited or reordered entry. `--accept-all
+  prefill` entries carry `bulk: true` and the gate reports their count. The
+  validator imports the review tool's `FORBIDDEN_REVIEWERS` instead of a
+  shorter copy. Mutation MUT-F98.
+
+### Independence, one freshness window, and the SAST highs (findings 5, 6, 7; scan)
+
+- README "What this is not" states that the cloud service provider owns every
+  input and decision, and that an advisor on a package should not also be its
+  FedRAMP Recognized assessment service (finding 5).
+- `setup.py` and the prefill messages no longer point at a hand edit of the
+  record store (finding 6, completing the sweep begun in AUD-F96).
+- One evidence-freshness window: the scanner's hardcoded 90 days now reads the
+  offering's `evidence_freshness_policy_days` (default
+  `DEFAULT_EVIDENCE_FRESHNESS_DAYS`), and the Class C/D expired-evidence
+  blocker is labelled repository policy, since no CR26 rule sets an evidence
+  age (finding 7). The 1-day figure the review saw is the SDR-CSX-KMT daily
+  metric cadence, a different requirement, unchanged.
+- SAST (checkov) on the Config-rule template, fixed in the generator: a
+  KMS-encrypted dead-letter queue for the evidence Lambda (CKV_AWS_116), a
+  `SourceAccount` condition on the Config invoke permission (CKV_AWS_364), and
+  a reasoned skip for VPC placement (CKV_AWS_117: the function calls only S3
+  and Config endpoints). `persist-credentials` is explicit on every checkout:
+  `false` by default, `true` with a stated reason on the three jobs that push.
+  `ash-suppressions.yaml` records why each of the 13 HIGH secret findings is a
+  hash, a fixture or a word in a rule name, not a credential.
+
 ### Every populated field carries a named author (AUD-F96)
 
 - **AUD-F96 (High).** External SAS review of main `85ccced` (2026-11-09,

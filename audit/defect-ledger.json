@@ -1276,6 +1276,32 @@
       "mutation": "MUT-F96: provenance_gaps() returns [] (the gate stops asking whether a populated field has an author); test_f1_hand_typed_value_with_no_log_entry_fails_the_gate goes RED; expect RED",
       "mutation_verified": true,
       "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F97",
+      "severity": "High",
+      "requirement": "A review decision is tied to the rule text it judged. When FedRAMP changes a rule, every answer decided against the old text must be re-reviewed by a named person before the package is submittable, and confirming the provider's answers against a new dataset release is the provider's act, not the drift workflow's.",
+      "component": "validation/scripts/rule_fingerprint.py (new); automation/review/review_proposals.py (_stamp on every log entry); validation/scripts/validate_reviews.py (rereview_gaps); sdr.py (confirm-dataset, drift, preflight dataset-confirmation blocker); .github/workflows/drift-check.yml (unconfirms the profile on a dataset move; PR body names the provider action)",
+      "description": "Found by an external SAS review of main 85ccced (2026-11-09, finding 8). A dataset adoption regenerated requirement text, updated the lock and opened a PR listing records to re-examine, but that list lived only in the PR text: the record store did not record which dataset version its answers targeted, no review was tied to the rule text it approved, preflight never asked for re-review, the adoption advanced the provider's offering-profile dataset_version without the provider's input, and copies without GitHub Actions had no drift check at all. An approval could silently outlive the rule it approved.",
+      "root_cause": "The review log recorded who decided what, but not against which requirement text. The drift workflow treated the provider's profile pin as a framework artifact. Nothing on the offline path reproduced the drift check.",
+      "fix_commit": "this PR -- every field-review-log entry carries dataset_version and rule_sha256 (hash of the resolved statement and force for the active class), written by apply_decisions, author_answers and log_for_filled_store through one module. validate_reviews.py recomputes the fingerprint from the pinned dataset and hard-fails a populated field whose latest decision judged different text; pre-fingerprint entries are advisory. The drift adoption marks the profile unconfirmed for the new version; preflight blocks until a named person runs `sdr.py confirm-dataset --by --role`, which refuses while the review gate is not clean. `sdr.py drift` hash-compares every pinned source against upstream offline. The adoption PR body names the provider action. The '12 unresolved' items the review mentioned are CPO placeholders already reported as preflight blockers, not dangling rule ids; no change.",
+      "regression_test": "automation/review/test_review_proposals.py: test_f8_decisions_are_stamped_with_dataset_version_and_rule_fingerprint, test_f8_rule_text_change_forces_rereview_and_unstamped_is_advisory. Red-first: a stale fingerprint passed the gate on the unmodified tree.",
+      "mutation": "MUT-F97: rereview_gaps() returns ([], []) (the gate stops comparing fingerprints); test_f8_rule_text_change_forces_rereview_and_unstamped_is_advisory goes RED; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "AUD-F98",
+      "severity": "Medium",
+      "requirement": "The field review log is tamper-evident: an entry cannot be removed, edited or reordered without detection. A bulk accept reads differently from a per-field decision. The gate and the review tool refuse the same non-human reviewer identities.",
+      "component": "automation/review/review_proposals.py (entry_chain_hash, _chain_append, bulk flag); validation/scripts/validate_reviews.py (chain walk, bulk note, imported FORBIDDEN_REVIEWERS)",
+      "description": "Found by an external SAS review of main 85ccced (2026-11-09, finding 3). The log was append-only by convention only: nothing detected a deleted or edited entry. `--accept-all prefill` wrote entries indistinguishable from per-field review. The validator's banned-reviewer list (7 names) was shorter than the review tool's (13), so an identity the tool refused could pass the gate if written into the log another way.",
+      "root_cause": "No integrity structure on the log; two hand-maintained copies of the same list.",
+      "fix_commit": "this PR -- each entry carries prev_sha256, the canonical hash of the preceding entry (None for the first); validate_reviews.py recomputes every link and hard-fails a broken chain, with pre-chain entries advisory. Bulk accepts carry bulk: true and the gate reports their count. The validator imports FORBIDDEN_REVIEWERS from the review tool. Signing of the log is not added: the repository's evidence signer (signers.py) is the right place for a detached signature and a provider that needs one wires it there.",
+      "regression_test": "automation/review/test_review_proposals.py: test_f3_log_is_a_hash_chain_and_tamper_breaks_it, test_f3_bulk_accept_is_flagged_and_banned_reviewers_are_one_list. Red-first: a log with its first entry deleted passed the gate on the unmodified tree.",
+      "mutation": "MUT-F98: the chain-break finding is never appended (the walk computes but ignores a mismatch); test_f3_log_is_a_hash_chain_and_tamper_breaks_it goes RED; expect RED",
+      "mutation_verified": true,
+      "status": "CLOSED"
     }
   ]
 }

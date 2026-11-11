@@ -1513,6 +1513,101 @@ def cmd_author(args):
     return review_proposals.run_author(args, out=out)
 
 
+def cmd_confirm_dataset(args):
+    """Record that a named person has confirmed the provider's answers against
+    the currently pinned CR26 dataset version (review finding 8). The drift
+    adoption advances dataset_version for the build; this is the provider's
+    own act, and preflight blocks until it is done for the current version.
+    Writes dataset_version_confirmed_for / _by / _at into the offering profile.
+    Refuses while any populated field still needs re-review."""
+    by = (getattr(args, "by", None) or "").strip()
+    role = (getattr(args, "role", None) or "").strip()
+    if len(by) < 3 or by.lower() in ("pipeline", "automation", "bot", "deterministic", "sdr.py"):
+        out("REFUSED: --by must name a person")
+        return 2
+    if not role:
+        out("REFUSED: --role is required")
+        return 2
+    gate = run(os.path.join(SCRIPTS, "validate_reviews.py"), [], label="validate_reviews.py")
+    if gate != 0:
+        out("REFUSED: the review gate is not clean (fields need review or re-review); "
+            "confirming the dataset would record a confirmation of unreviewed answers.")
+        return 2
+    prof_path = os.path.join(BASE, "profiles", "common", "offering-profile.json")
+    with open(prof_path, encoding="utf-8") as f:
+        raw = f.read()
+    prof = json.loads(raw)
+    version = str(prof.get("dataset_version") or "")
+    prof["dataset_version_confirmed_for"] = version
+    prof["dataset_version_confirmed_by"] = f"{by} ({role})"
+    prof["dataset_version_confirmed_at"] = _d.datetime.now(_d.timezone.utc).replace(
+        microsecond=0).isoformat()
+    with open(prof_path, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(prof, f, indent=1, ensure_ascii=False)
+        f.write("\n")
+    out(f"Recorded: {by} ({role}) confirmed the provider's answers against CR26 dataset {version}. "
+        "Rebuild with `python sdr.py build` so the generated package carries the confirmation.")
+    return 0
+
+
+def cmd_drift(args):
+    """Compare every pinned FedRAMP source against upstream by hash (review
+    finding 8: copies without GitHub Actions had no drift check). Read-only;
+    prints which pinned files are current and which upstream has changed. The
+    same URLs and paths the drift workflow checks."""
+    import hashlib
+    import urllib.request
+    lock = load_json(os.path.join(BASE, "references", "sources.lock.json")) or {}
+    sources = lock.get("sources") or {}
+    checks = []
+    for key, ent in sources.items():
+        url = ent.get("upstream") or ent.get("schema_id")
+        pinned = ent.get("pinned_path")
+        if url and pinned:
+            checks.append((key, url, pinned))
+    if not checks:
+        out("No pinned sources with an upstream URL in references/sources.lock.json.")
+        return 2
+    drifted = 0
+    out(f"Checking {len(checks)} pinned source(s) against upstream (read-only)")
+    out(RULE)
+    for key, url, pinned in checks:
+        # Only https to the two official hosts; a lock entry pointing anywhere
+        # else is reported, never fetched (Bandit B310).
+        if not url.startswith(("https://raw.githubusercontent.com/FedRAMP/",
+                               "https://www.fedramp.gov/", "https://fedramp.gov/")):
+            out(f"  {key:40s} REFUSED: upstream {url} is not an official FedRAMP host")
+            drifted += 1
+            continue
+        try:
+            with urllib.request.urlopen(url, timeout=30) as r:  # nosec B310 - scheme and host checked above
+                live = hashlib.sha256(r.read()).hexdigest()
+        except Exception as e:  # noqa: BLE001
+            out(f"  {key:40s} DOWNLOAD FAILED ({type(e).__name__}); not treated as drift")
+            continue
+        try:
+            with open(os.path.join(BASE, pinned), "rb") as f:
+                local = hashlib.sha256(f.read()).hexdigest()
+        except OSError:
+            out(f"  {key:40s} pinned file missing: {pinned}")
+            drifted += 1
+            continue
+        if live == local:
+            out(f"  {key:40s} current")
+        else:
+            out(f"  {key:40s} CHANGED upstream")
+            drifted += 1
+    out()
+    if drifted:
+        out(f"{drifted} source(s) differ from upstream. On GitHub the daily drift workflow opens an "
+            "adoption PR; offline, copy the changed files into their pinned paths, run "
+            "`python validation/scripts/update_sources_lock.py`, then `python sdr.py all`, and "
+            "re-review the records the dataset diff names.")
+        return 1
+    out("All pinned sources match upstream.")
+    return 0
+
+
 def cmd_review(args):
     """Report the human review register (read-only, the default), or walk the
     pending field proposals (--list / --walk / --decisions / --accept-all).
@@ -1904,6 +1999,23 @@ def cmd_preflight(args):
                         f"field(s) unresolved (TBD/placeholder), each required by "
                         f"FedRAMP: " + ", ".join(f"{f} ({src})" for f, src in unresolved_required)
                         + ". Answer them with `python sdr.py init`.")
+
+    # Review finding 8 (2026-11-09): a dataset adoption advances the profile's
+    # dataset_version so the build stays coherent, but that is the framework's
+    # act, not the provider's. The provider confirms the release by name
+    # (`sdr.py confirm-dataset`), which records dataset_version_confirmed_by
+    # and _confirmed_at for THIS version; until then the package is not
+    # submittable. Profiles from before this field existed are treated as
+    # unconfirmed only once a later adoption moves the version.
+    confirmed_for = str(offering.get("dataset_version_confirmed_for") or "")
+    confirmed_by = str(offering.get("dataset_version_confirmed_by") or "").strip()
+    current_ds = str(offering.get("dataset_version") or "")
+    if "dataset_version_confirmed_for" in offering and (
+            confirmed_for != current_ds or not confirmed_by):
+        blockers.append(f"the pinned CR26 dataset moved to {current_ds} and no named person has "
+                        f"confirmed the provider's answers against it (last confirmed: "
+                        f"{confirmed_for or 'never'}). Re-review what the adoption PR listed, "
+                        "then run `python sdr.py confirm-dataset --by \"<name>\" --role \"<role>\"`.")
 
     # The engine resolves 20x + Program only. If the profile claims a different
     # path, the generated package would silently be the wrong applicability
@@ -3248,10 +3360,18 @@ def cmd_preflight(args):
                f"exports/old evidence can cause rejection). Refresh the evidence before "
                f"submission: {', '.join(sorted(set(expired_ev))[:8])}"
                + (" ..." if len(set(expired_ev)) > 8 else ""))
+        # Review finding 7 (2026-11-09): no CR26 rule sets an evidence age. The
+        # window is the offering's own policy (evidence_freshness_days, default
+        # DEFAULT_EVIDENCE_FRESHNESS_DAYS) and blocking on it is REPOSITORY
+        # policy, labelled as such; FedRAMP's text is that expired exports and
+        # old evidence can cause rejection, which is why it is a blocker at the
+        # classes that must show persistent validation.
+        label = (" [repository policy: FedRAMP sets no evidence age; the window is the "
+                 f"offering's evidence_freshness_days={policy_days}]")
         if cls in ("c", "d"):
-            blockers.append(msg)
+            blockers.append(msg + label)
         else:
-            warnings.append(msg + " (advisory at Class " + cls.upper() + ")")
+            warnings.append(msg + " (advisory at Class " + cls.upper() + ")" + label)
     if stale_ev:
         warnings.append(
             f"{len(set(stale_ev))} applicable populated record(s) have STALE evidence "
@@ -3815,6 +3935,13 @@ def build_parser():
                           help="comma-separated record ids, e.g. VDR-TFR-MVF,KSI-SVC-ASM")
     author_p.add_argument("--author", help="the named person writing the answers")
     author_p.add_argument("--role", help="that person's role")
+    cds_p = sub.add_parser(
+        "confirm-dataset",
+        help="record that a named person confirmed the provider's answers against the "
+             "currently pinned CR26 dataset version (required after each adoption)")
+    cds_p.add_argument("--by", required=True, help="the person confirming")
+    cds_p.add_argument("--role", required=True, help="that person's role")
+    sub.add_parser("drift", help="compare every pinned FedRAMP source against upstream by hash (read-only)")
     rel_p = sub.add_parser("release", help="build, run the full gate + reproducibility, print the tag")
     sub.add_parser("preflight", help="alias for application-preflight (read-only)")
     sub.add_parser("package-preflight", help="check the generated package for submission blockers (read-only)")
@@ -3843,6 +3970,8 @@ def main(argv=None):
         "diff": cmd_diff,
         "review": cmd_review,
         "author": cmd_author,
+        "confirm-dataset": cmd_confirm_dataset,
+        "drift": cmd_drift,
         "release": cmd_release,
         "preflight": cmd_preflight,
         "package-preflight": cmd_preflight,
